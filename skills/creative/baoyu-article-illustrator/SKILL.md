@@ -1,9 +1,10 @@
 ---
 name: baoyu-article-illustrator
-description: Analyzes article structure, identifies positions requiring visual aids, generates illustrations with Type × Style × Palette three-dimension approach. Use when user asks to "illustrate article", "add images", "generate images for article", or "为文章配图".
+description: "Article illustrations: type × style × palette consistency."
 version: 1.57.0
 author: 宝玉 (JimLiu)
 license: MIT
+platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [article-illustration, creative, image-generation]
