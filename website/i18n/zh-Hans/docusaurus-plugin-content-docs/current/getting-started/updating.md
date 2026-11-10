@@ -136,7 +136,7 @@ tail -f ~/.thor/logs/update.log
 thor --version
 ```
 
-与 [GitHub releases 页面](https://github.com/NousResearch/thor-agent/releases) 上的最新版本进行比较。
+与 [GitHub releases 页面](https://github.com/dwisetyabudi15581/Thor-agent/releases) 上的最新版本进行比较。
 
 ### 从消息平台更新
 

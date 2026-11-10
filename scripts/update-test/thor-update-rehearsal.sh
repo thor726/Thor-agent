@@ -29,8 +29,8 @@
 
 set -euo pipefail
 
-OFFICIAL_HTTPS="https://github.com/NousResearch/thor-agent.git"
-OFFICIAL_SSH="git@github.com:NousResearch/thor-agent.git"
+OFFICIAL_HTTPS="https://github.com/dwisetyabudi15581/Thor-agent.git"
+OFFICIAL_SSH="git@github.com:dwisetyabudi15581/Thor-agent.git"
 DEFAULT_SOURCE="https://github.com/ethernet8023/thor-agent.git"
 
 SUBCMD=""
@@ -251,7 +251,7 @@ cmd_pre() {
   step "before we start (nothing here is a pass/fail, just read it)"
   if command -v pgrep >/dev/null 2>&1; then
     local procs
-    procs="$(pgrep -fl hermes 2>/dev/null | grep -v 'thor-update-rehearsal' || true)"
+    procs="$(pgrep -fl thor 2>/dev/null | grep -v 'thor-update-rehearsal' || true)"
     if [ -n "$procs" ]; then
       warn "Thor looks like it is running — close the desktop app and the gateway"
       warn "before you run 'thor update', or the dependency sync may fail:"

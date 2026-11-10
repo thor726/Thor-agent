@@ -270,7 +270,7 @@ The Portal routes each model to a suitable backend — some through OpenRouter, 
 /model anthropic/claude-opus-4.6
 ```
 
-If a model is genuinely missing, [open an issue](https://github.com/NousResearch/thor-agent/issues) — we surface the Portal's catalog to Thor and gaps usually mean a routing config we can update.
+If a model is genuinely missing, [open an issue](https://github.com/dwisetyabudi15581/Thor-agent/issues) — we surface the Portal's catalog to Thor and gaps usually mean a routing config we can update.
 
 ### Bills not appearing on my Portal account
 

@@ -224,7 +224,7 @@ If you've worked through this guide and the issue persists:
 
 1. Run the job with `thor cron run <job_id>` (fires on next gateway tick) and watch for errors in the chat output
 2. Check `~/.thor/logs/agent.log` for scheduler messages and `~/.thor/logs/errors.log` for warnings
-3. Open an issue at [github.com/NousResearch/thor-agent](https://github.com/NousResearch/thor-agent) with:
+3. Open an issue at [github.com/dwisetyabudi15581/Thor-agent](https://github.com/dwisetyabudi15581/Thor-agent) with:
    - The job ID and schedule
    - The delivery target
    - What you expected vs. what happened

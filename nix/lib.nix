@@ -195,7 +195,6 @@ let
           "AGENTS.md"
           "CONTRIBUTING.md"
           "SECURITY.md"
-          "README.zh-CN.md"
           ".gitignore"
           "setup-thor.sh"
         ];

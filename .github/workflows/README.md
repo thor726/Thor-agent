@@ -115,7 +115,7 @@ did not select it. In release mode a skipped required job **fails** the gate
   GitHub App credentials. Do not add them.
 - Jobs that need secrets either run only on `main` pushes or dispatches
   (`docker.yml` publish, `archive-inputs.yml`, `deploy-site.yml`) or check the
-  repo (`github.repository == 'NousResearch/thor-agent'`). On a fork they
+  repo (`github.repository == 'dwisetyabudi15581/Thor-agent'`). On a fork they
   skip.
 - Jobs that need R2 read the secret into job `env` and skip their steps when
   it is empty (a job-level `if:` cannot read `secrets`). This applies to

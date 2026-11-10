@@ -215,7 +215,7 @@ stdenv.mkDerivation {
 
   meta = with lib; {
     description = "Native Electron desktop shell for Thor Agent";
-    homepage = "https://github.com/NousResearch/thor-agent";
+    homepage = "https://github.com/dwisetyabudi15581/Thor-agent";
     license = licenses.mit;
     platforms = platforms.unix;
     mainProgram = "thor-desktop";

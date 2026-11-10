@@ -41,7 +41,7 @@ See the full [Pluggable interfaces table](../../user-guide/features/plugins.md#p
 :::
 
 :::caution Third-party-product plugins ship standalone — not into the core tree
-Plugins that integrate **someone else's product or project** — observability/metrics backends, vendor SaaS connectors, analytics dashboards, paid-service tie-ins — are built and distributed as **standalone plugin repos**, not merged into `NousResearch/thor-agent`. Users install them into `~/.thor/plugins/` or via a pip entry point; everything in this guide works the same way from a standalone repo. This is a coupling-and-maintenance decision (the core moves fast and we don't own your backend), not a quality bar — a plugin can be excellent and still belong in its own repo. Promote it in the Nous Research Discord `#plugins-skills-and-skins` channel. See [CONTRIBUTING.md](https://github.com/NousResearch/thor-agent/blob/main/CONTRIBUTING.md) for the policy.
+Plugins that integrate **someone else's product or project** — observability/metrics backends, vendor SaaS connectors, analytics dashboards, paid-service tie-ins — are built and distributed as **standalone plugin repos**, not merged into `dwisetyabudi15581/Thor-agent`. Users install them into `~/.thor/plugins/` or via a pip entry point; everything in this guide works the same way from a standalone repo. This is a coupling-and-maintenance decision (the core moves fast and we don't own your backend), not a quality bar — a plugin can be excellent and still belong in its own repo. Promote it in the Nous Research Discord `#plugins-skills-and-skins` channel. See [CONTRIBUTING.md](https://github.com/dwisetyabudi15581/Thor-agent/blob/main/CONTRIBUTING.md) for the policy.
 :::
 
 :::tip Already built in: check here before you hand-roll it
@@ -309,7 +309,7 @@ load with an `ImportError` (the reason shows in `thor plugins list`).
 
 To fix such a plugin, import the name from the module that defines it now, or better, use `ctx` and the
 documented ABCs instead of internals. The full old-to-new map is the
-[`COMPAT_MANIFEST.md`](https://github.com/NousResearch/thor-agent/blob/5912ed81ed9/COMPAT_MANIFEST.md)
+[`COMPAT_MANIFEST.md`](https://github.com/dwisetyabudi15581/Thor-agent/blob/5912ed81ed9/COMPAT_MANIFEST.md)
 from the last commit that shipped the layer.
 
 ## What you're building

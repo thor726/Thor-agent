@@ -81,7 +81,7 @@ python $THOR_HOME/skills/devops/watchers/scripts/watch_rss.py \
 
 ```bash
 python $THOR_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name thor-issues --repo NousResearch/thor-agent --scope issues
+  --name thor-issues --repo dwisetyabudi15581/Thor-agent --scope issues
 ```
 
 轮询任意 JSON API：

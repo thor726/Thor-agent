@@ -31,7 +31,7 @@ import {
 } from '@/store/send-diagnostics'
 
 const SUPPORT_LINKS = [
-  { key: 'github', url: 'https://github.com/NousResearch/thor-agent/issues' },
+  { key: 'github', url: 'https://github.com/dwisetyabudi15581/Thor-agent/issues' },
   { key: 'portal', url: 'https://portal.nousresearch.com/help' },
   { key: 'discord', url: 'https://discord.gg/NousResearch' }
 ] as const

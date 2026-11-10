@@ -566,7 +566,7 @@ test(tools): añadir tests unitarios para file_operations
 
 ## Reportar Issues
 
-- Usa [GitHub Issues](https://github.com/NousResearch/thor-agent/issues)
+- Usa [GitHub Issues](https://github.com/dwisetyabudi15581/Thor-agent/issues)
 - Incluye: SO, versión de Python, versión de Thor (`thor --version`), traza de error completa
 - Incluye pasos para reproducir
 - Verifica los issues existentes antes de crear duplicados

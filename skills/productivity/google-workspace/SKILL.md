@@ -13,7 +13,7 @@ required_credential_files:
 metadata:
   thor:
     tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Email, OAuth]
-    homepage: https://github.com/NousResearch/thor-agent
+    homepage: https://github.com/dwisetyabudi15581/Thor-agent
     related_skills: [himalaya]
 ---
 

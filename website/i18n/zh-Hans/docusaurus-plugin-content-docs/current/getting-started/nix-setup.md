@@ -46,11 +46,11 @@ uv2nix 环境、覆盖包、插件依赖和开发 shell 使用同一个解释器
 
 ```bash
 # 直接运行（首次使用时构建，之后使用缓存）
-nix run github:NousResearch/thor-agent -- setup
-nix run github:NousResearch/thor-agent -- chat
+nix run github:dwisetyabudi15581/Thor-agent -- setup
+nix run github:dwisetyabudi15581/Thor-agent -- chat
 
 # 或持久化安装
-nix profile install github:NousResearch/thor-agent
+nix profile install github:dwisetyabudi15581/Thor-agent
 thor setup
 thor chat
 ```
@@ -61,7 +61,7 @@ thor chat
 <summary><strong>从本地克隆构建</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/thor-agent.git
+git clone https://github.com/dwisetyabudi15581/Thor-agent.git
 cd thor-agent
 nix build
 ./result/bin/thor setup
@@ -86,7 +86,7 @@ nix build
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    thor-agent.url = "github:NousResearch/thor-agent";
+    thor-agent.url = "github:dwisetyabudi15581/Thor-agent";
   };
 
   outputs = { nixpkgs, thor-agent, ... }: {
@@ -696,7 +696,7 @@ services.thor-agent = {
 
 ```nix
 {
-  inputs.thor-agent.url = "github:NousResearch/thor-agent";
+  inputs.thor-agent.url = "github:dwisetyabudi15581/Thor-agent";
   outputs = { thor-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ thor-agent.overlays.default ];
     # 然后：

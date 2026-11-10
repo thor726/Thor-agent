@@ -11,7 +11,7 @@
 #
 services:
   gateway:
-    image: nousresearch/thor-agent:latest
+    image: dwisetyabudi15581/Thor-agent:latest
     container_name: thor
     restart: unless-stopped
     volumes:
@@ -22,7 +22,7 @@ services:
     command: ["gateway", "run"]
 
   dashboard:
-    image: nousresearch/thor-agent:latest
+    image: dwisetyabudi15581/Thor-agent:latest
     container_name: thor-dashboard
     restart: unless-stopped
     depends_on:

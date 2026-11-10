@@ -3,243 +3,272 @@
 </p>
 
 # Thor Agent ⚡
+
 <p align="center">
-  <a href="https://thor-agent.nousresearch.com/">Thor Agent</a> | <a href="https://thor-agent.nousresearch.com/">Thor Desktop</a>
-</p>
-<p align="center">
-  <a href="https://thor-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/dwisetyabudi15581/Thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
-  <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Lang-中文-red?style=for-the-badge" alt="中文"></a>
-  <a href="README.ur-pk.md"><img src="https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge" alt="اردو"></a>
-  <a href="README.es.md"><img src="https://img.shields.io/badge/Lang-Español-orange?style=for-the-badge" alt="Español"></a>
+  <a href="https://github.com/dwisetyabudi15581/Thor-agent"><img src="https://img.shields.io/badge/Repo-GitHub-FFBF00?style=for-the-badge&logo=github" alt="Repo GitHub"></a>
+  <a href="https://github.com/dwisetyabudi15581/Thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Lisensi-MIT-green?style=for-the-badge" alt="Lisensi: MIT"></a>
 </p>
 
-**The self-improving AI agent built by [Nous Research](https://nousresearch.com).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.
+**Agen AI yang menyempurnakan dirinya sendiri** — Thor Agent membuat *skill* dari pengalaman, memperbaikinya saat dipakai, mengingat percakapan lama, dan membangun pemahaman yang makin dalam tentang Anda di setiap sesi. Ia tidak terikat pada satu laptop: bicara dengannya dari Telegram sementara ia bekerja di VM cloud, atau jalankan langsung di terminal Anda.
 
-> ⚡ **Thor Agent** is a terminal-first rebrand of [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com) (MIT), maintained by [Dwi Setyabudi](https://github.com/dwisetyabudi15581). Docker packaging was removed — run it straight from your terminal.
+Gunakan model apa pun yang Anda mau — Nous Portal, OpenRouter, OpenAI, Anthropic, atau endpoint Anda sendiri. Ganti kapan saja dengan `thor model` — tanpa mengubah kode, tanpa lock-in.
 
-Use any model you want — [Nous Portal](https://portal.nousresearch.com), OpenRouter, OpenAI, your own endpoint, and [many others](https://thor-agent.nousresearch.com/docs/integrations/providers). Switch with `thor model` — no code changes, no lock-in.
+> ⚡ **Thor Agent** adalah rebrand dari [Hermes Agent](https://github.com/NousResearch/hermes-agent) karya [Nous Research](https://nousresearch.com) (lisensi MIT), yang dikelola oleh [Dwi Setyabudi](https://github.com/dwisetyabudi15581). Dokumentasi repo ini menggunakan Bahasa Indonesia.
 
-<table>
-<tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>
-<tr><td><b>Lives where you do</b></td><td>Telegram, Discord, Slack, WhatsApp, Signal, and CLI — all from a single gateway process. Voice memo transcription, cross-platform conversation continuity.</td></tr>
-<tr><td><b>A closed learning loop</b></td><td>Agent-curated memory with periodic nudges. Autonomous skill creation after complex tasks. Skills self-improve during use. FTS5 session search with LLM summarization for cross-session recall. <a href="https://github.com/plastic-labs/honcho">Honcho</a> dialectic user modeling. Compatible with the <a href="https://agentskills.io">agentskills.io</a> open standard.</td></tr>
-<tr><td><b>Scheduled automations</b></td><td>Built-in cron scheduler with delivery to any platform. Daily reports, nightly backups, weekly audits — all in natural language, running unattended.</td></tr>
-<tr><td><b>Delegates and parallelizes</b></td><td>Spawn isolated subagents for parallel workstreams. In Desktop, choose their provider, model, and limits under Settings → Model → Subagents, then Apply the complete route. Write Python scripts that call tools via RPC, collapsing multi-step pipelines into zero-context-cost turns.</td></tr>
-<tr><td><b>Runs anywhere, not just your laptop</b></td><td>Six built-in terminal backends — local, Docker, SSH, Modal, Daytona, and Vercel Sandbox — plus plugin backends such as Singularity/Apptainer. Daytona and Modal offer serverless persistence — your agent's environment hibernates when idle and wakes on demand, costing nearly nothing between sessions. Run it on a $5 VPS or a GPU cluster.</td></tr>
-<tr><td><b>Research-ready</b></td><td>Batch trajectory generation, trajectory compression for training the next generation of tool-calling models.</td></tr>
-</table>
+## Daftar Isi
 
----
+- [Fitur Utama](#fitur-utama)
+- [Apakah Perlu Docker?](#apakah-perlu-docker)
+- [Persyaratan Sistem](#persyaratan-sistem)
+- [Instalasi](#instalasi)
+- [Cara Penggunaan](#cara-penggunaan)
+- [Otomatisasi dengan Cron](#otomatisasi-dengan-cron)
+- [Menjalankan di Banyak Platform (Gateway)](#menjalankan-di-banyak-platform-gateway)
+- [Menjalankan di Docker (Opsional)](#menjalankan-di-docker-opsional)
+- [Konfigurasi](#konfigurasi)
+- [Keamanan](#keamanan)
+- [Lisensi & Atribusi](#lisensi--atribusi)
 
-## Quick Install
+## Fitur Utama
 
-### Linux, macOS, WSL2
+| Fitur | Keterangan |
+|---|---|
+| **Antarmuka terminal sungguhan** | TUI lengkap: edit multi-baris, autocomplete slash-command, riwayat percakapan, interupsi-di-tengah-jalan, dan output tool yang mengalir (streaming). |
+| **Hadir di banyak platform** | Telegram, Discord, Slack, WhatsApp, Signal, dan CLI — semuanya dari satu proses gateway. Transkripsi pesan suara, kesinambungan percakapan lintas platform. |
+| **Loop pembelajaran tertutup** | Memori yang dikurasi agen itu sendiri. Pembuatan skill otomatis setelah tugas kompleks, skill menyempurnakan diri saat dipakai, pencarian sesi FTS5 dengan ringkasan LLM untuk mengingat lintas sesi. |
+| **Otomatisasi terjadwal** | Penjadwal cron bawaan dengan pengiriman hasil ke platform mana pun. Laporan harian, backup malam, audit mingguan — semuanya dalam bahasa natural, berjalan tanpa diawasi. |
+| **Mendelegasikan & paralel** | Memunculkan subagent terisolasi untuk alur kerja paralel. Tulis skrip Python yang memanggil tool via RPC. |
+| **Berjalan di mana saja** | Enam backend terminal: **local**, Docker, SSH, Modal, Daytona, dan Vercel Sandbox. |
+| **Siap untuk riset** | Pembangkitan trajektori batch untuk melatih generasi model berikutnya. |
 
-```bash
-curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
-```
+## Apakah Perlu Docker?
 
-### Windows (native, PowerShell)
+**Tidak.** Thor Agent berjalan penuh di terminal Anda tanpa Docker — backend terminal `local` adalah bawaan (default), dan seluruh fitur (chat, skill, cron, gateway) bekerja normal di mode ini. Ini adalah cara pakai yang disarankan untuk penggunaan di terminal.
 
-> **Heads up:** Native Windows runs Thor without WSL — CLI, gateway, TUI, and tools all work natively. If you'd rather use WSL2, the Linux/macOS one-liner above works there too. Found a bug? Please [file issues](https://github.com/NousResearch/thor-agent/issues).
+Docker berguna hanya jika Anda ingin:
 
-Run this in PowerShell:
+1. **Menjalankan Thor di dalam container** — misalnya deploy gateway di VPS secara terisolasi dan mudah di-upgrade tanpa menyentuh sistem host.
+2. **Docker sebagai backend terminal (sandbox)** — Thor berjalan di host, tetapi setiap perintah shell dieksekusi di dalam container sandbox terisolasi yang persisten.
+3. **Lingkungan yang reproducible** — versi Python, Node, dan dependensi terkunci di image.
 
-```powershell
-iex (irm https://thor-agent.nousresearch.com/install.ps1)
-```
+Ketiga opsi tersebut **sudah disertakan** di repo ini (`Dockerfile`, direktori `docker/`, dan panduan di bawah), jadi Anda bisa memakainya kapan pun mau.
 
-The source installer delegates Python 3.14, Node.js, npm, pnpm, ripgrep, FFmpeg,
-and Python dependencies to PM. If Git is absent, it stages the verified Git
-for Windows archive in Thor' tool store. It does not replace your system Git.
-See [installation methods](https://thor-agent.nousresearch.com/docs/getting-started/installation)
-for the separate MSIX/App Installer package and its update ownership.
+## Persyaratan Sistem
 
-> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Use the [Termux guide](https://thor-agent.nousresearch.com/docs/getting-started/termux), not the desktop/server installer script.
->
-> **Windows:** Native Windows is fully supported — the PowerShell one-liner above installs everything. If you'd rather use WSL2, the Linux command works there too. Native Windows install lives under `%LOCALAPPDATA%\thor`; WSL2 installs under `~/.thor` as on Linux.
+| Kebutuhan | Keterangan |
+|---|---|
+| Sistem operasi | Linux, macOS, atau WSL2 (Windows native juga didukung untuk CLI) |
+| Python | 3.11–3.14 (3.14 disarankan; installer menyediakannya otomatis) |
+| Node.js & pnpm | Untuk TUI dan gateway; dipasang otomatis oleh manajer paket bawaan (PM) |
+| Git (+ git-lfs) | Untuk kloning dan pembaruan |
+| Opsional | FFmpeg (media/suara), ripgrep (pencarian cepat) |
 
-After installation:
+## Instalasi
 
-```bash
-source ~/.bashrc    # reload shell (or: source ~/.zshrc)
-thor              # start chatting!
-```
+### Cara 1 — Installer satu baris (disarankan)
 
-### Troubleshooting
-
-#### Windows Defender or antivirus flags `uv.exe` as malware
-
-If your antivirus (Bitdefender, Windows Defender, etc.) quarantines `uv.exe` from the Thor `bin` folder (`%LOCALAPPDATA%\thor\bin\uv.exe`), this is a **false positive**. The file is Astral's `uv` — the Rust Python package manager Thor bundles to manage its Python environment. ML-based antivirus engines commonly flag unsigned Rust binaries that download and install packages.
-
-**To verify your copy is authentic:**
-
-```powershell
-# Install GitHub CLI if needed
-winget install --id GitHub.cli
-
-# Login to GitHub
-gh auth login
-
-# Run verification
-$uv = "$env:LOCALAPPDATA\thor\bin\uv.exe"
-$ver = (& $uv --version).Split(' ')[1]
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$zip = "$env:TEMP\uv.zip"
-Invoke-WebRequest "https://github.com/astral-sh/uv/releases/download/$ver/uv-x86_64-pc-windows-msvc.zip" -OutFile $zip -UseBasicParsing
-gh attestation verify $zip --repo astral-sh/uv
-Expand-Archive $zip "$env:TEMP\uv_x" -Force
-(Get-FileHash "$env:TEMP\uv_x\uv.exe").Hash -eq (Get-FileHash $uv).Hash
-```
-
-If attestation says "Verification succeeded" and the last line prints `True`, you're good.
-
-**To whitelist Thor:**
-- **Windows Defender:** Run PowerShell as Admin → `Add-MpPreference -ExclusionPath "$env:LOCALAPPDATA\thor\bin"`
-- **Bitdefender:** Add an exception in the Bitdefender console (Protection > Antivirus > Settings > Manage Exceptions)
-- Whitelist the **folder**, not the file hash — Thor updates `uv` and the hash changes every version
-
-For more context, see the upstream Astral reports: [astral-sh/uv#13553](https://github.com/astral-sh/uv/issues/13553), [astral-sh/uv#15011](https://github.com/astral-sh/uv/issues/15011), [astral-sh/uv#10079](https://github.com/astral-sh/uv/issues/10079).
-
----
-
-## Getting Started
+Linux, macOS, WSL2:
 
 ```bash
-thor              # Interactive CLI — start a conversation
-thor model        # Choose your LLM provider and model
-thor tools        # Configure which tools are enabled
-thor config set   # Set individual config values
-thor config get   # Print individual config values
-thor gateway      # Start the messaging gateway (Telegram, Discord, etc.)
-thor setup        # Run the full setup wizard (configures everything at once)
-thor update       # Update to the latest version
-thor doctor       # Diagnose any issues
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
-📖 **[Full documentation →](https://thor-agent.nousresearch.com/docs/)**
+Installer mengkloning repo, menyiapkan Python/uv, Node, pnpm, dan dependensi, lalu mengakhiri prosesnya dengan wizard `thor setup`. Lokasi bawaan: `~/.thor/thor-agent`. Data pengguna (konfigurasi, sesi, skill, memori) disimpan di `~/.thor/`.
 
----
-
-## Skip the API-key collection — Nous Portal
-
-Thor works with whatever provider you want — that's not changing. But if you'd rather not collect five separate API keys for the model, web search, image generation, TTS, and a cloud browser, **[Nous Portal](https://portal.nousresearch.com)** covers all of them under one subscription:
-
-- **300+ models** — pick any of them with `/model <name>`
-- **Tool Gateway** — web search, image generation (FAL), text-to-speech (OpenAI), cloud browser (Browser Use), all routed through your sub. No extra accounts.
-
-One command from a fresh install:
+Untuk folder khusus:
 
 ```bash
-thor setup --portal
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash -s -- --dir ~/thor
 ```
 
-That logs you in via OAuth, sets Nous as your provider, and turns on the Tool Gateway. Check what's wired up any time with `thor portal info`. Full details on the [Tool Gateway docs page](https://thor-agent.nousresearch.com/docs/user-guide/features/tool-gateway).
-
-You can still bring your own keys per-tool whenever you want — the gateway is per-backend, not all-or-nothing.
-
----
-
-## CLI vs Messaging Quick Reference
-
-Thor has two entry points: start the terminal UI with `thor`, or run the gateway and talk to it from Telegram, Discord, Slack, WhatsApp, Signal, or Email. Once you're in a conversation, many slash commands are shared across both interfaces.
-
-| Action                         | CLI                                           | Messaging platforms                                                              |
-| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------- |
-| Start chatting                 | `thor`                                      | Run `thor gateway setup` + `thor gateway start`, then send the bot a message |
-| Start fresh conversation       | `/new` or `/reset`                            | `/new` or `/reset`                                                               |
-| Change model                   | `/model [provider:model]`                     | `/model [provider:model]`                                                        |
-| Set a personality              | `/personality [name]`                         | `/personality [name]`                                                            |
-| Retry or undo the last turn    | `/retry`, `/undo`                             | `/retry`, `/undo`                                                                |
-| Compress context / check usage | `/compress`, `/usage`, `/insights [--days N]` | `/compress`, `/usage`, `/insights [days]`                                        |
-| Browse skills                  | `/skills` or `/<skill-name>`                  | `/<skill-name>`                                                                  |
-| Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                    |
-| Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                            |
-
-For the full command lists, see the [CLI guide](https://thor-agent.nousresearch.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://thor-agent.nousresearch.com/docs/user-guide/messaging).
-
----
-
-## Documentation
-
-All documentation lives at **[thor-agent.nousresearch.com/docs](https://thor-agent.nousresearch.com/docs/)**:
-
-| Section                                                                                             | What's Covered                                             |
-| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Quickstart](https://thor-agent.nousresearch.com/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |
-| [CLI Usage](https://thor-agent.nousresearch.com/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |
-| [Configuration](https://thor-agent.nousresearch.com/docs/user-guide/configuration)                | Config file, providers, models, all options                |
-| [Messaging Gateway](https://thor-agent.nousresearch.com/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
-| [Security](https://thor-agent.nousresearch.com/docs/user-guide/security)                          | Command approval, DM pairing, container isolation          |
-| [Tools & Toolsets](https://thor-agent.nousresearch.com/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |
-| [Skills System](https://thor-agent.nousresearch.com/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |
-| [Memory](https://thor-agent.nousresearch.com/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |
-| [MCP Integration](https://thor-agent.nousresearch.com/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |
-| [Cron Scheduling](https://thor-agent.nousresearch.com/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |
-| [Context Files](https://thor-agent.nousresearch.com/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |
-| [Architecture](https://thor-agent.nousresearch.com/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |
-| [Contributing](https://thor-agent.nousresearch.com/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |
-| [CLI Reference](https://thor-agent.nousresearch.com/docs/reference/cli-commands)                  | All commands and flags                                     |
-| [Environment Variables](https://thor-agent.nousresearch.com/docs/reference/environment-variables) | Complete env var reference                                 |
-
----
-
-## Migrating from OpenClaw or another agent
-
-If you're coming from OpenClaw, Claude Code, Codex CLI or Cursor, Thor can import your settings, memories and skills (and, for OpenClaw, API keys when you ask for them).
-
-**During setup:** `thor setup` asks whether to import from another agent, pre-selects the ones it finds (`~/.openclaw`, `~/.claude`, `~/.codex`, `~/.cursor`), installs the official `agent-importers` plugin and runs the import with a preview first.
-
-**Anytime after install:**
+### Cara 2 — Manual dari source (untuk pengembangan)
 
 ```bash
-thor plugins install agent-importers          # once per profile
-thor import-agent openclaw                    # interactive migration (full preset)
-thor import-agent openclaw --dry-run          # preview what would be migrated
-thor import-agent openclaw --migrate-secrets  # also bring allowlisted API keys
-thor import-agent claude-code                 # or codex / cursor
+git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+cd Thor-agent
+source ./activate        # menyiapkan Python 3.14, pnpm, dan dependensi (fish: activate.fish)
+thor --version
 ```
 
-What gets imported from OpenClaw:
+Skrip `activate` mendefinisikan perintah `thor` sebagai fungsi shell untuk checkout ini. Ulangi `source ./activate` di setiap shell baru. Untuk data terpisah dari produksi, set `export THOR_HOME=~/.thor-dev` sebelum menjalankan.
 
-- **SOUL.md** — persona file
-- **Memories** — MEMORY.md and USER.md entries
-- **Skills** — user-created skills → `~/.thor/skills/openclaw-imports/`
-- **Command allowlist** — approval patterns
-- **Messaging settings** — platform configs, allowed users, working directory
-- **API keys** — allowlisted secrets (Telegram, OpenRouter, OpenAI, Anthropic, ElevenLabs), only with `--migrate-secrets`
-- **TTS assets** — workspace audio files
-- **Workspace instructions** — AGENTS.md (with `--workspace-target`)
+### Cara 3 — Docker (opsional)
 
-`thor claw migrate` still works as the older spelling. See the [OpenClaw migration guide](https://thor-agent.nousresearch.com/docs/guides/migrate-from-openclaw) and [Import from Other Agents](https://thor-agent.nousresearch.com/docs/user-guide/import-from-other-agents).
+Lihat bagian [Menjalankan di Docker (Opsional)](#menjalankan-di-docker-opsional).
 
----
+## Cara Penggunaan
 
-## Contributing
+### 1) Setup pertama kali
 
-We welcome contributions! See the [Contributing Guide](https://thor-agent.nousresearch.com/docs/developer-guide/contributing) for development setup, code style, and PR process.
+```bash
+thor setup
+```
 
-Start with the [PM developer workflow](website/docs/reference/package-management.md#developer-workflow)
-for activation, daily use, dependency changes, and leaving the environment.
-[Development Setup](CONTRIBUTING.md#development-setup) covers the separate test environment and verification commands.
+Wizard interaktif ini memandu Anda memilih penyedia model (Nous Portal, OpenRouter, OpenAI, dll.), memasukkan kunci API, dan (opsional) menyiapkan platform chat untuk gateway. Kunci API tersimpan di `~/.thor/.env`.
 
----
+### 2) Ngobrol di terminal
 
-## Community
+```bash
+thor          # memulai chat interaktif (TUI)
+thor chat     # sama seperti di atas
+```
 
-- 💬 [Discord](https://discord.gg/NousResearch)
-- 📚 [Skills Hub](https://agentskills.io)
-- 🐛 [Issues](https://github.com/NousResearch/thor-agent/issues)
-- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Linux desktop-control MCP server for Thor and other MCP hosts, with AT-SPI accessibility trees, Wayland/X11 input, screenshots, and compositor window targeting.
-- 🔌 [ThorClaw](https://github.com/AaronWong1999/thorclaw) — Community WeChat bridge: Run Thor Agent and OpenClaw on the same WeChat account.
+Melanjutkan percakapan sebelumnya:
 
----
+```bash
+thor -c                 # lanjutkan sesi terakhir
+thor -r                 # pilih sesi lama untuk dilanjutkan
+thor -c "Nama Sesi"     # lanjutkan sesi bernama tertentu
+```
 
-## License
+### 3) Perintah CLI yang sering dipakai
 
-MIT — see [LICENSE](LICENSE).
+| Perintah | Fungsi |
+|---|---|
+| `thor` / `thor chat` | Chat interaktif di terminal |
+| `thor setup` | Wizard konfigurasi (penyedia, kunci API, platform) |
+| `thor model` | Melihat & mengganti model (picker interaktif) |
+| `thor status` | Ringkasan status: model aktif, gateway, sesi |
+| `thor doctor` | Diagnosis instalasi & konfigurasi |
+| `thor sessions` | Daftar & kelola sesi percakapan |
+| `thor skills` | Kelola skill (buat, lihat, pasang) |
+| `thor cron list` | Lihat tugas terjadwal |
+| `thor gateway run` | Jalankan gateway multi-platform di latar depan |
+| `thor mcp` | Kelola server MCP |
+| `thor plugins` | Kelola plugin |
+| `thor auth login` | Login penyedia (mis. Nous Portal) |
+| `thor dashboard` | Dasbor web bawaan |
+| `thor logs` | Lihat log |
+| `thor update` | Perbarui Thor Agent |
+| `thor backup` / `thor import` | Cadangkan / pulihkan data |
+| `thor uninstall` | Hapus instalasi |
+| `thor --version` | Versi & status pembaruan |
+| `thor <perintah> --help` | Bantuan per perintah |
 
-Built by [Nous Research](https://nousresearch.com).
+### 4) Slash command di dalam chat
+
+Saat berada di dalam TUI/chat, Anda bisa memakai perintah slash:
+
+| Perintah | Fungsi |
+|---|---|
+| `/new [nama]` | Mulai sesi baru (opsional langsung diberi nama) |
+| `/history` | Tampilkan riwayat percakapan |
+| `/save md laporan.md` | Ekspor sesi ke Markdown/JSON/HTML (tambahkan `redact` untuk menyamarkan kunci API) |
+| `/retry` | Kirim ulang pesan terakhir |
+| `/undo` | Hapus pasangan tanya-jawab terakhir |
+| `/rewind` | Kembali ke pesan lama untuk diedit (browser transkrip) |
+| `/title Judul` | Beri judul sesi |
+| `/compress` | Padatkan konteks percakapan (ringkas riwayat lama) |
+| `/rollback` | Kembalikan checkpoint sistem berkas |
+| `/stop` | Hentikan semua proses latar belakang |
+| `/help` | Daftar semua slash command |
+
+Tekan `Esc` dua kali untuk mengedit pesan sebelumnya, dan `Ctrl+C` untuk interupsi di tengah respons lalu arahkan ulang agen.
+
+### 5) Ganti model
+
+```bash
+thor model
+```
+
+Picker interaktif menampilkan katalog model dari semua penyedia yang terpasang. Pilihan tersimpan di `~/.thor/config.yaml` (`model.default`).
+
+## Otomatisasi dengan Cron
+
+Buat tugas terjadwal dalam bahasa natural atau cron klasik:
+
+```bash
+# cek harga tiap jam, hasil dikirim ke Telegram
+thor cron add "every 1h" "Bandingkan harga di situs X dengan catatan terakhir. Jika berubah, ringkas apa yang berubah." \
+  --name "Monitor Harga" --deliver telegram
+
+# laporan mingguan tiap Senin jam 9 pagi
+thor cron add "0 9 * * 1" "Buat laporan mingguan dari catatan sesi: progres, temuan, dan rencana minggu depan." \
+  --name "Laporan Mingguan"
+
+thor cron list      # lihat semua tugas
+thor cron edit 1    # ubah tugas #1
+thor cron rm 1      # hapus tugas #1
+```
+
+Opsi `--deliver` mendukung `telegram`, `discord`, `slack`, `whatsapp`, `signal`, dan `local` (terminal). Tugas berjalan tanpa diawasi dan hasilnya dikirim ke tujuan yang dituju.
+
+## Menjalankan di Banyak Platform (Gateway)
+
+1. Jalankan `thor setup` dan pilih platform chat (mis. Telegram) — Anda akan dipandu memasukkan token bot.
+2. Jalankan gateway:
+
+```bash
+thor gateway run            # di latar depan
+thor gateway start          # di latar belakang
+thor gateway install        # pasang agar jalan saat login/boot
+```
+
+Sekarang Anda bisa mengobrol dengan Thor dari Telegram/Discord/Slack/WhatsApp/Signal sementara agen bekerja di mesin Anda. Port `8642` (opsional) mengekspos API server yang kompatibel dengan OpenAI dan endpoint kesehatan.
+
+## Menjalankan di Docker (Opsional)
+
+Bangun image dari source, lalu jalankan wizard setup:
+
+```bash
+git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+cd Thor-agent
+docker build -t thor-agent .
+
+mkdir -p ~/.thor
+docker run -it --rm -v ~/.thor:/opt/data thor-agent setup
+```
+
+Semua data pengguna (konfigurasi, kunci API, sesi, skill, memori) tersimpan di satu direktori yang di-mount dari host ke `/opt/data` — image-nya stateless dan bisa diganti tanpa kehilangan konfigurasi.
+
+Menjalankan gateway sebagai layanan latar belakang:
+
+```bash
+docker run -d \
+  --name thor \
+  --restart unless-stopped \
+  -v ~/.thor:/opt/data \
+  -p 8642:8642 \
+  thor-agent gateway run
+```
+
+Menambahkan dasbor web (port 9119):
+
+```bash
+docker run -d \
+  --name thor \
+  --restart unless-stopped \
+  -v ~/.thor:/opt/data \
+  -p 8642:8642 -p 9119:9119 \
+  -e THOR_DASHBOARD=1 \
+  thor-agent gateway run
+```
+
+> 💡 **Docker sebagai backend terminal (sandbox)**: jika hanya ingin eksekusi perintah terisolasi tanpa menjalankan Thor di container, atur backend terminal ke `docker` di konfigurasi — agen tetap di host, perintah shell dieksekusi di dalam container sandbox persisten. Rincian ada di `website/docs/user-guide/docker.md`.
+
+> ⚠️ Gunakan SSH (bukan konsol browser VPS) saat menyalin perintah `docker run` di atas — konsol browser sering merusak karakter `:`, `@`, dan `=`.
+
+## Konfigurasi
+
+- **`~/.thor/config.yaml`** — konfigurasi utama (model bawaan, penyedia, gateway, backend terminal). Lebih mudah lewat `thor setup` / `thor model` / `thor config`.
+- **`~/.thor/.env`** — kunci API per penyedia, antara lain:
+  `OPENROUTER_API_KEY`, `FIREWORKS_API_KEY`, `NOVITA_API_KEY`, `GOOGLE_API_KEY`, `GROQ_API_KEY`, `KIMI_API_KEY`, `DEEPINFRA_API_KEY`, dan banyak lagi — daftar lengkap beserta contohnya ada di [`.env.example`](.env.example).
+- **`thor auth login`** — login OAuth untuk penyedia yang mendukungnya (Anthropic, OpenAI Codex, xAI, Qwen, MiniMax, OpenRouter, Nous Portal) — tanpa perlu menaruh kunci manual.
+- **`THOR_HOME`** — variabel lingkungan untuk memindahkan lokasi data (default `~/.thor`), berguna untuk instance terpisah.
+
+## Keamanan
+
+- Thor meminta persetujuan (approval) sebelum menjalankan perintah berisiko — di terminal maupun via tombol persetujuan di platform chat.
+- Pemindaian keamanan MCP bawaan memblokir server MCP berbahaya.
+- Gunakan `/save ... redact` saat mengekspor transkrip agar kunci API tersamarkan.
+- Untuk gateway tanpa pengawasan, pemberhentian keras loop tool aktif secara bawaan (`tool_loop_guardrails` di config).
+
+## Bahasa
+
+README dan panduan repo ini berbahasa Indonesia. Antarmuka CLI mendukung banyak bahasa (Inggris, Jerman, Spanyol, Prancis, Korea, Jepang, Arab, Portugis, Rusia, Mandarin, dll.) melalui berkas locale di `locales/` — terjemahan Bahasa Indonesia (`locales/id.yaml`) belum tersedia dan kontribusi sangat diterima.
+
+## Lisensi & Atribusi
+
+[MIT](LICENSE) — © 2025 Nous Research, © 2026 Dwi Setyabudi.
+
+Thor Agent adalah rebrand dari [Hermes Agent](https://github.com/NousResearch/hermes-agent) karya [Nous Research](https://nousresearch.com). Terima kasih kepada seluruh kontributor upstream. Referensi ke keluarga model LLM "Hermes" (mis. `NousResearch/Hermes-4-70B`) sengaja dipertahankan karena merupakan nama model sungguhan di penyedia pihak ketiga.

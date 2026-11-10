@@ -15,7 +15,7 @@ Thor 不仅仅是一个 CLI 工具。你可以直接导入 `AIAgent`，在自己
 克隆 Thor 并创建受支持的可编辑开发环境：
 
 ```bash
-git clone https://github.com/NousResearch/thor-agent.git
+git clone https://github.com/dwisetyabudi15581/Thor-agent.git
 cd thor-agent
 source ./activate
 ```

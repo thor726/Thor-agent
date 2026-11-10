@@ -18,9 +18,9 @@ screenshots:
 readme: true
 platforms: [linux, macos]
 known_issues:
-  - "Thor's text normaliser alters <|speaker:N|> markup and Drama 3 closing tags such as </whisper> on the plain text_to_speech path; use fish_speak for multi-speaker speech and Drama 3 word tags (NousResearch/thor-agent#133131)."
-  - "An empty API key field in Settings is hard to see, worst in the dark theme; a fix is proposed (NousResearch/thor-agent#138994)."
-  - "In Thor Desktop voice conversations, part or all of a reply sometimes goes unspoken because Desktop stops passing it to speech mid-turn; this affects every speech provider, and fixes are proposed (NousResearch/thor-agent#129305)."
+  - "Thor's text normaliser alters <|speaker:N|> markup and Drama 3 closing tags such as </whisper> on the plain text_to_speech path; use fish_speak for multi-speaker speech and Drama 3 word tags (dwisetyabudi15581/Thor-agent#133131)."
+  - "An empty API key field in Settings is hard to see, worst in the dark theme; a fix is proposed (dwisetyabudi15581/Thor-agent#138994)."
+  - "In Thor Desktop voice conversations, part or all of a reply sometimes goes unspoken because Desktop stops passing it to speech mid-turn; this affects every speech provider, and fixes are proposed (dwisetyabudi15581/Thor-agent#129305)."
   - "Under plugins.isolation: host the thor fish terminal command is unavailable and voice replies use whole-file speech instead of streaming; /fish, the tools and both providers still work."
 capabilities:
   provides_tools:

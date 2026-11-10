@@ -455,7 +455,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = with lib; {
     description = "AI agent with advanced tool-calling capabilities";
-    homepage = "https://github.com/NousResearch/thor-agent";
+    homepage = "https://github.com/dwisetyabudi15581/Thor-agent";
     mainProgram = "thor";
     license = licenses.mit;
     platforms = platforms.unix;

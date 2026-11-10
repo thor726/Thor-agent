@@ -18,7 +18,7 @@ Thor discovers memory providers from four sources, in this precedence order:
 
 | Source | Location | Notes |
 |---|---|---|
-| Bundled | `plugins/memory/<name>/` | Ships with Thor. Closed to new providers — see [CONTRIBUTING](https://github.com/NousResearch/thor-agent/blob/main/CONTRIBUTING.md). |
+| Bundled | `plugins/memory/<name>/` | Ships with Thor. Closed to new providers — see [CONTRIBUTING](https://github.com/dwisetyabudi15581/Thor-agent/blob/main/CONTRIBUTING.md). |
 | User | `$THOR_HOME/plugins/<name>/` | Dropped in by the user, per profile. |
 | Project | `./.thor/plugins/<name>/` | Opt-in via `THOR_ENABLE_PROJECT_PLUGINS=1`. |
 | Package | `thor_agent.memory_providers` entry point | Distribution supplied by the installation owner; nothing to copy. |

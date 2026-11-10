@@ -1,5 +1,5 @@
 # Catalog entry draft — Cost Sentinel
-# PR target: NousResearch/thor-agent → plugin-catalog/cost-sentinel.yaml
+# PR target: dwisetyabudi15581/Thor-agent → plugin-catalog/cost-sentinel.yaml
 # Fill `sha` + `repo` after the plugin repo is pushed to GitHub.
 name: cost-sentinel
 repo: https://github.com/SongotenU/thor-cost-sentinel

@@ -153,7 +153,7 @@ When the gateway withdraws a question (timeout, interrupt, answered from another
 
 ### Pi-style RPC mapping
 
-Every command in the Pi-mono RPC spec ([issue #360](https://github.com/NousResearch/thor-agent/issues/360)) has a TUI-gateway equivalent:
+Every command in the Pi-mono RPC spec ([issue #360](https://github.com/dwisetyabudi15581/Thor-agent/issues/360)) has a TUI-gateway equivalent:
 
 | Pi command | Thor equivalent |
 |------------|-------------------|

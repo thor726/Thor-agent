@@ -295,7 +295,7 @@ export default function UserStoriesCollage(): React.JSX.Element {
       <div className={styles.footer}>
         Built something with Thor?{' '}
         <a
-          href="https://github.com/NousResearch/thor-agent/edit/main/website/src/data/userStories.json"
+          href="https://github.com/dwisetyabudi15581/Thor-agent/edit/main/website/src/data/userStories.json"
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   probe:
-    if: github.repository == 'NousResearch/thor-agent'
+    if: github.repository == 'dwisetyabudi15581/Thor-agent'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

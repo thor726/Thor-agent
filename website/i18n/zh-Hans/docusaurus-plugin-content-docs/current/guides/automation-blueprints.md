@@ -34,9 +34,9 @@ description: "开箱即用的自动化蓝图——定时任务、GitHub 事件�
 
 ```bash
 thor cron create "0 2 * * *" \
-  "You are a project manager triaging the NousResearch/thor-agent GitHub repo.
+  "You are a project manager triaging the dwisetyabudi15581/Thor-agent GitHub repo.
 
-1. Run: gh issue list --repo NousResearch/thor-agent --state open --json number,title,labels,author,createdAt --limit 30
+1. Run: gh issue list --repo dwisetyabudi15581/Thor-agent --state open --json number,title,labels,author,createdAt --limit 30
 2. Identify issues opened in the last 24 hours
 3. For each new issue:
    - Suggest a priority label (P0-critical, P1-high, P2-medium, P3-low)
@@ -116,9 +116,9 @@ platforms:
 
 ```bash
 thor cron create "0 9 * * 1" \
-  "Scan the NousResearch/thor-agent repo for documentation drift.
+  "Scan the dwisetyabudi15581/Thor-agent repo for documentation drift.
 
-1. Run: gh pr list --repo NousResearch/thor-agent --state merged --json number,title,files,mergedAt --limit 30
+1. Run: gh pr list --repo dwisetyabudi15581/Thor-agent --state merged --json number,title,files,mergedAt --limit 30
 2. Filter to PRs merged in the last 7 days
 3. For each merged PR, check if it modified:
    - Tool schemas (tools/*.py) — may need docs/reference/tools-reference.md update

@@ -27,7 +27,7 @@ describe('hub-iframe-policy predicates', () => {
   })
 
   it('delegates only http/https/mailto external URLs', () => {
-    expect(isThorHubExternalUrl('https://github.com/NousResearch/thor-agent')).toBe(true)
+    expect(isThorHubExternalUrl('https://github.com/dwisetyabudi15581/Thor-agent')).toBe(true)
     expect(isThorHubExternalUrl('http://example.com/docs')).toBe(true)
     expect(isThorHubExternalUrl('mailto:support@example.com')).toBe(true)
 
@@ -47,7 +47,7 @@ describe('hub-iframe-policy predicates', () => {
 })
 
 describe('createWindowOpenHandler trusted-hub delegation', () => {
-  const baseDetails = { url: 'https://github.com/NousResearch/thor-agent' }
+  const baseDetails = { url: 'https://github.com/dwisetyabudi15581/Thor-agent' }
 
   it('still denies artifact frames (opaque origin) with NO external open', () => {
     const openExternalUrl = vi.fn()
@@ -70,7 +70,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     })
 
     expect(handler(baseDetails)).toEqual({ action: 'deny' })
-    expect(openExternalUrl).toHaveBeenCalledExactlyOnceWith('https://github.com/NousResearch/thor-agent')
+    expect(openExternalUrl).toHaveBeenCalledExactlyOnceWith('https://github.com/dwisetyabudi15581/Thor-agent')
   })
 
   it('delegates from the fallback (GitHub Pages) hub origin too', () => {

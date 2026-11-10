@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   check-freshness:
-    if: github.repository == 'NousResearch/thor-agent'
+    if: github.repository == 'dwisetyabudi15581/Thor-agent'
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 10
     environment: trusted-automation
@@ -79,7 +79,7 @@ jobs:
     # cross-origin. A browser rejects that fetch when any response in the redirect
     # chain lacks Access-Control-Allow-Origin (#136483). The probe above uses
     # curl -L, which never checks CORS, so it stays green while Desktop is blocked.
-    if: github.repository == 'NousResearch/thor-agent'
+    if: github.repository == 'dwisetyabudi15581/Thor-agent'
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 5
     environment: trusted-automation

@@ -81,7 +81,7 @@ Watch a GitHub repo (set `GITHUB_TOKEN` in `${THOR_HOME:-~/.thor}/.env` to avoid
 
 ```bash
 python $THOR_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name thor-issues --repo NousResearch/thor-agent --scope issues
+  --name thor-issues --repo dwisetyabudi15581/Thor-agent --scope issues
 ```
 
 Poll an arbitrary JSON API:

@@ -103,4 +103,4 @@ Each result has multiple formats under `.media_formats`:
 
 - URL-encode the query: spaces as `+`, special chars as `%XX`
 - For sending in chat, `tinygif` URLs are lighter weight
-- GIF URLs can be used directly in markdown: `![alt](https://github.com/NousResearch/thor-agent/blob/main/optional-skills/media/gif-search/url)`
+- GIF URLs can be used directly in markdown: `![alt](https://github.com/dwisetyabudi15581/Thor-agent/blob/main/optional-skills/media/gif-search/url)`
