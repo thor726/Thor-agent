@@ -28,9 +28,9 @@
  * terminal pane keeps working unimpaired.
  */
 
-import { Button } from '@thor-research/ui/ui/components/button'
-import { Badge } from '@thor-research/ui/ui/components/badge'
-import { Card } from '@thor-research/ui/ui/components/card'
+import { Button } from '@nous-research/ui/ui/components/button'
+import { Badge } from '@nous-research/ui/ui/components/badge'
+import { Card } from '@nous-research/ui/ui/components/card'
 
 import { ModelPickerDialog } from '@/components/ModelPickerDialog'
 import { ModelReloadConfirm } from '@/components/ModelReloadConfirm'

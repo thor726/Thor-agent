@@ -971,7 +971,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ Nem sikerült betölteni a konfigurációt: {error}"
   topup:
-    header: "💳 **Nous-egyenleg**"
+    header: "💳 **Thor-egyenleg**"
     portal_link: "Számlázás kezelése a portálon: {url}"
     hint: "Feltöltés és számlázás a böngészőben — az egyenleged utána itt is frissül."
   login:
@@ -1704,11 +1704,11 @@ slash:
   usage:
     description: "Tokenhasználat és sebességkorlátok megjelenítése; a `reset` beváltja a félretett Codex limit-visszaállítást"
   subscription:
-    description: "A Nous csomagod megtekintése és módosítása a böngészőben"
+    description: "A Thor csomagod megtekintése és módosítása a böngészőben"
   login:
-    description: "Bejelentkezés Nous fiókkal (a csatlakoztatott appjaid megmaradnak)"
+    description: "Bejelentkezés Thor fiókkal (a csatlakoztatott appjaid megmaradnak)"
   topup:
-    description: "A Nous egyenleged megjelenítése és a számlázás kezelése a portálon"
+    description: "A Thor egyenleged megjelenítése és a számlázás kezelése a portálon"
   platforms:
     description: "Az átjáró/üzenetküldő platformok állapotának megjelenítése"
   platform:
@@ -2549,7 +2549,7 @@ cli:
     delivering_leftover_steer: "⏩ A fennmaradó /steer kézbesítése következő körként: '{preview}'"
     reasoning_label: "Gondolkodás"
     reasoning_more_lines: "... (még {count} sor — megjelenítés: /reasoning full)"
-    billing_cta_nous: "Kredit feltöltéséhez futtasd a [bold]/topup[/], csomagváltáshoz a [bold]/subscription[/] parancsot."
+    billing_cta_thor: "Kredit feltöltéséhez futtasd a [bold]/topup[/], csomagváltáshoz a [bold]/subscription[/] parancsot."
     billing_cta_provider: "Tölts fel kreditet: {provider}"
     your_provider: "a szolgáltatód"
     billing_cta_switch: "Vagy válts szolgáltatót: [bold]/model <model> --provider <provider>[/]."
@@ -3768,8 +3768,8 @@ tips:
   t181: "A Camofox (észlelésgátló Firefox) mostantól bővítmény: thor plugins install camofox."
   t182: "A browser_exec több böngészőlépést futtat egyetlen Python-hívásban — navigálás, kinyerés és kattintás együtt."
   t183: "A browser.dialog_policy határozza meg, hogyan kezelődnek az oldal natív párbeszédablakai: must_respond (az ügynök a browser_dialog eszközzel válaszol), auto_dismiss vagy auto_accept."
-  t184: "A thor mcp interaktív választót nyit a Nous által jóváhagyott MCP-kből, amelyeket egy billentyűnyomással telepíthetsz."
-  t185: "A thor mcp catalog kilistázza a repóval szállított, Nous által jóváhagyott MCP-szervereket."
+  t184: "A thor mcp interaktív választót nyit a Thor által jóváhagyott MCP-kből, amelyeket egy billentyűnyomással telepíthetsz."
+  t185: "A thor mcp catalog kilistázza a repóval szállított, Thor által jóváhagyott MCP-szervereket."
   t186: "A thor mcp install <name> telepít egy katalógusbejegyzést, bekéri a hitelesítő adatokat, és kiválaszthatod, mely eszközeit engedélyezed."
   t187: "Az MCP-szerverek a config.yaml fájlban konfigurálhatók – a stdio és a HTTP transport is támogatott."
   t188: "Szerverenkénti eszközszűrés: a tools.include engedélyezi, a tools.exclude kizárja a megadott eszközöket."
@@ -3796,7 +3796,7 @@ tips:
   t209: "Egyedi szolgáltatók: nevesített végpontokat menthetsz a config.yaml custom_providers szekciójában."
   t210: "A THOR_EPHEMERAL_SYSTEM_PROMPT olyan rendszerpromptot injektál, amely soha nem kerül az előzményekbe."
   t211: "A credential_pool_strategies támogatja a fill_first, round_robin, least_used és random rotációt."
-  t212: "A thor auth add nous vagy a thor auth add openai-codex OAuth-alapú szolgáltatókat állít be."
+  t212: "A thor auth add thor vagy a thor auth add openai-codex OAuth-alapú szolgáltatókat állít be."
   t213: "Az API-szerver a Chat Completions és a Responses API-t is támogatja szerveroldali állapottal."
   t214: "A tool_preview_length: 0 a konfigurációban teljes fájlútvonalakat mutat a forgó ikon tevékenységlistájában."
   t215: "A thor status --deep mélyebb diagnosztikai ellenőrzéseket futtat az összes komponensen."
@@ -3892,7 +3892,7 @@ tips:
   t305: "A thor curator rollback egy futás előtti pillanatképből állítja vissza a skilleket — a mentések a skills/.curator_backups/ alatt vannak."
   t306: "A thor auth reset <provider> [target] törli a várakozási időket és a kimerülési jelzőket egy teljes hitelesítőadat-készleten, vagy egyetlen elemen index, azonosító vagy címke alapján."
   t307: "credential_pool_strategies.<provider>: a round_robin egyenletesen váltogatja a kulcsokat az alapértelmezett fill_first helyett."
-  t308: "Az eszközönkénti use_gateway: true a web-, kép-, TTS- vagy böngészőeszközt a Nous-előfizetéseden át irányítja — külön kulcsok nélkül."
+  t308: "Az eszközönkénti use_gateway: true a web-, kép-, TTS- vagy böngészőeszközt a Thor-előfizetéseden át irányítja — külön kulcsok nélkül."
   t309: "A provider_routing.data_collection: deny kizárja az adatokat tároló szolgáltatókat az OpenRouteren."
   t310: "A provider_routing.require_parameters: true csak olyan szolgáltatókhoz irányít, amelyek a kérésed minden paraméterét támogatják."
   t311: "A THOR_TUI_RESUME=1 indításkor automatikusan visszacsatlakozik a legutóbbi TUI-munkamenethez — jól jön, ha megszakad az SSH."
@@ -3975,7 +3975,7 @@ tips:
     p10: "Állíts be emlékeztetőt, vagy ütemezz ismétlődő feladatot"
     p11: "Írj / jelet a parancsokhoz, vagy nyomj Ctrl+P-t a palettához"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Ingyenes"
   level_top_tier: "Nagy"

@@ -1,4 +1,4 @@
-"""Code-flow grid sweep (NOUS-368, wave 1): three pre-existing automatic gateway diagnostics that
+"""Code-flow grid sweep (wave 1): three pre-existing automatic gateway diagnostics that
 bypassed the warning boundary. absent/false = legacy bytes; true suppresses ONLY the diagnostic;
 requested outcomes (an in-chat /restart's own ack, the requested background result) are untouched."""
 from __future__ import annotations

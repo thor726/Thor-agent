@@ -957,7 +957,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ تعذّر تحميل الإعدادات: {error}"
   topup:
-    header: "💳 **رصيد Nous**"
+    header: "💳 **رصيد Thor**"
     portal_link: "أدِر الفوترة من البوابة: {url}"
     hint: "أعد تعبئة الرصيد وأدِر الفوترة في المتصفح — سيتحدّث رصيدك هنا بعد ذلك."
   login:
@@ -1687,11 +1687,11 @@ slash:
   usage:
     description: "عرض استخدام الرموز وحدود المعدّل؛ `reset` يستبدل إعادة تعيين حد Codex المدّخرة"
   subscription:
-    description: "عرض خطة Nous الخاصة بك وتغييرها في المتصفح"
+    description: "عرض خطة Thor الخاصة بك وتغييرها في المتصفح"
   login:
-    description: "تسجيل الدخول بحساب Nous (مع الاحتفاظ بموصّلاتك)"
+    description: "تسجيل الدخول بحساب Thor (مع الاحتفاظ بموصّلاتك)"
   topup:
-    description: "عرض رصيد Nous الخاص بك وإدارة الفوترة على البوابة"
+    description: "عرض رصيد Thor الخاص بك وإدارة الفوترة على البوابة"
   platforms:
     description: "عرض حالة البوّابة/منصات المراسلة"
   platform:
@@ -2532,7 +2532,7 @@ cli:
     delivering_leftover_steer: "⏩ جارٍ تسليم /steer المتبقي كدور تالٍ: '{preview}'"
     reasoning_label: "الاستدلال"
     reasoning_more_lines: "... ({count} أسطر إضافية — /reasoning full للعرض)"
-    billing_cta_nous: "شغّل [bold]/topup[/] لإضافة رصيد، أو [bold]/subscription[/] لتغيير الخطة."
+    billing_cta_thor: "شغّل [bold]/topup[/] لإضافة رصيد، أو [bold]/subscription[/] لتغيير الخطة."
     billing_cta_provider: "أضف رصيدًا عبر {provider}"
     your_provider: "مزوّدك"
     billing_cta_switch: "أو بدّل المزوّد عبر [bold]/model <model> --provider <provider>[/]."
@@ -3751,8 +3751,8 @@ tips:
   t181: "أصبح Camofox (Firefox مضاد للكشف) إضافة الآن: thor plugins install camofox."
   t182: "يشغّل browser_exec عدة خطوات متصفح في استدعاء Python واحد — التنقل والاستخراج والنقر معًا."
   t183: "يحدد browser.dialog_policy طريقة التعامل مع مربعات الحوار الأصلية في الصفحة: must_respond (يرد الوكيل عبر browser_dialog) أو auto_dismiss أو auto_accept."
-  t184: "يفتح thor mcp منتقيًا تفاعليًا لخوادم MCP المعتمدة من Nous يمكنك تثبيتها بضغطة مفتاح واحدة."
-  t185: "يعرض thor mcp catalog خوادم MCP المعتمدة من Nous والمرفقة مع المستودع."
+  t184: "يفتح thor mcp منتقيًا تفاعليًا لخوادم MCP المعتمدة من Thor يمكنك تثبيتها بضغطة مفتاح واحدة."
+  t185: "يعرض thor mcp catalog خوادم MCP المعتمدة من Thor والمرفقة مع المستودع."
   t186: "يثبّت thor mcp install <name> مدخلًا من الفهرس، ويطلب بيانات الاعتماد، ويتيح لك اختيار الأدوات المفعّلة منه."
   t187: "تُضبط خوادم MCP في config.yaml — مع دعم وسيلتي النقل stdio وHTTP."
   t188: "تصفية الأدوات لكل خادم: tools.include يسمح بأدوات محددة، وtools.exclude يحظرها."
@@ -3779,7 +3779,7 @@ tips:
   t209: "المزوّدون المخصصون: احفظ نقاط نهاية مسمّاة في config.yaml تحت custom_providers."
   t210: "يحقن THOR_EPHEMERAL_SYSTEM_PROMPT موجّه نظام لا يُحفظ في السجل أبدًا."
   t211: "يدعم credential_pool_strategies استراتيجيات التدوير fill_first وround_robin وleast_used وrandom."
-  t212: "يضبط thor auth add nous أو thor auth add openai-codex المزوّدين المعتمدين على OAuth."
+  t212: "يضبط thor auth add thor أو thor auth add openai-codex المزوّدين المعتمدين على OAuth."
   t213: "يدعم خادم API كلًّا من Chat Completions وResponses API مع حالة محفوظة على جانب الخادم."
   t214: "يعرض tool_preview_length: 0 في الإعدادات مسارات الملفات كاملةً في شريط نشاط مؤشر الانتظار."
   t215: "يشغّل thor status --deep فحوصات تشخيصية أعمق عبر جميع المكوّنات."
@@ -3875,7 +3875,7 @@ tips:
   t305: "thor curator rollback يستعيد المهارات من لقطة سابقة للتشغيل — النسخ الاحتياطية تحت skills/.curator_backups/."
   t306: "thor auth reset <provider> [target] يمسح فترات التهدئة وعلامات النفاد عن مجمّع اعتمادات كامل، أو عن اعتماد واحد بالفهرس أو المعرّف أو التسمية."
   t307: "credential_pool_strategies.<provider>: round_robin يدوّر المفاتيح بالتساوي بدلًا من الافتراضي fill_first."
-  t308: "use_gateway: true لكل أداة يوجّه web أو image أو tts أو browser عبر اشتراكك في Nous — دون مفاتيح إضافية."
+  t308: "use_gateway: true لكل أداة يوجّه web أو image أو tts أو browser عبر اشتراكك في Thor — دون مفاتيح إضافية."
   t309: "provider_routing.data_collection: deny يستثني المزوّدين الذين يخزّنون البيانات على OpenRouter."
   t310: "provider_routing.require_parameters: true يوجّه فقط إلى المزوّدين الذين يدعمون كل معامل في طلبك."
   t311: "THOR_TUI_RESUME=1 يُعيد الاتصال تلقائيًا بأحدث جلسة TUI عند الإطلاق — مفيد بعد انقطاع SSH."
@@ -3958,7 +3958,7 @@ tips:
     p10: "اضبط تذكيرًا أو جدولة مهمة متكررة"
     p11: "اكتب / لاستعراض الأوامر، أو Ctrl+P للوحة الأوامر"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "مجاني"
   level_top_tier: "كبير"

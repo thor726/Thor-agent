@@ -957,7 +957,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ 無法載入設定：{error}"
   topup:
-    header: "💳 **Nous 餘額**"
+    header: "💳 **Thor 餘額**"
     portal_link: "在入口網站管理帳務：{url}"
     hint: "請在瀏覽器中儲值並管理帳務 — 完成後你的餘額會在此更新。"
   login:
@@ -1687,11 +1687,11 @@ slash:
   usage:
     description: "顯示 token 用量與速率限制；`reset` 兌換已保留的 Codex 限制重設"
   subscription:
-    description: "查看你的 Nous 方案，並在瀏覽器中變更"
+    description: "查看你的 Thor 方案，並在瀏覽器中變更"
   login:
-    description: "使用 Nous 帳號登入（保留你的連接器）"
+    description: "使用 Thor 帳號登入（保留你的連接器）"
   topup:
-    description: "顯示你的 Nous 餘額，並在入口網站管理帳務"
+    description: "顯示你的 Thor 餘額，並在入口網站管理帳務"
   platforms:
     description: "顯示閘道／訊息平台狀態"
   platform:
@@ -2532,7 +2532,7 @@ cli:
     delivering_leftover_steer: "⏩ 將剩餘的 /steer 作為下一輪送出：'{preview}'"
     reasoning_label: "推理"
     reasoning_more_lines: "…（還有 {count} 行 — 執行 /reasoning full 可完整顯示）"
-    billing_cta_nous: "執行 [bold]/topup[/] 儲值額度，或 [bold]/subscription[/] 變更方案。"
+    billing_cta_thor: "執行 [bold]/topup[/] 儲值額度，或 [bold]/subscription[/] 變更方案。"
     billing_cta_provider: "透過 {provider} 儲值額度"
     your_provider: "你的提供方"
     billing_cta_switch: "或使用 [bold]/model <model> --provider <provider>[/] 切換提供方。"
@@ -3751,8 +3751,8 @@ tips:
   t181: "Camofox（反偵測 Firefox）現已改為外掛：thor plugins install camofox。"
   t182: "browser_exec 在一次 Python 呼叫中執行多個瀏覽器步驟——導覽、擷取與點擊一次完成。"
   t183: "browser.dialog_policy 決定如何處理頁面的原生對話框：must_respond（代理以 browser_dialog 回應）、auto_dismiss 或 auto_accept。"
-  t184: "thor mcp 會開啟互動式選擇器，列出 Nous 核准的 MCP，按一個鍵即可安裝。"
-  t185: "thor mcp catalog 會列出隨儲存庫附帶、經 Nous 核准的 MCP 伺服器。"
+  t184: "thor mcp 會開啟互動式選擇器，列出 Thor 核准的 MCP，按一個鍵即可安裝。"
+  t185: "thor mcp catalog 會列出隨儲存庫附帶、經 Thor 核准的 MCP 伺服器。"
   t186: "thor mcp install <name> 會安裝目錄中的項目、提示你輸入憑證，並讓你選擇要啟用哪些工具。"
   t187: "MCP 伺服器在 config.yaml 中設定 — 同時支援 stdio 與 HTTP 傳輸。"
   t188: "每個伺服器可各自過濾工具：tools.include 列出允許的工具，tools.exclude 列出排除的工具。"
@@ -3779,7 +3779,7 @@ tips:
   t209: "自訂提供方：在 config.yaml 的 custom_providers 下儲存具名端點。"
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT 會注入一段絕不會寫入歷史的系統提示詞。"
   t211: "credential_pool_strategies 支援 fill_first、round_robin、least_used 與 random 輪替。"
-  t212: "thor auth add nous 或 thor auth add openai-codex 可設定以 OAuth 為基礎的提供方。"
+  t212: "thor auth add thor 或 thor auth add openai-codex 可設定以 OAuth 為基礎的提供方。"
   t213: "API 伺服器同時支援 Chat Completions 與 Responses API，並提供伺服器端狀態。"
   t214: "在設定中將 tool_preview_length: 0 可在轉圈動畫的活動列中顯示完整檔案路徑。"
   t215: "thor status --deep 會對所有元件執行更深入的診斷檢查。"
@@ -3875,7 +3875,7 @@ tips:
   t305: "thor curator rollback 會從執行前的快照還原技能 — 備份位於 skills/.curator_backups/。"
   t306: "thor auth reset <provider> [target] 會清除整個憑證池的冷卻與耗盡標記，也可依索引、id 或標籤只清除單一憑證。"
   t307: "credential_pool_strategies.<provider>: round_robin 會平均輪替金鑰，取代預設的 fill_first。"
-  t308: "針對單一工具設定 use_gateway: true，可將 web、image、tts 或 browser 經由你的 Nous 訂閱路由 — 不需額外金鑰。"
+  t308: "針對單一工具設定 use_gateway: true，可將 web、image、tts 或 browser 經由你的 Thor 訂閱路由 — 不需額外金鑰。"
   t309: "provider_routing.data_collection: deny 會在 OpenRouter 上排除會儲存資料的提供方。"
   t310: "provider_routing.require_parameters: true 只會路由到支援你請求中每個參數的提供方。"
   t311: "THOR_TUI_RESUME=1 會在啟動時自動重新連接最近的 TUI 工作階段 — SSH 斷線後特別好用。"
@@ -3958,7 +3958,7 @@ tips:
     p10: "設定提醒或排程一項定期任務"
     p11: "輸入 / 瀏覽指令，或按 Ctrl+P 開啟指令面板"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "免費"
   level_top_tier: "大"

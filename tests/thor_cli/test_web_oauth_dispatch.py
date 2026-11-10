@@ -49,10 +49,10 @@ def _make_profile_home(tmp_path, monkeypatch, profile="coder"):
 def _fake_thor_device_data():
     return {
         "device_code": "device-code",
-        "user_code": "NOUS-1234",
+        "user_code": "THOR-1234",
         "verification_uri": "https://portal.thor-agent.local/device",
         "verification_uri_complete": (
-            "https://portal.thor-agent.local/device?user_code=NOUS-1234"
+            "https://portal.thor-agent.local/device?user_code=THOR-1234"
         ),
         "expires_in": 600,
         "interval": 5,

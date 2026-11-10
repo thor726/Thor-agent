@@ -957,7 +957,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ Не вдалося завантажити конфігурацію: {error}"
   topup:
-    header: "💳 **Баланс Nous**"
+    header: "💳 **Баланс Thor**"
     portal_link: "Керуйте оплатою на порталі: {url}"
     hint: "Поповніть баланс і керуйте оплатою у браузері — після цього баланс тут оновиться."
   login:
@@ -1687,11 +1687,11 @@ slash:
   usage:
     description: "Показати використання токенів і обмеження швидкості; `reset` активує накопичене скидання ліміту Codex"
   subscription:
-    description: "Переглянути ваш тариф Nous і змінити його в браузері"
+    description: "Переглянути ваш тариф Thor і змінити його в браузері"
   login:
-    description: "Увійти з обліковим записом Nous (ваші конектори зберігаються)"
+    description: "Увійти з обліковим записом Thor (ваші конектори зберігаються)"
   topup:
-    description: "Показати ваш баланс Nous і керувати оплатою на порталі"
+    description: "Показати ваш баланс Thor і керувати оплатою на порталі"
   platforms:
     description: "Показати стан шлюзу та платформ обміну повідомленнями"
   platform:
@@ -2532,7 +2532,7 @@ cli:
     delivering_leftover_steer: "⏩ Передаємо залишок /steer як наступний хід: '{preview}'"
     reasoning_label: "Міркування"
     reasoning_more_lines: "... (ще {count} рядків — /reasoning full, щоб показати)"
-    billing_cta_nous: "Виконайте [bold]/topup[/], щоб додати кредити, або [bold]/subscription[/], щоб змінити план."
+    billing_cta_thor: "Виконайте [bold]/topup[/], щоб додати кредити, або [bold]/subscription[/], щоб змінити план."
     billing_cta_provider: "Додайте кредити через {provider}"
     your_provider: "вашого провайдера"
     billing_cta_switch: "Або змініть провайдера через [bold]/model <model> --provider <provider>[/]."
@@ -3751,8 +3751,8 @@ tips:
   t181: "Camofox (Firefox із захистом від виявлення) тепер плагін: thor plugins install camofox."
   t182: "browser_exec виконує кілька кроків у браузері за один виклик Python — перехід, вилучення й кліки разом."
   t183: "browser.dialog_policy визначає обробку нативних діалогів сторінки: must_respond (агент відповідає через browser_dialog), auto_dismiss або auto_accept."
-  t184: "thor mcp відкриває інтерактивний вибір схвалених Nous MCP-серверів, які можна встановити одним натисканням."
-  t185: "thor mcp catalog показує список схвалених Nous MCP-серверів, що постачаються з репозиторієм."
+  t184: "thor mcp відкриває інтерактивний вибір схвалених Thor MCP-серверів, які можна встановити одним натисканням."
+  t185: "thor mcp catalog показує список схвалених Thor MCP-серверів, що постачаються з репозиторієм."
   t186: "thor mcp install <name> встановлює запис із каталогу, запитує облікові дані та дозволяє вибрати, які з його інструментів увімкнути."
   t187: "MCP-сервери налаштовуються в config.yaml — підтримуються транспорти stdio та HTTP."
   t188: "Фільтрація інструментів для кожного сервера: tools.include дозволяє, а tools.exclude забороняє конкретні інструменти."
@@ -3779,7 +3779,7 @@ tips:
   t209: "Власні провайдери: зберігайте іменовані ендпоінти в config.yaml у розділі custom_providers."
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT вставляє системний промпт, який ніколи не зберігається в історії."
   t211: "credential_pool_strategies підтримує ротацію fill_first, round_robin, least_used і random."
-  t212: "thor auth add nous або thor auth add openai-codex налаштовує провайдерів на основі OAuth."
+  t212: "thor auth add thor або thor auth add openai-codex налаштовує провайдерів на основі OAuth."
   t213: "API-сервер підтримує як Chat Completions, так і Responses API зі станом на боці сервера."
   t214: "tool_preview_length: 0 у конфігурації показує повні шляхи до файлів у стрічці активності індикатора."
   t215: "thor status --deep виконує глибші діагностичні перевірки всіх компонентів."
@@ -3875,7 +3875,7 @@ tips:
   t305: "thor curator rollback відновлює навички зі знімка, зробленого перед запуском — резервні копії лежать у skills/.curator_backups/."
   t306: "thor auth reset <provider> [target] скидає паузи та позначки вичерпання для всього пулу облікових даних або для одного запису за індексом, id чи міткою."
   t307: "credential_pool_strategies.<provider>: round_robin рівномірно чергує ключі замість типового fill_first."
-  t308: "use_gateway: true для окремого інструмента спрямовує web, image, tts або browser через вашу підписку Nous — без додаткових ключів."
+  t308: "use_gateway: true для окремого інструмента спрямовує web, image, tts або browser через вашу підписку Thor — без додаткових ключів."
   t309: "provider_routing.data_collection: deny виключає провайдерів OpenRouter, які зберігають дані."
   t310: "provider_routing.require_parameters: true маршрутизує лише до провайдерів, що підтримують кожен параметр вашого запиту."
   t311: "THOR_TUI_RESUME=1 автоматично повертає вас до останнього сеансу TUI під час запуску — зручно після обриву SSH."
@@ -3958,7 +3958,7 @@ tips:
     p10: "Постав нагадування або заплануй повторюване завдання"
     p11: "Введіть /, щоб переглянути команди, або Ctrl+P для палітри"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Безкоштовно"
   level_top_tier: "Велика"

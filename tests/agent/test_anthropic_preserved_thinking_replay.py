@@ -11,7 +11,7 @@ from agent.message_sanitization import stale_thinking_reaches_wire
 from agent.model_metadata import estimate_tokens_rough
 
 ANTHROPIC = ("anthropic", "https://api.anthropic.com")
-NOUS = ("thor", "https://inference-api.thor-agent.local/v1/messages")
+THOR_PORTAL = ("thor", "https://inference-api.thor-agent.local/v1/messages")
 OPENROUTER = ("openrouter", "https://openrouter.ai/api/v1")
 KIMI = ("anthropic", "https://api.kimi.com/coding")
 
@@ -201,7 +201,7 @@ _PRESERVED = [
 # case -> (model, route, number of growing thinking blocks that must reach the wire)
 _ACCOUNTING_CASES = {
     **{f"route:{m}": (m, ANTHROPIC, int(p)) for m, p in _PRESERVED},
-    "route:thor": ("claude-opus-4-6", NOUS, 1),
+    "route:thor": ("claude-opus-4-6", THOR_PORTAL, 1),
     "route:openrouter": ("claude-opus-4-6", OPENROUTER, 0),
     "producer": ("claude-opus-4-6", ANTHROPIC, 2),
     "context_selection_clone": ("claude-opus-4-6", ANTHROPIC, 1),

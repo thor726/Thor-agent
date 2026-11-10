@@ -1079,7 +1079,7 @@ class TestDebugSlashCommand:
 
 
     def test_word_parsing_is_case_insensitive(self):
-        c = self._captured("/debug NOUS")
+        c = self._captured("/debug THOR")
         assert c["thor"] is True
 
 

@@ -34,7 +34,7 @@ jobs:
     env:
       HAS_OPENROUTER: ${{ secrets.LIVE_OPENROUTER_API_KEY != '' }}
       HAS_ANTHROPIC: ${{ secrets.LIVE_ANTHROPIC_API_KEY != '' }}
-      HAS_NOUS: ${{ secrets.LIVE_THOR_PORTAL_API_KEY != '' }}
+      HAS_THOR: ${{ secrets.LIVE_THOR_PORTAL_API_KEY != '' }}
       HAS_OPENAI: ${{ secrets.LIVE_OPENAI_API_KEY != '' }}
       HAS_GEMINI: ${{ secrets.LIVE_GEMINI_API_KEY != '' }}
       HAS_XAI: ${{ secrets.LIVE_XAI_API_KEY != '' }}
@@ -44,7 +44,7 @@ jobs:
         id: gate
         run: |
           n=0
-          for v in HAS_OPENROUTER HAS_ANTHROPIC HAS_NOUS HAS_OPENAI HAS_GEMINI HAS_XAI; do
+          for v in HAS_OPENROUTER HAS_ANTHROPIC HAS_THOR HAS_OPENAI HAS_GEMINI HAS_XAI; do
             if [ "${!v}" = "true" ]; then n=$((n+1)); echo "configured: ${v#HAS_}"; fi
           done
           echo "configured=$n" >> "$GITHUB_OUTPUT"

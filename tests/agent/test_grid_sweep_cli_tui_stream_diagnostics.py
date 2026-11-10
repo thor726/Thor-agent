@@ -1,4 +1,4 @@
-"""Code-flow grid sweep (NOUS-368, wave 2): pre-existing automatic diagnostics on the CLI/TUI/stream
+"""Code-flow grid sweep (wave 2): pre-existing automatic diagnostics on the CLI/TUI/stream
 rails that bypassed the warning boundary. Each cell: absent/false = legacy bytes, true = only the
 diagnostic disappears; source logs, model-facing bookkeeping and requested results are untouched."""
 from __future__ import annotations

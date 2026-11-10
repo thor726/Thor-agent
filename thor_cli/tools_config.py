@@ -233,7 +233,7 @@ def _row(name: str, badge: str = "", tag: str = "", env_vars: list = (), **marke
     return row
 
 
-_NOUS = {"requires_thor_auth": True}
+_PORTAL = {"requires_thor_auth": True}
 _OPENAI_VOICE_KEY = _key("VOICE_TOOLS_OPENAI_KEY", "OpenAI API key", "https://platform.openai.com/api-keys")
 _ELEVENLABS_KEY = _key("ELEVENLABS_API_KEY", "ElevenLabs API key", "https://elevenlabs.io/app/settings/api-keys")
 _DEEPINFRA_KEY = _key("DEEPINFRA_API_KEY", "DeepInfra API key", "https://deepinfra.com/dash/api_keys")
@@ -244,7 +244,7 @@ TOOL_CATEGORIES = {
         "providers": [
             _row("Microsoft Edge TTS", "★ recommended · free", "Good quality, no API key needed", tts_provider="edge"),
             _row("Thor Subscription", "subscription", "Managed OpenAI TTS billed to your subscription", tts_provider="openai",
-                 **_NOUS, managed_thor_feature="tts", override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
+                 **_PORTAL, managed_thor_feature="tts", override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
             _row("OpenAI TTS", "paid", "High quality voices", [_OPENAI_VOICE_KEY], tts_provider="openai"),
             _row("xAI TTS", tag="Grok voices — uses xAI Grok OAuth or XAI_API_KEY", tts_provider="xai", post_setup="xai_grok"),
             _row("ElevenLabs", "paid", "Most natural voices", [_ELEVENLABS_KEY], tts_provider="elevenlabs"),
@@ -267,7 +267,7 @@ TOOL_CATEGORIES = {
             _row("Local Whisper", "★ recommended · free", "faster-whisper on-device, no API key", stt_provider="local",
                  post_setup="faster_whisper"),
             _row("Thor Subscription", "subscription", "Managed OpenAI transcription billed to your subscription",
-                 stt_provider="openai", **_NOUS, managed_thor_feature="stt",
+                 stt_provider="openai", **_PORTAL, managed_thor_feature="stt",
                  override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
             _row("OpenAI", "paid", "whisper-1, gpt-4o-transcribe, gpt-transcribe", [_OPENAI_VOICE_KEY], stt_provider="openai"),
             _row("Groq", "free tier", "whisper-large-v3-turbo, whisper-large-v3 — very fast",
@@ -288,7 +288,7 @@ TOOL_CATEGORIES = {
         # non-provider firecrawl setup-flow rows live here: managed via Thor subscription, and self-hosted.
         "providers": [
             {"name": "Thor Subscription", "badge": "subscription", "tag": "Managed web search and extract billed to your subscription",
-             "web_backend": "firecrawl", "env_vars": [], **_NOUS, "managed_thor_feature": "web",
+             "web_backend": "firecrawl", "env_vars": [], **_PORTAL, "managed_thor_feature": "web",
              "override_env_vars": ["FIRECRAWL_API_KEY", "FIRECRAWL_API_URL", "PERPLEXITY_API_KEY"]},
             {"name": "Firecrawl Self-Hosted", "badge": "free · self-hosted", "tag": "Run your own Firecrawl instance (Docker)",
              "web_backend": "firecrawl",
@@ -303,7 +303,7 @@ TOOL_CATEGORIES = {
         # picks the gateway at run time (tools/image_generation_managed.py).
         "providers": [
             _row("Thor Subscription", "subscription",
-                 "Managed image generation (FAL, Krea 3 and Krea 2, Thor Portal models) billed to your subscription", **_NOUS,
+                 "Managed image generation (FAL, Krea 3 and Krea 2, Thor Portal models) billed to your subscription", **_PORTAL,
                  managed_thor_feature="image_gen", override_env_vars=["FAL_KEY"], imagegen_backend="thor"),
         ],
     },
@@ -313,7 +313,7 @@ TOOL_CATEGORIES = {
         # are injected at runtime by ``_plugin_video_gen_providers()`` in ``_visible_providers``. Picking this row
         # sets video_gen.provider = "fal" + use_gateway so the FAL plugin routes through the managed queue gateway.
         "providers": [
-            _row("Thor Subscription", "subscription", "Managed FAL video generation billed to your subscription", **_NOUS,
+            _row("Thor Subscription", "subscription", "Managed FAL video generation billed to your subscription", **_PORTAL,
                  managed_thor_feature="video_gen", override_env_vars=["FAL_KEY"], video_gen_plugin_name="fal"),
         ],
     },
@@ -348,7 +348,7 @@ TOOL_CATEGORIES = {
             # Browser Use hosts its own Chromium, so the local-Chromium install and readiness gate must not
             # apply (with "chromium" this row read "needs setup" forever on machines without a local build).
             _row("Thor Subscription (Browser Use cloud)", "subscription", "Managed Browser Use billed to your subscription",
-                 browser_provider="browser-use", **_NOUS, managed_thor_feature="browser",
+                 browser_provider="browser-use", **_PORTAL, managed_thor_feature="browser",
                  override_env_vars=["BROWSER_USE_API_KEY"], post_setup="browserbase"),
         ],
     },

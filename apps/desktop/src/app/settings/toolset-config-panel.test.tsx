@@ -753,8 +753,8 @@ describe('ToolsetConfigPanel', () => {
       startOAuthLogin.mockResolvedValue({
         flow: 'device_code',
         session_id: 'sess-1',
-        user_code: 'NOUS-1234',
-        verification_url: 'https://portal.thor-agent.local/device?user_code=NOUS-1234',
+        user_code: 'THOR-1234',
+        verification_url: 'https://portal.thor-agent.local/device?user_code=THOR-1234',
         poll_interval: 5,
         expires_in: 600
       })
@@ -782,7 +782,7 @@ describe('ToolsetConfigPanel', () => {
 
         await waitFor(() => expect(startOAuthLogin).toHaveBeenCalledWith('thor'))
         expect(openSpy).toHaveBeenCalledWith(
-          'https://portal.thor-agent.local/device?user_code=NOUS-1234',
+          'https://portal.thor-agent.local/device?user_code=THOR-1234',
           '_blank',
           'noopener,noreferrer'
         )

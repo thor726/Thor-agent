@@ -999,7 +999,7 @@ gateway:
     config_load_failed: "❌ Could not load config: {error}"
 
   topup:
-    header: "💳 **Nous balance**"
+    header: "💳 **Thor balance**"
     portal_link: "Manage billing on the portal: {url}"
     hint: "Top up and manage billing in the browser — your balance updates here after."
 
@@ -1758,11 +1758,11 @@ slash:
   usage:
     description: "Show token usage and rate limits; `reset` redeems a banked Codex limit reset"
   subscription:
-    description: "View your Nous plan and change it in the browser"
+    description: "View your Thor plan and change it in the browser"
   login:
-    description: "Sign in with a Nous account (keeps your connectors)"
+    description: "Sign in with a Thor account (keeps your connectors)"
   topup:
-    description: "Show your Nous balance and manage billing on the portal"
+    description: "Show your Thor balance and manage billing on the portal"
   platforms:
     description: "Show gateway/messaging platform status"
   platform:
@@ -2632,7 +2632,7 @@ cli:
     delivering_leftover_steer: "⏩ Delivering leftover /steer as next turn: '{preview}'"
     reasoning_label: "Reasoning"
     reasoning_more_lines: "... ({count} more lines — /reasoning full to show)"
-    billing_cta_nous: "Run [bold]/topup[/] to add credits, or [bold]/subscription[/] to change plan."
+    billing_cta_thor: "Run [bold]/topup[/] to add credits, or [bold]/subscription[/] to change plan."
     billing_cta_provider: "Add credits with {provider}"
     your_provider: "your provider"
     billing_cta_switch: "Or switch providers with [bold]/model <model> --provider <provider>[/]."
@@ -3865,8 +3865,8 @@ tips:
   t181: "Camofox (anti-detection Firefox) is a plugin now: thor plugins install camofox."
   t182: "browser_exec runs several browser steps in one Python call — navigate, extract and click together."
   t183: "browser.dialog_policy sets how native page dialogs are handled: must_respond (the agent answers with browser_dialog), auto_dismiss or auto_accept."
-  t184: "thor mcp opens an interactive picker of Nous-approved MCPs you can install in one keystroke."
-  t185: "thor mcp catalog lists Nous-approved MCP servers shipped with the repo."
+  t184: "thor mcp opens an interactive picker of Thor-approved MCPs you can install in one keystroke."
+  t185: "thor mcp catalog lists Thor-approved MCP servers shipped with the repo."
   t186: "thor mcp install <name> installs a catalog entry, prompts for credentials, and lets you pick which of its tools to enable."
   t187: "MCP servers are configured in config.yaml — both stdio and HTTP transports supported."
   t188: "Per-server tool filtering: tools.include whitelists and tools.exclude blacklists specific tools."
@@ -3893,7 +3893,7 @@ tips:
   t209: "Custom providers: save named endpoints in config.yaml under custom_providers."
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT injects a system prompt that's never persisted to history."
   t211: "credential_pool_strategies supports fill_first, round_robin, least_used, and random rotation."
-  t212: "thor auth add nous or thor auth add openai-codex sets up OAuth-based providers."
+  t212: "thor auth add thor or thor auth add openai-codex sets up OAuth-based providers."
   t213: "The API server supports both Chat Completions and Responses API with server-side state."
   t214: "tool_preview_length: 0 in config shows full file paths in the spinner's activity feed."
   t215: "thor status --deep runs deeper diagnostic checks across all components."
@@ -3989,7 +3989,7 @@ tips:
   t305: "thor curator rollback restores skills from a pre-run snapshot — backups live under skills/.curator_backups/."
   t306: "thor auth reset <provider> [target] clears cooldowns and exhaustion flags on a whole credential pool, or on one credential by index, id, or label."
   t307: "credential_pool_strategies.<provider>: round_robin cycles keys evenly instead of the fill_first default."
-  t308: "use_gateway: true per-tool routes web, image, tts, or browser through your Nous subscription — no extra keys."
+  t308: "use_gateway: true per-tool routes web, image, tts, or browser through your Thor subscription — no extra keys."
   t309: "provider_routing.data_collection: deny excludes data-storing providers on OpenRouter."
   t310: "provider_routing.require_parameters: true only routes to providers that support every param in your request."
   t311: "THOR_TUI_RESUME=1 auto-re-attaches to the most recent TUI session on launch — handy after SSH drops."
@@ -4073,7 +4073,7 @@ tips:
     p10: "Set a reminder or schedule a recurring task"
     p11: "Type / to browse commands, or Ctrl+P for the palette"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Free"
   level_top_tier: "Large"

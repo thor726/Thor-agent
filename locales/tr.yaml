@@ -957,7 +957,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ Yapılandırma yüklenemedi: {error}"
   topup:
-    header: "💳 **Nous bakiyesi**"
+    header: "💳 **Thor bakiyesi**"
     portal_link: "Faturalandırmayı portalda yönetin: {url}"
     hint: "Bakiye yükleme ve faturalandırma işlemlerini tarayıcıda yapın — bakiyeniz ardından burada güncellenir."
   login:
@@ -1687,11 +1687,11 @@ slash:
   usage:
     description: "Token kullanımını ve hız sınırlarını göster; `reset` biriktirilmiş Codex sınır sıfırlamasını kullanır"
   subscription:
-    description: "Nous planınızı görüntüleyin ve tarayıcıda değiştirin"
+    description: "Thor planınızı görüntüleyin ve tarayıcıda değiştirin"
   login:
-    description: "Nous hesabıyla giriş yap (bağlayıcılarınız korunur)"
+    description: "Thor hesabıyla giriş yap (bağlayıcılarınız korunur)"
   topup:
-    description: "Nous bakiyenizi göster ve faturalandırmayı portalda yönet"
+    description: "Thor bakiyenizi göster ve faturalandırmayı portalda yönet"
   platforms:
     description: "Gateway/mesajlaşma platformu durumunu göster"
   platform:
@@ -2532,7 +2532,7 @@ cli:
     delivering_leftover_steer: "⏩ Kalan /steer sonraki tur olarak iletiliyor: '{preview}'"
     reasoning_label: "Akıl yürütme"
     reasoning_more_lines: "... ({count} satır daha — göstermek için /reasoning full)"
-    billing_cta_nous: "Kredi eklemek için [bold]/topup[/], planı değiştirmek için [bold]/subscription[/] komutunu çalıştırın."
+    billing_cta_thor: "Kredi eklemek için [bold]/topup[/], planı değiştirmek için [bold]/subscription[/] komutunu çalıştırın."
     billing_cta_provider: "{provider} ile kredi ekleyin"
     your_provider: "sağlayıcınız"
     billing_cta_switch: "Ya da [bold]/model <model> --provider <provider>[/] ile sağlayıcı değiştirin."
@@ -3751,8 +3751,8 @@ tips:
   t181: "Camofox (tespit önleyici Firefox) artık bir eklenti: thor plugins install camofox."
   t182: "browser_exec birden çok tarayıcı adımını tek bir Python çağrısında çalıştırır — gezinme, çıkarma ve tıklama birlikte."
   t183: "browser.dialog_policy, sayfanın yerel iletişim kutularının nasıl ele alınacağını belirler: must_respond (ajan browser_dialog ile yanıtlar), auto_dismiss veya auto_accept."
-  t184: "thor mcp, Nous onaylı MCP'leri tek tuşla kurabileceğiniz etkileşimli bir seçici açar."
-  t185: "thor mcp catalog, depoyla birlikte gelen Nous onaylı MCP sunucularını listeler."
+  t184: "thor mcp, Thor onaylı MCP'leri tek tuşla kurabileceğiniz etkileşimli bir seçici açar."
+  t185: "thor mcp catalog, depoyla birlikte gelen Thor onaylı MCP sunucularını listeler."
   t186: "thor mcp install <name>, bir katalog girdisini kurar, kimlik bilgilerini sorar ve hangi araçlarını etkinleştireceğinizi seçmenizi sağlar."
   t187: "MCP sunucuları config.yaml içinde yapılandırılır — hem stdio hem HTTP aktarımları desteklenir."
   t188: "Sunucu başına araç filtreleme: tools.include belirli araçları beyaz listeye, tools.exclude kara listeye alır."
@@ -3779,7 +3779,7 @@ tips:
   t209: "Özel sağlayıcılar: adlandırılmış uç noktaları config.yaml içinde custom_providers altına kaydedin."
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT, geçmişe hiç kaydedilmeyen bir sistem istemi enjekte eder."
   t211: "credential_pool_strategies; fill_first, round_robin, least_used ve random rotasyonunu destekler."
-  t212: "thor auth add nous veya thor auth add openai-codex, OAuth tabanlı sağlayıcıları kurar."
+  t212: "thor auth add thor veya thor auth add openai-codex, OAuth tabanlı sağlayıcıları kurar."
   t213: "API sunucusu, sunucu tarafı durumla hem Chat Completions hem Responses API'sini destekler."
   t214: "Yapılandırmada tool_preview_length: 0, dönen simgenin etkinlik akışında tam dosya yollarını gösterir."
   t215: "thor status --deep, tüm bileşenlerde daha derin tanılama denetimleri çalıştırır."
@@ -3875,7 +3875,7 @@ tips:
   t305: "thor curator rollback, skill'leri çalıştırma öncesi anlık görüntüden geri yükler — yedekler skills/.curator_backups/ altında durur."
   t306: "thor auth reset <provider> [target], bekleme sürelerini ve tükenme işaretlerini tüm kimlik bilgisi havuzunda ya da dizin, id veya etikete göre tek bir kimlik bilgisinde temizler."
   t307: "credential_pool_strategies.<provider>: round_robin, varsayılan fill_first yerine anahtarları eşit biçimde sırayla kullanır."
-  t308: "Araç başına use_gateway: true, web, image, tts veya browser'ı Nous aboneliğiniz üzerinden yönlendirir — ek anahtar gerekmez."
+  t308: "Araç başına use_gateway: true, web, image, tts veya browser'ı Thor aboneliğiniz üzerinden yönlendirir — ek anahtar gerekmez."
   t309: "provider_routing.data_collection: deny, OpenRouter'da veri saklayan sağlayıcıları dışarıda bırakır."
   t310: "provider_routing.require_parameters: true, yalnızca isteğinizdeki her parametreyi destekleyen sağlayıcılara yönlendirir."
   t311: "THOR_TUI_RESUME=1, başlatıldığında en son TUI oturumuna otomatik olarak yeniden bağlanır — SSH kopmalarından sonra işe yarar."
@@ -3958,7 +3958,7 @@ tips:
     p10: "Bir hatırlatıcı kur veya yinelenen bir görev zamanla"
     p11: "Komutlara göz atmak için / yazın, palet için Ctrl+P"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Ücretsiz"
   level_top_tier: "Büyük"

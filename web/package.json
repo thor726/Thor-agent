@@ -18,11 +18,11 @@
     "check": "pnpm run typecheck && pnpm run test && pnpm run lint"
   },
   "dependencies": {
-    "@thor/shared": "workspace:*",
-    "@thor-research/ui": "0.19.1",
+    "@nous-research/ui": "0.19.1",
     "@observablehq/plot": "0.6.17",
     "@react-three/fiber": "9.8.1",
     "@tailwindcss/vite": "4.3.3",
+    "@thor/shared": "workspace:*",
     "@xterm/addon-fit": "0.11.0",
     "@xterm/addon-unicode11": "0.9.0",
     "@xterm/addon-web-links": "0.12.0",

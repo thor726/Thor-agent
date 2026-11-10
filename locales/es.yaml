@@ -957,7 +957,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ No se pudo cargar la configuración: {error}"
   topup:
-    header: "💳 **Saldo de Nous**"
+    header: "💳 **Saldo de Thor**"
     portal_link: "Gestiona la facturación en el portal: {url}"
     hint: "Recarga y gestiona la facturación en el navegador — tu saldo se actualizará aquí después."
   login:
@@ -1687,11 +1687,11 @@ slash:
   usage:
     description: "Mostrar el uso de tokens y los límites de tasa; `reset` canjea un reinicio de límite de Codex acumulado"
   subscription:
-    description: "Ver tu plan de Nous y cambiarlo en el navegador"
+    description: "Ver tu plan de Thor y cambiarlo en el navegador"
   login:
-    description: "Iniciar sesión con una cuenta de Nous (conserva tus conectores)"
+    description: "Iniciar sesión con una cuenta de Thor (conserva tus conectores)"
   topup:
-    description: "Mostrar tu saldo de Nous y gestionar la facturación en el portal"
+    description: "Mostrar tu saldo de Thor y gestionar la facturación en el portal"
   platforms:
     description: "Mostrar el estado de las plataformas de mensajería/gateway"
   platform:
@@ -2532,7 +2532,7 @@ cli:
     delivering_leftover_steer: "⏩ Entregando el /steer pendiente como siguiente turno: '{preview}'"
     reasoning_label: "Razonamiento"
     reasoning_more_lines: "... ({count} líneas más — /reasoning full para verlas)"
-    billing_cta_nous: "Ejecuta [bold]/topup[/] para añadir créditos o [bold]/subscription[/] para cambiar de plan."
+    billing_cta_thor: "Ejecuta [bold]/topup[/] para añadir créditos o [bold]/subscription[/] para cambiar de plan."
     billing_cta_provider: "Añade créditos con {provider}"
     your_provider: "tu proveedor"
     billing_cta_switch: "O cambia de proveedor con [bold]/model <model> --provider <provider>[/]."
@@ -3751,8 +3751,8 @@ tips:
   t181: "Camofox (Firefox antidetección) ahora es un plugin: thor plugins install camofox."
   t182: "browser_exec ejecuta varios pasos del navegador en una sola llamada de Python: navegar, extraer y hacer clic a la vez."
   t183: "browser.dialog_policy define cómo se gestionan los diálogos nativos de la página: must_respond (el agente responde con browser_dialog), auto_dismiss o auto_accept."
-  t184: "thor mcp abre un selector interactivo de MCPs aprobados por Nous que puedes instalar con una sola tecla."
-  t185: "thor mcp catalog lista los servidores MCP aprobados por Nous que se incluyen con el repositorio."
+  t184: "thor mcp abre un selector interactivo de MCPs aprobados por Thor que puedes instalar con una sola tecla."
+  t185: "thor mcp catalog lista los servidores MCP aprobados por Thor que se incluyen con el repositorio."
   t186: "thor mcp install <name> instala una entrada del catálogo, pide las credenciales y te deja elegir cuáles de sus herramientas activar."
   t187: "Los servidores MCP se configuran en config.yaml: se admiten los transportes stdio y HTTP."
   t188: "Filtrado de herramientas por servidor: tools.include permite y tools.exclude bloquea herramientas concretas."
@@ -3779,7 +3779,7 @@ tips:
   t209: "Proveedores personalizados: guarda endpoints con nombre en config.yaml bajo custom_providers."
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT inyecta un prompt del sistema que nunca se guarda en el historial."
   t211: "credential_pool_strategies admite las rotaciones fill_first, round_robin, least_used y random."
-  t212: "thor auth add nous o thor auth add openai-codex configuran proveedores basados en OAuth."
+  t212: "thor auth add thor o thor auth add openai-codex configuran proveedores basados en OAuth."
   t213: "El servidor de API admite tanto Chat Completions como la Responses API con estado del lado del servidor."
   t214: "tool_preview_length: 0 en la configuración muestra las rutas de archivo completas en el feed de actividad del spinner."
   t215: "thor status --deep ejecuta comprobaciones de diagnóstico más profundas en todos los componentes."
@@ -3875,7 +3875,7 @@ tips:
   t305: "thor curator rollback restaura las skills desde una instantánea previa a la ejecución — los respaldos viven en skills/.curator_backups/."
   t306: "thor auth reset <provider> [target] limpia los enfriamientos y las marcas de agotamiento de todo un pool de credenciales, o de una sola credencial por índice, id o etiqueta."
   t307: "credential_pool_strategies.<provider>: round_robin rota las claves de forma equitativa en lugar del fill_first predeterminado."
-  t308: "use_gateway: true por herramienta enruta web, image, tts o browser a través de tu suscripción de Nous — sin claves adicionales."
+  t308: "use_gateway: true por herramienta enruta web, image, tts o browser a través de tu suscripción de Thor — sin claves adicionales."
   t309: "provider_routing.data_collection: deny excluye a los proveedores que almacenan datos en OpenRouter."
   t310: "provider_routing.require_parameters: true solo enruta a proveedores que admiten todos los parámetros de tu solicitud."
   t311: "THOR_TUI_RESUME=1 vuelve a conectar automáticamente con la sesión TUI más reciente al iniciar — muy útil cuando se cae la conexión SSH."
@@ -3958,7 +3958,7 @@ tips:
     p10: "Crea un recordatorio o programa una tarea recurrente"
     p11: "Escribe / para explorar los comandos, o Ctrl+P para la paleta"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (Thor subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Gratis"
   level_top_tier: "Grande"

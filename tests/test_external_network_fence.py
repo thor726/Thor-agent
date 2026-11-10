@@ -22,7 +22,7 @@ def test_first_connector_action_in_a_test_home_mints_no_portal_guest():
 
 
 @pytest.mark.parametrize("host", [
-    "portal.thor-agent.local", "inference-api.thor-agent.local", b"WELCOME-API.NOUSRESEARCH.COM.",
+    "portal.thor-agent.local", "inference-api.thor-agent.local", b"WELCOME-API.EXTERNAL-VENDOR.COM.",
     "telemetry.staging-thor-agent.local", "openrouter.ai", "models.dev", "raw.githubusercontent.com",
     "example.com", b"pypi.org",
 ])
