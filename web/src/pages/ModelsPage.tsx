@@ -30,12 +30,12 @@ import {
   shouldCloseOuterModalOnEscape,
 } from "@/lib/dashboard-modal-shell";
 import { compactNumber } from "@thor/shared";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Stats } from "@nous-research/ui/ui/components/stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Switch } from "@nous-research/ui/ui/components/switch";
+import { Button } from "@thor-research/ui/ui/components/button";
+import { Spinner } from "@thor-research/ui/ui/components/spinner";
+import { Stats } from "@thor-research/ui/ui/components/stats";
+import { Card, CardContent, CardHeader, CardTitle } from "@thor-research/ui/ui/components/card";
+import { Badge } from "@thor-research/ui/ui/components/badge";
+import { Switch } from "@thor-research/ui/ui/components/switch";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useModalBehavior } from "@/hooks/useModalBehavior";
 import { usePageHeader } from "@/contexts/usePageHeader";
@@ -965,7 +965,7 @@ function ModelSettingsPanel({
   const [pendingReloadModel, setPendingReloadModel] = useState<string | null>(
     null,
   );
-  // Nous window plans, Large model: the backend's switch warning (never a confirm).
+  // Thor window plans, Large model: the backend's switch warning (never a confirm).
   const [switchNotice, setSwitchNotice] = useState<string | null>(null);
 
   const mainProv = aux?.main.provider ?? "";

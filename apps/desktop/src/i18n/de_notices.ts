@@ -39,7 +39,7 @@ export const deNotices = {
     action: 'Während der Arbeit wach halten'
   },
   billingBlock: {
-    titleNous: 'Keine Nous-Credits mehr',
+    titleThor: 'Keine Thor-Credits mehr',
     titleProvider: provider => `Keine Credits mehr — ${provider}`,
     fallbackMessage: 'Auf Ihrem Konto sind keine Credits mehr übrig. Fügen Sie Credits hinzu, um fortzufahren.',
     openBilling: 'Billing öffnen',

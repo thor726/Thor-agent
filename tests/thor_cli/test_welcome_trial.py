@@ -40,7 +40,7 @@ BLOCKED = {
     "the CLI": lambda mp, home: None,
     "an SSH backend": lambda mp, home: (mp.setenv("THOR_DESKTOP", "1"), mp.delenv("THOR_DASHBOARD_SESSION_TOKEN", raising=False)),
     "guests switched off": lambda mp, home: (as_local_desktop_backend(mp),
-                                              (home / "config.yaml").write_text("nous:\n  guest: false\n", encoding="utf-8")),
+                                              (home / "config.yaml").write_text("thor:\n  guest: false\n", encoding="utf-8")),
     "a provider key": lambda mp, home: (as_local_desktop_backend(mp), mp.setenv("OPENROUTER_API_KEY", "sk-or-test")),
     "a used machine": lambda mp, home: (as_local_desktop_backend(mp), install_state.mark_machine_used()),
 }
@@ -63,8 +63,8 @@ def test_a_connector_guest_neither_claims_nor_carries_inference(portal, monkeypa
 
     assert welcome_trial.claim_desktop_free_tier() is None
     assert not anon_auth.free_inference_active()
-    from thor_cli.auth import resolve_nous_access_token
-    resolve_nous_access_token()
+    from thor_cli.auth import resolve_thor_access_token
+    resolve_thor_access_token()
     assert [r["body"]["purpose"] for r in portal.token_requests] == ["connectors"]
 
 
@@ -99,7 +99,7 @@ def test_a_connector_guest_adopted_from_the_shared_store_carries_no_trial(portal
     as_local_desktop_backend(monkeypatch)
     anon_auth.ensure_portal_identity(explicit=True)  # connector mint: welcome_claim False, mirrored
     store = _load_auth_store()
-    store["providers"].pop("nous")  # a profile whose own identity differs adopts the shared one
+    store["providers"].pop("thor")  # a profile whose own identity differs adopts the shared one
     _save_auth_store(store)
 
     adopted = anon_auth.ensure_portal_identity(explicit=True)
@@ -141,22 +141,22 @@ def test_a_lost_trial_is_never_claimed_again_after_a_relaunch(portal, monkeypatc
 
 
 
-def test_a_leftover_guest_pool_row_is_not_reported_as_a_nous_login(portal, monkeypatch):
-    from thor_cli.auth import _load_auth_store, _save_auth_store, resolve_nous_runtime_credentials
-    from thor_cli.auth_nous import get_nous_auth_status_local
+def test_a_leftover_guest_pool_row_is_not_reported_as_a_thor_login(portal, monkeypatch):
+    from thor_cli.auth import _load_auth_store, _save_auth_store, resolve_thor_runtime_credentials
+    from thor_cli.auth_thor import get_thor_auth_status_local
 
     claimed_trial(monkeypatch)
-    resolve_nous_runtime_credentials()  # the trial ran, so the pool holds the guest's exchanged token
+    resolve_thor_runtime_credentials()  # the trial ran, so the pool holds the guest's exchanged token
     store = _load_auth_store()
-    store["providers"].pop("nous")  # the claim is lost; only the pool row is left
+    store["providers"].pop("thor")  # the claim is lost; only the pool row is left
     _save_auth_store(store)
 
-    # Provider setup would otherwise tag Nous Portal "Connected" for a credential that runs nothing.
-    assert get_nous_auth_status_local()["logged_in"] is False
+    # Provider setup would otherwise tag Thor Portal "Connected" for a credential that runs nothing.
+    assert get_thor_auth_status_local()["logged_in"] is False
 
 
 @pytest.mark.parametrize("desktop", [True, False], ids=["local_desktop_backend", "elsewhere"])
-def test_a_connector_guest_pinned_to_nous_gets_no_inference_token(portal, monkeypatch, desktop):
+def test_a_connector_guest_pinned_to_thor_gets_no_inference_token(portal, monkeypatch, desktop):
     from thor_cli.auth_constants import AuthError
     from thor_cli.runtime_provider import resolve_runtime_provider
     from thor_constants import get_thor_home
@@ -164,10 +164,10 @@ def test_a_connector_guest_pinned_to_nous_gets_no_inference_token(portal, monkey
     if desktop:
         as_local_desktop_backend(monkeypatch)
     anon_auth.ensure_portal_identity(explicit=True)  # a connector action's guest, never claimed
-    (get_thor_home() / "config.yaml").write_text("model:\n  provider: nous\n  default: nous/welcome\n",
+    (get_thor_home() / "config.yaml").write_text("model:\n  provider: thor\n  default: thor/welcome\n",
                                                    encoding="utf-8")
     with contextlib.suppress(AuthError):
-        resolve_runtime_provider(requested="nous")
+        resolve_runtime_provider(requested="thor")
 
     assert [r["body"].get("purpose") for r in portal.token_requests if r["body"].get("purpose") != "connectors"] == []
 
@@ -230,7 +230,7 @@ def test_a_missed_first_launch_stays_due_and_keeps_the_trial(portal, monkeypatch
     assert should_run() is True
     assert welcome_trial.claim_blocker() is None
     assert welcome_trial.claim_desktop_free_tier() is not None
-    assert welcome_trial.claim_blocker() == "a Nous identity exists"
+    assert welcome_trial.claim_blocker() == "a Thor identity exists"
 
 
 def test_a_claim_cut_off_before_its_marker_write_never_claims_twice(portal, monkeypatch):
@@ -256,12 +256,12 @@ def test_two_installs_claiming_at_once_mint_one_trial(portal, monkeypatch, tmp_p
     their auth locks never meet), one OS user, one marker. The canary claims while stable mints."""
     import threading
 
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
     from thor_constants import get_thor_home, reset_thor_home_override, set_thor_home_override
 
     as_local_desktop_backend(monkeypatch)
     _relaunch()                                          # the trial is reserved for this OS user
-    monkeypatch.setattr(auth_nous, "_nous_shared_auth_dir", lambda: get_thor_home() / "shared-nous")
+    monkeypatch.setattr(auth_thor, "_thor_shared_auth_dir", lambda: get_thor_home() / "shared-thor")
     canary_root = tmp_path / "thor-canary"
     canary_root.mkdir()
     canary: dict = {}

@@ -283,7 +283,7 @@ class IRCAdapter(BasePlatformAdapter):
             self._registration_event.set()
             if params:
                 self._current_nick = params[0]  # server may confirm our nick
-        elif command == "433":  # ERR_NICKNAMEINUSE — retry: thor_, thor_1, hermes_2...
+        elif command == "433":  # ERR_NICKNAMEINUSE — retry: thor_, thor_1, thor_2...
             if suffix_match := re.search(r"_(\d+)$", self._current_nick):
                 self._current_nick = f"{self.nickname.rstrip('_0123456789')}_{int(suffix_match.group(1)) + 1}"
             else:
@@ -591,7 +591,7 @@ def register(ctx):
     ctx.register_platform(
         name="irc",
         dashboard_description="Relay messages between an IRC channel (or DMs) and Thor.",
-        docs_url="https://thor-agent.nousresearch.com/docs/user-guide/messaging/irc",
+        docs_url="https://thor-agent.thor-agent.local/docs/user-guide/messaging/irc",
         label="IRC",
         adapter_factory=IRCAdapter,
         check_fn=check_requirements,

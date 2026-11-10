@@ -1,6 +1,6 @@
 """The plane credential (design §4.4 step 2, D26, D31, D32).
 
-Cloud: the Nous access token from the profile's ``auth.json`` (``resolve_nous_access_token``).
+Cloud: the Thor access token from the profile's ``auth.json`` (``resolve_thor_access_token``).
 On-prem: an IdP workload token from the OAuth2 client-credentials grant, configured by
 ``GATEWAY_RELAY_IDP_*`` values in ``.env``. Never from config.yaml (the config is what this token
 fetches) and never from a secret source: :data:`PLANE_CREDENTIAL_ENV_NAMES` lists every env name
@@ -27,7 +27,7 @@ PLANE_CREDENTIAL_ENV_NAMES = frozenset({
     # on-prem workload identity
     *(IDP_ENV_PREFIX + k.upper() for k in _IDP_KEYS),
     # Cloud: where auth.json lives and where its refresh token is sent
-    "THOR_SHARED_AUTH_DIR", "THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL",
+    "THOR_SHARED_AUTH_DIR", "THOR_PORTAL_BASE_URL", "THOR_PORTAL_BASE_URL",
 })
 
 _HTTP_TIMEOUT_S = 15.0
@@ -51,31 +51,31 @@ def _idp_env() -> dict[str, str]:
 
 
 def credential_kind() -> str:
-    return "idp" if _idp_env()["token_url"] else "nous"
+    return "idp" if _idp_env()["token_url"] else "thor"
 
 
 def plane_token(home: Path) -> str:
     """A fresh bearer for ``home``'s requests (re-resolved per request, contract §10.2)."""
-    return _idp_token() if credential_kind() == "idp" else _nous_token(home)
+    return _idp_token() if credential_kind() == "idp" else _thor_token(home)
 
 
-def _nous_token(home: Path) -> str:
+def _thor_token(home: Path) -> str:
     from thor_constants import reset_thor_home_override, set_thor_home_override
 
     try:
-        from thor_cli.auth import resolve_nous_access_token
+        from thor_cli.auth import resolve_thor_access_token
     except Exception as exc:
-        raise PlaneCredentialError(f"cannot load the Nous auth module: {exc}", retryable=False) from exc
+        raise PlaneCredentialError(f"cannot load the Thor auth module: {exc}", retryable=False) from exc
     token = set_thor_home_override(home)  # auth.json is per profile home
     scope_token = None
     try:
         scope_token = _bind_owner_secret_scope(home)  # inside the try: a failed build still resets the home
-        return resolve_nous_access_token()
+        return resolve_thor_access_token()
     except Exception as exc:
         # A missing login or a revoked session needs a human; a refresh that hit the network can retry.
-        fatal = bool(getattr(exc, "relogin_required", False)) or getattr(exc, "code", None) == "nous_auth_missing"
+        fatal = bool(getattr(exc, "relogin_required", False)) or getattr(exc, "code", None) == "thor_auth_missing"
         raise PlaneCredentialError(
-            f"no Nous access token for {home} (auth.json): {exc}", retryable=not fatal) from exc
+            f"no Thor access token for {home} (auth.json): {exc}", retryable=not fatal) from exc
     finally:
         if scope_token is not None:
             from agent.secret_scope import reset_secret_scope

@@ -24,7 +24,7 @@ from thor_cli.dashboard_auth import (
 
 _log = logging.getLogger(__name__)
 
-# JWKS Cache-Control max-age (nous contract C7); self-hosted mirrors it.
+# JWKS Cache-Control max-age (thor contract C7); self-hosted mirrors it.
 JWKS_CACHE_SECONDS = 300
 TOKEN_ENDPOINT_TIMEOUT_SEC = 10.0
 JSON_HEADERS = {"Accept": "application/json"}
@@ -284,7 +284,7 @@ class NonInteractiveMixin:
 
 class JwtOAuthProvider(DashboardAuthProvider):
     """Authorization-code + PKCE provider whose session token is a JWT we verify ourselves
-    (nous: Portal access token; self-hosted: OIDC ID token). Subclasses set ``_client_id`` and
+    (thor: Portal access token; self-hosted: OIDC ID token). Subclasses set ``_client_id`` and
     implement: ``_jwks_uri() -> str``; ``_claims_for(token) -> claims`` (raises
     ``InvalidCodeError`` for a token that is not ours, ``ProviderError`` for an outage or a
     provider-wide contract failure);

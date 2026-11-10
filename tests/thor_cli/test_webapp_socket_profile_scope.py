@@ -3,7 +3,7 @@
 A browser tab's ``/api/ws`` reaches the gateway through the dashboard mount (``chat_ws.gateway_ws``),
 not the native ticket path (``gateway/run_api.py``) that wraps the socket in ``owner_scope``. The
 authority answers ``-32601`` for ``billing.state``, so the frame falls back to the legacy handler,
-which reads the Nous Portal override through the socket's scope: unbound, a multiplexed gateway
+which reads the Thor Portal override through the socket's scope: unbound, a multiplexed gateway
 refused the read (``UnscopedSecretError`` -> "no profile secret scope on a multiplexed call") and the
 token went to the default Portal. ``dispatch_legacy`` binds a non-launch ticket's profile; a
 launch-profile socket relies on ``gateway_ws``'s own scope.
@@ -36,13 +36,13 @@ def _jwt(label):
 
 def _home(home, label):
     home.mkdir(parents=True, exist_ok=True)
-    (home / "config.yaml").write_text("model:\n  provider: nous\n  default: fixture-model\n")
+    (home / "config.yaml").write_text("model:\n  provider: thor\n  default: fixture-model\n")
     (home / ".env").write_text(f"THOR_PORTAL_BASE_URL=https://{label}-portal.invalid\n")
-    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"nous": {
+    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"thor": {
         "access_token": _jwt(label), "refresh_token": f"{label}-refresh",
         "expires_at": "2999-01-01T00:00:00+00:00", "scope": "inference:invoke", "client_id": "fixture-client",
-        "portal_base_url": "https://portal.nousresearch.com",
-        "inference_base_url": "https://inference-api.nousresearch.com/v1",
+        "portal_base_url": "https://portal.thor-agent.local",
+        "inference_base_url": "https://inference-api.thor-agent.local/v1",
     }}}))
 
 
@@ -53,7 +53,7 @@ def gateway(tmp_path, monkeypatch):
     from gateway.config import GatewayConfig
     from gateway.session import SessionStore
     from gateway.session_authority import SessionAuthority
-    from thor_cli import auth, nous_account, nous_billing
+    from thor_cli import auth, thor_account, thor_billing
     from thor_state import SessionDB
     from thor_state_runtime import begin_runtime_epoch
     from tui_gateway import launch_profile_policy, server
@@ -64,15 +64,15 @@ def gateway(tmp_path, monkeypatch):
     monkeypatch.setenv("THOR_HOME", str(launch))
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared-auth"))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    for key in ("THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL",
+    for key in ("THOR_PORTAL_BASE_URL", "THOR_PORTAL_BASE_URL", "THOR_PORTAL_INFERENCE_BASE_URL",
                 "THOR_DEV_BILLING_FIXTURE", "THOR_DEV_SUBSCRIPTION_FIXTURE", "THOR_DEV_CREDITS_FIXTURE"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(launch_profile_policy, "_snapshot", None)
     monkeypatch.setattr(server, "_thor_home", str(launch))
     monkeypatch.setattr(server, "_served_profile_homes", set())
     monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
-    monkeypatch.setattr(nous_billing, "_token_cache", {})
-    nous_account.reset_nous_portal_account_info_cache()
+    monkeypatch.setattr(thor_billing, "_token_cache", {})
+    thor_account.reset_thor_portal_account_info_cache()
     previous = secret_scope.is_multiplex_active()
     launch_profile_policy.activate_multi_profile_hosting()
 

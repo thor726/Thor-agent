@@ -19,7 +19,7 @@ sidebar_position: 5
 浏览器来源是另一项独立选择：
 
 - **本地 Chromium（默认）**——Thor 启动自己打包的 Chromium，无头模式，每个会话一个浏览器。无需 API 密钥，无需配置。
-- **云端浏览器**——[Nous 订阅](tool-gateway.md)、[Browserbase](https://browserbase.com)、[Browser Use](https://browser-use.com) 云端、[Firecrawl](https://firecrawl.dev)，或浏览器提供商插件。
+- **云端浏览器**——[Thor 订阅](tool-gateway.md)、[Browserbase](https://browserbase.com)、[Browser Use](https://browser-use.com) 云端、[Firecrawl](https://firecrawl.dev)，或浏览器提供商插件。
 - **[Lightpanda](https://lightpanda.io)**——轻量级无头引擎，适合在小型机器上以文本为主的浏览。
 - **您自己的浏览器**——用 `/browser connect` 连接正在运行的 Chrome、Brave、Chromium 或 Edge。
 - **您的真实 profile**——您日常浏览器 profile 的托管副本，包含登录状态（需主动开启）。
@@ -119,8 +119,8 @@ browser:
 
 ## 云端浏览器
 
-:::tip Nous 订阅用户
-如果您拥有付费 [Nous Portal](https://portal.nousresearch.com) 订阅，可通过 **[Tool Gateway](tool-gateway.md)** 使用云端浏览器，无需单独的 API 密钥。新安装可运行 `thor setup --portal` 登录并一次性开启所有 gateway 工具；已有安装可通过 `thor model` 或 `thor tools` 选择 **Nous Subscription** 作为浏览器提供商。
+:::tip Thor 订阅用户
+如果您拥有付费 [Thor Portal](https://portal.thor-agent.local) 订阅，可通过 **[Tool Gateway](tool-gateway.md)** 使用云端浏览器，无需单独的 API 密钥。新安装可运行 `thor setup --portal` 登录并一次性开启所有 gateway 工具；已有安装可通过 `thor model` 或 `thor tools` 选择 **Thor Subscription** 作为浏览器提供商。
 :::
 
 在 `thor tools` → Browser Automation 中选择提供商。之后 `browser_exec` 驱动该提供商的浏览器，方式与驱动本地 Chromium 完全相同。
@@ -185,7 +185,7 @@ FIRECRAWL_BROWSER_TTL=600
 在 [firecrawl.dev](https://firecrawl.dev) 获取 API 密钥，然后在 `thor tools` → Browser Automation 中选择 **Firecrawl**。
 
 :::note 选择提供商
-上述 `.env` 键只提供**凭据**。当前使用的浏览器由 `thor tools` → Browser Automation 写入的 `browser.cloud_provider` 决定（`local`、`browserbase`、`browser-use`、`firecrawl`，或代表 Nous 订阅的 `nous`；提供商插件会添加自己的名称）。一旦存在选择，增删密钥不会切换提供商——已选择但缺少密钥的提供商会报错并提示运行 `thor tools`，而不是静默改道。从未配置过的环境仍会根据可用凭据自动检测。
+上述 `.env` 键只提供**凭据**。当前使用的浏览器由 `thor tools` → Browser Automation 写入的 `browser.cloud_provider` 决定（`local`、`browserbase`、`browser-use`、`firecrawl`，或代表 Thor 订阅的 `thor`；提供商插件会添加自己的名称）。一旦存在选择，增删密钥不会切换提供商——已选择但缺少密钥的提供商会报错并提示运行 `thor tools`，而不是静默改道。从未配置过的环境仍会根据可用凭据自动检测。
 :::
 
 云端会话消耗提供商额度。Thor 会在对话结束、`browser.inactivity_timeout` 到期以及进程退出时释放它们。
@@ -251,7 +251,7 @@ Thor 会自己启动 `lightpanda serve --host 127.0.0.1 --port <free>`——每�
 
 Lightpanda 没有图形渲染器，因此 `capture_screenshot()` 不可用，工具描述会让模型以文本为主；它每个会话只保持一个页面，因此模型会被告知只调用一次 `new_tab()`，之后使用 `goto_url()`（上游跟踪：[lightpanda-io/browser#1962](https://github.com/lightpanda-io/browser/issues/1962)）。
 
-**引擎何时被忽略。** `browser.engine` 是优先级最低的浏览器设置：云端提供商（包括 Nous 订阅浏览器）、`browser.cdp_url` / `/browser connect` 覆盖，或 `browser.use_real_profile` 都优先于它。`/browser status` 和 `thor doctor` 会报告引擎已配置但被覆盖的情况，以及被什么覆盖。
+**引擎何时被忽略。** `browser.engine` 是优先级最低的浏览器设置：云端提供商（包括 Thor 订阅浏览器）、`browser.cdp_url` / `/browser connect` 覆盖，或 `browser.use_real_profile` 都优先于它。`/browser status` 和 `thor doctor` 会报告引擎已配置但被覆盖的情况，以及被什么覆盖。
 
 ## 通过 CDP 连接你自己的浏览器（`/browser connect`）
 

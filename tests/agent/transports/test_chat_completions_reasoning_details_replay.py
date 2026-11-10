@@ -1,5 +1,5 @@
 """``reasoning_details`` replay is route-scoped: OpenRouter-format gateways (OpenRouter, Kilo,
-Vercel AI Gateway, Nous Portal) and vendors documenting it read it; strict schemas (Groq,
+Vercel AI Gateway, Thor Portal) and vendors documenting it read it; strict schemas (Groq,
 Mistral, Cerebras, Fireworks direct) 400/422 on the field and never receive it (#70233).
 The Portal "replay budget" behind #118182 does not reproduce; it is back on the list."""
 
@@ -27,7 +27,7 @@ def test_auxiliary_wire_drops_reasoning_details_only_for_non_replaying_routes():
 
 def test_openrouter_format_gateways_keep_and_strict_hosts_strip_reasoning_details():
     transport = get_transport("chat_completions")
-    for url in ("https://openrouter.ai/api/v1", "https://inference-api.nousresearch.com/v1",
+    for url in ("https://openrouter.ai/api/v1", "https://inference-api.thor-agent.local/v1",
                 "https://api.kilo.ai/api/gateway"):
         kwargs = transport.build_kwargs("m", _HISTORY, base_url=url)
         assert any("reasoning_details" in m for m in kwargs["messages"]), url

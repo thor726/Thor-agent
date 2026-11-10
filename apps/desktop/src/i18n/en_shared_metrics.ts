@@ -14,17 +14,17 @@ export const enSharedMetrics: Translations['sharedMetrics'] = {
   collectedUsage: 'Agent quality: missed edits, broken tool calls, stuck loops, cost per task',
   collectedMachine: 'Machine: OS, RAM range, GPU type, Thor version, local model use',
   sending:
-    'If you share, Thor sends stats to Nous once a day with a random ID for this profile. Apart from a one-time note that Thor was installed, stats from before you opt in are never sent. Change this anytime in Settings.',
+    'If you share, Thor sends stats to Thor once a day with a random ID for this profile. Apart from a one-time note that Thor was installed, stats from before you opt in are never sent. Change this anytime in Settings.',
   readDocs: 'Read the full details',
-  share: 'Share with Nous',
+  share: 'Share with Thor',
   off: 'No thanks',
   saveFailed: 'Couldn’t save your choice',
-  sendLabel: 'Share usage stats with Nous',
+  sendLabel: 'Share usage stats with Thor',
   sendDesc:
     'Counts only, sent once a day with a random ID for this profile. Never your messages, files, paths or error text.',
   unavailable: 'Update the Thor backend to change this setting.',
   stripBody: 'Counts only. Never your messages or files.',
   stripReaskBody: 'Asking once more: an earlier version could save “No thanks” before you saw this.',
-  stripChoices: { share: 'Share with Nous', off: 'No thanks' },
+  stripChoices: { share: 'Share with Thor', off: 'No thanks' },
   stripDetails: 'Details'
 }

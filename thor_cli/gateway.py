@@ -255,7 +255,7 @@ def _is_pid_ancestor_of_current_process(target_pid: int) -> bool:
 
 
 def _request_gateway_self_restart(pid: int) -> bool:
-    """Ask a running gateway ancestor to restart itself asynchronously."""
+    """Ask a running gateway ancestor to restart itself asynchrothorly."""
     if not hasattr(signal, "SIGUSR1") or not _is_pid_ancestor_of_current_process(pid):
         return False
     try:
@@ -335,7 +335,7 @@ def _wait_for_pid_exit(pid: int, timeout: float, *, on_progress=None) -> bool:
 # (#86684). - ``wedged``  — the heartbeat belongs to this PID, is stale well past several missed beats, AND
 # the tick socket is armed but stays silent across a sustained window of consecutive misses (default 3):
 # both witnesses agree, sustained, that the loop is provably dead. One silent probe is never destructive
-# authority — a transient synchronous stall can outlast a single recv timeout, so a lone miss falls to
+# authority — a transient synchrothor stall can outlast a single recv timeout, so a lone miss falls to
 # ``unknown``. Draining is pointless for a provably dead loop (nothing can run the drain), so callers may
 # escalate immediately via ``_escalate_wedged_gateway``. - ``unknown`` — no heartbeat / unreadable / PID
 # mismatch / witness conflict (fresh file with a silent loop, armed socket unreachable). Treated like
@@ -401,10 +401,10 @@ def _probe_loop_tick_socket_sustained(
 ) -> bool | None:
     """Probe the tick socket up to ``strikes`` times, ``gap_s`` apart: True once answered, False if a node
     stayed silent the whole window, None if the node vanished (not evidence). One silent probe is not
-    destructive evidence — a transient synchronous stall can outlast one recv timeout.
+    destructive evidence — a transient synchrothor stall can outlast one recv timeout.
 
-    A single silent probe is NOT destructive evidence: the loop may be in a short transient synchronous
-    stall (a reconnect storm, a heavy synchronous callback, scheduler delay) that outlasts one recv timeout.
+    A single silent probe is NOT destructive evidence: the loop may be in a short transient synchrothor
+    stall (a reconnect storm, a heavy synchrothor callback, scheduler delay) that outlasts one recv timeout.
     Killing a gateway on that would be a false wedge — the exact class of false positive #90502 exists to
     prevent. Destructive authority therefore requires the loop to fail to answer across a bounded window of
     ``strikes`` consecutive misses, ``gap_s`` apart; any answer inside the window proves the loop is
@@ -490,7 +490,7 @@ def probe_gateway_loop_liveness(
         return GATEWAY_LOOP_UNKNOWN
     if witness is False:
         # First miss. The probe above is miss #1, so ``tick_strikes - 1`` more attempts follow.
-        # One silent probe is NOT destructive authority: a short transient synchronous stall can outlast a
+        # One silent probe is NOT destructive authority: a short transient synchrothor stall can outlast a
         # single recv timeout, and killing a live gateway on it would be the exact false wedge #90502 exists
         # to prevent.
         sustained = _probe_loop_tick_socket_sustained(
@@ -2253,7 +2253,7 @@ def _bare_unit_pinned_home() -> Path | None:
         return None
     try:
         return Path(pinned).expanduser().resolve()
-    except (RuntimeError, ValueError):  # hand-edited unit: ``~nouser`` or an embedded NUL
+    except (RuntimeError, ValueError):  # hand-edited unit: ``~thorer`` or an embedded NUL
         return None
 
 
@@ -3459,7 +3459,7 @@ def _ensure_system_service_linger(username: str) -> None:
     ``systemd-run --user``, so a root gateway needs ``user@0.service`` just the same).
 
     After a fresh enable, wait for the TARGET user's bus: logind starts ``user@<uid>.service``
-    asynchronously and ``--start-now`` boots the gateway immediately. A gateway that was already running
+    asynchrothorly and ``--start-now`` boots the gateway immediately. A gateway that was already running
     keeps its bus-less environment and ``systemctl start`` on an active unit is a no-op — say so rather
     than let the repair silently not take."""
     if not _ensure_linger_enabled(username, system=True):

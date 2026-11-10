@@ -187,11 +187,11 @@ export const zhHantAssistant = {
         },
         free_tier_disabled: {
           title: '登入以繼續聊天',
-          body: '使用 Nous 帳戶登入即可繼續聊天，完全免費。'
+          body: '使用 Thor 帳戶登入即可繼續聊天，完全免費。'
         },
         free_tier_rate_limited: {
           title: '免費額度已用完',
-          body: '額度很快就會恢復。使用 Nous 帳戶登入可獲得更多額度，完全免費。'
+          body: '額度很快就會恢復。使用 Thor 帳戶登入可獲得更多額度，完全免費。'
         },
         free_tier_at_capacity: {
           title: '免費方案忙碌中',
@@ -199,11 +199,11 @@ export const zhHantAssistant = {
         },
         free_tier_model_not_free: {
           title: '此模型需要登入',
-          body: 'Thor 目前改用免費模型。使用 Nous 帳戶登入即可使用更多模型，完全免費。'
+          body: 'Thor 目前改用免費模型。使用 Thor 帳戶登入即可使用更多模型，完全免費。'
         },
         free_tier_route: {
           title: '無法連線到免費模型',
-          body: '請使用 Nous 帳戶登入（完全免費），或檢查 NOUS_INFERENCE_BASE_URL 設定。'
+          body: '請使用 Thor 帳戶登入（完全免費），或檢查 THOR_PORTAL_INFERENCE_BASE_URL 設定。'
         },
         free_tier_outage: {
           title: '免費模型發生問題',
@@ -211,7 +211,7 @@ export const zhHantAssistant = {
         },
         free_tier_refused: {
           title: '登入以繼續聊天',
-          body: '使用 Nous 帳戶登入完全免費。'
+          body: '使用 Thor 帳戶登入完全免費。'
         },
         cron_session_read_only: {
           title: '此聊天屬於一個排程工作',

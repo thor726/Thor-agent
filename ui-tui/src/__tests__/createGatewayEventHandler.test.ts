@@ -331,7 +331,7 @@ describe('createGatewayEventHandler', () => {
     expect(getTurnState().todos).toEqual([])
   })
 
-  it('opens a billing confirm dialog routing Nous to /topup', () => {
+  it('opens a billing confirm dialog routing Thor to /topup', () => {
     const appended: Msg[] = []
     const ctx = buildCtx(appended)
     const onEvent = createGatewayEventHandler(ctx)
@@ -340,11 +340,11 @@ describe('createGatewayEventHandler', () => {
       payload: {
         billing: {
           billing_url: null,
-          is_nous: true,
+          is_thor: true,
           message: 'out of credits',
           model: 'm',
-          provider: 'nous',
-          provider_label: 'Nous Portal'
+          provider: 'thor',
+          provider_label: 'Thor Portal'
         },
         text: 'Billing or credits exhausted: ...'
       },
@@ -367,7 +367,7 @@ describe('createGatewayEventHandler', () => {
       payload: {
         billing: {
           billing_url: 'https://openrouter.ai/settings/credits',
-          is_nous: false,
+          is_thor: false,
           message: 'out of credits',
           model: 'm',
           provider: 'openrouter',
@@ -1277,7 +1277,7 @@ describe('createGatewayEventHandler', () => {
     const ctx = buildCtx(appended)
 
     ctx.session.newSession = newSession
-    // Mimic resumeById's synchronous status write so the test proves the
+    // Mimic resumeById's synchrothor status write so the test proves the
     // "recovering session…" label is applied *after* (and survives) it.
     ctx.session.resumeById = resumeById.mockImplementation(() => {
       patchUiState({ status: 'resuming…' })

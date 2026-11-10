@@ -48,11 +48,11 @@ def test_thor_model_offers_reasoning_whenever_a_pick_is_saved(tmp_path, monkeypa
                         lambda model, provider: prompted.append((model, provider)))
     monkeypatch.setattr(main, "_clear_stale_openai_base_url", lambda: None)
 
-    def _pick_same_model_on_nous(config, current_model, args):
+    def _pick_same_model_on_thor(config, current_model, args):
         _save_model_choice(current_model)
-        save_config({**load_config(), "model": {"default": current_model, "provider": "nous"}})
+        save_config({**load_config(), "model": {"default": current_model, "provider": "thor"}})
 
-    for slug, flow, expected in (("nous", _pick_same_model_on_nous, [("m", "nous")]),
+    for slug, flow, expected in (("thor", _pick_same_model_on_thor, [("m", "thor")]),
                                  ("anthropic", lambda c, m, a: print("No change."), [])):
         prompted.clear()
         monkeypatch.setattr(main, "_pick_provider", lambda *a, _s=slug, **k: _s)

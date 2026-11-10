@@ -193,7 +193,7 @@ print_banner() {
     printf '%s\n' "┌─────────────────────────────────────────────────────────┐"
     printf '%s\n' "│             ⚡ Thor Agent Installer                    │"
     printf '%s\n' "├─────────────────────────────────────────────────────────┤"
-    printf '%s\n' "│  An open source AI agent by Nous Research.              │"
+    printf '%s\n' "│  An open source AI agent by Thor Agent.              │"
     printf '%s\n' "└─────────────────────────────────────────────────────────┘"
     printf '%s\n' "$C_NC"
 }
@@ -275,32 +275,32 @@ uv_bootstrap_pin() {
     case "$1" in
         linux-x64)
             UV_PIN_URL="https://github.com/astral-sh/uv/releases/download/0.13.5/uv-x86_64-unknown-linux-gnu.tar.gz"
-            UV_PIN_MIRROR="https://thor-assets.nousresearch.com/upstream/sha256/f68d291c75783122dad58ab77def0e13f3233f358731db5d6d7e8715603b928f"
+            UV_PIN_MIRROR="https://thor-assets.thor-agent.local/upstream/sha256/f68d291c75783122dad58ab77def0e13f3233f358731db5d6d7e8715603b928f"
             UV_PIN_SHA256="f68d291c75783122dad58ab77def0e13f3233f358731db5d6d7e8715603b928f"
             ;;
         linux-arm64)
             UV_PIN_URL="https://github.com/astral-sh/uv/releases/download/0.13.5/uv-aarch64-unknown-linux-gnu.tar.gz"
-            UV_PIN_MIRROR="https://thor-assets.nousresearch.com/upstream/sha256/4bb69cf95ed13f23713bb7bc09f241896ea0c75b7c557e615a20604b82f9c403"
+            UV_PIN_MIRROR="https://thor-assets.thor-agent.local/upstream/sha256/4bb69cf95ed13f23713bb7bc09f241896ea0c75b7c557e615a20604b82f9c403"
             UV_PIN_SHA256="4bb69cf95ed13f23713bb7bc09f241896ea0c75b7c557e615a20604b82f9c403"
             ;;
         linux-x64-musl)
             UV_PIN_URL="https://github.com/astral-sh/uv/releases/download/0.13.5/uv-x86_64-unknown-linux-musl.tar.gz"
-            UV_PIN_MIRROR="https://thor-assets.nousresearch.com/upstream/sha256/57ef9d9ccb01fb1bd998df995b0dd221b52f7d7841fbea93f2d4463bf61fb7a9"
+            UV_PIN_MIRROR="https://thor-assets.thor-agent.local/upstream/sha256/57ef9d9ccb01fb1bd998df995b0dd221b52f7d7841fbea93f2d4463bf61fb7a9"
             UV_PIN_SHA256="57ef9d9ccb01fb1bd998df995b0dd221b52f7d7841fbea93f2d4463bf61fb7a9"
             ;;
         linux-arm64-musl)
             UV_PIN_URL="https://github.com/astral-sh/uv/releases/download/0.13.5/uv-aarch64-unknown-linux-musl.tar.gz"
-            UV_PIN_MIRROR="https://thor-assets.nousresearch.com/upstream/sha256/7906c79adb21c81abd559841ba76bb1d9af9d791acac7a041b2972e03ae16538"
+            UV_PIN_MIRROR="https://thor-assets.thor-agent.local/upstream/sha256/7906c79adb21c81abd559841ba76bb1d9af9d791acac7a041b2972e03ae16538"
             UV_PIN_SHA256="7906c79adb21c81abd559841ba76bb1d9af9d791acac7a041b2972e03ae16538"
             ;;
         darwin-x64)
             UV_PIN_URL="https://github.com/astral-sh/uv/releases/download/0.13.5/uv-x86_64-apple-darwin.tar.gz"
-            UV_PIN_MIRROR="https://thor-assets.nousresearch.com/upstream/sha256/b0f52b0e3945b4107d89024ea38e625683011fbfc05a0d98f9fa2d6dcee28c66"
+            UV_PIN_MIRROR="https://thor-assets.thor-agent.local/upstream/sha256/b0f52b0e3945b4107d89024ea38e625683011fbfc05a0d98f9fa2d6dcee28c66"
             UV_PIN_SHA256="b0f52b0e3945b4107d89024ea38e625683011fbfc05a0d98f9fa2d6dcee28c66"
             ;;
         darwin-arm64)
             UV_PIN_URL="https://github.com/astral-sh/uv/releases/download/0.13.5/uv-aarch64-apple-darwin.tar.gz"
-            UV_PIN_MIRROR="https://thor-assets.nousresearch.com/upstream/sha256/743f85035a1996ecb350659e01cd9faea9709829be09b1b4b03c73eaf3c9cd73"
+            UV_PIN_MIRROR="https://thor-assets.thor-agent.local/upstream/sha256/743f85035a1996ecb350659e01cd9faea9709829be09b1b4b03c73eaf3c9cd73"
             UV_PIN_SHA256="743f85035a1996ecb350659e01cd9faea9709829be09b1b4b03c73eaf3c9cd73"
             ;;
         *)
@@ -436,7 +436,7 @@ check_platform() {
     # install the phone cannot run (no Android wheels in the lock). The
     # signed APT package is the only supported shape there.
     if [ -n "${TERMUX_VERSION:-}" ] || case "${PREFIX:-}" in *com.termux/files/usr*) true ;; *) false ;; esac; then
-        fail "Termux is installed from its APT repository, not install.sh: pkg install thor-agent (setup: https://thor-agent.nousresearch.com/docs/getting-started/termux)" unsupported_platform
+        fail "Termux is installed from its APT repository, not install.sh: pkg install thor-agent (setup: https://thor-agent.thor-agent.local/docs/getting-started/termux)" unsupported_platform
     fi
     case "$(uname -s 2>/dev/null)" in
         Linux*) : ;;

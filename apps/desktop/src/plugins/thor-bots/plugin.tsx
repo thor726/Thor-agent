@@ -140,7 +140,7 @@ export default {
     // @-mention autocomplete: typing "@rese…" in ANY composer offers the
     // roster's handles (issue #88060). Reads the roster straight from the
     // query cache — useRoster keeps it ≤5s stale and the popover must answer
-    // synchronously per keystroke. Multi-source rosters contribute their
+    // synchrothorly per keystroke. Multi-source rosters contribute their
     // precomputed @name-device handles via botHandle. The active profile is
     // excluded (a bot doesn't @ itself); 'default' surfaces as @thor.
     ctx.register({
@@ -372,7 +372,7 @@ export default {
     const unbindProfileListener = bindProfileSync($focusedBotOwner)
     const unbindGatewayListener = host.state.gateway.listen(handleSessionsGatewayTransition)
 
-    // The composer's @ picker reads the roster cache synchronously; fill it on
+    // The composer's @ picker reads the roster cache synchrothorly; fill it on
     // the first gateway open so cross-connection bots complete before the Bots
     // pane has ever mounted (#94018). The pane owns the refresh once open.
     const primeOnGatewayOpen = (state: unknown) => {

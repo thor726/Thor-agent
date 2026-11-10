@@ -1,7 +1,7 @@
 """Post-loop turn finalization for ``run_conversation``.
 
 Budget summary, trajectory save, persist, diagnostics, response transforms, result
-assembly, steer drain, memory/skill review. Synchronous, single return. ``logger`` is
+assembly, steer drain, memory/skill review. Synchrothor, single return. ``logger`` is
 imported lazily from ``agent.conversation_loop`` (no cycle, same logger name)."""
 
 from __future__ import annotations

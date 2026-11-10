@@ -25,9 +25,9 @@ from plugins.config_backends.remote.paths import decode, encode
 from plugins.config_backends.remote.values import secret_literal_path
 
 TOKEN = "plane-token-1"
-# Cloud mode: the agent sends its Nous Portal access token; the stub also serves the Portal's
-# refresh route (``/api/oauth/token``), which hands out NOUS_TOKEN.
-NOUS_TOKEN = "nous-access-token-1"
+# Cloud mode: the agent sends its Thor Portal access token; the stub also serves the Portal's
+# refresh route (``/api/oauth/token``), which hands out THOR_PORTAL_TOKEN.
+THOR_PORTAL_TOKEN = "thor-access-token-1"
 CLIENT_ID = "agent-client"
 CLIENT_SECRET = "agent-secret"
 INSTANCE = "inst-0001"
@@ -69,7 +69,7 @@ class StubPlane:
         self.fail_status: Optional[int] = None   # every /self request returns this
         self.requests: list[dict[str, Any]] = []
         self.token_requests = 0
-        self.nous_refreshes = 0
+        self.thor_refreshes = 0
         self.home: Optional[Path] = None  # the test's THOR_HOME, set by the fixture
         self.lock = threading.Lock()
         self._server = ThreadingHTTPServer(("127.0.0.1", 0), self._handler())
@@ -137,8 +137,8 @@ class StubPlane:
                 if self.path == "/api/oauth/token":
                     self.rfile.read(int(self.headers.get("Content-Length") or 0))  # a form body
                     with plane.lock:
-                        plane.nous_refreshes += 1
-                    return self._send(200, {"access_token": NOUS_TOKEN, "refresh_token": "nous-refresh-2",
+                        plane.thor_refreshes += 1
+                    return self._send(200, {"access_token": THOR_PORTAL_TOKEN, "refresh_token": "thor-refresh-2",
                                             "token_type": "Bearer", "expires_in": 3600})
                 if self.path != "/token":
                     return self._send(404, {"error": "not_found"})
@@ -164,7 +164,7 @@ class StubPlane:
                         "if_none_match": self.headers.get("If-None-Match")})
                     if plane.fail_status is not None:
                         return self._send(plane.fail_status, {"error": "unavailable", "message": "stub outage"})
-                    if self.headers.get("Authorization") not in (f"Bearer {TOKEN}", f"Bearer {NOUS_TOKEN}"):
+                    if self.headers.get("Authorization") not in (f"Bearer {TOKEN}", f"Bearer {THOR_PORTAL_TOKEN}"):
                         return self._send(401, {"error": "unauthorized", "message": "bad token"})
                     if self.headers.get("X-Thor-Instance-Id") != INSTANCE:
                         return self._send(403, {"error": "config_agent_unknown", "message": "unknown instance"})

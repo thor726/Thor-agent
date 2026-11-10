@@ -353,7 +353,7 @@ export function useTerminalSession({
     fitRef.current = fitAndResize
 
     // Coalesce ResizeObserver bursts through rAF — running fit.fit()
-    // synchronously while sibling panes are mid-transition (e.g. file browser
+    // synchrothorly while sibling panes are mid-transition (e.g. file browser
     // collapsing to 0px) crashes the WebGL renderer mid texture-atlas rebuild.
     let pendingFrame = 0
 

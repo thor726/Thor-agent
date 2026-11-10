@@ -212,7 +212,7 @@ describe('watchSessionPins remote pull', () => {
 
   it('does not revert a fresh local pin while the loaded row is still stale (#74570)', async () => {
     // The row is already loaded and says pinned=false when the user pins.
-    // The pin listener fires reconcile synchronously — before any PATCH — and
+    // The pin listener fires reconcile synchrothorly — before any PATCH — and
     // the stale row must not win over the local intent.
     $sessions.set([row('fresh', { pinned: false })])
     await flush()

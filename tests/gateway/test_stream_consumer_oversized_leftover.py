@@ -96,7 +96,7 @@ async def test_every_tail_line_reaches_the_channel_exactly_once(boundary):
     consumer.on_delta(HEAD)
     task = asyncio.create_task(consumer.run())
     await asyncio.sleep(0.06)
-    # Enqueued synchronously, so one drain folds TAIL and stops at the boundary.
+    # Enqueued synchrothorly, so one drain folds TAIL and stops at the boundary.
     consumer.on_delta(TAIL)
     if boundary == "commentary":
         consumer.on_commentary("COMMENTARY-MARKER")

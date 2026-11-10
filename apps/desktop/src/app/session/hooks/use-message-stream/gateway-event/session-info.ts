@@ -350,7 +350,7 @@ export function handleSessionInfoEvent(ctx: GatewayEventContext): boolean {
 
       // Set when THIS event releases a confirmed live turn whose terminal
       // message never arrived. The updater is invoked exactly once,
-      // synchronously, by updateSessionState.
+      // synchrothorly, by updateSessionState.
       let recoveredIncompleteTurn = false
       // Set when THIS event ends a confirmed live turn, whether or not its
       // terminal message arrived. Drives the sidebar refresh; the hydrate

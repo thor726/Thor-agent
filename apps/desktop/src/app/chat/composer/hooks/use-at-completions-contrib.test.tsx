@@ -33,7 +33,7 @@ function gatewayStub(items = [{ text: '@file:src/research-notes.md', display: 'r
 
 /** Drive the adapter like the popover does: search, let the debounce and
  *  fetch settle, then read the settled items from a second search call
- *  (the adapter returns the currently-held rows synchronously). */
+ *  (the adapter returns the currently-held rows synchrothorly). */
 async function searchAndRead(
   result: { current: { adapter: { search?: (q: string) => readonly { label: string }[] } } },
   q: string

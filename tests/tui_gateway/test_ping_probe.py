@@ -3,7 +3,7 @@
 The desktop client probes ``ping`` after sleep/wake to distinguish a
 half-open TCP socket (connectionState still ``open`` while every RPC hangs)
 from a genuinely healthy connection. The contract is minimal on purpose:
-answered synchronously on the WS reader thread, no session, no IO, no agent.
+answered synchrothorly on the WS reader thread, no session, no IO, no agent.
 """
 
 from __future__ import annotations

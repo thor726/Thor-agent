@@ -528,9 +528,9 @@ elif ! grep -q '^API_SERVER_KEY=..*' "$THOR_HOME/.env" 2>/dev/null; then
     fi
 fi
 
-# --- Sync deploy-injected Nous routing overrides into every profile .env ---
-# Under multiplex, thor_cli.auth_nous reads THOR_PORTAL_BASE_URL (or its
-# NOUS_PORTAL_BASE_URL alias) and NOUS_INFERENCE_BASE_URL through the profile
+# --- Sync deploy-injected Thor routing overrides into every profile .env ---
+# Under multiplex, thor_cli.auth_thor reads THOR_PORTAL_BASE_URL (or its
+# THOR_PORTAL_BASE_URL alias) and THOR_PORTAL_INFERENCE_BASE_URL through the profile
 # secret scope (agent.secret_scope.get_secret, #108319 / #111809), built from
 # <profile>/.env with no os.environ fallback — a value that lives only in the
 # container env is invisible on every routed turn, the Portal URL heals to
@@ -570,7 +570,7 @@ sync_routing_overrides() {
     if refuse_symlinked_path "sync" "$_file"; then
         return 0
     fi
-    for _name in THOR_PORTAL_BASE_URL NOUS_PORTAL_BASE_URL NOUS_INFERENCE_BASE_URL; do
+    for _name in THOR_PORTAL_BASE_URL THOR_PORTAL_BASE_URL THOR_PORTAL_INFERENCE_BASE_URL; do
         eval "_value=\${$_name:-}"
         _managed="^$_name=.* $_ROUTING_MARK\$"
         if [ -z "$_value" ]; then
@@ -584,7 +584,7 @@ sync_routing_overrides() {
             continue
         fi
         if [ ! -f "$_file" ] && ! (umask 077 && as_thor touch "$_file") 2>/dev/null; then
-            echo "[stage2] Warning: could not create $_file — the Nous routing overrides will not reach this profile's secret scope"
+            echo "[stage2] Warning: could not create $_file — the Thor routing overrides will not reach this profile's secret scope"
             return 0
         fi
         if rewrite_env_var "$_file" "$_name" "^$_name=" "$_line"; then
@@ -695,16 +695,16 @@ if [ ! -f "$THOR_HOME/auth.json" ] && [ -n "${THOR_AUTH_JSON_BOOTSTRAP:-}" ]; th
     fi
 fi
 
-# auth.json: re-seed a TERMINALLY-DEAD Nous bootstrap session (self-heal).
+# auth.json: re-seed a TERMINALLY-DEAD Thor bootstrap session (self-heal).
 #
 # The [ ! -f ] guard above deliberately refuses to clobber an existing
-# auth.json, so a container whose Nous bootstrap session took a terminal
-# invalid_grant (tokens cleared, providers.nous.last_auth_error.relogin_required
+# auth.json, so a container whose Thor bootstrap session took a terminal
+# invalid_grant (tokens cleared, providers.thor.last_auth_error.relogin_required
 # stamped) can NOT recover from a plain restart — it stays unauthenticated until
 # the credential is replaced. An orchestrator that manages the container can
 # supply a freshly-issued session via THOR_AUTH_JSON_REBOOTSTRAP (distinct
 # from the create-only *_BOOTSTRAP var); this helper swaps ONLY the
-# providers.nous entry when the on-disk entry is provably terminal OR the
+# providers.thor entry when the on-disk entry is provably terminal OR the
 # orchestrator seed has a later obtained_at timestamp. The latter covers the
 # stop/update/start sequence where NAS already revoked the still-healthy-looking
 # local session. Older/incomparable seeds remain no-ops, so leaving the env set
@@ -715,9 +715,9 @@ if [ -f "$THOR_HOME/auth.json" ] && [ -n "${THOR_AUTH_JSON_REBOOTSTRAP:-}" ]; th
         :
     else
         s6-setuidgid thor "$INSTALL_DIR/.venv/bin/python" \
-            "$INSTALL_DIR/scripts/docker_rebootstrap_nous_session.py" \
+            "$INSTALL_DIR/scripts/docker_rebootstrap_thor_session.py" \
             "$THOR_HOME/auth.json" \
-            || echo "[stage2] Warning: docker_rebootstrap_nous_session.py failed; continuing"
+            || echo "[stage2] Warning: docker_rebootstrap_thor_session.py failed; continuing"
     fi
 fi
 

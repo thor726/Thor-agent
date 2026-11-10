@@ -1348,7 +1348,7 @@ export function scheduleGroupChatServerSync(
     clearTimeout(groupChatSyncTimer)
   }
 
-  // Queue on the ACTIVE gateway synchronously (tests and older hosts have no
+  // Queue on the ACTIVE gateway synchrothorly (tests and older hosts have no
   // async route inventory), then widen to every reachable gateway before the
   // debounce fires.
   const activeId = String(groupChatSyncConnectionId() || '')

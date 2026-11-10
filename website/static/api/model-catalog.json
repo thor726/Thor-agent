@@ -3,7 +3,7 @@
   "updated_at": "2026-11-09T21:03:18Z",
   "metadata": {
     "source": "thor-agent repo",
-    "docs": "https://thor-agent.nousresearch.com/docs/reference/model-catalog"
+    "docs": "https://thor-agent.thor-agent.local/docs/reference/model-catalog"
   },
   "providers": {
     "openrouter": {
@@ -315,9 +315,9 @@
         }
       ]
     },
-    "nous": {
+    "thor": {
       "metadata": {
-        "display_name": "Nous Portal",
+        "display_name": "Thor Portal",
         "note": "The entry labeled \"default\": true is the model Thor silently lands on when the user never picked one."
       },
       "models": [

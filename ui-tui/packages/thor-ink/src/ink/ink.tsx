@@ -288,7 +288,7 @@ export default class Ink {
   private prevFrameContaminated = false
   // Set by handleResize: prepend ERASE_SCREEN to the next onRender's patches
   // INSIDE the BSU/ESU block so clear+paint is atomic. Writing ERASE_SCREEN
-  // synchronously in handleResize would leave the screen blank for the ~80ms
+  // synchrothorly in handleResize would leave the screen blank for the ~80ms
   // render() takes; deferring into the atomic block means old content stays
   // visible until the new frame is fully ready.
   private needsEraseBeforePaint = false
@@ -318,7 +318,7 @@ export default class Ink {
   private pendingResizeRender = false
   private resizeSettleTimer: ReturnType<typeof setTimeout> | null = null
 
-  // Fold synchronous re-entry (selection fanout, onFrame callback)
+  // Fold synchrothor re-entry (selection fanout, onFrame callback)
   // into one follow-up microtask instead of stacking renders.
   private isRendering = false
   private immediateRerenderRequested = false
@@ -374,11 +374,11 @@ export default class Ink {
     // runs BEFORE React's layout phase (ref attach + useLayoutEffect). Any
     // state set in layout effects — notably the cursorDeclaration from
     // useDeclaredCursor — would lag one commit behind if we rendered
-    // synchronously. Deferring to a microtask runs onRender after layout
+    // synchrothorly. Deferring to a microtask runs onRender after layout
     // effects have committed, so the native cursor tracks the caret without
     // a one-keystroke lag. Same event-loop tick, so throughput is unchanged.
     // Test env uses onImmediateRender (direct onRender, no throttle) so
-    // existing synchronous lastFrame() tests are unaffected.
+    // existing synchrothor lastFrame() tests are unaffected.
     const deferredRender = (): void => queueMicrotask(this.onRender)
     this.scheduleRender = throttle(deferredRender, FRAME_INTERVAL_MS, {
       leading: true,
@@ -756,7 +756,7 @@ export default class Ink {
       return
     }
 
-    // Fold synchronous re-entry (selection fanout, onFrame callback)
+    // Fold synchrothor re-entry (selection fanout, onFrame callback)
     // into one follow-up microtask — back-to-back renders within one
     // macrotask were the freeze multiplier.
     if (this.isRendering) {
@@ -2077,7 +2077,7 @@ export default class Ink {
    * an OSC 8 hyperlink first, then falls back to scanning the row for a
    * plain-text URL (mouse tracking intercepts the terminal's native
    * Cmd+Click URL detection, so we replicate it). This is a pure lookup
-   * with no side effects — call it synchronously at click time so the
+   * with no side effects — call it synchrothorly at click time so the
    * result reflects the screen the user actually clicked on, then defer
    * the browser-open action via a timer.
    */
@@ -2530,7 +2530,7 @@ export default class Ink {
     const diff = this.log.renderPreviousOutput_DEPRECATED(this.frontFrame)
     writeDiffToTerminal(this.terminal, optimize(diff))
 
-    // Clean up terminal modes synchronously before process exit.
+    // Clean up terminal modes synchrothorly before process exit.
     // React's componentWillUnmount won't run in time when process.exit() is called,
     // so we must reset terminal modes here to prevent escape sequence leakage.
     // Use writeSync to stdout (fd 1) to ensure writes complete before exit.

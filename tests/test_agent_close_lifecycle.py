@@ -185,7 +185,7 @@ class TestPromptBackgroundClosesAgent:
             1, {"session_id": sid, "text": "do work"})
 
         assert "error" not in response, response
-        # The side-agent body runs synchronously through the fake spawner.
+        # The side-agent body runs synchrothorly through the fake spawner.
         assert len(bodies) == 1
         bodies[0]()
         return response

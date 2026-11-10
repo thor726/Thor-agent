@@ -147,7 +147,7 @@ def test_apiserver_session_with_id_dispatches_background(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def test_apiserver_session_without_id_stays_synchronous(monkeypatch):
+def test_apiserver_session_without_id_stays_synchrothor(monkeypatch):
     """No session id to wake → keep the sync fallback (a detached result
     would never re-enter any conversation)."""
     dt = _patch_delegate(monkeypatch)

@@ -244,13 +244,6 @@ class CLIInfoMixin:
                 fix = t("cli.banner.fix_config")
             self._console_print(f"[dim]   {fix}[/]")
 
-        from thor_cli.model_switch import is_nous_thor_non_agentic
-        if is_nous_thor_non_agentic(getattr(self, "model", "") or ""):
-            self._console_print()
-            self._console_print(f"[bold yellow]{t('cli.banner.thor_models_not_agentic')}[/]")
-            self._console_print(f"[dim]   {t('cli.banner.thor_models_lack_tools')}[/]")
-            self._console_print(f"[dim]   {t('cli.banner.thor_models_switch_hint')}[/]")
-
         # Project-local skills one-liner: trusted → count; untrusted-with-skills → point at
         # `thor skills trust`. Never raises.
         try:
@@ -715,9 +708,9 @@ class CLIInfoMixin:
         print()
 
     def _show_usage(self):
-        """Rate limits + session token usage (when a live agent exists) + Nous credits.
+        """Rate limits + session token usage (when a live agent exists) + Thor credits.
 
-        The Nous credits block is agent-independent (portal fetch), so it runs even with no live
+        The Thor credits block is agent-independent (portal fetch), so it runs even with no live
         agent — the TUI's /usage slash-worker resumes the session WITHOUT building an agent.
         """
         from cli import datetime, format_duration_compact
@@ -726,7 +719,7 @@ class CLIInfoMixin:
             # Account limits (e.g. Codex subscription windows) need only the configured provider
             # plus on-disk credentials, so they render without a live agent too (#42904).
             shown = self._print_account_limits()
-            if self._print_nous_credits_block():
+            if self._print_thor_credits_block():
                 self._print_usage_cta()
             elif not shown:
                 print(fallback)
@@ -783,7 +776,7 @@ class CLIInfoMixin:
 
         self._print_account_limits()
 
-        if self._print_nous_credits_block():
+        if self._print_thor_credits_block():
             self._print_usage_cta()
 
         if self.verbose:

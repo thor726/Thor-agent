@@ -1,4 +1,4 @@
-"""A token refresh renews the identity the shared Nous store holds; only a sign-in replaces it.
+"""A token refresh renews the identity the shared Thor store holds; only a sign-in replaces it.
 
 A keepalive refresh of one profile's account used to overwrite a guest another profile had just
 minted into the shared store. That recorded a move of the guest's apps into the account, and the
@@ -20,23 +20,23 @@ portal = _gh.portal
 
 def _refresh_access_token():
     from thor_cli import auth
-    auth.resolve_nous_access_token(refresh_skew_seconds=10**9)
+    auth.resolve_thor_access_token(refresh_skew_seconds=10**9)
 
 
 def _refresh_runtime_credentials():
     from thor_cli import auth
-    auth.resolve_nous_runtime_credentials(force_refresh=True)
+    auth.resolve_thor_runtime_credentials(force_refresh=True)
 
 
 REFRESHERS = {
-    "resolve_nous_access_token": _refresh_access_token,
-    "resolve_nous_runtime_credentials": _refresh_runtime_credentials,
+    "resolve_thor_access_token": _refresh_access_token,
+    "resolve_thor_runtime_credentials": _refresh_runtime_credentials,
 }
 
 
 def _shared_anon_token():
-    from thor_cli import auth_nous
-    return (auth_nous._read_shared_nous_state() or {}).get("anon_token")
+    from thor_cli import auth_thor
+    return (auth_thor._read_shared_thor_state() or {}).get("anon_token")
 
 
 def _guest_in(monkeypatch, home) -> str:
@@ -47,11 +47,11 @@ def _guest_in(monkeypatch, home) -> str:
 
 @pytest.mark.parametrize("refresh", sorted(REFRESHERS))
 def test_a_refresh_over_a_guest_in_the_shared_store_records_no_move(portal, monkeypatch, tmp_path, refresh):
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
     mine, sibling = os.environ["THOR_HOME"], tmp_path / "sibling-profile"
     sibling.mkdir()
     _gh._persist(_gh._account())
-    auth_nous._clear_shared_nous_state("logout")
+    auth_thor._clear_shared_thor_state("logout")
     anon = _guest_in(monkeypatch, sibling)
 
     monkeypatch.setenv("THOR_HOME", mine)
@@ -64,12 +64,12 @@ def test_a_refresh_over_a_guest_in_the_shared_store_records_no_move(portal, monk
 
 @pytest.mark.parametrize("emptied", [False, True], ids=["store-holds-it", "store-emptied-by-a-logout"])
 def test_a_refresh_still_publishes_the_rotated_token_for_profiles_on_the_same_account(portal, emptied):
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
     _gh._persist(_gh._account(refresh="rt_1"))
     if emptied:
-        auth_nous._clear_shared_nous_state("logout")
+        auth_thor._clear_shared_thor_state("logout")
     _refresh_access_token()
-    assert auth_nous._read_shared_nous_state()["refresh_token"] == "rt_2"
+    assert auth_thor._read_shared_thor_state()["refresh_token"] == "rt_2"
 
 
 def test_a_sign_in_over_the_guest_in_the_shared_store_still_hands_it_over(portal, monkeypatch, tmp_path):
@@ -94,12 +94,12 @@ def test_a_keepalive_refresh_does_not_sign_a_logged_out_profile_back_in(portal, 
     _gh._persist(_gh._account())
 
     monkeypatch.setenv("THOR_HOME", first)
-    auth.logout_command(SimpleNamespace(provider="nous"))
+    auth.logout_command(SimpleNamespace(provider="thor"))
     anon = _gh._mint_guest()
 
     monkeypatch.setenv("THOR_HOME", str(second))
-    from thor_cli import nous_auth_keepalive
-    assert nous_auth_keepalive.refresh_nous_auth_keepalive_once(min_access_ttl_seconds=10**9)
+    from thor_cli import thor_auth_keepalive
+    assert thor_auth_keepalive.refresh_thor_auth_keepalive_once(min_access_ttl_seconds=10**9)
 
     monkeypatch.setenv("THOR_HOME", first)
     state = anon_auth.ensure_portal_identity(explicit=True)
@@ -115,7 +115,7 @@ def test_profiles_sharing_an_account_stay_in_step_while_the_store_holds_a_guest(
 
     def single_use_refresh(request):
         if request.url.path == "/api/oauth/token":
-            token = request.headers.get("x-nous-refresh-token")
+            token = request.headers.get("x-thor-refresh-token")
             if token in spent:
                 return httpx.Response(400, json={"error": "refresh_token_reused"})
             spent.add(token)
@@ -130,13 +130,13 @@ def test_profiles_sharing_an_account_stay_in_step_while_the_store_holds_a_guest(
         assert anon_auth.ensure_portal_identity(explicit=True)["refresh_token"] == "rt_1"   # adopts the account
 
     monkeypatch.setenv("THOR_HOME", first)
-    auth.logout_command(SimpleNamespace(provider="nous"))
+    auth.logout_command(SimpleNamespace(provider="thor"))
     anon = _gh._mint_guest()
     for home in (second, first, third):   # the guest's own token refresh sits between the two
         monkeypatch.setenv("THOR_HOME", str(home))
         _refresh_access_token()
 
-    assert auth.get_provider_auth_state("nous")["refresh_token"] == "rt_3"
+    assert auth.get_provider_auth_state("thor")["refresh_token"] == "rt_3"
     assert _shared_anon_token() == anon and _gh._records() == {}
     fourth = tmp_path / "fourth-profile"
     fourth.mkdir()

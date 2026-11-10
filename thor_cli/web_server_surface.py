@@ -48,7 +48,7 @@ class SurfacePolicy:
     #: (native Desktop reaches the same file through its preload capability, not over HTTP).
     ui_preferences: bool
     #: ``/api/audio/voice-config`` may hand the client provider keys to call STT/TTS itself. A
-    #: browser tab cannot: a provider without CORS (the Nous tool gateway) refuses its fetch, and the
+    #: browser tab cannot: a provider without CORS (the Thor tool gateway) refuses its fetch, and the
     #: keys would sit in the page. It relays through the host's /api/audio/* endpoints instead.
     client_direct_voice: bool
     #: ``/api/gateway-connections`` serves: the browser's door to this machine's saved gateways list

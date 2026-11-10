@@ -127,7 +127,7 @@ def test_plugins_hub_uses_cached_failed_check_fn_verdict(monkeypatch):
 
 
 def test_plugins_hub_route_builds_catalog_annotations_off_event_loop(monkeypatch):
-    """The synchronous catalog lookup must run in the route's worker thread."""
+    """The synchrothor catalog lookup must run in the route's worker thread."""
     tools_registry.invalidate_check_fn_cache()
     _web_server_dashboard._invalidate_plugins_hub_cache()
     event_loop_thread = threading.current_thread()

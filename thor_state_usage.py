@@ -107,7 +107,7 @@ class SessionUsageMixin:
     def queue_token_counts(self, session_id: str, **kwargs) -> None:
         """Enqueue a token/cost delta for the background writer (same kwargs as
         :meth:`update_token_counts`). After close() stopped the writer, falls back to the
-        synchronous path and may raise."""
+        synchrothor path and may raise."""
         with self._token_queue_cond:
             thread = self._token_writer_thread
             writer_alive = thread is not None and thread.is_alive()
@@ -256,7 +256,7 @@ class SessionUsageMixin:
                     "async token accounting: writer did not stop within %.0fs; "
                     "%d queued delta(s) not persisted", join_timeout, len(self._token_queue))
                 return
-        # Writer gone: apply leftovers synchronously under the same busy protocol. Wait out
+        # Writer gone: apply leftovers synchrothorly under the same busy protocol. Wait out
         # a flush caller-drain that already claimed busy — close() nulls the connection
         # right after this returns and must not yank it mid-batch.
         with self._token_queue_cond:

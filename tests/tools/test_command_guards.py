@@ -170,7 +170,7 @@ class TestGatewayApprovalAllowPermanent:
 
         def notify(data):
             captured.append(dict(data))
-            # The notify fires synchronously before _await_gateway_decision
+            # The notify fires synchrothorly before _await_gateway_decision
             # blocks, so resolving here releases the wait without a thread.
             resolve_gateway_approval(session_key, "deny")
 

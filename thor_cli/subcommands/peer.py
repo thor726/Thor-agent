@@ -2,7 +2,7 @@
 
 A *peer* is another Thor gateway running the ``api_server`` platform; its stock
 API is the transport (no new server surface). ``dm`` resolves the remote canonical
-"Bot Chat" session (creating it when missing) and runs ONE synchronous turn — the
+"Bot Chat" session (creating it when missing) and runs ONE synchrothor turn — the
 cross-machine twin of ``thor -p <bot> chat --in ~ -c "Bot Chat"``. ``run``/``status``
 /``stop`` do the same turn through the async Runs API. Peer labels/URLs live in
 config.yaml (``bot_peers``); the key lives in ``~/.thor/.env`` as
@@ -30,7 +30,7 @@ _PROFILE_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$")
 DEFAULT_PROFILE_HANDLE = "thor"
 _UNKNOWN_PROFILE_ERROR = "Unknown or unconfigured profile"
 
-# One synchronous agent turn can legitimately take minutes.
+# One synchrothor agent turn can legitimately take minutes.
 DM_TIMEOUT_S = 600
 LIST_TIMEOUT_S = 30
 
@@ -323,7 +323,7 @@ def _peer_list(args) -> int:
 
 def _peer_run_ctl(args, action: str, peer_name: str, profile: str | None, base: str,
                   key: str) -> int:
-    """``status`` / ``stop`` on an asynchronous run."""
+    """``status`` / ``stop`` on an asynchrothor run."""
     run_id = (getattr(args, "run_id", None) or "").strip()
     if not run_id:
         print("Run ID required.", file=sys.stderr)
@@ -520,8 +520,8 @@ def build_peer_parser(subparsers) -> None:
         sp.add_argument("--json", action="store_true", default=False, help="Emit a JSON result")
 
     _remote("dm", "Message an agent on a peer gateway and print its reply", run_id=False)
-    _remote("run", "Start a long peer turn asynchronously and return its run ID", run_id=False)
-    _remote("status", "Read the status and final output of an asynchronous peer run", run_id=True)
-    _remote("stop", "Stop one asynchronous peer run without affecting another turn", run_id=True)
+    _remote("run", "Start a long peer turn asynchrothorly and return its run ID", run_id=False)
+    _remote("status", "Read the status and final output of an asynchrothor peer run", run_id=True)
+    _remote("stop", "Stop one asynchrothor peer run without affecting another turn", run_id=True)
 
     parser.set_defaults(func=cmd_peer)

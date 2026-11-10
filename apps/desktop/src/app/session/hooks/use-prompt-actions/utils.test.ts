@@ -470,7 +470,7 @@ describe('renderRpcResult', () => {
 
   describe('session.status', () => {
     it('passes through the multi-line plain-text output verbatim', () => {
-      const output = 'Thor TUI Status\n\nSession ID: s-1\nModel: nous-hermes-3 (unknown)'
+      const output = 'Thor TUI Status\n\nSession ID: s-1\nModel: thor-thor-3 (unknown)'
       expect(renderRpcResult({ output }, 'status')).toBe(output)
     })
   })
@@ -491,12 +491,12 @@ describe('renderRpcResult', () => {
           input: 10,
           output: 20,
           total: 30,
-          credits_lines: ['Nous credits: 8,420 remaining', 'Resets: 2026-08-01']
+          credits_lines: ['Thor credits: 8,420 remaining', 'Resets: 2026-08-01']
         },
         'usage'
       )
 
-      expect(body.split('\n').slice(1)).toEqual(['Nous credits: 8,420 remaining', 'Resets: 2026-08-01'])
+      expect(body.split('\n').slice(1)).toEqual(['Thor credits: 8,420 remaining', 'Resets: 2026-08-01'])
     })
   })
 

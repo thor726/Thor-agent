@@ -1,7 +1,7 @@
 """RT-32 (#140156): Desktop's Bot Chat lookup adopts a legacy local row stamped with the caller's own subject.
 
 Older builds stamped ``user_id`` on local rows. The legacy migration refused every stamp except main's Desktop
-Nous-account label, so ``session.list {profile, title: "Bot Chat"}`` answered ``not_found`` for a row the
+Thor-account label, so ``session.list {profile, title: "Bot Chat"}`` answered ``not_found`` for a row the
 caller already owns by ``authorize_history``'s rule (``user_id == actor.subject``). A stamp naming another
 principal stays refused. Driven through a multiplexed runner with a named primary and a host-scoped
 connection, the way Desktop opens a Bot Chat.
@@ -23,8 +23,8 @@ class _Transport:
 
 _OWN = 'uid:desk'
 # A stamp naming any other principal: another local user, a dashboard login as v0.22 stamped it, an
-# authenticated gateway subject, and a Nous label on a non-Desktop row.
-_FOREIGN = ('uid:4242', 'basic:alice', 'auth:v1:["dashboard","","alice"]', 'nous:acct-1')
+# authenticated gateway subject, and a Thor label on a non-Desktop row.
+_FOREIGN = ('uid:4242', 'basic:alice', 'auth:v1:["dashboard","","alice"]', 'thor:acct-1')
 
 
 async def _bot_chat_lookup(tmp_path, monkeypatch, source, user_id):

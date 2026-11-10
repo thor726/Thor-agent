@@ -12,8 +12,8 @@ const READY: FreeTierStatus = {
   available: true,
   enabled: true,
   has_guest: true,
-  label: 'Nous · free tier',
-  model: 'nous/welcome',
+  label: 'Thor · free tier',
+  model: 'thor/welcome',
   notice_pending: true
 }
 

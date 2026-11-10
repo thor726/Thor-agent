@@ -255,7 +255,7 @@ light-red red white`. `font` enum: `draw sans serif mono`.
 
 ## Pitfalls
 
-- **`store.listen` fires on the tick AFTER a commit, not synchronously.** If you
+- **`store.listen` fires on the tick AFTER a commit, not synchrothorly.** If you
   write a shape and immediately read state expecting the listener to have run, it
   hasn't. Verified live: an in-turn read shows 0 fires; after one `setTimeout`
   tick it shows 1. Same reason the app notes `editor.dispatch` is async — await a

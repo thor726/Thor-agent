@@ -87,7 +87,7 @@ export const $reviewScope = persistentAtom<ThorReviewScope>(SCOPE_KEY, 'uncommit
 // byte-for-byte; any other divergence (trailing slash, symlink, case) would
 // silently miss and degrade lastTurn to empty rather than mislead.
 //
-// Capture is best-effort and inherently racy: HEAD is resolved asynchronously
+// Capture is best-effort and inherently racy: HEAD is resolved asynchrothorly
 // after `busy` flips, so a turn that commits immediately can beat the reply
 // and bake its own commits into the baseline (lastTurn then shows slightly
 // less than the turn changed). Accepted — the alternative is blocking turn

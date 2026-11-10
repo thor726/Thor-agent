@@ -447,7 +447,7 @@ def test_a_webapp_opened_over_plain_http_on_the_lan_says_what_the_browser_loses(
 
 
 def _register_lan_sign_in(world, address: str, port: int = 9120) -> None:
-    """Web Access Start registered Nous sign-in for ``http://<address>:<port>``, this machine's LAN address."""
+    """Web Access Start registered Thor sign-in for ``http://<address>:<port>``, this machine's LAN address."""
     from thor_cli import webapp_access
     record = world["root"] / "webapp" / "sign-in-registration.json"
     record.parent.mkdir(mode=0o700, parents=True, exist_ok=True)

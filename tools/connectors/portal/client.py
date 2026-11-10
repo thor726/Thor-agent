@@ -8,7 +8,7 @@ from urllib.parse import quote
 import requests
 from pydantic import ValidationError
 
-from thor_cli.nous_account import resolve_nous_portal_base_url
+from thor_cli.thor_account import resolve_thor_portal_base_url
 from tools.connectors.gateway.errors import (
     GatewayAuthError,
     GatewayUnavailable,
@@ -23,7 +23,7 @@ from tools.connectors.portal.wire import (
     ConnectorPolicyWriteResponse,
     ConnectorToolsListing,
 )
-from tools.managed_gateway_auth import read_nous_access_token
+from tools.managed_gateway_auth import read_thor_access_token
 from tools.managed_gateway_identity import connector_headers, log_connector_outcome, response_request_id
 
 
@@ -58,11 +58,11 @@ def _default_transport() -> Transport:
 
 
 def _default_endpoint_resolver() -> str:
-    return resolve_nous_portal_base_url()
+    return resolve_thor_portal_base_url()
 
 
 def _default_header_provider(_url: str) -> dict[str, str]:
-    token = read_nous_access_token()
+    token = read_thor_access_token()
     return {"Authorization": f"Bearer {token}"} if isinstance(token, str) and token.strip() else {}
 
 

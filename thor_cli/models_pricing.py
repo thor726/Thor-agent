@@ -1,7 +1,7 @@
 """Live model pricing.
 
 OpenRouter-compatible ``/v1/models`` pricing fetch with a per-endpoint/per-credential cache,
-Nous Portal sale chrome and org-policy filtering, and the Vercel AI Gateway / Novita / Fireworks /
+Thor Portal sale chrome and org-policy filtering, and the Vercel AI Gateway / Novita / Fireworks /
 DeepInfra pricing adapters. Split out of ``thor_cli.models``; helpers still defined there are
 looked up on ``thor_cli.models`` at call time so ``patch("thor_cli.models.<name>")`` mocks keep
 intercepting.
@@ -164,7 +164,7 @@ def _sale_pct(current: Any, original: Any) -> int | None:
 
 
 def compute_sale_discount(prompt: str, completion: str, original: Any) -> tuple[int, str, str] | None:
-    """Sale chrome from gateway ``pricing.original`` (Nous Portal only; callers gate on the provider
+    """Sale chrome from gateway ``pricing.original`` (Thor Portal only; callers gate on the provider
     and opted in via ``include_sale_original=True``): ``(discount_percent, was_prompt_raw,
     was_completion_raw)`` when ``original`` is a dict and the current prompt (fallback: completion)
     rate is strictly below the original. Free / $0 models get a flat 100% off, with "was" prices
@@ -235,7 +235,7 @@ def fetch_models_with_pricing(
 ) -> dict[str, dict[str, Any]]:
     """Fetch ``/v1/models`` (any OpenRouter-compatible endpoint) → ``{model_id: {prompt, completion,
     ...}}``, cached per *base_url* and per credential so one caller's catalog never answers
-    another's read. *include_sale_original* (Nous Portal only) copies the gateway's pre-discount
+    another's read. *include_sale_original* (Thor Portal only) copies the gateway's pre-discount
     ``pricing.original`` rates through as a nested ``original`` dict for sale chrome."""
     from thor_cli.chat_catalog import catalog_item_is_generation
     from thor_cli.models import _openrouter_model_supports_tools
@@ -264,14 +264,14 @@ def fetch_models_with_pricing(
         mid, pricing = item.get("id"), item.get("pricing")
         if mid and isinstance(pricing, dict):
             entry = _pricing_entry(pricing)
-            # Sale chrome is Nous Portal-only; never copy pricing.original for other catalogs.
+            # Sale chrome is Thor Portal-only; never copy pricing.original for other catalogs.
             original = pricing.get("original") if include_sale_original else None
             if isinstance(original, dict):
                 orig_entry = {key: str(original[key]) for key in ("prompt", "completion", "input_cache_read", "input_cache_write")
                               if original.get(key) not in (None, "")}
                 if orig_entry.get("prompt") or orig_entry.get("completion"):
                     entry["original"] = orig_entry
-            # Nous Portal-only: the gateway bills this row to a subscription the account holds, not to credits.
+            # Thor Portal-only: the gateway bills this row to a subscription the account holds, not to credits.
             if include_sale_original and item.get("billing_mode") == "subscription":
                 entry["billing_mode"] = "subscription"
             # Usage-window plans only (only those callers ever see the mark): the gateway marks the
@@ -281,12 +281,12 @@ def fetch_models_with_pricing(
             # Same callers: the gateway's per-plan picker label (free / low / medium / top_tier).
             if include_sale_original and isinstance(item.get("usage_level"), str):
                 entry["usage_level"] = item["usage_level"]
-            # Nous only: the catalog's display name, so a limit line can name a model the way the
+            # Thor only: the catalog's display name, so a limit line can name a model the way the
             # picker does ("Model A", not the routed id).
             if include_sale_original and isinstance(item.get("name"), str) and item["name"].strip() \
                     and item["name"].strip() != mid:
                 entry["name"] = item["name"].strip()
-            # Nous Portal-only: on-sale rows join the picker, which must not offer a tool-less model.
+            # Thor Portal-only: on-sale rows join the picker, which must not offer a tool-less model.
             if include_sale_original and not _openrouter_model_supports_tools(item):
                 entry["tools"] = False
             # ...nor an image/video generation model (the chat-catalog rule, applied to the row itself).
@@ -325,79 +325,79 @@ def _resolve_openrouter_api_key() -> str:
     return os.getenv("OPENROUTER_API_KEY", "").strip()
 
 
-_DEFAULT_NOUS_INFERENCE_BASE = "https://inference-api.nousresearch.com"
+_DEFAULT_THOR_PORTAL_INFERENCE_BASE = "https://inference-api.thor-agent.local"
 
 
-def _resolve_nous_pricing_credentials() -> tuple[str, str]:
-    """``(api_key, base_url)`` for Nous Portal pricing; base_url is the bare origin (no ``/v1``).
-    Precedence mirrors runtime credential resolution: ``NOUS_INFERENCE_BASE_URL`` (staging /
+def _resolve_thor_pricing_credentials() -> tuple[str, str]:
+    """``(api_key, base_url)`` for Thor Portal pricing; base_url is the bare origin (no ``/v1``).
+    Precedence mirrors runtime credential resolution: ``THOR_PORTAL_INFERENCE_BASE_URL`` (staging /
     preview) → resolved credential ``base_url`` → production default. Without the override a
     staging profile's sale ``pricing.original`` would never reach the pickers."""
     try:
-        from thor_cli.auth import _nous_inference_env_override
+        from thor_cli.auth import _thor_inference_env_override
 
-        env_base = _nous_inference_env_override()
+        env_base = _thor_inference_env_override()
     except Exception:
         env_base = None
     api_key = creds_base = ""
     try:
         from thor_cli.anon_challenge import background_caller
-        from thor_cli.auth import resolve_nous_runtime_credentials
+        from thor_cli.auth import resolve_thor_runtime_credentials
 
         with background_caller():  # a pricing read never opens a free-tier challenge
-            creds = resolve_nous_runtime_credentials()
+            creds = resolve_thor_runtime_credentials()
         if creds:
             api_key = creds.get("api_key", "") or ""
             creds_base = (creds.get("base_url", "") or "").strip()
     except Exception:
         pass
-    base_url = (env_base or creds_base or _DEFAULT_NOUS_INFERENCE_BASE).rstrip("/")
+    base_url = (env_base or creds_base or _DEFAULT_THOR_PORTAL_INFERENCE_BASE).rstrip("/")
     base_url = base_url.removesuffix("/v1")
     return (api_key, base_url)
 
 
-# How long a Nous catalog stays trusted. Its contents depend on the org's policy, which an admin
+# How long a Thor catalog stays trusted. Its contents depend on the org's policy, which an admin
 # can change at any time and the client cannot observe, so a long-lived process must re-ask.
 # Other providers' catalogs carry no such state and keep the default no-expiry caching.
-_NOUS_CATALOG_TTL_SECONDS = 300.0
+_THOR_PORTAL_CATALOG_TTL_SECONDS = 300.0
 
 
-def _fetch_nous_pricing(api_key: str, base_url: str, *, force_refresh: bool) -> dict[str, dict[str, Any]]:
+def _fetch_thor_pricing(api_key: str, base_url: str, *, force_refresh: bool) -> dict[str, dict[str, Any]]:
     """Shared by pricing and policy lookups so both read one cache entry."""
     return fetch_models_with_pricing(
         api_key=api_key,
         base_url=base_url,
         force_refresh=force_refresh,
-        include_sale_original=True,  # Sale chrome (pricing.original) is Nous Portal-only.
-        cache_ttl_seconds=_NOUS_CATALOG_TTL_SECONDS,
+        include_sale_original=True,  # Sale chrome (pricing.original) is Thor Portal-only.
+        cache_ttl_seconds=_THOR_PORTAL_CATALOG_TTL_SECONDS,
     )
 
 
-def nous_policy_allowed_ids(*, force_refresh: bool = False) -> Optional[set[str]]:
-    """The Nous model ids the caller's org may reach (keys of an authenticated ``GET /v1/models``,
+def thor_policy_allowed_ids(*, force_refresh: bool = False) -> Optional[set[str]]:
+    """The Thor model ids the caller's org may reach (keys of an authenticated ``GET /v1/models``,
     which omits policy-blocked rows), or ``None`` to not filter: no policy (or a token too old to
     say), an anonymous read (unfiltered catalog), or an empty read (a fetch failure, not an org
     that may reach nothing)."""
     try:
-        from thor_cli.nous_account import nous_policy_present
+        from thor_cli.thor_account import thor_policy_present
 
-        if nous_policy_present() is not True:
+        if thor_policy_present() is not True:
             return None
     except Exception:
         return None
 
-    api_key, base_url = _resolve_nous_pricing_credentials()
+    api_key, base_url = _resolve_thor_pricing_credentials()
     if not api_key or not base_url:
         return None
-    return set(_fetch_nous_pricing(api_key, base_url, force_refresh=force_refresh)) or None
+    return set(_fetch_thor_pricing(api_key, base_url, force_refresh=force_refresh)) or None
 
 
 # Past this size an allowed set reads as a whole catalog rather than an allowlist, and is not
 # worth showing in place of an empty picker.
-_NOUS_POLICY_APPEND_MAX = 64
+_THOR_PORTAL_POLICY_APPEND_MAX = 64
 
 
-def restrict_to_nous_policy(
+def restrict_to_thor_policy(
     model_ids: list[str],
     allowed: Optional[set[str]],
     *,
@@ -412,7 +412,7 @@ def restrict_to_nous_policy(
     if not allowed:
         return list(model_ids)
     kept = [mid for mid in model_ids if mid in allowed or mid.split(":", 1)[0] in allowed]
-    if rescue_empty and not kept and len(allowed) <= _NOUS_POLICY_APPEND_MAX:
+    if rescue_empty and not kept and len(allowed) <= _THOR_PORTAL_POLICY_APPEND_MAX:
         return sorted(allowed)
     return kept
 
@@ -513,8 +513,8 @@ def _fetch_kilocode_pricing_for_provider(*, force_refresh: bool = False) -> dict
     return _fetch_kilocode_pricing(force_refresh=force_refresh)
 
 
-def _fetch_nous_pricing_for_provider(*, force_refresh: bool = False) -> dict[str, dict[str, Any]]:
-    api_key, base_url = _resolve_nous_pricing_credentials()
+def _fetch_thor_pricing_for_provider(*, force_refresh: bool = False) -> dict[str, dict[str, Any]]:
+    api_key, base_url = _resolve_thor_pricing_credentials()
     if not base_url:
         return {}
     # Register the SAME key fetch_models_with_pricing writes (base + credential fingerprint):
@@ -524,8 +524,8 @@ def _fetch_nous_pricing_for_provider(*, force_refresh: bool = False) -> dict[str
     # pricing_cache_scope's last-resort fallback reads this value too; there it serves only as
     # an identity token for the prewarm single-flight, where including the credential is
     # equally correct (a key rotation means a new catalog and deserves a fresh worker).
-    _remember_provider_cache_key("nous", base_url.rstrip("/") + _pricing_auth_fingerprint(api_key))
-    return _fetch_nous_pricing(api_key, base_url, force_refresh=force_refresh)
+    _remember_provider_cache_key("thor", base_url.rstrip("/") + _pricing_auth_fingerprint(api_key))
+    return _fetch_thor_pricing(api_key, base_url, force_refresh=force_refresh)
 
 
 _OPENROUTER_PRICING_BASE = "https://openrouter.ai/api"
@@ -541,21 +541,21 @@ def _novita_pricing_scope() -> str:
     return (os.getenv("NOVITA_BASE_URL", "").strip() or "https://api.novita.ai/openai/v1").rstrip("/")
 
 
-def get_cached_nous_inference_base_url() -> str:
-    """The profile's persisted Nous endpoint (bare origin, no ``/v1``) without refreshing auth."""
+def get_cached_thor_inference_base_url() -> str:
+    """The profile's persisted Thor endpoint (bare origin, no ``/v1``) without refreshing auth."""
     try:
         from thor_cli.auth import (
-            _load_auth_store, _load_provider_state, _optional_base_url, _validate_nous_inference_url_from_network,
+            _load_auth_store, _load_provider_state, _optional_base_url, _validate_thor_inference_url_from_network,
         )
 
-        state = _load_provider_state(_load_auth_store(), "nous") or {}
-        url = _validate_nous_inference_url_from_network(_optional_base_url(state.get("inference_base_url"))) or ""
+        state = _load_provider_state(_load_auth_store(), "thor") or {}
+        url = _validate_thor_inference_url_from_network(_optional_base_url(state.get("inference_base_url"))) or ""
         return url.rstrip("/").removesuffix("/v1")
     except Exception:
         return ""
 
 
-# Static endpoint identity per provider; dynamic ones (deepinfra, nous) are resolved in pricing_cache_scope.
+# Static endpoint identity per provider; dynamic ones (deepinfra, thor) are resolved in pricing_cache_scope.
 _STATIC_PRICING_SCOPES = {
     "openrouter": lambda: _OPENROUTER_PRICING_BASE,
     "ai-gateway": _ai_gateway_pricing_scope,
@@ -612,21 +612,21 @@ def pricing_cache_scope(
         return static()
     if normalized == "deepinfra":
         return _deepinfra_catalog_url()[0]
-    if normalized == "nous":
+    if normalized == "thor":
         try:
-            from thor_cli.auth import _nous_inference_env_override
+            from thor_cli.auth import _thor_inference_env_override
 
-            env_base = _nous_inference_env_override()
+            env_base = _thor_inference_env_override()
         except Exception:
             env_base = None
         if env_base:
             return env_base.rstrip("/").removesuffix("/v1")
-        if normalize_provider(current_provider) == "nous" and current_base_url:
+        if normalize_provider(current_provider) == "thor" and current_base_url:
             return current_base_url.rstrip("/").removesuffix("/v1")
-        persisted_base = get_cached_nous_inference_base_url()
+        persisted_base = get_cached_thor_inference_base_url()
         if persisted_base:
             return persisted_base
-        return _pricing_provider_cache_keys.get((_pricing_profile_key(), normalized), _DEFAULT_NOUS_INFERENCE_BASE)
+        return _pricing_provider_cache_keys.get((_pricing_profile_key(), normalized), _DEFAULT_THOR_PORTAL_INFERENCE_BASE)
     return ""
 
 
@@ -645,7 +645,7 @@ def _cached_only_pricing(normalized: str) -> dict[str, dict[str, str]]:
 def get_pricing_for_provider(
     provider: str, *, base_url: str = "", force_refresh: bool = False, cached_only: bool = False
 ) -> dict[str, dict[str, str]]:
-    """Return live pricing for providers that support it (openrouter, nous, ai-gateway, novita,
+    """Return live pricing for providers that support it (openrouter, thor, ai-gateway, novita,
     deepinfra, fireworks, kilocode); ``{}`` for everything else. ``cached_only`` never starts
     provider I/O: normal picker opens use it so cold endpoints cannot hold the response path,
     while a background prewarm fills the same caches for later opens."""
@@ -748,5 +748,5 @@ _PRICING_FETCHERS = {
     "deepinfra": _fetch_deepinfra_pricing,
     "fireworks": _fetch_fireworks_pricing_for_provider,
     "kilocode": _fetch_kilocode_pricing_for_provider,
-    "nous": _fetch_nous_pricing_for_provider,
+    "thor": _fetch_thor_pricing_for_provider,
 }

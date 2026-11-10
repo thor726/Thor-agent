@@ -1,6 +1,6 @@
 """Usage-window allowances as the server sends them: one list, in display order.
 
-The Portal account (``usage_window.gauges``) and the API (``x-nous-credits-window-gauges``, also on the 402)
+The Portal account (``usage_window.gauges``) and the API (``x-thor-credits-window-gauges``, also on the 402)
 send the same shape, so Thor draws whatever arrives and a new allowance needs no Thor release.
 ``scope`` says which models a full gauge stops: ``all`` = every paid model, ``top_tier`` = the models the
 gateway marks top tier. Free models draw on nothing.

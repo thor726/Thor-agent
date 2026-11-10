@@ -1,6 +1,6 @@
 import { thorApi, profileScoped } from './client'
 
-// Web access: turn on the Webapp the gateway on THIS machine serves, for other devices, behind Nous
+// Web access: turn on the Webapp the gateway on THIS machine serves, for other devices, behind Thor
 // sign-in. The backend owns every fact here; the pane renders /status and asks for changes.
 
 export type WebAccessMode = 'lan' | 'public'
@@ -13,7 +13,7 @@ export interface WebAccessStatus {
   lan_address: null | string
   /** Who the configured web app serves; `local` is a loopback bind, reachable from this computer only. */
   mode: 'local' | null | WebAccessMode
-  nous_signed_in: boolean
+  thor_signed_in: boolean
   port: number
   public_url: string
   /** The newest restart of this gateway exited without replacing it; `pid` is the `restart_pid` that

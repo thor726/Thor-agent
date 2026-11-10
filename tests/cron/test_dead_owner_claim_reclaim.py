@@ -10,7 +10,7 @@ Two-part fix under test here:
 
 1. ``thor_cli.cron._job_action("run", ...)`` declares the channel stateless
    before invoking the cron API, so the background-dispatch path is gated off
-   and the run executes synchronously to completion in the CLI process.
+   and the run executes synchrothorly to completion in the CLI process.
 2. ``cron.scheduler.tick`` periodically reaps execution rows whose owner
    process is provably dead (``recover_interrupted_executions``), so a stale
    ``claimed`` row from a crashed/exited owner auto-clears without a gateway
@@ -147,7 +147,7 @@ class TestTickReapsDeadOwnerClaims:
         assert _run_tick() == 0
 
 
-class TestOneShotCliRunIsSynchronous:
+class TestOneShotCliRunIsSynchrothor:
     @pytest.fixture(autouse=True)
     def _restore_async_delivery_flag(self):
         from gateway.session_context import _SESSION_ASYNC_DELIVERY, _UNSET
@@ -158,7 +158,7 @@ class TestOneShotCliRunIsSynchronous:
 
     def test_cli_run_declares_stateless_channel_before_dispatch(self, monkeypatch):
         """`thor cron run` must gate off async delivery so the run executes
-        synchronously in the CLI process instead of on a doomed daemon thread."""
+        synchrothorly in the CLI process instead of on a doomed daemon thread."""
         from gateway.session_context import async_delivery_supported
         from thor_cli import cron as cron_cli
 
@@ -193,7 +193,7 @@ class TestOneShotCliRunIsSynchronous:
 
     def test_background_dispatch_refused_when_channel_stateless(self, monkeypatch):
         """End-to-end gate: with the stateless declaration active, the cron
-        tool's background dispatcher must fall back to synchronous execution
+        tool's background dispatcher must fall back to synchrothor execution
         (return None) even when a session key is inherited from a gateway env."""
         from gateway.session_context import declare_stateless_channel
         from tools.cronjob_tools import _try_dispatch_background_run

@@ -67,7 +67,7 @@ it('a failed backend update shares its output from the backend and shows the lin
   })
 
   const [method, params] = request.mock.calls[0]
-  expect(method).toBe('diagnostics.share_nous')
+  expect(method).toBe('diagnostics.share_thor')
   expect(params.error_context).toContain('Backend update failed.')
   expect(params.extra_files['update-output.log']).toContain('venv rebuild failed (exit 3)')
   expect(screen.getByText('https://nas.example/view/u1')).toBeTruthy()

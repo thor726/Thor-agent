@@ -296,12 +296,12 @@ def _remove_systemd_gateway() -> bool:
 
 
 # Both gateway LaunchAgent naming schemes: the current ``ai.thor.gateway*``
-# label and the ``io.nousresearch.thor-agent.gateway*`` label older builds
+# label and the ``io.thorresearch.thor-agent.gateway*`` label older builds
 # installed. An uninstall must sweep BOTH — a stale agent keeps respawning the
 # gateway after the code tree is gone (#62209).
 _LAUNCHD_GATEWAY_PLIST_PATTERNS = (
     "ai.thor.gateway*.plist",
-    "io.nousresearch.thor-agent.gateway*.plist",
+    "io.thorresearch.thor-agent.gateway*.plist",
 )
 
 
@@ -925,9 +925,9 @@ def _macos_cache_leftover_dirs() -> list[Path]:
     caches = Path.home() / "Library" / "Caches"
     return [
         caches / "Thor",
-        caches / "com.nousresearch.thor",
+        caches / "com.thorresearch.thor",
         caches / "thor-setup",
-        caches / "com.nousresearch.thor.setup",
+        caches / "com.thorresearch.thor.setup",
     ]
 
 
@@ -1144,8 +1144,8 @@ def _perform_uninstall(
 
 
 _REINSTALL_HINT = {
-    True: "  iex (irm https://thor-agent.nousresearch.com/install.ps1)",
-    False: "  curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash"}
+    True: "  iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)",
+    False: "  curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash"}
 # windows -> [(line, color or None)]
 _RELOAD_HINT = {
     True: [("Open a new terminal (PowerShell / Windows Terminal) to pick up", Colors.YELLOW),

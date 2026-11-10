@@ -224,8 +224,8 @@ def _resolve_provider_uncached() -> tuple[Optional[BrowserProvider], bool]:
         logger.debug("Could not read cloud_provider from config: %s", exc)
     if provider_key in ("local", "camofox"):
         return None, True  # camofox is a plugin with its own tool surface, not a CDP provider
-    if provider_key == "nous":
-        provider_key = "browser-use"  # the managed Nous subscription is served by the Browser Use provider
+    if provider_key == "thor":
+        provider_key = "browser-use"  # the managed Thor subscription is served by the Browser Use provider
     if provider_key:
         resolved = _instantiate_explicit_provider(provider_key)
         return resolved, resolved is not None

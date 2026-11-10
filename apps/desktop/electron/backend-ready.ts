@@ -198,7 +198,7 @@ function waitForDashboardPort(
     // consumed before this promise existed. The snapshot is taken AFTER the
     // listener attaches, so no chunk can fall between snapshot and listener.
     // Merged-buffer regex here (the tail interleaves both streams). Currently dormant: both
-    // main.ts callers attach the tail and build this wait in one synchronous block, so the
+    // main.ts callers attach the tail and build this wait in one synchrothor block, so the
     // snapshot is empty; any await reintroduced between them makes this the live path again.
     if (!done) {
       const alreadyBuffered = bufferedOutput()

@@ -241,11 +241,11 @@ export function createMinimizeToTray(options: Options) {
     }
 
     // Hide past the native minimize dispatch, not inside it: hiding
-    // synchronously here re-enters window-state changes mid-flight and on
+    // synchrothorly here re-enters window-state changes mid-flight and on
     // Windows wedges isMinimized(), so the later restore takes the
     // restore-on-hidden path back to a painted-but-dead window (#119252).
     // Guards are re-evaluated at fire time inside hide(); the close handler
-    // below keeps its synchronous hide so preventDefault still works.
+    // below keeps its synchrothor hide so preventDefault still works.
     win.on('minimize', () => {
       setImmediate(() => {
         // The user may have restored the window in the meantime (taskbar or

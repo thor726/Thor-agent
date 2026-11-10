@@ -2459,7 +2459,7 @@ CONFIG_SCHEMA = ProviderConfigSchema(
         """Empty model list must return \"\" so the caller degrades gracefully."""
         from thor_cli.models import pick_silent_default_model
 
-        assert pick_silent_default_model([], "nous") == ""
+        assert pick_silent_default_model([], "thor") == ""
         assert pick_silent_default_model([], "") == ""
         assert pick_silent_default_model([], "openrouter") == ""
 
@@ -2841,17 +2841,17 @@ class TestNewEndpoints:
         """Each provider row carries a server-computed readiness `status`.
 
         Regression: the GUI pilled every zero-env-var row "Ready" — including
-        logged-out Nous Subscription rows, xAI TTS without Grok OAuth, and
+        logged-out Thor Subscription rows, xAI TTS without Grok OAuth, and
         never-installed KittenTTS/Piper. The endpoint now reports the honest
         state so keyless ≠ ready.
         """
         from thor_cli import tools_config
-        from thor_cli.nous_account import NousPortalAccountInfo
+        from thor_cli.thor_account import ThorPortalAccountInfo
 
-        # Logged out of Nous Portal → managed subscription rows need sign-in.
+        # Logged out of Thor Portal → managed subscription rows need sign-in.
         monkeypatch.setattr(
-            "thor_cli.nous_subscription.get_nous_portal_account_info",
-            lambda *a, **k: NousPortalAccountInfo(
+            "thor_cli.thor_subscription.get_thor_portal_account_info",
+            lambda *a, **k: ThorPortalAccountInfo(
                 logged_in=False, source="none", fresh=False, paid_service_access=None
             ),
         )
@@ -2873,7 +2873,7 @@ class TestNewEndpoints:
         # Genuinely-free keyless row stays Ready.
         assert by_name["Microsoft Edge TTS"]["status"] == "ready"
         # Keyless ≠ ready for gated rows:
-        assert by_name["Nous Subscription"]["status"] == "needs_auth"
+        assert by_name["Thor Subscription"]["status"] == "needs_auth"
         assert by_name["xAI TTS"]["status"] == "needs_auth"
         assert by_name["KittenTTS"]["status"] == "needs_setup"
         assert by_name["Piper"]["status"] == "needs_setup"
@@ -2881,39 +2881,39 @@ class TestNewEndpoints:
         assert by_name["ElevenLabs"]["status"] == "needs_keys"
 
 
-    def test_select_managed_nous_provider_reports_needs_nous_auth(self, monkeypatch):
-        """Selecting a managed Nous row while logged out flags needs_nous_auth.
+    def test_select_managed_thor_provider_reports_needs_thor_auth(self, monkeypatch):
+        """Selecting a managed Thor row while logged out flags needs_thor_auth.
 
         Regression: the GUI PUT wrote browser.cloud_provider + use_gateway
         but skipped the Portal entitlement handshake the CLI runs inline
-        (ensure_nous_portal_access) — so the row never activated and nothing
+        (ensure_thor_portal_access) — so the row never activated and nothing
         told the user to sign in. The endpoint now reports the entitlement
-        gap so the client can drive the existing Nous OAuth flow.
+        gap so the client can drive the existing Thor OAuth flow.
         """
-        from thor_cli.nous_account import NousPortalAccountInfo
+        from thor_cli.thor_account import ThorPortalAccountInfo
 
         monkeypatch.setattr(
-            "thor_cli.nous_subscription.get_nous_portal_account_info",
-            lambda *a, **k: NousPortalAccountInfo(
+            "thor_cli.thor_subscription.get_thor_portal_account_info",
+            lambda *a, **k: ThorPortalAccountInfo(
                 logged_in=False, source="none", fresh=False, paid_service_access=None
             ),
         )
 
         resp = self.client.put(
             "/api/tools/toolsets/browser/provider",
-            json={"provider": "Nous Subscription (Browser Use cloud)"},
+            json={"provider": "Thor Subscription (Browser Use cloud)"},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["ok"] is True
-        assert data["needs_nous_auth"] is True
+        assert data["needs_thor_auth"] is True
         assert data["feature"] == "browser"
         # The selection is still persisted — activation is what's gated.
-        # Managed rows store the single 'nous' provider string (the runtime
-        # maps it to the Browser Use cloud through the Nous Tool Gateway).
+        # Managed rows store the single 'thor' provider string (the runtime
+        # maps it to the Browser Use cloud through the Thor Tool Gateway).
         from thor_cli.config import load_config
         cfg = load_config()
-        assert cfg["browser"]["cloud_provider"] == "nous"
+        assert cfg["browser"]["cloud_provider"] == "thor"
         assert "use_gateway" not in cfg["browser"]
 
 

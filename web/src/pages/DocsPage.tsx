@@ -5,7 +5,7 @@ import { usePageHeader } from "@/contexts/usePageHeader";
 import { cn } from "@/lib/utils";
 import { PluginSlot } from "@/plugins";
 
-export const THOR_DOCS_URL = "https://thor-agent.nousresearch.com/docs/";
+export const THOR_DOCS_URL = "https://thor-agent.thor-agent.local/docs/";
 
 const DS_BUTTON_OUTLINED_LINK_CN = cn(
   "group relative inline-grid grid-cols-[auto_1fr_auto] items-center",

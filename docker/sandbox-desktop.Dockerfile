@@ -5,9 +5,9 @@
 # Bot Screen, computer_use and the browser can live INSIDE the sandbox instead of
 # on the gateway host. No Thor runtime in here; the gateway shells in.
 #
-#   docker build -f docker/sandbox-desktop.Dockerfile -t nousresearch/thor-sandbox:desktop .
+#   docker build -f docker/sandbox-desktop.Dockerfile -t thor-agent/thor-sandbox:desktop .
 #
-# Published as nousresearch/thor-sandbox:desktop by .github/workflows/sandbox-image.yml
+# Published as thor-agent/thor-sandbox:desktop by .github/workflows/sandbox-image.yml
 # on releases and manual dispatch only: it carries no Thor code, so it does not track main.
 # The tag lives in the ARG so CI and a local build read one place; hadolint cannot
 # see through the substitution, hence the inline ignore.

@@ -79,7 +79,7 @@ WEBAPP_LOGIN = 'auth:v1:["basic","","admin"]'
     ('basic:admin', True), (f'local:{OWNER}', True), ('auth:v1:["self-hosted","https://idp","sub"]', True),
     ('auth:v1:["local","","' + OWNER + '"]', True),
     ('local:uid:999999', False), ('auth:v1:["local","","uid:999999"]', False),
-    ('telegram:42', False), ('uid:999999', False), ('nous:account', False), ('auth:v1:["","","x"]', False),
+    ('telegram:42', False), ('uid:999999', False), ('thor:account', False), ('auth:v1:["","","x"]', False),
 ])
 def test_only_sign_in_stamps_and_this_machines_account_read_as_the_owners(stamp, owned):
     assert same_owner(stamp, OWNER) is owned

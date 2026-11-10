@@ -783,7 +783,7 @@ class TestAsyncStreamAggregation:
     @pytest.mark.asyncio
     async def test_async_stream_is_consumed_with_async_for(self):
         # The sweeper review of PR #60686 flagged that awaiting create() and
-        # then iterating synchronously raises — the async contract is
+        # then iterating synchrothorly raises — the async contract is
         # ``async for``. Verify the async aggregator consumes a real async
         # iterator and preserves tool-call deltas.
         tc0 = SimpleNamespace(

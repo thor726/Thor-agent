@@ -595,7 +595,7 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):
         return result
 
     def _clarify_callback_sync(self, questions) -> dict:
-        """Answer the clarify tool's questions (clarify_tool's synchronous contract): one card per
+        """Answer the clarify tool's questions (clarify_tool's synchrothor contract): one card per
         question, stop at the first the user never answers. The stream/typing re-arm waits for the
         last question — between two cards it only opens a bubble the next boundary closes."""
         from gateway.run_turn_runner_clarify_delivery import UNDELIVERED, UNDELIVERED_DECLINED, UNDELIVERED_NO_SURFACE

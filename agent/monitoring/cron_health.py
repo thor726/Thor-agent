@@ -97,7 +97,7 @@ def project_execution_event(record: dict[str, Any], *, delivery_outcome: Optiona
 
 
 def emit_execution_state(record: Optional[dict[str, Any]], *, delivery_outcome: Optional[str] = None) -> None:
-    """Best-effort lifecycle emit; terminal states synchronously cross the queue barrier."""
+    """Best-effort lifecycle emit; terminal states synchrothorly cross the queue barrier."""
     if not record:
         return
     try:

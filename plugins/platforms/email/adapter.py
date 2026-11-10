@@ -197,7 +197,7 @@ def _send_imap_id(imap: imaplib.IMAP4) -> None:
         except Exception:
             version = "0"
         imap.xatom("ID", f'("name" "thor-agent" "version" "{version}" '
-                         '"vendor" "NousResearch" "support-email" "noreply@nousresearch.com")')
+                         '"vendor" "dwisetyabudi15581" "support-email" "noreply@thor-agent.local")')
     except Exception as e:
         logger.debug("[Email] IMAP ID command not accepted: %s", e)
 
@@ -1018,7 +1018,7 @@ def register(ctx) -> None:
         standalone_send=StandaloneSendPolicy(text_direct=True),
         name="email", label="Email", adapter_factory=EmailAdapter, check_fn=check_email_requirements, is_connected=_is_connected,
         dashboard_description="Talk to Thor through an IMAP/SMTP mailbox.",
-        docs_url="https://thor-agent.nousresearch.com/docs/user-guide/messaging/",
+        docs_url="https://thor-agent.thor-agent.local/docs/user-guide/messaging/",
         dashboard_env_vars=("EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_IMAP_HOST", "EMAIL_SMTP_HOST"),
         dashboard_required_env=("EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_IMAP_HOST", "EMAIL_SMTP_HOST"),
         required_env=["EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_SMTP_HOST"],

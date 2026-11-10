@@ -99,7 +99,7 @@ class TestFireworksDoctor:
         with contextlib.suppress(Exception):
             from thor_cli import auth as _auth_mod
 
-            monkeypatch.setattr(_auth_mod, "get_nous_auth_status", dict)
+            monkeypatch.setattr(_auth_mod, "get_thor_auth_status", dict)
             monkeypatch.setattr(_auth_mod, "get_codex_auth_status", dict)
 
         buf = io.StringIO()
@@ -136,7 +136,7 @@ class TestFireworksAuxiliary:
         client, _model, kwargs = self._resolve("fireworks")
         assert client is not None
         headers = kwargs.get("default_headers", {})
-        assert headers["HTTP-Referer"] == "https://thor-agent.nousresearch.com"
+        assert headers["HTTP-Referer"] == "https://thor-agent.thor-agent.local"
         assert headers["X-Title"] == "Thor Agent"
         assert kwargs["base_url"] == "https://api.fireworks.ai/inference/v1"
 

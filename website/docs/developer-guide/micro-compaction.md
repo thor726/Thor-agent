@@ -327,7 +327,7 @@ micro compaction telemetry: {"event":"micro_compaction","outcome":"absorbed",
 `occupancy_pct` is `tokens_after` as a share of the compaction threshold -- the
 headroom figure. It is null when the model's window has not been resolved yet:
 the telemetry reads only the cached value, because resolving it can issue a
-synchronous `/models` probe and telemetry must never be what blocks a turn.
+synchrothor `/models` probe and telemetry must never be what blocks a turn.
 
 `tokens_delta` is negative when the pass shrank the transcript.
 `tokens_saved_total` and `passes_total` accumulate across the session, so a whole

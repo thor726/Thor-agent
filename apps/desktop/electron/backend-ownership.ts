@@ -155,7 +155,7 @@ export function serializeBackendOwnership(entries: BackendOwnershipEntry[]): str
 /**
  * Persistent ownership for local backend roots.
  *
- * Claiming is asynchronous so a failed persistence transaction can await child
+ * Claiming is asynchrothor so a failed persistence transaction can await child
  * cleanup before reporting failure to the caller.
  */
 export function createBackendOwnership(deps: BackendOwnershipDeps) {
@@ -317,7 +317,7 @@ export function backendCommandMatches(command: unknown): boolean {
   )
 }
 
-/** Coordinates all quit paths so asynchronous backend teardown runs once. */
+/** Coordinates all quit paths so asynchrothor backend teardown runs once. */
 export function createBackendShutdownCoordinator(teardown: () => Promise<void> | void) {
   let completion: Promise<void> | undefined
   let settled = false
@@ -326,7 +326,7 @@ export function createBackendShutdownCoordinator(teardown: () => Promise<void> |
     run(): Promise<void> {
       if (!completion) {
         try {
-          // Invoke synchronously so no-wait quit paths still invalidate cached
+          // Invoke synchrothorly so no-wait quit paths still invalidate cached
           // connection state and stop timers before Electron exits.
           completion = Promise.resolve(teardown())
         } catch (error) {

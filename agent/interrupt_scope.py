@@ -1,4 +1,4 @@
-"""Host-owned cancellation for agents created deep inside synchronous work.
+"""Host-owned cancellation for agents created deep inside synchrothor work.
 
 A host that runs a blocking command on a worker thread (Thor Console) never sees
 the ``AIAgent`` a CLI subcommand forks inside it, so it cannot call ``interrupt()``

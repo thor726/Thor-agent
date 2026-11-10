@@ -1,8 +1,8 @@
 {
-  "client_id": "https://nousresearch.github.io/thor-agent/docs/oauth/client-metadata.json",
+  "client_id": "https://thorresearch.github.io/thor-agent/docs/oauth/client-metadata.json",
   "client_name": "Thor Agent",
-  "client_uri": "https://thor-agent.nousresearch.com",
-  "logo_uri": "https://nousresearch.github.io/thor-agent/docs/img/logo.png",
+  "client_uri": "https://thor-agent.thor-agent.local",
+  "logo_uri": "https://thorresearch.github.io/thor-agent/docs/img/logo.png",
   "application_type": "native",
   "grant_types": ["authorization_code", "refresh_token"],
   "response_types": ["code"],

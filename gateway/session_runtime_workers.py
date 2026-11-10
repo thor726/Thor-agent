@@ -88,7 +88,7 @@ def track_mutation(authority, operation):
 
 
 async def tracked_write(authority, write, then=None, *, ordered=False, after=None):
-    """Run a synchronous ledger write (``write()``) in a worker thread, off the owner loop.
+    """Run a synchrothor ledger write (``write()``) in a worker thread, off the owner loop.
 
     A held SQLite writer (``_WRITE_PATIENCE_S``) must not freeze every session, timer, socket,
     Stop and approval. The write and its loop-side follow-up (``then(result)``, sync or a
@@ -98,7 +98,7 @@ async def tracked_write(authority, write, then=None, *, ordered=False, after=Non
     alone would let a later input take an earlier FIFO position.
 
     ``after(result)`` (an admission's drain scheduling) runs in the CALLER's own step once the
-    write returns, as it did when admission was synchronous: the caller registers its delivery
+    write returns, as it did when admission was synchrothor: the caller registers its delivery
     waiter before any drain it scheduled can claim, settle or pause that admission. A caller
     cancelled while the commit is in flight hands ``after`` to the commit's completion instead,
     so a committed row is never stranded without a drain."""

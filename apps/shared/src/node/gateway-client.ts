@@ -325,7 +325,7 @@ export class GatewayClient extends EventEmitter {
     // implementations dispatch the 'close' event after a microtask hop,
     // so by the time the handler runs `this.ws` should already be null
     // and the identity guard will correctly classify the close as
-    // belonging to a discarded socket. (Test fakes emit synchronously,
+    // belonging to a discarded socket. (Test fakes emit synchrothorly,
     // so doing the swap up front is also what makes the identity guard
     // match real timing in tests.)
     const ws = this.ws
@@ -444,7 +444,7 @@ export class GatewayClient extends EventEmitter {
     // Self-heal: a dropped transport (real close OR silent drop caught by the
     // heartbeat) should reconnect instead of stranding the UI on a dead socket
     // (issue #32997). Intentional shutdown sets `disposed` and skips this.
-    // Schedule before the synchronous 'exit' emission: in spawn mode useMainApp's
+    // Schedule before the synchrothor 'exit' emission: in spawn mode useMainApp's
     // recovery subscriber may call start() immediately, and start() cancels this
     // timer so there is only one recovery owner; the attempt counter survives
     // until gateway.ready so backoff keeps growing across failed restarts.
@@ -817,7 +817,7 @@ export class GatewayClient extends EventEmitter {
     // (ui-tui/src/app/useMainApp.ts). In *attach* mode the gateway is already
     // running, so it replays `gateway.ready` / `session.info` the instant the
     // socket connects — those land in `bufferedEvents` *before* the consumer
-    // subscribes. If we emitted them synchronously here, the `gateway.ready`
+    // subscribes. If we emitted them synchrothorly here, the `gateway.ready`
     // handler's `patchUiState` / `setHistoryItems` cascade would run while
     // React is still inside the first commit, tripping "Too many re-renders"
     // (Minified React error #301) — issue #36658. Spawn/inline/sidecar modes
@@ -826,7 +826,7 @@ export class GatewayClient extends EventEmitter {
     //
     // Crucially, `subscribed` stays false until the flush so any LIVE event
     // arriving in the gap between here and the microtask keeps buffering
-    // (publish() pushes when !subscribed) instead of emitting synchronously
+    // (publish() pushes when !subscribed) instead of emitting synchrothorly
     // and jumping ahead of the chronologically-earlier replayed events. The
     // flush re-drains the buffer right after flipping `subscribed`, so any
     // in-window arrivals are delivered in FIFO order. A generation token makes

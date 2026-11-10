@@ -39,7 +39,7 @@ function makeFakeDesktop(version) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'msix-roundtrip-'))
   fs.writeFileSync(
     path.join(dir, 'product-identity.cjs'),
-    "module.exports = { store: false, light: false, displayName: 'Thor', appId: 'com.nousresearch.thor-bundled', channel: 'latest', artifactNamePascal: 'ThorBundled', msixAppIdWithOrg: 'NousResearch.ThorBundled' }\n"
+    "module.exports = { store: false, light: false, displayName: 'Thor', appId: 'com.thorresearch.thor-bundled', channel: 'latest', artifactNamePascal: 'ThorBundled', msixAppIdWithOrg: 'dwisetyabudi15581.ThorBundled' }\n"
   )
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'thor-desktop', version }))
   return dir

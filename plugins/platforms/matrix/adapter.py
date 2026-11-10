@@ -2967,7 +2967,7 @@ class MatrixAdapter(BasePlatformAdapter):
 
     def _voice_may_park(self, room_id: str, body: str, content: dict, relates_to: dict,
                         mention_claimed: bool) -> bool:
-        """Synchronous pre-check of the ``_resolve_message_context`` park branch (only DM-ness
+        """Synchrothor pre-check of the ``_resolve_message_context`` park branch (only DM-ness
         needs an await; a DM voice's mark is released as soon as that is known)."""
         if mention_claimed or not self._require_mention or not is_voice_event(content):
             return False

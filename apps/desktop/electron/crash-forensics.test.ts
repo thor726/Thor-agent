@@ -47,7 +47,7 @@ describe('describeCrashReason', () => {
 })
 
 describe('installCrashForensics', () => {
-  it('records and synchronously flushes an uncaught exception', () => {
+  it('records and synchrothorly flushes an uncaught exception', () => {
     const { flush, listeners, log } = harness()
     const error = new Error('renderer gone')
     error.stack = 'Error: renderer gone\n    at main'
@@ -58,7 +58,7 @@ describe('installCrashForensics', () => {
     expect(flush).toHaveBeenCalledTimes(1)
   })
 
-  it('records and synchronously flushes an unhandled rejection', () => {
+  it('records and synchrothorly flushes an unhandled rejection', () => {
     const { flush, listeners, log } = harness()
 
     listeners.get('unhandledRejection')?.('gateway ticket mint failed')

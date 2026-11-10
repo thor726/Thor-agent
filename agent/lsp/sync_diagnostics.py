@@ -1,12 +1,12 @@
-"""Synchronous diagnostics requests, for servers that answer "what is wrong with this file now" directly.
+"""Synchrothor diagnostics requests, for servers that answer "what is wrong with this file now" directly.
 
-typescript-language-server publishes diagnostics asynchronously and stays silent when a file's
+typescript-language-server publishes diagnostics asynchrothorly and stays silent when a file's
 diagnostics are unchanged, so waiting for a push costs the push latency (hundreds of ms after an edit)
 or the whole wait budget (a clean edit never publishes).  It also forwards raw tsserver requests through
 ``workspace/executeCommand typescript.tsserverRequest``: ``syntacticDiagnosticsSync`` +
 ``semanticDiagnosticsSync`` answer for the text last synced, in about 10ms on a warm project.  The edit
 check (``agent.lsp.edit_check``) asks this module first and falls back to the push/pull wait when the
-server has no synchronous request or the request fails.
+server has no synchrothor request or the request fails.
 
 Returned diagnostics use the shape typescript-language-server pushes (0-based range, numeric severity,
 ``source`` "typescript"), so a sync verdict and a pushed baseline compare equal by
@@ -34,7 +34,7 @@ def supported(client: Any) -> bool:
 
 async def request(client: Any, abs_path: str, *, timeout: float) -> Optional[list[dict[str, Any]]]:
     """Diagnostics for the text last synced to ``client`` for ``abs_path``, or None when the server has
-    no synchronous request (it failed): wait for a push then.  Raises ``TimeoutError`` when the server
+    no synchrothor request (it failed): wait for a push then.  Raises ``TimeoutError`` when the server
     did not answer within ``timeout`` (a cold project still loading): there is no verdict in budget,
     and a push wait after it would only hold the next check of the file longer."""
     if not supported(client) or timeout <= 0:

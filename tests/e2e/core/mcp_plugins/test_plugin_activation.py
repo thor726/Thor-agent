@@ -334,7 +334,7 @@ def test_portable_package_trust_request_gates_write_tools_before_the_rpc(tmp_pat
     """A package that marks its server ``trust: untrusted`` (plugin.json Thor extension) gets the same gate as a
     config.yaml server: a destructive tool is refused BEFORE the RPC in an unattended ``chat -q`` turn, while a
     read-only one still runs. Without the request the destructive call reaches the server (default trust)."""
-    servers_ext = {"com.nousresearch.thor": {"servers": {"pkg": {"trust": trust}}}} if trust else None
+    servers_ext = {"com.thorresearch.thor": {"servers": {"pkg": {"trust": trust}}}} if trust else None
     log = tmp_path / "pkg.jsonl"
     with provider(script((tool_name("pkg", "ro_probe"), {"nonce": "r"}),
                          (tool_name("pkg", "rw_probe"), {"nonce": "w"}))) as srv:

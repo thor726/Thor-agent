@@ -641,7 +641,7 @@ async def _handle_drive_comment_event(client: Any, data: Any, *, self_open_id: s
                     else _local_comment_prompt(client, comment_id, reply_id, from_open_id, comment_detail.get("quote", ""), doc))
     logger.info("[Feishu-Comment] [Step 4/5] Prompt built (%d chars), running agent...", len(prompt))
     logger.debug("[Feishu-Comment] Full prompt:\n%s", prompt)
-    # run_conversation is synchronous -> thread. Session key groups all comment cards on one doc.
+    # run_conversation is synchrothor -> thread. Session key groups all comment cards on one doc.
     # This turn bypasses the gateway's per-profile message handler, so the only scope it has is the
     # one on this coroutine (the adapter's profile under multiplex). A bare executor thread starts
     # with an EMPTY context: model/credential resolution and the AIAgent would then run under the

@@ -56,7 +56,7 @@ def homes(tmp_path, monkeypatch):
     for home in (a, b):
         (home / "cache").mkdir(parents=True)
     monkeypatch.setenv("THOR_HOME", str(a))
-    for var in ("DEEPINFRA_API_KEY", "DEEPINFRA_BASE_URL", "NOUS_INFERENCE_BASE_URL"):
+    for var in ("DEEPINFRA_API_KEY", "DEEPINFRA_BASE_URL", "THOR_PORTAL_INFERENCE_BASE_URL"):
         monkeypatch.delenv(var, raising=False)
     return a, b
 
@@ -81,27 +81,27 @@ def test_deepinfra_catalog_is_fetched_with_each_profiles_key(homes, monkeypatch)
         assert models._fetch_deepinfra_models() == ["di/model-B"]
 
 
-def test_nous_reasoning_caps_follow_each_profiles_portal(homes, monkeypatch):
+def test_thor_reasoning_caps_follow_each_profiles_portal(homes, monkeypatch):
     a, b = homes
-    (a / ".env").write_text("NOUS_INFERENCE_BASE_URL=https://portal-a.example/v1\n", encoding="utf-8")
-    (b / ".env").write_text("NOUS_INFERENCE_BASE_URL=https://portal-b.example/v1\n", encoding="utf-8")
+    (a / ".env").write_text("THOR_PORTAL_INFERENCE_BASE_URL=https://portal-a.example/v1\n", encoding="utf-8")
+    (b / ".env").write_text("THOR_PORTAL_INFERENCE_BASE_URL=https://portal-b.example/v1\n", encoding="utf-8")
     from thor_cli import models
     import thor_cli.models_reasoning_caps as caps
 
-    for attr, value in (("_nous_reasoning_caps_cache", None), ("_nous_reasoning_caps_failed_at", None),
-                        ("_nous_caps_disk_checked", False), ("_nous_caps_warm_started", False)):
+    for attr, value in (("_thor_reasoning_caps_cache", None), ("_thor_reasoning_caps_failed_at", None),
+                        ("_thor_caps_disk_checked", False), ("_thor_caps_warm_started", False)):
         monkeypatch.setattr(models, attr, value)
 
     def transport(req, *, timeout, **kw):
         effort = "low" if "portal-a" in req.full_url else "high"
-        return _json_resp({"data": [{"id": "nous/m", "supported_parameters": ["reasoning"],
+        return _json_resp({"data": [{"id": "thor/m", "supported_parameters": ["reasoning"],
                                      "reasoning": {"supported_efforts": [effort]}}]})
 
     monkeypatch.setattr(models, "_urlopen_model_catalog_request", transport)
     with _Scoped(a):
-        assert caps.nous_model_reasoning_capabilities("nous/m", allow_fetch=True)["supported_efforts"] == ["low"]
+        assert caps.thor_model_reasoning_capabilities("thor/m", allow_fetch=True)["supported_efforts"] == ["low"]
     with _Scoped(b):
-        assert caps.nous_model_reasoning_capabilities("nous/m", allow_fetch=True)["supported_efforts"] == ["high"]
+        assert caps.thor_model_reasoning_capabilities("thor/m", allow_fetch=True)["supported_efforts"] == ["high"]
 
 
 def test_swr_refresh_runs_as_the_profile_that_spawned_it(homes):
@@ -190,7 +190,7 @@ def test_failed_guest_mint_only_suppresses_that_profile(homes, monkeypatch, tmp_
     a, b = homes
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared"))
     import thor_cli.anon_auth as anon
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
 
     anon.reset_mint_memo_for_tests()
     status = {"code": 429}
@@ -204,7 +204,7 @@ def test_failed_guest_mint_only_suppresses_that_profile(homes, monkeypatch, tmp_
             return httpx.Response(201, json={"token": "anon_b", "user_id": "u", "org_id": "o"})
         return httpx.Client(transport=httpx.MockTransport(handler))
 
-    monkeypatch.setattr(auth_nous, "_nous_http_client", client)
+    monkeypatch.setattr(auth_thor, "_thor_http_client", client)
     with _Scoped(a), pytest.raises(Exception):
         anon.ensure_portal_identity(explicit=True, timeout_seconds=1)
     assert attempts == [str(a)]

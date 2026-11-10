@@ -3,10 +3,10 @@
 Both auth-refresh rungs in ``agent/auxiliary_client.py`` perform their retry with a
 bare ``yield`` inside a ``return`` statement:
 
-    if aux_errors.auth_refresh(failure.verdict) and client_is_nous:
-        step = _refreshed_nous_step(...)
+    if aux_errors.auth_refresh(failure.verdict) and client_is_thor:
+        step = _refreshed_thor_step(...)
         if step is not None:
-            return (yield step), None          # nous rung
+            return (yield step), None          # thor rung
     ...
             return (yield _LadderStep(
                 "retry_same_provider", ...)), None   # generic credential rung
@@ -15,7 +15,7 @@ bare ``yield`` inside a ``return`` statement:
 rung's accept predicate claims the error -- so the caller can fall through to the next
 rung. A failure no later rung acts on (``aux_errors.ladder_accepts``) re-raises on purpose.
 Used this way no exception is caught: when the
-refreshed client also fails (e.g. an out-of-credit 404 on a stale Nous runtime token),
+refreshed client also fails (e.g. an out-of-credit 404 on a stale Thor runtime token),
 the error escapes ``_aux_recovery_ladder`` and ``_ladder_provider_fallback`` never
 runs -- the configured ``auxiliary.<task>.fallback_chain`` is silently skipped. The
 rung right below (credential-pool rotation) documents the intended behavior with "then
@@ -24,7 +24,7 @@ fall through to the provider fallback" and guards its retry with try/except.
 The first test drives the real ladder generator with a scripted driver. The second
 exercises the real path end to end: a temp ``THOR_HOME`` whose ``config.yaml``
 declares a ``fallback_chain``, the real client construction and HTTP layer against a
-local endpoint, with only the credential sources stubbed (the Nous portal account
+local endpoint, with only the credential sources stubbed (the Thor portal account
 probe and the runtime-credential fetch are external boundaries).
 """
 
@@ -42,7 +42,7 @@ import agent.auxiliary_client as aux
 
 AUX_MODEL = "z-ai/glm-5.3-flash"
 FALLBACK_MODEL = "fallback-model"
-NOUS_HOST = "inference-api.nousresearch.com"
+THOR_PORTAL_HOST = "inference-api.thor-agent.local"
 
 
 class _ApiError(Exception):
@@ -65,7 +65,7 @@ def _credit_error():
 
 class _FakeClient:
     api_key = "sk-test"
-    base_url = f"https://{NOUS_HOST}/v1"
+    base_url = f"https://{THOR_PORTAL_HOST}/v1"
 
 
 class _ExplicitProviderClient:
@@ -73,7 +73,7 @@ class _ExplicitProviderClient:
     base_url = "https://vertex.example/v1"
 
 
-def _ladder(base_info=(f"https://{NOUS_HOST}/v1"), resolved_provider="nous"):
+def _ladder(base_info=(f"https://{THOR_PORTAL_HOST}/v1"), resolved_provider="thor"):
     return aux._aux_recovery_ladder(
         _auth_error(),
         client=_FakeClient(),
@@ -105,22 +105,22 @@ def hermetic(monkeypatch):
         return "chain-response"
 
     monkeypatch.setattr(aux, "_recoverable_pool_provider", lambda *a, **kw: None)
-    monkeypatch.setattr(aux, "_nous_portal_account_has_fresh_paid_access", lambda: False)
+    monkeypatch.setattr(aux, "_thor_portal_account_has_fresh_paid_access", lambda: False)
     monkeypatch.setattr(aux, "_ladder_provider_fallback", _fake_provider_fallback)
     return chain_calls
 
 
 @pytest.mark.parametrize(
     "rung,retry_succeeds",
-    [("nous", False), ("nous", True), ("provider_credential", False)],
+    [("thor", False), ("thor", True), ("provider_credential", False)],
 )
 def test_post_refresh_retry_owns_the_ladder_outcome(
         rung, retry_succeeds, monkeypatch, hermetic):
     """A failed retry resumes the ladder; a successful one returns its response."""
-    if rung == "nous":
-        monkeypatch.setattr(aux, "_refresh_nous_auxiliary_client",
+    if rung == "thor":
+        monkeypatch.setattr(aux, "_refresh_thor_auxiliary_client",
                             lambda **kwargs: (_FakeClient(), AUX_MODEL))
-        expected_step, expected_base = "call", (f"https://{NOUS_HOST}/v1")
+        expected_step, expected_base = "call", (f"https://{THOR_PORTAL_HOST}/v1")
     else:
         monkeypatch.setattr(aux, "_auth_refresh_provider_for_route",
                             lambda *a, **kw: "codex")
@@ -130,7 +130,7 @@ def test_post_refresh_retry_owns_the_ladder_outcome(
 
     ladder = _ladder(
         base_info=expected_base,
-        resolved_provider="nous" if rung == "nous" else "openrouter",
+        resolved_provider="thor" if rung == "thor" else "openrouter",
     )
     performed = []
     failure = _credit_error()
@@ -258,11 +258,11 @@ def test_explicit_provider_auth_never_uses_an_unconfigured_fallback(monkeypatch)
 
 
 @pytest.fixture
-def nous_ladder_endpoint(monkeypatch):
-    """A local endpoint that answers the Nous host, recording every request.
+def thor_ladder_endpoint(monkeypatch):
+    """A local endpoint that answers the Thor host, recording every request.
 
     The routing decision that selects the auth-refresh rung matches on the base URL
-    host, so the endpoint is addressed as the real Nous host and ``getaddrinfo`` is
+    host, so the endpoint is addressed as the real Thor host and ``getaddrinfo`` is
     redirected to the loopback server.
     """
     aux.shutdown_cached_clients()
@@ -270,13 +270,13 @@ def nous_ladder_endpoint(monkeypatch):
     requests = []
     resolve_address = socket.getaddrinfo
 
-    def local_nous_address(host, *args, **kwargs):
-        if host in (NOUS_HOST, NOUS_HOST.encode()):
+    def local_thor_address(host, *args, **kwargs):
+        if host in (THOR_PORTAL_HOST, THOR_PORTAL_HOST.encode()):
             host = "127.0.0.1"
         return resolve_address(host, *args, **kwargs)
 
-    monkeypatch.setattr(socket, "getaddrinfo", local_nous_address)
-    monkeypatch.setenv("NO_PROXY", f"127.0.0.1,localhost,{NOUS_HOST}")
+    monkeypatch.setattr(socket, "getaddrinfo", local_thor_address)
+    monkeypatch.setenv("NO_PROXY", f"127.0.0.1,localhost,{THOR_PORTAL_HOST}")
 
     class Handler(BaseHTTPRequestHandler):
         def _send(self, status, payload):
@@ -329,7 +329,7 @@ def nous_ladder_endpoint(monkeypatch):
     )
     thread.start()
     try:
-        yield f'http://{NOUS_HOST}:{server.server_port:d}', requests
+        yield f'http://{THOR_PORTAL_HOST}:{server.server_port:d}', requests
     finally:
         aux.shutdown_cached_clients()
         server.shutdown()
@@ -338,14 +338,14 @@ def nous_ladder_endpoint(monkeypatch):
 
 
 def test_auth_refresh_retry_failure_reaches_the_configured_chain_over_http(
-        tmp_path, monkeypatch, nous_ladder_endpoint):
+        tmp_path, monkeypatch, thor_ladder_endpoint):
     """End to end: the configured chain must serve the retry the refresh could not."""
-    host_url, requests = nous_ladder_endpoint
+    host_url, requests = thor_ladder_endpoint
     local_url = "http://127.0.0.1:{}".format(host_url.rsplit(":", 1)[1])
     monkeypatch.setenv("THOR_HOME", str(tmp_path))
     monkeypatch.setenv("AUX_FB_KEY", "fallback-test-key")
     config = {
-        "model": {"provider": "nous", "default": AUX_MODEL},
+        "model": {"provider": "thor", "default": AUX_MODEL},
         "providers": {"aux-fb": {"base_url": local_url + "/v1", "key_env": "AUX_FB_KEY"}},
         "auxiliary": {
             "compression": {
@@ -362,10 +362,10 @@ def test_auth_refresh_retry_failure_reaches_the_configured_chain_over_http(
     }
     (tmp_path / "config.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
     # Credential boundaries: the account probe and the runtime-credential fetch.
-    monkeypatch.setattr(aux, "_nous_portal_account_has_fresh_paid_access", lambda: False)
+    monkeypatch.setattr(aux, "_thor_portal_account_has_fresh_paid_access", lambda: False)
     monkeypatch.setattr(
-        aux, "_resolve_nous_runtime_api",
-        lambda **kwargs: ("fresh-nous-key", host_url + "/v1"),
+        aux, "_resolve_thor_runtime_api",
+        lambda **kwargs: ("fresh-thor-key", host_url + "/v1"),
     )
 
     response = aux.call_llm(
@@ -385,7 +385,7 @@ def test_auth_refresh_retry_failure_reaches_the_configured_chain_over_http(
 
 def test_exhausted_ladder_raises_the_narrowed_error(monkeypatch, hermetic):
     """No chain answers: the retry's own failure surfaces, not the healed 401."""
-    monkeypatch.setattr(aux, "_refresh_nous_auxiliary_client",
+    monkeypatch.setattr(aux, "_refresh_thor_auxiliary_client",
                         lambda **kwargs: (_FakeClient(), AUX_MODEL))
 
     def _no_chain(failure, route, **_kw):

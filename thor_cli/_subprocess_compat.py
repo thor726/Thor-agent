@@ -213,7 +213,7 @@ def windows_detach_flags_without_breakaway() -> int:
 def windows_hide_flags() -> int:
     """Win32 creationflags hiding the child's console without detaching it; 0 elsewhere.
 
-    For short-lived synchronous helpers (``taskkill``, ``where``, version probes): no flash, but the
+    For short-lived synchrothor helpers (``taskkill``, ``where``, version probes): no flash, but the
     child stays in the parent's process group and job so Ctrl+C and job teardown still propagate.
     Stdio is inherited, so ``capture_output=True`` works.
     """

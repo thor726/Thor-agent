@@ -1,38 +1,38 @@
 ---
-title: "Nous Tool Gateway"
-description: "One subscription, every tool. Web search, image generation, TTS, and cloud browsers — all routed through Nous Portal with no extra API keys."
+title: "Thor Tool Gateway"
+description: "One subscription, every tool. Web search, image generation, TTS, and cloud browsers — all routed through Thor Portal with no extra API keys."
 sidebar_label: "Tool Gateway"
 sidebar_position: 2
 ---
 
-# Nous Tool Gateway
+# Thor Tool Gateway
 
 **One subscription. Every tool built in.**
 
-The Tool Gateway is included with every paid [Nous Portal](https://portal.nousresearch.com) subscription. It routes Thor' tool calls — web search, image generation, text-to-speech, and cloud browser automation — through infrastructure Nous already runs, so you don't have to sign up with a web search vendor, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.
+The Tool Gateway is included with every paid [Thor Portal](https://portal.thor-agent.local) subscription. It routes Thor' tool calls — web search, image generation, text-to-speech, and cloud browser automation — through infrastructure Thor already runs, so you don't have to sign up with a web search vendor, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.
 
 <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', margin: '1.5rem 0'}}>
-  <a href="https://portal.nousresearch.com/manage-subscription" style={{background: 'var(--ifm-color-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'}}>Start or manage subscription →</a>
+  <a href="https://portal.thor-agent.local/manage-subscription" style={{background: 'var(--ifm-color-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'}}>Start or manage subscription →</a>
 </div>
 
 ## What's included
 
 | | Tool | What you get |
 |---|---|---|
-| 🔍 | **Web search & extract** | Agent-grade web search and full-page extraction, managed by Nous. No rate limits to worry about — the gateway handles scaling. |
-| 🎨 | **Image generation** | One **Nous Subscription** row spanning the FAL catalog, the native Krea models, and Nous Portal image models: **Krea 3**, **FLUX 2**, **GPT Image**, **Nano Banana**, **Seedream**, **Ideogram**, **Recraft**, **Qwen**, **Krea 2**, and more. Pick the model once in `thor tools`, which shows the live list. |
+| 🔍 | **Web search & extract** | Agent-grade web search and full-page extraction, managed by Thor. No rate limits to worry about — the gateway handles scaling. |
+| 🎨 | **Image generation** | One **Thor Subscription** row spanning the FAL catalog, the native Krea models, and Thor Portal image models: **Krea 3**, **FLUX 2**, **GPT Image**, **Nano Banana**, **Seedream**, **Ideogram**, **Recraft**, **Qwen**, **Krea 2**, and more. Pick the model once in `thor tools`, which shows the live list. |
 | 🔊 | **Text-to-speech** | OpenAI TTS voices wired into the `text_to_speech` tool. Drop voice notes into Telegram, generate audio for pipelines, narrate anything. |
 | 🌐 | **Cloud browser automation** | Headless cloud Chromium sessions via Browser Use, driven by `browser_exec` over CDP — no Browserbase account required. |
 
-All four are pay-as-you-use billed against your Nous subscription. Use any combination — run the gateway for web and images while keeping your own ElevenLabs key for TTS, or route everything through Nous.
+All four are pay-as-you-use billed against your Thor subscription. Use any combination — run the gateway for web and images while keeping your own ElevenLabs key for TTS, or route everything through Thor.
 
 ## Why it's here
 
 Building an agent that can actually *do things* means stitching together 5+ API subscriptions — each with their own signup, rate limits, billing, and quirks. The gateway collapses that into one account:
 
-- **One bill.** Pay Nous; we handle the rest.
+- **One bill.** Pay Thor; we handle the rest.
 - **One signup.** No web search, FAL, Browser Use, or OpenAI audio accounts to manage.
-- **One key.** Your Nous Portal OAuth covers every tool.
+- **One key.** Your Thor Portal OAuth covers every tool.
 - **Same quality.** Same backends the direct-key route uses — just fronted by us.
 
 Bring your own keys anytime — per-tool, whenever you want to. The gateway isn't a lock-in, it's a shortcut.
@@ -42,20 +42,20 @@ Bring your own keys anytime — per-tool, whenever you want to. The gateway isn'
 There are three ways in — pick whichever fits where you are:
 
 ```bash
-thor setup --portal     # Fresh install: Nous OAuth + set Nous as provider + turn on the Tool Gateway in one go
+thor setup --portal     # Fresh install: Thor OAuth + set Thor as provider + turn on the Tool Gateway in one go
 ```
 
 ```bash
-thor model              # Switch your inference provider to Nous Portal — Thor then offers to turn on the gateway for all tools
+thor model              # Switch your inference provider to Thor Portal — Thor then offers to turn on the gateway for all tools
 ```
 
 ```bash
-thor tools              # Enable the gateway per-tool — pick "Nous Subscription" for any tool you want
+thor tools              # Enable the gateway per-tool — pick "Thor Subscription" for any tool you want
 ```
 
 `thor setup --portal` and `thor model` are the all-at-once paths: log in once, optionally flip every tool to the gateway. `thor tools` is the à la carte path — turn on just the tools you want, one at a time.
 
-**You don't have to log in first.** With `thor tools`, the Nous-managed backends (Web search, Image, Video, TTS, Browser) are always listed, even if you've never signed into Nous Portal. Select one and Thor runs the Portal login right there if you aren't already authenticated — no need to run `thor model` beforehand. If your Nous OAuth is already active, selecting the backend enables it immediately with no extra prompt. This path only logs you in and turns on the one tool you picked — it does **not** switch your inference provider, and it does **not** prompt you to enable the gateway for every other tool.
+**You don't have to log in first.** With `thor tools`, the Thor-managed backends (Web search, Image, Video, TTS, Browser) are always listed, even if you've never signed into Thor Portal. Select one and Thor runs the Portal login right there if you aren't already authenticated — no need to run `thor model` beforehand. If your Thor OAuth is already active, selecting the backend enables it immediately with no extra prompt. This path only logs you in and turns on the one tool you picked — it does **not** switch your inference provider, and it does **not** prompt you to enable the gateway for every other tool.
 
 Check what's active at any time:
 
@@ -68,37 +68,37 @@ thor status --full      # Full system status (Tool Gateway is one section)
 `thor portal info` shows a section like:
 
 ```
-◆ Nous Tool Gateway
-  Nous Portal     ✓ managed tools available
-  Web tools       ✓ active via Nous subscription
-  Image gen       ✓ active via Nous subscription
-  TTS             ✓ active via Nous subscription
+◆ Thor Tool Gateway
+  Thor Portal     ✓ managed tools available
+  Web tools       ✓ active via Thor subscription
+  Image gen       ✓ active via Thor subscription
+  TTS             ✓ active via Thor subscription
   Browser         ○ active via Browser Use key
 ```
 
-Tools marked "active via Nous subscription" are going through the gateway. Anything else is using your own keys.
+Tools marked "active via Thor subscription" are going through the gateway. Anything else is using your own keys.
 
 ## Eligibility
 
-The Tool Gateway is a **paid-subscription** feature. [Upgrade your plan](https://portal.nousresearch.com/manage-subscription) to unlock the gateway.
+The Tool Gateway is a **paid-subscription** feature. [Upgrade your plan](https://portal.thor-agent.local/manage-subscription) to unlock the gateway.
 
 Some accounts are also entitled to a **free tool pool** — a small managed-tool allowance that covers gateway tool calls without a paid subscription. When a free pool is available, the gateway surfaces it and shows a setup prompt on first use, so you can opt in and start using managed tools right away.
 
 ## The enablement checklist
 
-Picking a Nous model (`thor model`) offers a per-tool checklist of gateway backends. Its behavior respects your existing setup:
+Picking a Thor model (`thor model`) offers a per-tool checklist of gateway backends. Its behavior respects your existing setup:
 
 - Tools you've explicitly pointed at another backend (e.g. `web.backend: searxng`, `browser.cloud_provider: browserbase`) are **never offered** — your selection can't be accidentally overwritten.
 - Tools configured via environment variables alone (e.g. `SEARXNG_URL`, `BROWSER_USE_API_KEY`) are offered **unchecked**, labeled to keep your own backend.
 - Only genuinely unconfigured tools come pre-checked.
-- Declines stick: if you submit the checklist with a tool unchecked, it won't be pre-checked on future Nous model swaps (stored in `tool_gateway_declined_tools` in `config.yaml`; checking it later clears the decline).
+- Declines stick: if you submit the checklist with a tool unchecked, it won't be pre-checked on future Thor model swaps (stored in `tool_gateway_declined_tools` in `config.yaml`; checking it later clears the decline).
 
 ## Mix and match
 
 The gateway is per-tool. Turn it on for just what you want:
 
-- **All tools through Nous** — easiest; one subscription, done.
-- **Gateway for web + images, bring your own TTS** — keep your ElevenLabs voice, let Nous handle the rest.
+- **All tools through Thor** — easiest; one subscription, done.
+- **Gateway for web + images, bring your own TTS** — keep your ElevenLabs voice, let Thor handle the rest.
 - **Gateway only for things you don't have keys for** — "I already pay for Browserbase, but I don't want a web search account" works fine.
 
 Switch any tool at any time via:
@@ -107,26 +107,26 @@ Switch any tool at any time via:
 thor tools          # Interactive picker for each tool category
 ```
 
-Select the tool, pick **Nous Subscription** as the provider (or any direct provider you prefer). No config editing required. If you aren't logged into Nous Portal yet, picking **Nous Subscription** kicks off the Portal login inline — you don't need to authenticate through `thor model` first.
+Select the tool, pick **Thor Subscription** as the provider (or any direct provider you prefer). No config editing required. If you aren't logged into Thor Portal yet, picking **Thor Subscription** kicks off the Portal login inline — you don't need to authenticate through `thor model` first.
 
 ## Using individual image models
 
 The model is chosen once, in `thor tools` → Image Generation, and stored in `config.yaml` as `image_gen.model`. Every `image_generate` call uses that stored model — the tool has no model parameter, so there is no per-call override. Leave it unset and a paid subscription gets Krea 3; the free tool pool gets FLUX 2 Klein 9B.
 
-The **Nous Subscription** row has one model picker that lists every model once. The stored id decides which gateway serves the request: a native Krea id (`krea-3`, `krea-2-medium`, `krea-2-large`, `krea-2-medium-turbo`) goes to the Krea gateway, a FAL catalog id goes to FAL, and any other id goes to Nous Portal. The selection is still just `image_gen.provider: nous` plus the model id.
+The **Thor Subscription** row has one model picker that lists every model once. The stored id decides which gateway serves the request: a native Krea id (`krea-3`, `krea-2-medium`, `krea-2-large`, `krea-2-medium-turbo`) goes to the Krea gateway, a FAL catalog id goes to FAL, and any other id goes to Thor Portal. The selection is still just `image_gen.provider: thor` plus the model id.
 
-**Krea 3** (generates and edits existing images — up to 4 reference images, `thinking` and `resolution` controls), **Krea 2** (Medium, Large, Medium Turbo — up to 10 style-reference images, optional Enhance upscale) and the Nous Portal image models sit in that same picker rather than behind rows of their own. They need a paid subscription — the free tool pool funds the FAL models only. The Krea-via-FAL ids (`fal-ai/krea/v2/...`) stay on the direct FAL.ai row. If the Krea gateway refuses a request before starting a job (unreachable, or 429 after the gateway's own retries), Thor reruns it on the FAL default model and the result says so in `fallback_from`; set `image_gen.krea.fallback_to_fal: false` to turn that off. Requests with source images never fall back.
+**Krea 3** (generates and edits existing images — up to 4 reference images, `thinking` and `resolution` controls), **Krea 2** (Medium, Large, Medium Turbo — up to 10 style-reference images, optional Enhance upscale) and the Thor Portal image models sit in that same picker rather than behind rows of their own. They need a paid subscription — the free tool pool funds the FAL models only. The Krea-via-FAL ids (`fal-ai/krea/v2/...`) stay on the direct FAL.ai row. If the Krea gateway refuses a request before starting a job (unreachable, or 429 after the gateway's own retries), Thor reruns it on the FAL default model and the result says so in `fallback_from`; set `image_gen.krea.fallback_to_fal: false` to turn that off. Requests with source images never fall back.
 
 Model ids, speeds, and prices live on the [Image Generation](./image-generation.md#supported-models) page. The set evolves — `thor tools` → Image Generation shows the current live list.
 
 ## Multiple connector accounts
 
-Connectors are hosted apps such as Gmail that the agent reaches through the Nous tool gateway (see [Tool Search → Connectors](./tool-search.md#connectors-remote-tools)). You can connect two or more accounts of one app, for example a Gmail `home` and a Gmail `work`.
+Connectors are hosted apps such as Gmail that the agent reaches through the Thor tool gateway (see [Tool Search → Connectors](./tool-search.md#connectors-remote-tools)). You can connect two or more accounts of one app, for example a Gmail `home` and a Gmail `work`.
 
 - **Names.** Each account has a name of 1 to 32 characters: lowercase letters, digits or `-`, starting with a letter or digit. An unnamed account shows the app's own account label.
 - **No default.** No account is the default. When you ask the agent to use an app with several named accounts, it must say which one.
 - **The agent names new accounts.** It picks the name from what you said and asks if it is unsure. It then tells you the name it chose, for example "Thor named this Gmail account work. Rename it anytime." The desktop app, the TUI and the classic CLI show that line.
-- **Rename.** Rename an account anytime, or ask the agent to. Renaming needs a Nous Portal version that supports it; until then you see "This Nous Portal cannot rename connector accounts yet."
+- **Rename.** Rename an account anytime, or ask the agent to. Renaming needs a Thor Portal version that supports it; until then you see "This Thor Portal cannot rename connector accounts yet."
 - **Reconnect deletes nothing.** Reconnecting a broken account replaces it with a new one under the same name. The old one is kept as retired (disabled). Retired accounts stay listed but folded away.
 - **Remove is yours.** You remove an account yourself, one at a time. The agent never removes one.
 
@@ -139,7 +139,7 @@ Manage accounts in any of these places:
 - The desktop app's **Connectors** page.
 - The TUI: `/connectors` (see [Slash Commands](../../reference/slash-commands.md#tools--skills)).
 - The CLI: `thor connectors` (see [CLI Commands](../../reference/cli-commands.md#thor-connectors)).
-- [Nous Portal](https://portal.nousresearch.com).
+- [Thor Portal](https://portal.thor-agent.local).
 
 ---
 
@@ -149,26 +149,26 @@ Most users never need to touch this — `thor model` and `thor tools` cover ever
 
 ### One selection key per tool category
 
-Each tool category has a single provider-selection key, written by the `thor tools` picker (or the desktop GUI). Picking the **Nous Subscription** row stores the value `nous`, which routes that category through the managed Tool Gateway. Picking a BYOK row stores the vendor name (`fal`, `openai`, `firecrawl`, `browser-use`, ...), which goes direct with your own credentials:
+Each tool category has a single provider-selection key, written by the `thor tools` picker (or the desktop GUI). Picking the **Thor Subscription** row stores the value `thor`, which routes that category through the managed Tool Gateway. Picking a BYOK row stores the vendor name (`fal`, `openai`, `firecrawl`, `browser-use`, ...), which goes direct with your own credentials:
 
 ```yaml
 web:
-  backend: nous          # web search/extract via the Tool Gateway
+  backend: thor          # web search/extract via the Tool Gateway
 
 image_gen:
-  provider: nous         # image generation via the Tool Gateway
+  provider: thor         # image generation via the Tool Gateway
 
 tts:
-  provider: nous         # TTS via the Tool Gateway
+  provider: thor         # TTS via the Tool Gateway
 
 stt:
-  provider: nous         # speech-to-text via the Tool Gateway
+  provider: thor         # speech-to-text via the Tool Gateway
 
 browser:
-  cloud_provider: nous   # cloud browser via the Tool Gateway
+  cloud_provider: thor   # cloud browser via the Tool Gateway
 ```
 
-The runtime **always uses the stored selection** — credential presence never selects or reroutes a category. A `FAL_KEY` sitting in `.env` is ignored while `image_gen.provider: nous`; conversely, `image_gen.provider: fal` with no `FAL_KEY` set produces a clear error instead of silently falling back to the gateway:
+The runtime **always uses the stored selection** — credential presence never selects or reroutes a category. A `FAL_KEY` sitting in `.env` is ignored while `image_gen.provider: thor`; conversely, `image_gen.provider: fal` with no `FAL_KEY` set produces a clear error instead of silently falling back to the gateway:
 
 ```
 image_gen is configured to use fal (set via thor tools), but FAL_KEY is not set. Run 'thor tools' to change it.
@@ -191,23 +191,23 @@ web:
 
 ### Mixing your own key and the gateway (web only)
 
-Web search and web extract can each choose their own route. In the desktop app, open **Capabilities → Tools → Web Search & Scraping**: **Use for Search** / **Use for Extract** on the **Nous Subscription** row sends that capability through the gateway, and the same buttons on a direct row (e.g. **Firecrawl**) send it through your own key. The **Search:** / **Extract:** pills at the top show which route each one takes right now. In `config.yaml` the managed choice is the value `nous` on the per-capability key:
+Web search and web extract can each choose their own route. In the desktop app, open **Capabilities → Tools → Web Search & Scraping**: **Use for Search** / **Use for Extract** on the **Thor Subscription** row sends that capability through the gateway, and the same buttons on a direct row (e.g. **Firecrawl**) send it through your own key. The **Search:** / **Extract:** pills at the top show which route each one takes right now. In `config.yaml` the managed choice is the value `thor` on the per-capability key:
 
 ```yaml
 web:
   search_backend: firecrawl   # your FIRECRAWL_API_KEY
-  extract_backend: nous       # the Nous Tool Gateway (managed Firecrawl)
+  extract_backend: thor       # the Thor Tool Gateway (managed Firecrawl)
 ```
 
-Picking **Nous Subscription** for the whole tool (or running `thor tools`) clears both per-capability keys, so search and extract both go back through the gateway.
+Picking **Thor Subscription** for the whole tool (or running `thor tools`) clears both per-capability keys, so search and extract both go back through the gateway.
 
 ### Legacy `use_gateway` flag (deprecated)
 
-Older Thor versions used a per-tool `use_gateway: true` boolean to route through the gateway. That flag is **legacy**: it is never written anymore, and the `thor tools` picker removes it from a category's config when it rewrites the selection. Old configs that still contain `use_gateway: true` are interpreted at read time as the `nous` selection, so existing setups keep working. Don't set `use_gateway` in new configs — select the provider in `thor tools` instead.
+Older Thor versions used a per-tool `use_gateway: true` boolean to route through the gateway. That flag is **legacy**: it is never written anymore, and the `thor tools` picker removes it from a category's config when it rewrites the selection. Old configs that still contain `use_gateway: true` are interpreted at read time as the `thor` selection, so existing setups keep working. Don't set `use_gateway` in new configs — select the provider in `thor tools` instead.
 
 ### Self-hosted gateway (advanced)
 
-Running your own Nous-compatible gateway? Override endpoints in `~/.thor/.env`:
+Running your own Thor-compatible gateway? Override endpoints in `~/.thor/.env`:
 
 ```bash
 TOOL_GATEWAY_DOMAIN=your-domain.example.com
@@ -238,12 +238,12 @@ Tools routed through the gateway stop working until you renew or swap in direct 
 
 ### Can I see usage or costs per tool?
 
-Yes — the [Nous Portal dashboard](https://portal.nousresearch.com) breaks usage down by tool so you can see what's driving your bill.
+Yes — the [Thor Portal dashboard](https://portal.thor-agent.local) breaks usage down by tool so you can see what's driving your bill.
 
 ### Is Modal (serverless terminal) included?
 
-Modal is available as an **optional add-on** through the Nous subscription, not part of the default Tool Gateway bundle. Configure it via `thor setup terminal` or directly in `config.yaml` when you want a remote sandbox for shell execution.
+Modal is available as an **optional add-on** through the Thor subscription, not part of the default Tool Gateway bundle. Configure it via `thor setup terminal` or directly in `config.yaml` when you want a remote sandbox for shell execution.
 
 ### Do I need to delete my existing API keys when I enable the gateway?
 
-No — keep them in `.env`. While a tool's selection is **Nous Subscription**, direct keys for that tool are simply ignored. Pick the direct provider again in `thor tools` and your keys become the source again. The gateway isn't a lock-in.
+No — keep them in `.env`. While a tool's selection is **Thor Subscription**, direct keys for that tool are simply ignored. Pick the direct provider again in `thor tools` and your keys become the source again. The gateway isn't a lock-in.

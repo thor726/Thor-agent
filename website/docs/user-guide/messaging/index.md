@@ -11,7 +11,7 @@ Chat with Thor from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home
 For the full voice feature set — including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations — see [Voice Mode](../features/voice-mode.md) and [Use Voice Mode with Thor](../../guides/use-voice-mode-with-thor.md).
 
 :::tip
-Bots need both a model provider and tool providers (TTS, web). A [Nous Portal](../../integrations/nous-portal.md) subscription bundles all of them.
+Bots need both a model provider and tool providers (TTS, web). A [Thor Portal](../../integrations/thor-portal.md) subscription bundles all of them.
 :::
 
 ## Messaging status in Desktop and the dashboard
@@ -596,7 +596,7 @@ Thor confirms immediately:
 
 ### How It Works
 
-Each `/bg` prompt spawns a **separate agent instance** that runs asynchronously:
+Each `/bg` prompt spawns a **separate agent instance** that runs asynchrothorly:
 
 - **Isolated session** — the background agent has its own session with its own conversation history. It has no knowledge of your current chat context and receives only the prompt you provide.
 - **Same configuration** — inherits your model, provider, toolsets, reasoning settings, and provider routing from the current gateway setup.
@@ -734,7 +734,7 @@ The plist sets `RunAtLoad`, so loading it starts the gateway. `thor gateway inst
 :::info Local Network access (LAN devices fail with "No route to host")
 macOS Local Network Privacy attributes a socket to the executable launchd spawned for the job. A bare venv Python has no application identity, so a launchd-run gateway could not reach LAN hosts (Home Assistant, local model servers) — every connect failed with `errno 65 No route to host` while the same URL worked from Terminal, and no prompt was ever shown to grant it. The generated plist therefore runs the gateway through `/usr/bin/osascript`; a JXA `system()` call starts the gateway without an interactive event-polling loop, and macOS treats its children as osascript's own — an Apple platform binary, exempt from the check. `ps` shows `osascript → stderr_timestamp → gateway run`; stop/restart/KeepAlive behave exactly as before. A plist installed by an older Thor is refreshed by `thor gateway install` (or on the next `thor gateway start`).
 
-Without an installed service, the gateway Thor starts for you (Thor Desktop, a chat or TUI client, or the restart after `thor update`) runs the same way, as a one-off launchd job labelled `com.nousresearch.thor.runtime.<id>`. A plain child process would lose LAN access as soon as the app that started it quits: macOS then holds the gateway itself responsible, and denies it. The one-off job is never installed in `~/Library/LaunchAgents`, never starts at login and is never restarted by launchd. Because osascript is the responsible app, macOS file-access prompts for that gateway (Documents, Downloads, …) name **osascript**, not Thor.
+Without an installed service, the gateway Thor starts for you (Thor Desktop, a chat or TUI client, or the restart after `thor update`) runs the same way, as a one-off launchd job labelled `com.thorresearch.thor.runtime.<id>`. A plain child process would lose LAN access as soon as the app that started it quits: macOS then holds the gateway itself responsible, and denies it. The one-off job is never installed in `~/Library/LaunchAgents`, never starts at login and is never restarted by launchd. Because osascript is the responsible app, macOS file-access prompts for that gateway (Documents, Downloads, …) name **osascript**, not Thor.
 :::
 
 :::tip Picking up new credentials after `thor auth add` / `thor auth reset`

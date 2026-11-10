@@ -60,7 +60,7 @@ export const en: Translations = {
     closeNavigation: "Close navigation",
     closeModelTools: "Close model and tools",
     footer: {
-      org: "Nous Research",
+      org: "Thor Agent",
     },
     activeSessionsLabel: "Active Sessions:",
     gatewayStatusLabel: "Gateway Status:",
@@ -115,10 +115,10 @@ export const en: Translations = {
     dismiss: "Dismiss",
     sharedMetricsTitle: "Help improve Thor?",
     sharedMetricsBody:
-      "Shared metrics are bounded counters, never prompts, files, paths or error text. Sharing sends them to Nous once a day.",
+      "Shared metrics are bounded counters, never prompts, files, paths or error text. Sharing sends them to Thor once a day.",
     sharedMetricsReaskBody:
       "Asking once more: an earlier version could save \"No thanks\" before you saw this question.",
-    sharedMetricsShare: "Share with Nous",
+    sharedMetricsShare: "Share with Thor",
     sharedMetricsOff: "No thanks",
     sharedMetricsDetails: "Details",
     sharedMetricsSaveFailed: "Couldn't save your choice",
@@ -474,7 +474,7 @@ export const en: Translations = {
     hideFromSidebar: "Hide from sidebar",
     catalogHeading: "Plugin catalog",
     catalogHint:
-      "Curated, Nous-reviewed plugins pinned to exact commits. Install from here for supply-chain-safe versions.",
+      "Curated, Thor-reviewed plugins pinned to exact commits. Install from here for supply-chain-safe versions.",
     catalogSearchPlaceholder: "Search catalog...",
     catalogEmpty: "No catalog entries match.",
     catalogEmptyDocsLink: "Learn about Thor plugins",

@@ -24,8 +24,8 @@ Before using voice features, make sure you have:
 The `~/.thor/` directory and default `config.yaml` are created automatically the first time you run `thor`. You only need to create `~/.thor/.env` manually for API keys.
 :::
 
-:::tip Nous Portal covers both
-A paid [Nous Portal](./tool-gateway.md) subscription supplies the LLM (step 2) **and** OpenAI TTS via the Tool Gateway — no separate OpenAI key needed. On a fresh install, `thor setup --portal` wires both up at once.
+:::tip Thor Portal covers both
+A paid [Thor Portal](./tool-gateway.md) subscription supplies the LLM (step 2) **and** OpenAI TTS via the Tool Gateway — no separate OpenAI key needed. On a fresh install, `thor setup --portal` wires both up at once.
 :::
 
 ## Overview
@@ -188,7 +188,7 @@ stt:
 
 | Provider | Live endpoint | Notes |
 |---|---|---|
-| `openai` | Realtime transcription session | Needs your own `OPENAI_API_KEY`; the Nous-managed audio gateway serves file transcription only |
+| `openai` | Realtime transcription session | Needs your own `OPENAI_API_KEY`; the Thor-managed audio gateway serves file transcription only |
 | `xai` | `wss://api.x.ai/v1/stt` | Needs `XAI_API_KEY` (the Grok OAuth login is not used for live STT) |
 | `elevenlabs` | Scribe v2 realtime | `ELEVENLABS_API_KEY` |
 | plugin | `TranscriptionProvider.streaming_capable` | Plugins opt in with `open_stream_session()` |
@@ -214,14 +214,14 @@ When Thor Desktop is connected to a **remote gateway**, audio does not need to b
 
 There is nothing to configure on the client: the profile you're talking to is the single source of truth for providers and keys, exactly as if the gateway had done the work itself. Keys are held in the desktop's memory for the session only — never written to disk on the client.
 
-Providers that can only run on the gateway host (local whisper, `edge` TTS, command providers, plugins) automatically fall back to the relay path (`/api/audio/transcribe` and the speech WebSocket), as does any older backend without the endpoint. The Webapp (the desktop UI in a browser) always relays: a browser tab cannot call a provider that does not allow cross-origin requests (such as Nous-managed audio), and its keys stay on the host. To force the relay for every provider, set:
+Providers that can only run on the gateway host (local whisper, `edge` TTS, command providers, plugins) automatically fall back to the relay path (`/api/audio/transcribe` and the speech WebSocket), as does any older backend without the endpoint. The Webapp (the desktop UI in a browser) always relays: a browser tab cannot call a provider that does not allow cross-origin requests (such as Thor-managed audio), and its keys stay on the host. To force the relay for every provider, set:
 
 ```yaml
 voice:
   client_direct: false
 ```
 
-Client-direct wire support: OpenAI (incl. Nous-managed audio), Groq, Mistral, and DeepInfra via the OpenAI-compatible shapes, xAI Grok STT, and ElevenLabs STT + TTS. xAI configured through OAuth stays on the relay (the OAuth bearer refreshes server-side).
+Client-direct wire support: OpenAI (incl. Thor-managed audio), Groq, Mistral, and DeepInfra via the OpenAI-compatible shapes, xAI Grok STT, and ElevenLabs STT + TTS. xAI configured through OAuth stays on the relay (the OAuth bearer refreshes server-side).
 
 ### Desktop: GPT-Live voice chat mode (full duplex, delegates to Thor)
 
@@ -239,7 +239,7 @@ Requirements: an OpenAI API key (`OPENAI_API_KEY`, `VOICE_TOOLS_OPENAI_KEY`, or 
 
 How it works: pressing the voice button opens a WebRTC session from the desktop to GPT-Live; the desktop only ever receives a session id and an SDP answer — the key stays on the gateway host, which performs the session creation (`POST /api/audio/voice-live/session`). Each `session.delegation.created` becomes a normal turn on the open chat (the bubble shows what you said; the recent spoken exchange rides the model input as a per-turn note, never the system prompt, so the reply is speakable prose). Tool activity is fed to the voice as quiet context ("Thor is working: terminal") so it can tell you what is happening if you ask; the final answer is streamed back sentence by sentence. Saying the stop phrase ends the conversation. If `gpt-live` is selected but no key resolves, the button falls back to the chained mode with a notice.
 
-Not supported in this mode: the Nous-managed audio proxy (direct key only), the CLI/TUI (`/voice` keeps the chained loop), and the `tts` tool (it keeps using `tts.provider`).
+Not supported in this mode: the Thor-managed audio proxy (direct key only), the CLI/TUI (`/voice` keeps the chained loop), and the `tts` tool (it keeps using `tts.provider`).
 
 ### Voice chat model
 

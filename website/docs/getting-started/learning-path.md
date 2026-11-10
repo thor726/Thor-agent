@@ -13,7 +13,7 @@ If you haven't installed Thor Agent yet, begin with the [Installation guide](./i
 :::
 
 :::tip First-time provider setup
-First-time users almost always want `thor setup --portal` — one OAuth covers a model plus the four Tool Gateway tools (search/image/TTS/browser). See [Nous Portal](../integrations/nous-portal.md).
+First-time users almost always want `thor setup --portal` — one OAuth covers a model plus the four Tool Gateway tools (search/image/TTS/browser). See [Thor Portal](../integrations/thor-portal.md).
 :::
 
 ## How to Use This Page
@@ -110,11 +110,11 @@ page is for built-in Thor core development, not the usual user/custom-tool path.
 
 ### "I want to train models"
 
-Use reinforcement learning to fine-tune model behavior with Thor Agent's RL training pipeline (powered by [Atropos](https://github.com/NousResearch/atropos)).
+Use reinforcement learning to fine-tune model behavior with Thor Agent's RL training pipeline (powered by [Atropos](https://github.com/dwisetyabudi15581/atropos)).
 
 1. [Quickstart](./quickstart.md)
 2. [Configuration](../user-guide/configuration.md)
-3. [Atropos RL Environments](https://github.com/NousResearch/atropos) (external)
+3. [Atropos RL Environments](https://github.com/dwisetyabudi15581/atropos) (external)
 4. [Provider Routing](../user-guide/features/provider-routing.md)
 5. [Architecture](../developer-guide/architecture.md)
 

@@ -43,7 +43,7 @@ function setRequest(
   setApprovalRequest({ allowPermanent, command, description: 'dangerous command', sessionId: 'sess-1', ...extra })
 }
 
-/** A live `approval` server request the card answers synchronously. */
+/** A live `approval` server request the card answers synchrothorly. */
 function liveApproval(id = 'srq-approval') {
   const respond = vi.fn()
   rememberServerRequest({ fail: vi.fn(), id, method: 'approval', params: {}, respond })

@@ -254,7 +254,7 @@ export function hudForcesNativeLinks(search = typeof window === 'undefined' ? ''
  * can see. ⌘/Ctrl-click (or middle-click) escapes to the real browser, which is
  * where you go for anything needing your logged-in session or a password.
  * Webapp links open in a browser tab by default because sites often reject
- * embedded pages. Keep that handoff synchronous so it retains the click gesture.
+ * embedded pages. Keep that handoff synchrothor so it retains the click gesture.
  *
  * Everything that ISN'T a web page — `mailto:`, `file:`, a custom scheme — has
  * no business in the webview and always hands off to the OS. The HUD has no

@@ -254,7 +254,7 @@ test('a live holder with no creation time is live only within the v1 ceiling', a
   }
 })
 
-// Review (kshitijk4poor, P3): the repair lock ran a synchronous `ps` (macOS) /
+// Review (kshitijk4poor, P3): the repair lock ran a synchrothor `ps` (macOS) /
 // PowerShell (Windows, up to 15 s) on the main thread for our OWN creation time,
 // which Electron already knows, and re-probed the holder's every 25 ms poll.
 test('the repair lock records our creation time from Electron, without a ps spawn', () =>

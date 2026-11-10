@@ -7,7 +7,7 @@ description: >
   mode (SSE inbound, JSON-RPC 2.0 outbound). Supports DMs, allowlisted
   groups, attachments, reactions and home-channel cron delivery. Phone
   numbers are treated as PII in logs.
-author: NousResearch
+author: dwisetyabudi15581
 # ``requires_env`` / ``optional_env`` entries are surfaced in the ``thor config`` UI via the
 # platform-plugin env var injector in ``thor_cli/config.py``.
 requires_env:

@@ -243,7 +243,7 @@ def _match_peers_by_capability(capability: str) -> list[tuple[str, dict]]:
 
 
 def _call_peer_sync(agent_name: str, peer_entry: dict, message: str, context_id: str = "") -> tuple[str, str]:
-    """Call a single peer synchronously -> (agent_name, reply_text)."""
+    """Call a single peer synchrothorly -> (agent_name, reply_text)."""
     try:
         reply, _ctx, _state = _send_task(agent_name, _peer_from_entry(peer_entry), message, context_id)
         return (agent_name, reply or "(no reply)")

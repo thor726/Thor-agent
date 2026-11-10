@@ -45,11 +45,11 @@ def test_prune_only_pass_takes_no_snapshot_but_still_ages_old_ones_out(env, monk
     assert len(_snapshots(home)) == 3
     monkeypatch.setattr(cb, "get_keep", lambda: 1)
 
-    curator.run_curator_review(synchronous=True, consolidate=False)
+    curator.run_curator_review(synchrothor=True, consolidate=False)
     survivors = _snapshots(home)
     assert len(survivors) == 1, "prune-only pass must apply retention without adding a snapshot"
 
-    curator.run_curator_review(synchronous=True, consolidate=True)
+    curator.run_curator_review(synchrothor=True, consolidate=True)
     reasons = [r.get("reason") for r in cb.list_backups()]
     assert "pre-curator-run" in reasons, "consolidation still snapshots first"
     assert len(reasons) <= 2, "and retention still applies (the new snapshot never prunes itself)"

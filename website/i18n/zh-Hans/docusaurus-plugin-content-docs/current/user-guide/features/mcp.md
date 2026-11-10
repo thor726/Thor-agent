@@ -506,7 +506,7 @@ thor plugins install mcp-serve
 }
 ```
 
-它以前内置为 `thor mcp serve`。配置了 `"args": ["mcp", "serve"]` 的 MCP 客户端需改为 `["mcp-serve"]`；工具名称和参数保持不变，`thor mcp serve` 现在会提示新的写法和安装命令。工具列表、`--tools` 模式及其安全限制见[插件 README](https://github.com/NousResearch/thor-official-plugins/tree/main/mcp-serve)。
+它以前内置为 `thor mcp serve`。配置了 `"args": ["mcp", "serve"]` 的 MCP 客户端需改为 `["mcp-serve"]`；工具名称和参数保持不变，`thor mcp serve` 现在会提示新的写法和安装命令。工具列表、`--tools` 模式及其安全限制见[插件 README](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/mcp-serve)。
 
 ## 相关文档
 

@@ -180,7 +180,7 @@ def _emit_bypassed_attempt_telemetry(
             "event": "compression_attempt", "route": route, "method": method, "failure_class": failure_class,
             **_attempt_seed(agent, attempt_seed=attempt_seed),
             "main_provider": getattr(agent, "provider", "") or "", "main_model": getattr(agent, "model", "") or "",
-            # Private caches only: the public properties can trigger a synchronous context-length probe.
+            # Private caches only: the public properties can trigger a synchrothor context-length probe.
             "main_context_limit": getattr(compressor, "_resolved_context_length", None),
             "effective_threshold": getattr(compressor, "_threshold_tokens", None),
             "current_estimated_tokens": approx_tokens if isinstance(approx_tokens, int) else None,

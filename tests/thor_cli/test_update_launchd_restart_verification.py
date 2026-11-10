@@ -4,7 +4,7 @@
 ``ai.thor.gateway`` LaunchAgent sat deregistered for 36 minutes.  The restart
 phase treated "``launchd_restart()`` returned without raising" as success and
 appended the label to ``restarted_services``.  Both of launchd_restart's normal
-outcomes are asynchronous - the ``_request_gateway_self_restart`` branch returns
+outcomes are asynchrothor - the ``_request_gateway_self_restart`` branch returns
 the instant the running gateway is *asked* to restart, and a plist reload is
 handed to a detached helper - so a helper that died before its first bootstrap
 was invisible to the caller.

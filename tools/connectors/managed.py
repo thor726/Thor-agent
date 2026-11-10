@@ -399,7 +399,7 @@ def _display_result(client: Any, suggested: list[str], *, session_id: Optional[s
 
 def _rename_result(target: HostedTarget) -> str:
     """Rename the one account of ``target.name`` called ``target.alias`` (or, when unnamed, labelled
-    so) to ``target.to``. Synchronous: no operation and no card."""
+    so) to ``target.to``. Synchrothor: no operation and no card."""
     from tools.connectors.gateway.errors import GatewayUnavailable, IdempotencyConflict
     from tools.connectors.portal.client import PortalConnectorClient
 
@@ -418,10 +418,10 @@ def _rename_result(target: HostedTarget) -> str:
     except GatewayUnavailable as exc:
         if exc.code == "connection_not_found":
             return tool_error(f"That {target.name} account no longer exists. Use action status to list accounts.")
-        return tool_error("This Nous Portal cannot rename connector accounts yet.")
+        return tool_error("This Thor Portal cannot rename connector accounts yet.")
     except ToolGatewayError as exc:
         if exc.status == 405:
-            return tool_error("This Nous Portal cannot rename connector accounts yet.")
+            return tool_error("This Thor Portal cannot rename connector accounts yet.")
         raise
     return json.dumps({
         "renamed": {"connector": account["connector"], "alias": account.get("alias"), "label": account["label"]},
@@ -477,5 +477,5 @@ def run_managed_action(
             return tool_error(str(exc))
         return tool_error(
             f"The connector gateway request failed: {exc}. "
-            "If this persists, the user can manage connections in the Nous Portal."
+            "If this persists, the user can manage connections in the Thor Portal."
         )

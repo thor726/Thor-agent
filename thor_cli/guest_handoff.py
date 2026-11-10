@@ -1,4 +1,4 @@
-"""Guest handoff: after a Nous account replaces the free tier, move the free tier's apps into it.
+"""Guest handoff: after a Thor account replaces the free tier, move the free tier's apps into it.
 
 The account service moves a free-tier identity's connected apps (and its preview cohort) into a
 signed-in account with one call, ``POST /api/anonymous/claim {"token": "<anon_...>"}``, authorized by
@@ -7,9 +7,9 @@ the account is saved, and the result (the account email, what moved, what needs 
 shown afterwards. Two halves:
 
 - :func:`note_replacement` runs at the lowest write seams (``auth._store_provider_state`` and
-  ``auth_nous._write_shared_nous_state``), under the caller's auth-store locks, whenever a non-guest
-  Nous state replaces a guest. It writes a pending record and does no network. Records sit beside
-  the shared Nous store, keyed by a hash of the ``anon_`` credential.
+  ``auth_thor._write_shared_thor_state``), under the caller's auth-store locks, whenever a non-guest
+  Thor state replaces a guest. It writes a pending record and does no network. Records sit beside
+  the shared Thor store, keyed by a hash of the ``anon_`` credential.
 - :func:`drain` makes one attempt per due record, outside every lock: each sign-in surface calls it
   after its save, and the retry worker, ``thor auth status`` and ``thor auth upgrade`` call it
   for a move a transient error left retrying.
@@ -46,8 +46,8 @@ _FORCE_REFRESH_SKEW = 10**9
 _CLAIMED, _GONE, _RETRY, _FAIL = "claimed", "gone", "retry", "fail"
 # A plain reason per final code; any other code shows only the generic sentence, never the code.
 _FAILURE_COPY = {
-    "client_not_allowed": "This sign-in can't receive them. Sign in again with `thor auth add nous`.",
-    "account_locked": "This Nous account is locked.",
+    "client_not_allowed": "This sign-in can't receive them. Sign in again with `thor auth add thor`.",
+    "account_locked": "This Thor account is locked.",
 }
 # The service's refusal codes; anything unlisted retries (``_classify``).
 _REFUSALS = {
@@ -76,8 +76,8 @@ def _home_key() -> str:
 
 
 def _records_path() -> Path:
-    from thor_cli.auth_nous import _nous_shared_store_path
-    return _nous_shared_store_path().with_name(HANDOFF_FILENAME)
+    from thor_cli.auth_thor import _thor_shared_store_path
+    return _thor_shared_store_path().with_name(HANDOFF_FILENAME)
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -112,15 +112,15 @@ def _update(path: Path, key: str, change) -> Optional[dict[str, Any]]:
 # --- The hook: no network, runs under the writer's locks ------------------------------------------
 
 def note_store_write(auth_store: dict[str, Any], provider_id: str, state: Any) -> None:
-    """``auth._store_provider_state``'s hook: the Nous state the store holds now is the one replaced
+    """``auth._store_provider_state``'s hook: the Thor state the store holds now is the one replaced
     (the profile's own, else the root store's it falls back to)."""
-    if provider_id == "nous":
+    if provider_id == "thor":
         from thor_cli.auth import _load_provider_state
-        note_replacement(_load_provider_state(auth_store, "nous"), state)
+        note_replacement(_load_provider_state(auth_store, "thor"), state)
 
 
 def note_replacement(previous: Any, new: Any) -> None:
-    """Record that a non-guest Nous state replaced the guest *previous*. Idempotent per ``anon_``
+    """Record that a non-guest Thor state replaced the guest *previous*. Idempotent per ``anon_``
     credential; a finished record is never reopened."""
     from thor_cli.anon_auth import is_guest_state
     if not is_guest_state(previous) or is_guest_state(new) or not isinstance(new, dict):
@@ -143,7 +143,7 @@ def note_replacement(previous: Any, new: Any) -> None:
         return record
 
     record = _update(path, _token_key(anon_token), change)
-    logger.info("Nous sign-in replaced the free tier; handoff %s (%s)", record["state"],
+    logger.info("Thor sign-in replaced the free tier; handoff %s (%s)", record["state"],
                 _token_key(anon_token)[:8])
 
 
@@ -174,7 +174,7 @@ def _run_one(path: Path, key: str) -> Optional[dict[str, Any]]:
     if record is None:
         return None  # another run holds it, or it settled meanwhile
     prior = record["attempts"] - 1
-    outcome, payload, retry_after = _post(record["anon_token"], bearer, get_provider_auth_state("nous") or {})
+    outcome, payload, retry_after = _post(record["anon_token"], bearer, get_provider_auth_state("thor") or {})
     logger.info("Free-tier handoff attempt %d (%s): %s", prior + 1, key[:8], payload.get("error") or outcome)
     record = _update(path, key, lambda r: _apply(r, outcome, payload, retry_after, prior))
     if outcome == _CLAIMED and payload.get("cohort_carried") is True:
@@ -198,9 +198,9 @@ def _bearer(*, force: bool = False) -> str:
     with auth._RESOLVE_TOKEN_CACHE_LOCK:
         auth._RESOLVE_TOKEN_CACHE.pop(_home_key(), None)
     if force:
-        return auth.resolve_nous_access_token(timeout_seconds=CLAIM_TIMEOUT_SECONDS,
+        return auth.resolve_thor_access_token(timeout_seconds=CLAIM_TIMEOUT_SECONDS,
                                               refresh_skew_seconds=_FORCE_REFRESH_SKEW)
-    return auth.resolve_nous_access_token(timeout_seconds=CLAIM_TIMEOUT_SECONDS)
+    return auth.resolve_thor_access_token(timeout_seconds=CLAIM_TIMEOUT_SECONDS)
 
 
 def _refresh_account_token() -> None:
@@ -215,14 +215,14 @@ def _refresh_account_token() -> None:
 def _post(anon_token: str, bearer: str, account: dict[str, Any]) -> tuple[str, dict[str, Any], Optional[float]]:
     from agent.retry_utils import parse_retry_after_seconds
     from thor_cli.anon_auth import _anon_headers
-    from thor_cli.auth import _nous_portal_base_url, _resolve_verify
+    from thor_cli.auth import _thor_portal_base_url, _resolve_verify
     from thor_cli.auth_constants import httpx
-    from thor_cli.auth_nous import _nous_http_client
+    from thor_cli.auth_thor import _thor_http_client
     verify = _resolve_verify(insecure=None, ca_bundle=None, auth_state=account)
     try:
-        with _nous_http_client(CLAIM_TIMEOUT_SECONDS, verify) as client:
+        with _thor_http_client(CLAIM_TIMEOUT_SECONDS, verify) as client:
             response = client.post(
-                f"{_nous_portal_base_url(account).rstrip('/')}/api/anonymous/claim",
+                f"{_thor_portal_base_url(account).rstrip('/')}/api/anonymous/claim",
                 headers={**_anon_headers(), "authorization": f"Bearer {bearer}"}, json={"token": anon_token})
     except httpx.HTTPError as exc:
         return _RETRY, {"error": "unreachable", "detail": type(exc).__name__}, None
@@ -284,7 +284,7 @@ def start_worker() -> threading.Thread:
             return _worker_thread
         _worker_stop.clear()
         # health: allow HX012 -- process-wide worker for the process's own profile; it must not inherit the starter's scope
-        _worker_thread = threading.Thread(target=_worker_loop, daemon=True, name="nous-guest-handoff")
+        _worker_thread = threading.Thread(target=_worker_loop, daemon=True, name="thor-guest-handoff")
         _worker_thread.start()
         return _worker_thread
 
@@ -350,7 +350,7 @@ def wire_status(status: dict[str, Any]) -> dict[str, Any]:
 
 
 def status_lines(status: dict[str, Any]) -> list[str]:
-    """User copy for a non-idle handoff (``thor auth status nous``)."""
+    """User copy for a non-idle handoff (``thor auth status thor``)."""
     lines = result_lines(status)
     kind = status.get("connectors_kind")
     moved_some = kind in ("moved", "swapped") and status.get("moved_toolkits")

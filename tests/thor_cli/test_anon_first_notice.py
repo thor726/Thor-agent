@@ -30,7 +30,7 @@ def test_a_claimed_trial_has_the_notice_pending_once_and_the_flag_persists(porta
 
     assert anon_auth.mark_guest_notice_shown() is True
 
-    assert _load_auth_store()["providers"]["nous"][anon_auth.GUEST_NOTICE_FLAG] is True
+    assert _load_auth_store()["providers"]["thor"][anon_auth.GUEST_NOTICE_FLAG] is True
     assert not anon_auth.guest_notice_pending()
 
 
@@ -44,11 +44,11 @@ def test_a_connector_only_guest_has_no_notice_pending(portal, monkeypatch):
 def test_signed_in_account_is_never_told_about_the_free_tier(portal):
     with _auth_store_lock():
         store = _load_auth_store()
-        store.setdefault("providers", {})["nous"] = {
+        store.setdefault("providers", {})["thor"] = {
             "auth_method": "oauth", "access_token": _jwt(client_id="thor-cli", account_tier="pro"),
             "refresh_token": "rt", "expires_at": "2999-01-01T00:00:00+00:00"}
         _save_auth_store(store)
 
     assert not anon_auth.guest_notice_pending()
     assert anon_auth.mark_guest_notice_shown() is False
-    assert anon_auth.GUEST_NOTICE_FLAG not in _load_auth_store()["providers"]["nous"]
+    assert anon_auth.GUEST_NOTICE_FLAG not in _load_auth_store()["providers"]["thor"]

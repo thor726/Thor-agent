@@ -44,12 +44,12 @@ class _NoNetwork:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('text', ['/debug local', '/debug LOCAL', '/debug nous local'])
+@pytest.mark.parametrize('text', ['/debug local', '/debug LOCAL', '/debug thor local'])
 async def test_local_session_debug_local_returns_the_report_without_uploading(text):
     guard = _NoNetwork()
     bundle = {'report': 'REDACTED-REPORT-BODY', 'agent.log': 'FULL-LOG'}
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_thor', guard), \
             patch('thor_cli.debug._schedule_auto_delete', guard), \
             patch('thor_cli.debug.collect_share_bundle', return_value=bundle), \
             patch.object(socket.socket, 'connect', guard):
@@ -77,7 +77,7 @@ async def test_messaging_debug_local_is_refused_without_uploading():
     """``/debug local`` from a chat is a named refusal pointing at bare ``/debug``; nothing is uploaded."""
     guard = _NoNetwork()
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_thor', guard), \
             patch('thor_cli.debug._schedule_auto_delete', guard), \
             patch('thor_cli.debug._best_effort_sweep_expired_pastes', guard), \
             patch('thor_cli.debug.collect_debug_report', guard), \
@@ -93,7 +93,7 @@ async def test_local_debug_local_real_collector_opens_no_socket(tmp_path, monkey
     monkeypatch.setenv('THOR_HOME', str(tmp_path))
     guard = _NoNetwork()
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_thor', guard), \
             patch.object(socket.socket, 'connect', guard), \
             patch.object(socket.socket, 'connect_ex', guard), \
             patch('socket.create_connection', guard):

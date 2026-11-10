@@ -113,7 +113,7 @@ def should_require_auth(host: str, allow_public: bool = False) -> bool:
 
     RFC1918 / CGNAT / link-local are deliberately PUBLIC — a hostile LAN device
     is the threat model. ``allow_public`` (legacy ``--insecure``) is accepted for
-    old launch scripts but IGNORED since the June 2026 hermes-0day campaign.
+    old launch scripts but IGNORED since the June 2026 thor-0day campaign.
     """
     return host not in _LOOPBACK_HOST_VALUES
 

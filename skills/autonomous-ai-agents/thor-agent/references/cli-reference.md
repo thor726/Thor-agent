@@ -1,7 +1,7 @@
 # Thor CLI Reference
 
 Live sources when anything looks stale: `thor --help`, `thor <command> --help`,
-https://thor-agent.nousresearch.com/docs/reference/cli-commands
+https://thor-agent.thor-agent.local/docs/reference/cli-commands
 
 ### Global Flags
 
@@ -79,7 +79,7 @@ thor gateway run|install|start|stop|restart|status|setup
 ```
 
 20+ platforms: Telegram, Discord, Slack, WhatsApp (Baileys + Business Cloud API), iMessage (Photon — `thor photon setup`), Signal, Email, SMS, Matrix, Mattermost, Teams, LINE, SimpleX, ntfy, Google Chat, Home Assistant, DingTalk, Feishu, WeCom, Weixin, API Server, Webhooks. Open WebUI connects via the API Server adapter. Most adapters ship under `plugins/platforms/`.
-Docs: https://thor-agent.nousresearch.com/docs/user-guide/messaging/
+Docs: https://thor-agent.thor-agent.local/docs/user-guide/messaging/
 
 ### Sessions
 
@@ -108,7 +108,7 @@ thor profile migrate-identity A B   Retry a completed rename's session/routing i
 
 ```
 thor auth                 Interactive credential manager
-thor auth add [PROVIDER]  Add OAuth or API-key credential (nous, openai-codex, qwen-oauth, …)
+thor auth add [PROVIDER]  Add OAuth or API-key credential (thor, openai-codex, qwen-oauth, …)
 thor auth list|remove P IDX|reset PROVIDER|status
 ```
 Multiple credentials per provider form a pool that rotates automatically and skips exhausted keys.
@@ -119,7 +119,7 @@ Multiple credentials per provider form a pool that rotates automatically and ski
 thor desktop / gui        Native desktop app
 thor dashboard            Web admin panel + embedded chat (--stop / --status)
 thor proxy                OpenAI-compatible local proxy backed by an OAuth provider
-thor portal               Quick setup / sign in via Nous Portal
+thor portal               Quick setup / sign in via Thor Portal
 thor kanban <verb>        Multi-agent work-queue board
 thor project              Named multi-folder workspaces (see references/projects-and-folders.md)
 thor skin list|use|set    Switch/tweak skins (see references/themes.md)
@@ -142,10 +142,10 @@ Plugin- and provider-supplied subcommands (e.g. `thor photon setup`) only appear
 
 | Looking for... | Location |
 |---|---|
-| Config options | `thor config edit` · [Configuration docs](https://thor-agent.nousresearch.com/docs/user-guide/configuration) |
-| Tools / toolsets | `thor tools list` · [Tools reference](https://thor-agent.nousresearch.com/docs/reference/tools-reference) |
-| Skills catalog | `thor skills browse` · [Skills catalog](https://thor-agent.nousresearch.com/docs/reference/skills-catalog) |
-| Provider setup | `thor model` · [Providers guide](https://thor-agent.nousresearch.com/docs/integrations/providers) |
-| Env variables | `thor config env-path` · [Env vars reference](https://thor-agent.nousresearch.com/docs/reference/environment-variables) |
+| Config options | `thor config edit` · [Configuration docs](https://thor-agent.thor-agent.local/docs/user-guide/configuration) |
+| Tools / toolsets | `thor tools list` · [Tools reference](https://thor-agent.thor-agent.local/docs/reference/tools-reference) |
+| Skills catalog | `thor skills browse` · [Skills catalog](https://thor-agent.thor-agent.local/docs/reference/skills-catalog) |
+| Provider setup | `thor model` · [Providers guide](https://thor-agent.thor-agent.local/docs/integrations/providers) |
+| Env variables | `thor config env-path` · [Env vars reference](https://thor-agent.thor-agent.local/docs/reference/environment-variables) |
 | Gateway logs | `~/.thor/logs/gateway.log` (or `thor logs`) |
 | Sessions | `thor sessions browse` (reads state.db) |

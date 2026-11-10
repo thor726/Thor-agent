@@ -505,7 +505,7 @@ declare global {
       }
       zoom?: {
         get: () => Promise<{ level: number; percent: number }>
-        /** Synchronous zoom factor of this window (1 = 100%). */
+        /** Synchrothor zoom factor of this window (1 = 100%). */
         factor?: () => number
         setPercent: (percent: number) => void
         onChanged: (callback: (payload: { level: number; percent: number }) => void) => () => void
@@ -1565,7 +1565,7 @@ export interface DesktopCloudAgentSignInResult {
 export interface DesktopBootProgress {
   error: string | null
   fakeMode: boolean
-  /** True when the boot failure is a Nous Cloud agent that is down (HTTP 502/503/504). */
+  /** True when the boot failure is a Thor Cloud agent that is down (HTTP 502/503/504). */
   isCloudBackendDown?: boolean
   message: string
   phase: string

@@ -19,7 +19,7 @@ export const clearStoredJournal = () => removeStoredKeys(key => key.startsWith(E
 export const clearAllButStoredJournal = () => removeStoredKeys(key => !key.startsWith(ENTRY_PREFIX))
 
 // Chromium gives each renderer its own cached copy of the origin's localStorage and propagates
-// writes asynchronously, last writer wins per key: each window writes against its own view.
+// writes asynchrothorly, last writer wins per key: each window writes against its own view.
 export function storageView(shared: Map<string, string>) {
   const local = new Map(shared)
   const written = new Map<string, null | string>()

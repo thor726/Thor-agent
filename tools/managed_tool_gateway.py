@@ -1,4 +1,4 @@
-"""Generic managed-tool gateway helpers for Nous-hosted vendor passthroughs."""
+"""Generic managed-tool gateway helpers for Thor-hosted vendor passthroughs."""
 
 from __future__ import annotations
 
@@ -9,20 +9,20 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 from thor_constants import get_thor_home
-from tools.tool_backend_helpers import managed_nous_tools_enabled
+from tools.tool_backend_helpers import managed_thor_tools_enabled
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_TOOL_GATEWAY_DOMAIN = "nousresearch.com"
+_DEFAULT_TOOL_GATEWAY_DOMAIN = "thor-agent.local"
 _DEFAULT_TOOL_GATEWAY_SCHEME = "https"
-_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120
+_THOR_PORTAL_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120
 
 
 @dataclass(frozen=True)
 class ManagedToolGatewayConfig:
     vendor: str
     gateway_origin: str
-    nous_user_token: str
+    thor_user_token: str
     managed_mode: bool
 
 
@@ -36,9 +36,9 @@ def auth_json_path():
     return get_thor_home() / "auth.json"
 
 
-def _read_nous_provider_state() -> Optional[dict]:
-    """The profile's Nous state, or None. A free-tier identity counts only while guests are allowed:
-    with ``nous.guest: false`` it is invisible here, so no cached or refreshed token of it is ever
+def _read_thor_provider_state() -> Optional[dict]:
+    """The profile's Thor state, or None. A free-tier identity counts only while guests are allowed:
+    with ``thor.guest: false`` it is invisible here, so no cached or refreshed token of it is ever
     attached to a request.
 
     Resolves through the same profile-then-global-root fallback every other credential reader
@@ -48,14 +48,14 @@ def _read_nous_provider_state() -> Optional[dict]:
     try:
         from thor_cli.auth import get_provider_auth_state
 
-        nous_provider = get_provider_auth_state("nous")
-        if not isinstance(nous_provider, dict):
+        thor_provider = get_provider_auth_state("thor")
+        if not isinstance(thor_provider, dict):
             return None
         from thor_cli.anon_auth import guest_allowed, is_guest_state
 
-        if is_guest_state(nous_provider) and not guest_allowed():
+        if is_guest_state(thor_provider) and not guest_allowed():
             return None
-        return nous_provider
+        return thor_provider
     except Exception:
         return None
 
@@ -74,36 +74,36 @@ def _read_user_token_override() -> Optional[str]:
     return _clean(explicit)
 
 
-def peek_nous_access_token() -> Optional[str]:
+def peek_thor_access_token() -> Optional[str]:
     """Cheap token probe: env override or cached auth-store token, no expiry check and no network —
-    availability scans must stay off the synchronous OAuth refresh path (:func:`read_nous_access_token`)."""
+    availability scans must stay off the synchrothor OAuth refresh path (:func:`read_thor_access_token`)."""
     from thor_cli.anon_auth import held_connectors_token
 
-    return _read_user_token_override() or _clean(held_connectors_token(_read_nous_provider_state()))
+    return _read_user_token_override() or _clean(held_connectors_token(_read_thor_provider_state()))
 
 
-def read_nous_access_token() -> Optional[str]:
-    """Read a Nous Subscriber OAuth access token from auth store or env override.
+def read_thor_access_token() -> Optional[str]:
+    """Read a Thor Subscriber OAuth access token from auth store or env override.
 
-    A read: with no Nous identity there is no bearer and the answer is None. The free-tier identity
+    A read: with no Thor identity there is no bearer and the answer is None. The free-tier identity
     is created by the boot bootstrap or the first hosted connector action, never on a token-read
     path (NS-845 Q1.2). A retired free-tier credential IS replaced here, once: that is the explicit
     dead-credential rule, shared with inference.
     """
     if explicit := _read_user_token_override():
         return explicit
-    nous_provider = _read_nous_provider_state() or {}
-    if not nous_provider:
+    thor_provider = _read_thor_provider_state() or {}
+    if not thor_provider:
         return None
     from thor_cli.anon_auth import held_connectors_token
 
-    if fresh_token := _clean(held_connectors_token(nous_provider, skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
+    if fresh_token := _clean(held_connectors_token(thor_provider, skew_seconds=_THOR_PORTAL_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
         return fresh_token
-    cached_token = peek_nous_access_token()
+    cached_token = peek_thor_access_token()
     try:
-        from thor_cli.auth import resolve_nous_access_token
+        from thor_cli.auth import resolve_thor_access_token
 
-        if refreshed_token := _clean(resolve_nous_access_token(refresh_skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
+        if refreshed_token := _clean(resolve_thor_access_token(refresh_skew_seconds=_THOR_PORTAL_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
             return refreshed_token
     except Exception as exc:
         # Same dead-credential rule as inference (one place decides it: anon_auth): a retired free-tier
@@ -111,14 +111,14 @@ def read_nous_access_token() -> Optional[str]:
         from thor_cli.anon_auth import AnonCredentialDead
 
         if isinstance(exc, AnonCredentialDead):
-            return _replace_dead_guest_token(nous_provider, str(exc.code or "anon_credential_dead"))
-        logger.debug("Nous access token refresh failed: %s", exc)
+            return _replace_dead_guest_token(thor_provider, str(exc.code or "anon_credential_dead"))
+        logger.debug("Thor access token refresh failed: %s", exc)
     return cached_token
 
 
 def _replace_dead_guest_token(dead_state: dict, code: str = "anon_credential_dead") -> Optional[str]:
     from thor_cli.anon_auth import ANON_ACCOUNT_LOCKED, clear_dead_guest, ensure_portal_identity
-    from thor_cli.auth import resolve_nous_access_token
+    from thor_cli.auth import resolve_thor_access_token
 
     clear_dead_guest(code, dead_token=dead_state.get("anon_token"))
     # Same rule as inference: a locked account is retired but never silently replaced.
@@ -127,9 +127,9 @@ def _replace_dead_guest_token(dead_state: dict, code: str = "anon_credential_dea
     try:
         if ensure_portal_identity(explicit=True) is None:
             return None
-        return _clean(resolve_nous_access_token(refresh_skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS))
+        return _clean(resolve_thor_access_token(refresh_skew_seconds=_THOR_PORTAL_ACCESS_TOKEN_REFRESH_SKEW_SECONDS))
     except Exception as exc:
-        logger.debug("Nous free tier replacement after a retired credential failed: %s", exc)
+        logger.debug("Thor free tier replacement after a retired credential failed: %s", exc)
         return None
 
 
@@ -151,23 +151,23 @@ def build_vendor_gateway_url(vendor: str) -> str:
 
 def _vendor_gateway(vendor: str, gateway_builder, token_reader) -> Optional[ManagedToolGatewayConfig]:
     gateway_origin = (gateway_builder or build_vendor_gateway_url)(vendor)
-    nous_user_token = (token_reader or read_nous_access_token)()
-    if not gateway_origin or not nous_user_token:
+    thor_user_token = (token_reader or read_thor_access_token)()
+    if not gateway_origin or not thor_user_token:
         return None
-    return ManagedToolGatewayConfig(vendor=vendor, gateway_origin=gateway_origin, nous_user_token=nous_user_token, managed_mode=True)
+    return ManagedToolGatewayConfig(vendor=vendor, gateway_origin=gateway_origin, thor_user_token=thor_user_token, managed_mode=True)
 
 
 def resolve_managed_tool_gateway(
     vendor: str, gateway_builder: Optional[Callable[[str], str]] = None,
     token_reader: Optional[Callable[[], Optional[str]]] = None) -> Optional[ManagedToolGatewayConfig]:
     """Resolve shared managed-tool gateway config for a vendor (entitled accounts only)."""
-    if not managed_nous_tools_enabled():
+    if not managed_thor_tools_enabled():
         return None
     return _vendor_gateway(vendor, gateway_builder, token_reader)
 
 
 def resolve_free_search_gateway(token_reader: Optional[Callable[[], Optional[str]]] = None) -> Optional[ManagedToolGatewayConfig]:
-    """Perplexity ``search_type: "fast"`` is served to every Nous identity with no funding check, the
+    """Perplexity ``search_type: "fast"`` is served to every Thor identity with no funding check, the
     anonymous guest tier included, so it needs a token this profile may use (guest-disabled and refresh
     rules live in the reader), not paid entitlement or a registered account. Search only: every other
     vendor route goes through :func:`resolve_managed_tool_gateway`."""
@@ -177,7 +177,7 @@ def resolve_free_search_gateway(token_reader: Optional[Callable[[], Optional[str
 def is_managed_tool_gateway_ready(
     vendor: str, gateway_builder: Optional[Callable[[str], str]] = None,
     token_reader: Optional[Callable[[], Optional[str]]] = None) -> bool:
-    """True when a gateway URL and a likely-usable Nous token are present. Defaults to
-    :func:`peek_nous_access_token` (no OAuth refresh); callers about to make a real request use
+    """True when a gateway URL and a likely-usable Thor token are present. Defaults to
+    :func:`peek_thor_access_token` (no OAuth refresh); callers about to make a real request use
     :func:`resolve_managed_tool_gateway` instead."""
-    return resolve_managed_tool_gateway(vendor, gateway_builder=gateway_builder, token_reader=token_reader or peek_nous_access_token) is not None
+    return resolve_managed_tool_gateway(vendor, gateway_builder=gateway_builder, token_reader=token_reader or peek_thor_access_token) is not None

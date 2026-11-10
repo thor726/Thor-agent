@@ -421,14 +421,14 @@ def _auth_gate_status() -> dict[str, Any]:
             "auth_flows": auth_flows}
 
 
-def _nous_session_validity() -> str:
-    """Nous bootstrap-session validity for the NAS health sweep: a hosted agent whose Nous
+def _thor_session_validity() -> str:
+    """Thor bootstrap-session validity for the NAS health sweep: a hosted agent whose Thor
     auth dies terminally looks HEALTHY to every liveness probe yet every inference turn
     fails, and this is the ONLY signal that surfaces it (local auth-store state, no token
     needed). Best-effort: never let auth classification break the probe."""
     try:
-        from thor_cli.auth import get_nous_session_validity
-        return get_nous_session_validity()
+        from thor_cli.auth import get_thor_session_validity
+        return get_thor_session_validity()
     except Exception:
         return "unknown"
 
@@ -489,14 +489,14 @@ async def _advisory_pressure(status: dict[str, Any], home: Path) -> None:
 
 
 def _status_local_reads() -> dict[str, Any]:
-    """The probe's synchronous local reads: the raw config.yaml stamp, the install method, the
+    """The probe's synchrothor local reads: the raw config.yaml stamp, the install method, the
     auth store and (first call only) git provenance. Run on a worker thread: on the event loop that
     also serves the session WebSocket they stalled every Desktop request behind the disk (#143561)."""
     current_ver, latest_ver = check_config_version()
     return {"version": get_version_info().base_version, "config_version": current_ver,
             "latest_config_version": latest_ver,
             "can_update_thor": not _dashboard_local_update_managed_externally(),
-            "nous_session_valid": _nous_session_validity()}
+            "thor_session_valid": _thor_session_validity()}
 
 
 def _fts_rebuild_status() -> Optional[dict[str, Any]]:
@@ -606,7 +606,7 @@ async def get_status(profile: Optional[str] = None,
             "gateway_drainable": derive_gateway_drainable(
                 gateway_running=gateway_running, gateway_state=gateway_state),
             "restart_drain_timeout": restart_drain_timeout, "active_sessions": active_sessions,
-            **auth, "nous_session_valid": local["nous_session_valid"]}
+            **auth, "thor_session_valid": local["thor_session_valid"]}
 
         # Stable per-install identity (first call may touch disk). Omitted (not null) when
         # unpersistable so older-client behavior and the no-identity fallback stay identical.
@@ -810,7 +810,7 @@ async def update_learning_node(body: LearningNodeEdit, profile: Optional[str] = 
         body.profile or profile, lambda: edit_node(body.id, body.content), 400, "edit failed")
 
 
-# Portal — Nous Portal auth + Tool Gateway routing status (read-only).
+# Portal — Thor Portal auth + Tool Gateway routing status (read-only).
 
 
 @router.get("/api/portal")
@@ -821,8 +821,8 @@ async def get_portal_status(profile: Optional[str] = None):
 
 
 def _feature_state(feat) -> str:
-    if getattr(feat, "managed_by_nous", False):
-        return "via Nous Portal"
+    if getattr(feat, "managed_by_thor", False):
+        return "via Thor Portal"
     if getattr(feat, "active", False):
         return getattr(feat, "current_provider", None) or "active"
     return "not configured"
@@ -832,16 +832,16 @@ def _get_portal_status_sync():
     cfg = load_config() or {}
     auth: dict[str, Any] = {}
     try:
-        from thor_cli.auth import get_nous_auth_status_local
+        from thor_cli.auth import get_thor_auth_status_local
         # Refresh-free snapshot so polling never performs an OAuth refresh.
-        auth = get_nous_auth_status_local() or {}
+        auth = get_thor_auth_status_local() or {}
     except Exception:
         auth = {}
 
     features = []
     try:
-        from thor_cli.nous_subscription import get_nous_subscription_features
-        feats = get_nous_subscription_features(cfg)
+        from thor_cli.thor_subscription import get_thor_subscription_features
+        feats = get_thor_subscription_features(cfg)
         if feats is not None:
             features = [{"label": getattr(feat, "label", ""), "state": _feature_state(feat)}
                         for feat in feats.items()]
@@ -856,7 +856,7 @@ def _get_portal_status_sync():
         # Free tier: a token exists, so logged_in stays true for callers that only ask "is there a
         # credential"; surfaces that render an account must branch on free_tier first.
         "free_tier": bool(auth.get("free_tier")), "account_tier": auth.get("account_tier"),
-        "subscription_url": "https://portal.nousresearch.com/manage-subscription",
+        "subscription_url": "https://portal.thor-agent.local/manage-subscription",
         "features": features}
 
 
@@ -881,7 +881,7 @@ async def run_config_migrate(profile: Optional[str] = None):
 @router.post("/api/ops/debug-share")
 async def run_debug_share_endpoint(body: DebugShareRequest | None = None,
                                    profile: Optional[str] = None):
-    """Upload a redacted debug report + full logs and return the paste URLs. Synchronous,
+    """Upload a redacted debug report + full logs and return the paste URLs. Synchrothor,
     unlike the other diagnostics actions: the point is the shareable URLs, returned as a
     structured payload the dashboard renders as copyable links."""
     from thor_cli.debug import build_debug_share

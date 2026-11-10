@@ -215,7 +215,7 @@ describe('inline transcript images', () => {
     mount([msg], render)
     await settle()
 
-    // A virtual-scroll remount: its first synchronous frame already has the image's real height.
+    // A virtual-scroll remount: its first synchrothor frame already has the image's real height.
     const again = mount([msg], render)
 
     expect(again.output()).toContain('▀')

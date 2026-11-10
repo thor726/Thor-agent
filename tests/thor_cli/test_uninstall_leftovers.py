@@ -48,7 +48,7 @@ def _fake_launchctl(monkeypatch, calls):
 def test_remove_launchd_gateway_sweeps_both_label_patterns(launch_agents, monkeypatch):
     current = launch_agents / "ai.thor.gateway.plist"
     profiled = launch_agents / "ai.thor.gateway-work.plist"
-    legacy = launch_agents / "io.nousresearch.thor-agent.gateway.plist"
+    legacy = launch_agents / "io.thorresearch.thor-agent.gateway.plist"
     unrelated = launch_agents / "com.other.agent.plist"
     for p in (current, profiled, legacy, unrelated):
         p.write_text("<plist/>", encoding="utf-8")
@@ -61,7 +61,7 @@ def test_remove_launchd_gateway_sweeps_both_label_patterns(launch_agents, monkey
     assert unrelated.exists()  # never touch another app's agent
     labels = {c[-1].rsplit("/", 1)[-1] for c in calls if c[1] == "bootout"}
     assert labels == {"ai.thor.gateway", "ai.thor.gateway-work",
-                      "io.nousresearch.thor-agent.gateway"}
+                      "io.thorresearch.thor-agent.gateway"}
     assert all(c[1] == "unload" for c in calls if c[1] == "unload")
 
 
@@ -80,11 +80,11 @@ def test_remove_desktop_app_leftovers_removes_thor_library_entries(fake_home):
     library = fake_home / "Library"
     ours = []
     for parent, name in (
-        ("Caches", "com.nousresearch.thor"),
+        ("Caches", "com.thorresearch.thor"),
         ("Logs", "Thor"),
-        ("WebKit", "com.nousresearch.thor"),
-        ("HTTPStorages", "com.nousresearch.thor"),
-        ("Saved Application State", "com.nousresearch.thor.savedState"),
+        ("WebKit", "com.thorresearch.thor"),
+        ("HTTPStorages", "com.thorresearch.thor"),
+        ("Saved Application State", "com.thorresearch.thor.savedState"),
     ):
         d = library / parent / name
         d.mkdir(parents=True)

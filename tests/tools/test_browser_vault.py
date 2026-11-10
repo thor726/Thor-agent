@@ -351,7 +351,7 @@ class TestBrowserVaultTools:
         out = json.loads(raw)
         assert out["success"] is True
         assert out["origin"] == "https://www.amazon.co.uk"
-        # the synchronous in-page check is bound to the origin actually matched
+        # the synchrothor in-page check is bound to the origin actually matched
         assert "https://www.amazon.co.uk" in secret_exprs[0]
         assert "s3cret-pw" not in raw
         assert out["filled_fields"] == 1

@@ -15,7 +15,7 @@ export const arSettings = {
   },
   settings: {
     memoryLayers: arMemoryLayers,
-    // Window plans (Nous subscription with included usage). Other billing strings: overlay-gaps.json.
+    // Window plans (Thor subscription with included usage). Other billing strings: overlay-gaps.json.
     billing: {
       keepGoingOnCredits: {
         title: 'الاستمرار بالرصيد',
@@ -218,7 +218,7 @@ export const arSettings = {
         serverNotConnected: (server, reason) => `خادم MCP ${server} غير متصل${reason ? `: ${reason}` : '.'}`,
         verified: 'موثّق',
         unverified: 'غير موثّق',
-        reviewedByNous: 'راجعته Nous.',
+        reviewedByThor: 'راجعته Thor.',
         installsAndEnables: profile => `يُثبَّت لملف ${profile} ويعمل فورًا.`,
         installsOnly: profile => `يُثبَّت لملف ${profile}.`,
         advanced: 'متقدم',
@@ -741,7 +741,7 @@ export const arSettings = {
       saveFailed: 'تعذر حفظ إعدادات البوابة',
       webAccess: {
         title: 'الوصول عبر الويب',
-        intro: 'افتح Thor الموجود على هذا الحاسوب من هاتفك أو من حاسوب آخر، مع تسجيل الدخول بحساب Nous. من يسجّل الدخول يمكنه تشغيل الأوامر على هذا الحاسوب.',
+        intro: 'افتح Thor الموجود على هذا الحاسوب من هاتفك أو من حاسوب آخر، مع تسجيل الدخول بحساب Thor. من يسجّل الدخول يمكنه تشغيل الأوامر على هذا الحاسوب.',
         failed: 'تعذّر تغيير الوصول عبر الويب',
         running: 'قيد التشغيل',
         stopped: 'متوقف',
@@ -750,7 +750,7 @@ export const arSettings = {
         restartNeeded: 'يلزم إعادة التشغيل',
         unavailable: 'غير متاح',
         notRunningDetail: 'شغّله لفتح Thor من جهاز آخر.',
-        needsNous: 'سجّل الدخول إلى حساب Nous من قسم المزوّدين أولًا.',
+        needsThor: 'سجّل الدخول إلى حساب Thor من قسم المزوّدين أولًا.',
         runningLan: 'افتح هذا العنوان على جهاز في الشبكة نفسها.',
         runningPublic: 'يُقدَّم عبر عنوانك.',
         runningLocal: 'يمكن فتحه من هذا الحاسوب فقط. أوقفه ثم شغّله من جديد لفتحه من أجهزة أخرى.',
@@ -765,7 +765,7 @@ export const arSettings = {
         startStages: {
           preparing: 'جارٍ تجهيز تطبيق الويب. قد يستغرق إنشاؤه بضع دقائق.',
           building: 'جارٍ إنشاء تطبيق الويب. قد يستغرق ذلك بضع دقائق.',
-          registering: 'جارٍ إعداد تسجيل الدخول عبر Nous لهذا العنوان.',
+          registering: 'جارٍ إعداد تسجيل الدخول عبر Thor لهذا العنوان.',
           restarting: 'جارٍ إعادة تشغيل البوابة لتقديم تطبيق الويب.'
         },
         startElapsed: time => `الوقت المنقضي: ${time}`,
@@ -1010,7 +1010,7 @@ export const arSettings = {
       noProviderOptions: 'لا تحتوي مجموعة الأدوات هذه على خيارات مزوّد — فعّلها لتعمل مع إعدادك الحالي.',
       noProviders: 'لا يوجد مزوّدون متاحون لمجموعة الأدوات هذه الآن.',
       ready: 'جاهز',
-      nousIncluded: 'مُضمّن مع اشتراك Nous — سجّل الدخول إلى Nous Portal للتفعيل.',
+      thorIncluded: 'مُضمّن مع اشتراك Thor — سجّل الدخول إلى Thor Portal للتفعيل.',
       noApiKeyRequired: 'لا يلزم مفتاح API.',
       postSetupHint: step =>
         `تحتاج هذه الخلفية إلى تثبيت لمرة واحدة (${step}). يعمل على هذا الجهاز — قد يستغرق بضع دقائق.`,

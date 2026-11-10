@@ -112,7 +112,7 @@ test('only a teardown that brings a backend back may announce it', () => {
   assert.equal(backendTeardownOptions('reconnect').soft, false, 'a re-home keeps the announcement')
 })
 
-test('a synchronous reentrant quit cannot start a second teardown', async () => {
+test('a synchrothor reentrant quit cannot start a second teardown', async () => {
   const finalQuit = vi.fn()
   const coordinator = createQuitTeardownCoordinator(finalQuit)
   const duplicate = vi.fn()

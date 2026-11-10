@@ -275,13 +275,13 @@ async def test_long_model_ids_differing_mid_name_render_distinct_labels(plain_ke
 
 @pytest.mark.asyncio
 async def test_model_ids_differing_only_in_their_org_keep_it_in_the_labels(plain_keyboards):
-    """``org/`` can be all that differs (OpenRouter ``meta-llama/`` vs ``nousresearch/``, Ollama ``hf.co/<org>/``);
+    """``org/`` can be all that differs (OpenRouter ``meta-llama/`` vs ``thorresearch/``, Ollama ``hf.co/<org>/``);
     the label must show it rather than an ordinal, with or without a plan word."""
-    ids = ["meta-llama/llama-3.1-8b-instruct", "nousresearch/llama-3.1-8b-instruct", "openai/gpt-5"]
+    ids = ["meta-llama/llama-3.1-8b-instruct", "thorresearch/llama-3.1-8b-instruct", "openai/gpt-5"]
     for model_labels in ({}, {ids[0]: "Large"}):
         labels = await _model_labels_for({"slug": "openrouter", "name": "O", "models": ids, "total_models": 3,
                                           "model_labels": model_labels})
-        assert labels[0].startswith("meta-llama/") and labels[1].startswith("nousresearch/"), labels
+        assert labels[0].startswith("meta-llama/") and labels[1].startswith("thorresearch/"), labels
         assert labels[2] == "gpt-5"
 
 

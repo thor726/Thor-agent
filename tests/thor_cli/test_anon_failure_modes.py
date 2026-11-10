@@ -1,4 +1,4 @@
-"""Nous free tier: every way the account service or the wire can refuse the free tier, and what
+"""Thor free tier: every way the account service or the wire can refuse the free tier, and what
 Thor does with each (the failure-mode contract behind the desktop's onboarding copy).
 
 Driven through a fake NAS whose responses are the ones the real service sends (see the code table
@@ -31,10 +31,10 @@ def _mint_error(nas) -> anon_auth.AuthError:
 
 def _exchange_error(nas, monkeypatch) -> anon_auth.AuthError:
     """Claim the trial (the credential is persisted before any exchange), then exchange it at first use."""
-    from thor_cli.auth_nous import resolve_nous_runtime_credentials
+    from thor_cli.auth_thor import resolve_thor_runtime_credentials
     assert anon_auth.is_guest_state(claimed_trial(monkeypatch))
     with pytest.raises(anon_auth.AuthError) as exc:
-        resolve_nous_runtime_credentials()
+        resolve_thor_runtime_credentials()
     return exc.value
 
 
@@ -46,7 +46,7 @@ class TestNasRefusalCodes:
         nas.create_response = httpx.Response(404, json={"error": "not_found"})
         err = _mint_error(nas)
         assert err.code == anon_auth.ANON_GATE_CLOSED and err.retryable is False
-        assert "Nous account" in str(err) and "free" in str(err)
+        assert "Thor account" in str(err) and "free" in str(err)
         # Terminal: no later attempt this process, whatever the clock says.
         assert anon_auth.ensure_portal_identity(explicit=True) is None
         assert nas.creates() == 1
@@ -77,7 +77,7 @@ class TestNasRefusalCodes:
         assert "proof of work" in str(err)
         # The credential from ``create`` is kept, so a later NAS without PoW exchanges it instead
         # of minting again.
-        assert anon_auth.is_guest_state(_load_auth_store()["providers"]["nous"])
+        assert anon_auth.is_guest_state(_load_auth_store()["providers"]["thor"])
         assert nas.creates() == 1
 
     def test_locked_account_is_dead_and_never_replaced(self, nas, monkeypatch):
@@ -86,7 +86,7 @@ class TestNasRefusalCodes:
         assert isinstance(err, anon_auth.AnonCredentialDead)
         assert err.code == anon_auth.ANON_ACCOUNT_LOCKED
         # Retired, and NOT replaced by a fresh identity: the way forward is a sign-in.
-        assert "nous" not in _load_auth_store().get("providers", {})
+        assert "thor" not in _load_auth_store().get("providers", {})
         assert nas.creates() == 1
 
     def test_a_locked_account_is_never_replaced_through_connectors_either(self, nas):
@@ -96,12 +96,12 @@ class TestNasRefusalCodes:
         anon_auth.ensure_portal_identity(explicit=True)
         with _auth_store_lock():
             store = _load_auth_store()
-            store["providers"]["nous"]["expires_at"] = "2000-01-01T00:00:00+00:00"
-            store["providers"]["nous"]["access_token"] = make_jwt(exp=1)
+            store["providers"]["thor"]["expires_at"] = "2000-01-01T00:00:00+00:00"
+            store["providers"]["thor"]["access_token"] = make_jwt(exp=1)
             _save_auth_store(store)
         nas.token_response = httpx.Response(403, json={"error": "account_locked"})
-        assert mtg.read_nous_access_token() is None
-        assert "nous" not in _load_auth_store().get("providers", {})
+        assert mtg.read_thor_access_token() is None
+        assert "thor" not in _load_auth_store().get("providers", {})
         assert nas.creates() == 1
 
     def test_a_5xx_or_non_json_body_is_a_retryable_server_error(self, nas):
@@ -209,7 +209,7 @@ class TestBootstrapRecord:
         monkeypatch.setattr(free_tier_bootstrap, "_inventory_other_providers", lambda: True)
         record = free_tier_bootstrap.refresh_record(announce=False)
         assert record.other_providers is True and record.provider_configured is True
-        assert _load_auth_store().get("active_provider") != "nous"
+        assert _load_auth_store().get("active_provider") != "thor"
 
     def test_the_desktop_retry_refreshes_the_boot_record(self, nas, monkeypatch):
         from thor_cli import welcome_trial
@@ -231,7 +231,7 @@ class TestSignInFailures:
         (anon_auth.ANON_RATE_LIMITED, 45, True, "busy"),
         (anon_auth.ANON_GATE_PAUSED, 0, True, "busy"),
         (anon_auth.ANON_UNREACHABLE, 0, True, "internet connection"),
-        (anon_auth.ANON_GATE_CLOSED, 0, False, "Nous account"),
+        (anon_auth.ANON_GATE_CLOSED, 0, False, "Thor account"),
         (anon_auth.ANON_POW_REQUIRED, 0, False, "proof of work"),
     ])
     def test_a_service_verdict_keeps_its_code_wait_and_copy(self, code, retry_after, retryable, needle):
@@ -265,7 +265,7 @@ def test_extra_welcome_hosts_make_a_local_stand_in_the_welcome_host(monkeypatch)
     assert anon_auth.route_is_welcome_host("http://127.0.0.1:8765/v1") is True
     assert anon_auth.route_is_welcome_host("http://localhost:9/v1") is True
     assert anon_auth.welcome_route_refusal(403, "You tried to access something", "http://127.0.0.1:8765/v1") == "tier_disabled"
-    assert anon_auth.route_is_welcome_host("https://inference-api.nousresearch.com/v1") is False
+    assert anon_auth.route_is_welcome_host("https://inference-api.thor-agent.local/v1") is False
 
 
 # --- The spoken wait -----------------------------------------------------------------------------

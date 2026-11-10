@@ -28,9 +28,9 @@
  * terminal pane keeps working unimpaired.
  */
 
-import { Button } from '@nous-research/ui/ui/components/button'
-import { Badge } from '@nous-research/ui/ui/components/badge'
-import { Card } from '@nous-research/ui/ui/components/card'
+import { Button } from '@thor-research/ui/ui/components/button'
+import { Badge } from '@thor-research/ui/ui/components/badge'
+import { Card } from '@thor-research/ui/ui/components/card'
 
 import { ModelPickerDialog } from '@/components/ModelPickerDialog'
 import { ModelReloadConfirm } from '@/components/ModelReloadConfirm'
@@ -190,7 +190,7 @@ export function ChatSidebar({
   // Short name of a just-saved model awaiting confirm to reload (a fresh chat
   // session is how the running chat adopts it; we confirm before discarding it).
   const [pendingReloadModel, setPendingReloadModel] = useState<string | null>(null)
-  // Nous window plans, Large model: the backend's one-line warning for that switch (never a confirm).
+  // Thor window plans, Large model: the backend's one-line warning for that switch (never a confirm).
   const [switchNotice, setSwitchNotice] = useState<string | null>(null)
 
   const refreshEffectiveModel = useCallback(() => {
@@ -267,7 +267,7 @@ export function ChatSidebar({
     // pending timer because this effect tears down with the old client.
     let redialTimer: ReturnType<typeof setTimeout> | null = null;
     let healthyOpenTimer: ReturnType<typeof setTimeout> | null = null;
-    // onState replays the current state synchronously. Ignore only that
+    // onState replays the current state synchrothorly. Ignore only that
     // subscription-time snapshot; real transitions in the same effect must
     // still consume the retry budget.
     let replayingInitialState = true;

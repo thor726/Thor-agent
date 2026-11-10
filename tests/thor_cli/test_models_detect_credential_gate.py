@@ -45,10 +45,10 @@ class TestNoCredentialsNoSwitch:
         assert models.detect_provider_for_model("claude-something", "deepseek") == ("anthropic", "claude-something")
 
     def test_explicitly_named_provider_is_not_gated(self, no_live_catalog, authed, monkeypatch):
-        """``/model nous`` names the provider: hand it back so the credential step can prompt/fail
+        """``/model thor`` names the provider: hand it back so the credential step can prompt/fail
         loudly instead of silently ignoring the request."""
-        monkeypatch.setattr(models, "detect_static_provider_for_model", lambda n, c: ("nous", "hermes-4-405b"))
-        assert models.detect_provider_for_model("nous", "deepseek") == ("nous", "hermes-4-405b")
+        monkeypatch.setattr(models, "detect_static_provider_for_model", lambda n, c: ("thor", "thor-4-405b"))
+        assert models.detect_provider_for_model("thor", "deepseek") == ("thor", "thor-4-405b")
 
 
 class TestSharedSlugTiebreak:

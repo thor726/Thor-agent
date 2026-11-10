@@ -14,7 +14,7 @@ import time
 
 import httpx
 
-WELCOME = "https://welcome-api.nousresearch.com/v1"
+WELCOME = "https://welcome-api.thor-agent.local/v1"
 PORTAL = "https://portal.example.test"
 
 
@@ -113,10 +113,10 @@ class FakePortal:
 
 
 def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> FakePortal:
-    """Route every Nous HTTP client at *fake*, isolate the stores, and reset the per-process memos.
+    """Route every Thor HTTP client at *fake*, isolate the stores, and reset the per-process memos.
 
-    One transport seam: ``httpx.Client`` itself, which ``auth_nous._nous_http_client`` and
-    ``resolve_nous_access_token`` both construct."""
+    One transport seam: ``httpx.Client`` itself, which ``auth_thor._thor_http_client`` and
+    ``resolve_thor_access_token`` both construct."""
     from thor_cli import anon_auth, free_tier_bootstrap
     from thor_cli import auth as auth_mod
 
@@ -124,7 +124,7 @@ def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> Fak
     monkeypatch.setenv("THOR_PORTAL_BASE_URL", PORTAL)
     monkeypatch.setenv("THOR_ANON_API_SECRET", "test-secret")
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared-store"))
-    for var in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "NOUS_API_KEY"):
+    for var in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "THOR_PORTAL_API_KEY"):
         monkeypatch.delenv(var, raising=False)
     real_client = httpx.Client
 
@@ -141,7 +141,7 @@ def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> Fak
     anon_challenge.reset_for_tests()
     monkeypatch.setattr(anon_challenge, "_sleep", lambda _seconds: None)
     monkeypatch.delenv("THOR_DESKTOP", raising=False)
-    # resolve_nous_access_token memoises the last token for 5 s per profile home (dict); a token minted
+    # resolve_thor_access_token memoises the last token for 5 s per profile home (dict); a token minted
     # by an earlier test must not be served to this one.
     monkeypatch.setattr(auth_mod, "_RESOLVE_TOKEN_CACHE", {})
     return fake

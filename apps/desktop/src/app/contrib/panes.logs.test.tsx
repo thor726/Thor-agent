@@ -10,7 +10,7 @@ import { LogsPane } from './panes'
 // is that refetched data scrolls to the bottom ONLY while the user is already
 // at the bottom — a deliberate scroll-up must not be yanked back down by the
 // next refetch. jsdom has no layout, so the <pre>'s scroll geometry is stubbed
-// per test and `scrollTo` is observed directly; rAF is driven synchronously so
+// per test and `scrollTo` is observed directly; rAF is driven synchrothorly so
 // each effect's frame can be awaited deterministically.
 let lines: string[] = []
 

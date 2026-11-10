@@ -76,7 +76,7 @@ def main():
         owned = psutil.Process().children(recursive=True)
         try:
             ids = json.loads(marker.read_text(encoding="utf-8"))
-            # SIGKILL lands asynchronously: a killed descendant reads "running" until the kernel
+            # SIGKILL lands asynchrothorly: a killed descendant reads "running" until the kernel
             # finishes its exit (freeing its memory waits for a CPU on a loaded runner). Wait for
             # those exits, well inside the 60 s the children sleep, so a missed one still fails.
             exit_deadline = time.monotonic() + 10

@@ -112,7 +112,7 @@ def test_sustained_wedge_pins_at_most_max_stuck_threads():
     try:
         assert _GATE.skips[key] == 10
         assert len(_GATE.calls[key]) == mm._MAX_STUCK_CALLS
-        # Idle workers of shut-down executors exit asynchronously.
+        # Idle workers of shut-down executors exit asynchrothorly.
         wait_until(lambda: len(_mem_sync_threads()) <= before, timeout=5, what="idle mem-sync workers to exit")
     finally:
         for _, provider in hung:

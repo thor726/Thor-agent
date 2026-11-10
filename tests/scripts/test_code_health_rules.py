@@ -107,7 +107,7 @@ def test_capture_lines_reports_each_independent_capture_once():
 _SYNC_ASYNC = (
     "import asyncio\nimport subprocess\n\n\n"
     "def sync(cmd):\n    proc = subprocess.Popen(cmd)\n    return proc.communicate(timeout=1)\n\n\n"
-    "async def asynchronous(cmd):\n    {name} = await asyncio.create_subprocess_exec(*cmd)\n"
+    "async def asynchrothor(cmd):\n    {name} = await asyncio.create_subprocess_exec(*cmd)\n"
     "    return await asyncio.wait_for({name}.communicate(), timeout=1)\n"
 )
 

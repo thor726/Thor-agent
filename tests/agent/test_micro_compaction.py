@@ -394,7 +394,7 @@ class TestMicroCompaction:
         telemetry runs (the tail calculation needs it), so occupancy is
         normally populated. This pins the safety property directly: with the
         cache empty, emitting reports null rather than triggering the lazy
-        resolution — which can issue a synchronous /models probe (#32221).
+        resolution — which can issue a synchrothor /models probe (#32221).
         """
         import json
         import logging

@@ -87,7 +87,7 @@ export const ModelMenuCloseContext = createContext<() => void>(() => {})
 /** Compact per-row price: `$in/$out` per Mtok (cached read appended when the
  *  provider ships it), "free", and a sale tag when the portal reports a
  *  discounted list price. Rendered only when the provider's payload carries
- *  pricing (Nous Portal and others that ship it). */
+ *  pricing (Thor Portal and others that ship it). */
 function ModelPrice({ pricing }: { pricing: ModelPricing }) {
   const { t } = useI18n()
   const copy = t.shell.modelMenu
@@ -284,8 +284,8 @@ export function ModelCatalogMenu({
     // gateway owns the model catalog, including virtual providers the local
     // REST fallback can't know about (#53817).
     queryFn: (): Promise<ModelOptionsResult> => requestModelOptions({ gateway, profile, request, sessionId }),
-    refetchOnMount: query => nousRefetchOnMount(query.state.data),
-    refetchInterval: query => nousPricingPoll(query.state.data, query.state.dataUpdateCount)
+    refetchOnMount: query => thorRefetchOnMount(query.state.data),
+    refetchInterval: query => thorPricingPoll(query.state.data, query.state.dataUpdateCount)
   })
 
   const loading = modelOptions.isPending && !modelOptions.data
@@ -1051,7 +1051,7 @@ function ModelFamilyRow({
   const caps = provider.capabilities?.[family.id]
   const limit = familyLimit(provider, family, isCurrent)
 
-  // Live per-model $/Mtok pricing (Nous Portal and other providers that ship
+  // Live per-model $/Mtok pricing (Thor Portal and other providers that ship
   // it). A `-fast` sibling shares the base id's price: the collapsed row
   // fronts the base, so fall back to it when only the fast variant is unpriced.
   const pricing = provider.pricing?.[family.id] ?? (family.fastId ? provider.pricing?.[family.fastId] : undefined)
@@ -1432,26 +1432,26 @@ function groupModels(
   return groups
 }
 
-// The Nous row: the only one the menu re-reads on open or while its pricing warms (window-plan labels).
-function isNous(provider: ModelOptionProvider): boolean {
-  return provider.slug === 'nous'
+// The Thor row: the only one the menu re-reads on open or while its pricing warms (window-plan labels).
+function isThor(provider: ModelOptionProvider): boolean {
+  return provider.slug === 'thor'
 }
 
-// Nous only: re-read on every open (cached list shows instantly, the re-read swaps in when it
+// Thor only: re-read on every open (cached list shows instantly, the re-read swaps in when it
 // lands). The plan (usage-window labels, used-up notes) loads with the first turn, after the
 // list was first fetched at boot, so the 60s cache would hide it until "Refresh models".
-// A cheap local cache-only read (the plan may not be known yet, so any Nous row); every other
+// A cheap local cache-only read (the plan may not be known yet, so any Thor row); every other
 // provider keeps the 60s cache.
-function nousRefetchOnMount(data: ModelOptionsResult | undefined): 'always' | true {
-  return data?.providers?.some(isNous) ? 'always' : true
+function thorRefetchOnMount(data: ModelOptionsResult | undefined): 'always' | true {
+  return data?.providers?.some(isThor) ? 'always' : true
 }
 
 // A cache-only open on a fresh backend ships rows marked pending while pricing warms in the
 // background; re-read a few times so window-plan labels appear without "Refresh models".
 // Bounded (~10s): a failed pricing fetch can leave rows pending, and an open menu must not
 // poll forever. Only runs while the menu is mounted and a row is pending.
-function nousPricingPoll(data: ModelOptionsResult | undefined, updates: number): false | number {
-  return updates < 6 && data?.providers?.some(p => isNous(p) && p.pricing_pending) ? 2_000 : false
+function thorPricingPoll(data: ModelOptionsResult | undefined, updates: number): false | number {
+  return updates < 6 && data?.providers?.some(p => isThor(p) && p.pricing_pending) ? 2_000 : false
 }
 
 // Window plans: the plan's featured picks lead (the backend lists them first). Re-applied after the

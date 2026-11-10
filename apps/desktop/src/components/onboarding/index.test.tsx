@@ -48,14 +48,14 @@ afterEach(() => {
 })
 
 describe('onboarding Picker', () => {
-  it('features Nous Portal and hides other providers behind a disclosure', () => {
-    setProviders([makeOAuthProvider('anthropic', 'Anthropic Claude'), makeOAuthProvider('nous', 'Nous Portal')])
+  it('features Thor Portal and hides other providers behind a disclosure', () => {
+    setProviders([makeOAuthProvider('anthropic', 'Anthropic Claude'), makeOAuthProvider('thor', 'Thor Portal')])
     render(<Picker ctx={ctx} />)
 
-    expect(screen.getByText('Nous Portal')).toBeTruthy()
+    expect(screen.getByText('Thor Portal')).toBeTruthy()
     expect(screen.getByText('Recommended')).toBeTruthy()
     // Fireworks stays behind the disclosure with the other alternatives; only
-    // Nous Portal is visible before the user expands the list.
+    // Thor Portal is visible before the user expands the list.
     expect(screen.queryByText('Fireworks AI')).toBeNull()
     expect(screen.queryByText('Anthropic Account')).toBeNull()
 
@@ -66,7 +66,7 @@ describe('onboarding Picker', () => {
     expect(screen.getByRole('button', { name: 'Collapse' })).toBeTruthy()
   })
 
-  it('shows every provider directly when Nous Portal is absent', () => {
+  it('shows every provider directly when Thor Portal is absent', () => {
     setProviders([
       makeOAuthProvider('anthropic', 'Anthropic Claude'),
       makeOAuthProvider('openai-codex', 'OpenAI Codex / ChatGPT')
@@ -81,7 +81,7 @@ describe('onboarding Picker', () => {
   })
 
   it('offers "choose later" on first run and persists the skip', () => {
-    setProviders([makeOAuthProvider('nous', 'Nous Portal')])
+    setProviders([makeOAuthProvider('thor', 'Thor Portal')])
     render(<Picker ctx={ctx} />)
 
     const skip = screen.getByRole('button', { name: "I'll choose a provider later" })
@@ -92,25 +92,25 @@ describe('onboarding Picker', () => {
     expect(window.localStorage.getItem('thor-onboarding-skipped-v1')).toBe('1')
   })
 
-  it('keeps Nous Portal on top of the key form when the provider list failed to load', () => {
+  it('keeps Thor Portal on top of the key form when the provider list failed to load', () => {
     // A failed/empty OAuth list drops the picker onto the key form with no way back.
     setProviders([])
     $desktopOnboarding.set({ ...$desktopOnboarding.get(), mode: 'apikey' })
     render(<Picker ctx={ctx} />)
 
-    expect(screen.getByText('Nous Portal')).toBeTruthy()
+    expect(screen.getByText('Thor Portal')).toBeTruthy()
     expect(screen.getByText('Recommended')).toBeTruthy()
     expect(screen.getByText('Fireworks AI')).toBeTruthy()
     cleanup()
 
-    // The custom-endpoint form is a deliberate destination: no Nous row there.
+    // The custom-endpoint form is a deliberate destination: no Thor row there.
     $desktopOnboarding.set({ ...$desktopOnboarding.get(), localEndpoint: true })
     render(<Picker ctx={ctx} />)
-    expect(screen.queryByText('Nous Portal')).toBeNull()
+    expect(screen.queryByText('Thor Portal')).toBeNull()
   })
 
   it('hides "choose later" in manual (add-provider) mode', () => {
-    setProviders([makeOAuthProvider('nous', 'Nous Portal')])
+    setProviders([makeOAuthProvider('thor', 'Thor Portal')])
     $desktopOnboarding.set({ ...$desktopOnboarding.get(), manual: true })
     render(<Picker ctx={ctx} />)
 

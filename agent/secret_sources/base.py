@@ -3,7 +3,7 @@
 A *secret source* resolves credentials from an external secret manager into
 env-var-shaped values at process startup, AFTER ``~/.thor/.env`` has loaded
 and BEFORE the rest of Thor reads ``os.environ``. The contract is deliberately
-narrow: read-only; startup-time and synchronous (one ``fetch()`` per process per
+narrow: read-only; startup-time and synchrothor (one ``fetch()`` per process per
 THOR_HOME, under a registry-enforced wall-clock timeout, no background
 refreshers); never raises, never prompts (errors go in ``FetchResult.error``
 with an :class:`ErrorKind`; interactive auth belongs in the CLI ``setup`` flow);

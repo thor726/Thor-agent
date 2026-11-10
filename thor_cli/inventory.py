@@ -77,7 +77,7 @@ def build_models_payload(
     ctx: ConfigContext, *, explicit_only: bool = False, include_unconfigured: bool = False,
     picker_hints: bool = False, canonical_order: bool = False, pricing: bool = False,
     pricing_cache_only: bool = False,
-    capabilities: bool = False, featured: bool = False, force_fresh_nous_tier: bool = False,
+    capabilities: bool = False, featured: bool = False, force_fresh_thor_tier: bool = False,
     refresh: bool = False, probe_custom_providers: bool = True, probe_current_custom_provider: bool = False,
     for_picker: bool = False, max_models: int | None = None, non_blocking_catalogs: bool = False,
     fast_custom_probe: bool | None = None,
@@ -95,7 +95,7 @@ def build_models_payload(
     rows = list_authenticated_providers(
         current_provider=ctx.current_provider, current_base_url=ctx.current_base_url,
         current_model=ctx.current_model, user_providers=ctx.user_providers,
-        custom_providers=ctx.custom_providers, force_fresh_nous_tier=force_fresh_nous_tier,
+        custom_providers=ctx.custom_providers, force_fresh_thor_tier=force_fresh_thor_tier,
         max_models=max_models, refresh=refresh, probe_custom_providers=probe_custom_providers,
         probe_current_custom_provider=probe_current_custom_provider, for_picker=for_picker,
         excluded_providers=ctx.excluded_providers or [],
@@ -146,7 +146,7 @@ def build_models_payload(
     if canonical_order:
         rows = _reorder_canonical(rows)
     if pricing:
-        _apply_pricing(rows, force_fresh_nous_tier=force_fresh_nous_tier, cached_only=pricing_cache_only)
+        _apply_pricing(rows, force_fresh_thor_tier=force_fresh_thor_tier, cached_only=pricing_cache_only)
     # Both metadata decorators consult ``model_overrides``.  Snapshot the
     # read-only config once for this payload rather than letting each model
     # lookup reopen config.yaml through models_dev._cfg_get().
@@ -520,16 +520,16 @@ def _reasoning_catalog_reader(slug: str):
     must never block on HTTP; a cold cache warms in the background and reports no restriction until then."""
     try:
         from thor_cli.models_reasoning_caps import (
-            nous_model_reasoning_capabilities,
+            thor_model_reasoning_capabilities,
             openrouter_model_reasoning_capabilities,
-            warm_nous_reasoning_caps_async,
+            warm_thor_reasoning_caps_async,
             warm_openrouter_reasoning_caps_async,
         )
     except Exception:
         return None
 
     readers = {
-        "nous": (warm_nous_reasoning_caps_async, nous_model_reasoning_capabilities),
+        "thor": (warm_thor_reasoning_caps_async, thor_model_reasoning_capabilities),
         "openrouter": (warm_openrouter_reasoning_caps_async, openrouter_model_reasoning_capabilities),
     }
     if slug not in readers:
@@ -872,15 +872,15 @@ def _reorder_canonical(rows: list[dict]) -> list[dict]:
     return canon + extras
 
 
-def _attach_nous_plan_usage(row: dict, *, warm: bool):
+def _attach_thor_plan_usage(row: dict, *, warm: bool):
     """Stamp ``plan_usage`` from the portal snapshot (window plans only) and return the PickerUsage (or
     None). A cache-only open reads the last snapshot at any age: the 60s account cache has usually lapsed
     by the time someone opens the composer menu. Accounts without a window plan get nothing."""
     try:
-        from thor_cli.model_picker_usage import nous_picker_usage
-        usage = nous_picker_usage(warm=warm, any_age=not warm)
+        from thor_cli.model_picker_usage import thor_picker_usage
+        usage = thor_picker_usage(warm=warm, any_age=not warm)
     except Exception:
-        logging.getLogger(__name__).debug("Nous plan usage unavailable", exc_info=True)
+        logging.getLogger(__name__).debug("Thor plan usage unavailable", exc_info=True)
         return None
     if usage is not None:
         row["plan_usage"] = usage.to_payload()
@@ -908,11 +908,11 @@ def _plan_usage_window(g) -> dict:
     }
 
 
-# health: allow CC -- usage-window plans: one branch attaches plan usage to the Nous row (built in _attach_nous_plan_usage); over target on main
-def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cached_only: bool = False) -> None:
-    """Set ``row["pricing"] = {model_id: {input, output, cache | None, free}}``; for Nous also
+# health: allow CC -- usage-window plans: one branch attaches plan usage to the Thor row (built in _attach_thor_plan_usage); over target on main
+def _apply_pricing(rows: list[dict], *, force_fresh_thor_tier: bool = False, cached_only: bool = False) -> None:
+    """Set ``row["pricing"] = {model_id: {input, output, cache | None, free}}``; for Thor also
     ``free_tier`` (account is free-tier) and ``unavailable_models`` (paid models a free user can't pick).
-    ``cached_only`` never hits the network: unknown Nous entitlement fails closed (``free_tier_pending``,
+    ``cached_only`` never hits the network: unknown Thor entitlement fails closed (``free_tier_pending``,
     all models locked) and missing pricing is marked ``pricing_pending``."""
     from thor_cli.models_pricing import (
         _format_price_per_mtok,
@@ -920,12 +920,12 @@ def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cac
         get_pricing_for_provider,
     )
     from thor_cli.models import (
-        check_nous_free_tier,
-        get_cached_nous_free_tier,
-        partition_nous_models_by_tier,
+        check_thor_free_tier,
+        get_cached_thor_free_tier,
+        partition_thor_models_by_tier,
     )
 
-    nous_free_tier: Optional[bool] = None  # resolved once (cached in models.py for the TTL window)
+    thor_free_tier: Optional[bool] = None  # resolved once (cached in models.py for the TTL window)
 
     for row in rows:
         slug = str(row.get("slug", "")).lower()
@@ -943,24 +943,24 @@ def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cac
             raw_pricing = get_pricing_for_provider(slug, **pricing_kwargs) or {}
         except Exception:
             raw_pricing = {}
-        cached_nous_tier: Optional[bool] = None
-        plan_usage = _attach_nous_plan_usage(row, warm=not cached_only) if slug == "nous" else None
-        if slug == "nous" and cached_only:
-            cached_nous_tier = get_cached_nous_free_tier()
-            if cached_nous_tier is None:
+        cached_thor_tier: Optional[bool] = None
+        plan_usage = _attach_thor_plan_usage(row, warm=not cached_only) if slug == "thor" else None
+        if slug == "thor" and cached_only:
+            cached_thor_tier = get_cached_thor_free_tier()
+            if cached_thor_tier is None:
                 # Entitlement unknown: stay nonblocking but fail closed until the prewarm has populated
                 # both caches, else a free account could briefly select paid models on first open.
                 row["free_tier_pending"] = True
                 row["unavailable_models"] = list(models)
                 if not row.get("warning"):  # say why every model renders locked
-                    row["warning"] = ("Checking Nous plan entitlement… models unlock on the "
+                    row["warning"] = ("Checking Thor plan entitlement… models unlock on the "
                                       "next picker open or refresh.")
                 continue
         if not raw_pricing:
-            if slug == "nous":
-                row["free_tier"] = bool(cached_nous_tier)
+            if slug == "thor":
+                row["free_tier"] = bool(cached_thor_tier)
                 row["pricing_pending"] = True
-                row["unavailable_models"] = list(models) if cached_nous_tier else []
+                row["unavailable_models"] = list(models) if cached_thor_tier else []
             continue
 
         formatted: dict[str, dict] = {}
@@ -977,9 +977,9 @@ def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cac
                 "cache": _format_price_per_mtok(cache_raw) if cache_raw else None,
                 "free": inp == "free" and out in ("free", ""),  # both input and output cost nothing
             }
-            # Sale chrome is Nous Portal-only (other catalogs' nested pricing.original is ignored); free
+            # Sale chrome is Thor Portal-only (other catalogs' nested pricing.original is ignored); free
             # models get flat -100% chrome, was_* only when the gateway served an original.
-            if slug == "nous":
+            if slug == "thor":
                 sale = compute_sale_discount(inp_raw, out_raw, p.get("original"))
                 if sale is not None:
                     discount_percent, was_prompt_raw, was_out_raw = sale
@@ -992,15 +992,15 @@ def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cac
         if formatted:
             row["pricing"] = formatted
 
-        if slug == "nous":
+        if slug == "thor":
             try:
-                if nous_free_tier is None:
-                    nous_free_tier = (cached_nous_tier if cached_only
-                                      else check_nous_free_tier(force_fresh=force_fresh_nous_tier))
-                row["free_tier"] = bool(nous_free_tier)
+                if thor_free_tier is None:
+                    thor_free_tier = (cached_thor_tier if cached_only
+                                      else check_thor_free_tier(force_fresh=force_fresh_thor_tier))
+                row["free_tier"] = bool(thor_free_tier)
                 row["unavailable_models"] = (
-                    partition_nous_models_by_tier(list(models), raw_pricing, free_tier=True)[1]
-                    if nous_free_tier else [])
+                    partition_thor_models_by_tier(list(models), raw_pricing, free_tier=True)[1]
+                    if thor_free_tier else [])
             except Exception:  # tier detection failed — fail open (no gating)
                 row["free_tier"] = False
                 row["unavailable_models"] = []

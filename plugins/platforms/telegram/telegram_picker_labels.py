@@ -82,7 +82,7 @@ def model_button_labels(model_ids: list[str], suffix_for: Callable[[str], str]) 
     resort so two buttons never read the same while selecting different models."""
     prefix = shared_label_prefix(model_ids)
     # Clashes resolve on full ids: ``org/`` can be all that differs (OpenRouter ``meta-llama/`` vs
-    # ``nousresearch/``, Ollama ``hf.co/<org>/``).
+    # ``thorresearch/``, Ollama ``hf.co/<org>/``).
     names = list(model_ids)
     suffixes = [suffix_for(m) for m in model_ids]
     labels = [model_button_label(m, prefix, s) for m, s in zip(model_ids, suffixes)]

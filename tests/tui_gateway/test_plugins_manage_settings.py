@@ -71,7 +71,7 @@ PORTABLE_MANIFEST = """\
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "portable-demo",
   "version": "1.0.0",
-  "extensions": {"com.nousresearch.thor": {"config_schema": {
+  "extensions": {"com.thorresearch.thor": {"config_schema": {
     "show_chip": {"type": "bool", "default": true},
     "api_key": {"type": "secret", "env": "PORTABLE_DEMO_KEY"}
   }}}
@@ -81,7 +81,7 @@ PORTABLE_MANIFEST = """\
 
 def test_portable_plugin_json_schema_lists_and_saves_like_a_native_one(plugins_home, monkeypatch):
     """Agent Plugins v1 forbids unknown top-level fields, so a portable package declares its form under
-    ``extensions.com.nousresearch.thor.config_schema``; it must get the same list + save path, and a
+    ``extensions.com.thorresearch.thor.config_schema``; it must get the same list + save path, and a
     save tells the plugin's Desktop half (``plugin.<id>.settings.changed``) so it applies without polling."""
     sent = []
     monkeypatch.setattr(server, "_broadcast_global_event", lambda name, payload: sent.append((name, payload)))

@@ -100,10 +100,10 @@ def test_listing_is_per_profile_and_carries_inheritance(two_profile_homes):
 def test_pin_persists_per_profile_and_is_honored_by_resolution(two_profile_homes):
     home_a, _home_b = two_profile_homes
     with _profile_scope("b"):
-        _apply_model_assignment_sync("auxiliary", "nous", "hermes-4", "side_task", "", "")
-    assert _rows("b")["side_task"]["provider"] == "nous"
+        _apply_model_assignment_sync("auxiliary", "thor", "thor-4", "side_task", "", "")
+    assert _rows("b")["side_task"]["provider"] == "thor"
     assert "side_task" not in (home_a / "config.yaml").read_text()
-    assert (_resolved_model("b"), _resolved_model(None)) == ("hermes-4", "vendor/model-a")
+    assert (_resolved_model("b"), _resolved_model(None)) == ("thor-4", "vendor/model-a")
 
     # "auto" on an inheriting slot (Desktop's "Follow <base>") goes back to the base.
     with _profile_scope("b"):
@@ -127,11 +127,11 @@ def test_assignment_reset_and_stale_pins_cover_plugin_tasks(two_profile_homes, m
     assert saved["auxiliary"]["alpha_task"]["model"] == "fast-model"
 
     # A pin on a plugin task is a stale pin like any other when main moves elsewhere.
-    assert {"task": "alpha_task", "provider": "openrouter", "model": "fast-model"} in _stale_aux_pins(cfg, "nous")
+    assert {"task": "alpha_task", "provider": "openrouter", "model": "fast-model"} in _stale_aux_pins(cfg, "thor")
 
     # Empty task = broadcast; it must reach the plugin slot too.
-    _apply_aux_assignment_sync(cfg, "nous", "hermes-4", "", "", "")
-    assert cfg["auxiliary"]["alpha_task"]["provider"] == "nous"
+    _apply_aux_assignment_sync(cfg, "thor", "thor-4", "", "", "")
+    assert cfg["auxiliary"]["alpha_task"]["provider"] == "thor"
 
     _apply_aux_assignment_sync(cfg, "", "", "__reset__", "", "")
     assert cfg["auxiliary"]["alpha_task"] == {"provider": "auto", "model": ""}

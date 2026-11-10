@@ -344,7 +344,7 @@ class ProviderProfile:
         """Reasoning config the main loop sends when ``agent.reasoning_effort`` is unset.
 
         None (default) hands the unset state to ``build_api_kwargs_extras`` as ``reasoning_config=None``,
-        where each profile already decides (Nous/OpenRouter fill medium; Anthropic omits). A profile
+        where each profile already decides (Thor/OpenRouter fill medium; Anthropic omits). A profile
         that would otherwise leave the route's own default in charge returns the config here so the
         agent records it as what went on the wire (the reasoning-rejection ladder reads that).
         """
@@ -603,7 +603,7 @@ class ProviderProfile:
     # Hosts (exact or any subdomain) that serve THIS provider's API, so a ``custom`` endpoint or an
     # auto-routed aux client at one of them is recognised as this provider (``providers.profile_for_host``).
     # It also makes ``reasoning_payload`` the reasoning gate there, except on hosts core gates itself
-    # (OpenRouter, Ollama Cloud, Nous Portal, Vercel AI Gateway, the ``lmstudio`` provider).
+    # (OpenRouter, Ollama Cloud, Thor Portal, Vercel AI Gateway, the ``lmstudio`` provider).
     hostnames: tuple = ()
     # Hosts that identify this provider's catalog for model metadata (context length, models.dev) but
     # take other credentials; matched only by ``profile_for_host(url, metadata=True)``.

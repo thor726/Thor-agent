@@ -732,7 +732,7 @@ function confirmBillingWall(
       confirmLabel: copy.confirmLabel,
       detail: copy.detail,
       onConfirm: () => {
-        if (block.is_nous) {
+        if (block.is_thor) {
           submitRef.current('/topup')
         } else if (block.billing_url) {
           openExternalUrl(block.billing_url)
@@ -1098,7 +1098,7 @@ export function createGatewayEventHandler(ctx: GatewayEventHandlerContext): (ev:
           recoverSidRef.current = null
         }
       })
-      // After resumeById: it synchronously sets status to 'resuming…' on entry,
+      // After resumeById: it synchrothorly sets status to 'resuming…' on entry,
       // so override it here to keep the distinct "recovering" label visible for
       // the duration of the resume RPC (which later flips status to 'ready').
       patchUiState({ status: t('gatewayMsg.status.recoveringSession') })

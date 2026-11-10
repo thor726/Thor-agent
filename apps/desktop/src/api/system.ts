@@ -307,7 +307,7 @@ export function runDebugShare(): Promise<DebugShareResponse> {
     path: '/api/ops/debug-share',
     method: 'POST',
     body: {},
-    // Synchronous upload of report + logs to the paste service.
+    // Synchrothor upload of report + logs to the paste service.
     timeoutMs: 120_000
   })
 }

@@ -1,4 +1,4 @@
-"""Streamlined setup flows: the Nous Portal one-shot (`thor portal`), first-time quick setup,
+"""Streamlined setup flows: the Thor Portal one-shot (`thor portal`), first-time quick setup,
 Blank Slate setup and the `--quick` missing-items pass. Names from setup.py are imported lazily
 per function so test patches on ``thor_cli.setup`` take effect."""
 
@@ -35,33 +35,33 @@ def _reload_config_into(config: dict, *, dict_only: bool = False) -> None:
         config.update(refreshed)
 
 
-def _run_nous_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_lines: tuple, print_error) -> bool:
-    """Run ``_model_flow_nous`` (login, model pick, provider switch, Tool Gateway opt-in) — the
+def _run_thor_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_lines: tuple, print_error) -> bool:
+    """Run ``_model_flow_thor`` (login, model pick, provider switch, Tool Gateway opt-in) — the
     single source of truth shared with ``thor model``. False when cancelled or failed (the
     message is already printed)."""
     from thor_cli.setup import _info
     try:
-        from thor_cli.model_setup_flows import _model_flow_nous
-        _model_flow_nous(config)
+        from thor_cli.model_setup_flows import _model_flow_thor
+        _model_flow_thor(config)
         return True
     except cancel_exc:
-        # _login_nous raises SystemExit(130)/(1) on cancel/failure; the expired-session re-login
-        # path inside _model_flow_nous only catches Exception, so SystemExit would kill the CLI.
+        # _login_thor raises SystemExit(130)/(1) on cancel/failure; the expired-session re-login
+        # path inside _model_flow_thor only catches Exception, so SystemExit would kill the CLI.
         _info(*cancel_lines)
     except Exception as exc:
-        logger.debug("_model_flow_nous error during %s: %s", context, exc)
+        logger.debug("_model_flow_thor error during %s: %s", context, exc)
         print_error(exc)
     return False
 
 
 def _run_portal_one_shot(config: dict) -> None:
-    """One-shot Nous Portal setup (``thor setup --portal`` / ``thor portal``)."""
+    """One-shot Thor Portal setup (``thor setup --portal`` / ``thor portal``)."""
     from thor_cli.setup import _info, _print_banner, _record_setup_completed, print_error, print_info, print_success
-    _print_banner("│     ⚡ Thor Setup — Nous Portal (one-shot)             │")
+    _print_banner("│     ⚡ Thor Setup — Thor Portal (one-shot)             │")
     _info(None, "  One subscription, 300+ models, plus the Tool Gateway:",
           "    web search, image generation, TTS, browser automation",
-          "    — all routed through your Nous Portal sub.", None,
-          "  Sign up: https://portal.nousresearch.com/manage-subscription", None)
+          "    — all routed through your Thor Portal sub.", None,
+          "  Sign up: https://portal.thor-agent.local/manage-subscription", None)
 
     def _on_error(exc: Exception) -> None:
         from thor_cli.auth_error_copy import provider_setup_failure_lines
@@ -71,7 +71,7 @@ def _run_portal_one_shot(config: dict) -> None:
         for line in rest:
             print_info(f"  {line}")
 
-    if not _run_nous_flow(config, context="`thor portal`", cancel_exc=(KeyboardInterrupt, EOFError, SystemExit),
+    if not _run_thor_flow(config, context="`thor portal`", cancel_exc=(KeyboardInterrupt, EOFError, SystemExit),
                           cancel_lines=(None, "  Setup cancelled.", "  You can retry later with `thor portal`."),
                           print_error=_on_error):
         return
@@ -104,26 +104,26 @@ def _imported_model_label(config: dict) -> str:
 
 def _keep_imported_model(config: dict, imported_from: str) -> bool:
     """After an import that brought a model, ask whether to keep it (the default) or switch to
-    Nous Portal; True keeps it."""
+    Thor Portal; True keeps it."""
     from thor_cli.setup import _info, print_header, prompt_choice
     label = _imported_model_label(config) if imported_from else ""
     if not label:
         return False
     print_header("Model & Provider", gap=True)
     _info(f"Settings were imported from {imported_from}.")
-    return prompt_choice(f"Keep your imported model ({label}) or switch to Nous Portal?", [
+    return prompt_choice(f"Keep your imported model ({label}) or switch to Thor Portal?", [
         f"Keep {label}",
-        "Switch to Nous Portal — free OAuth login, 300+ models plus the Tool Gateway",
+        "Switch to Thor Portal — free OAuth login, 300+ models plus the Tool Gateway",
     ], 0, description=f"  Settings were imported from {imported_from}.") == 0
 
 
-def _quick_setup_nous_portal(config: dict) -> None:
-    """Quick Setup's Nous Portal step: OAuth login + model selection (provider set to "nous" by the save)."""
+def _quick_setup_thor_portal(config: dict) -> None:
+    """Quick Setup's Thor Portal step: OAuth login + model selection (provider set to "thor" by the save)."""
     from thor_cli.setup import _info, print_header, print_info, print_warning
-    print_header("Nous Portal", gap=True)
+    print_header("Thor Portal", gap=True)
     _info("One subscription, 300+ models, plus the Tool Gateway:",
           "  web search, image generation, TTS, browser automation.",
-          "Sign up: https://portal.nousresearch.com/manage-subscription", None)
+          "Sign up: https://portal.thor-agent.local/manage-subscription", None)
 
     def _on_error(exc: Exception) -> None:
         from thor_cli.auth_error_copy import provider_setup_failure_lines
@@ -132,23 +132,23 @@ def _quick_setup_nous_portal(config: dict) -> None:
         for line in rest:
             print_info(line)
 
-    _run_nous_flow(config, context="quick setup", cancel_exc=(KeyboardInterrupt, EOFError),
-                   cancel_lines=(None, "Nous Portal setup cancelled."), print_error=_on_error)
+    _run_thor_flow(config, context="quick setup", cancel_exc=(KeyboardInterrupt, EOFError),
+                   cancel_lines=(None, "Thor Portal setup cancelled."), print_error=_on_error)
     # The wizard's later save_config(config) must not clobber the login/model save.
     _reload_config_into(config)
 
 
 def _run_first_time_quick_setup(config: dict, thor_home, is_existing: bool, imported_from: str = ""):
-    """Streamlined first-time setup via Nous Portal: OAuth, model, terminal & messaging;
+    """Streamlined first-time setup via Thor Portal: OAuth, model, terminal & messaging;
     everything else gets defaults. A model brought by an agent import (*imported_from* names the
-    agents) is offered first and kept by default, which skips the Nous Portal step."""
+    agents) is offered first and kept by default, which skips the Thor Portal step."""
     from thor_cli.setup import (
         _apply_default_agent_settings, _info, print_info, _print_setup_summary, print_success,
         prompt_choice, save_config, setup_gateway, setup_terminal_backend
     )
-    # Step 1: the imported model, or Nous Portal.
+    # Step 1: the imported model, or Thor Portal.
     if not _keep_imported_model(config, imported_from):
-        _quick_setup_nous_portal(config)
+        _quick_setup_thor_portal(config)
 
     # Step 2: Terminal Backend; Step 3: defaults for everything else.
     setup_terminal_backend(config)

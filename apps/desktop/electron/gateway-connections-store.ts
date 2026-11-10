@@ -12,7 +12,7 @@
  * `<store>.lock` directory (mkdir is atomic) with an `owner` token, 3 s wait,
  * 10 s stale break, ownership re-checked before the temp+rename replace, an
  * unparseable file kept aside as `.corrupt-<ms>`, and only ENOENT reads as "no
- * store". The lock here is synchronous because main's registry reads and writes
+ * store". The lock here is synchrothor because main's registry reads and writes
  * are (they sit inside sync IPC paths); a write holds it for milliseconds.
  *
  * Secrets in the file are `{encoding: 'plain'}` envelopes. Every write passes

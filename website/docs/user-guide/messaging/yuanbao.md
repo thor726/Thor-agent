@@ -7,10 +7,10 @@ description: "Yuanbao moved out of Thor core into the yuanbao Thor Labs plugin"
 # Yuanbao
 
 :::warning Thor Labs plugin
-Yuanbao is now a Thor Labs plugin: built by Nous Research, not supported, and likely not maintained going forward. Fixes from the community are welcome.
+Yuanbao is now a Thor Labs plugin: built by Thor Agent, not supported, and likely not maintained going forward. Fixes from the community are welcome.
 :::
 
-The [Yuanbao](https://yuanbao.tencent.com/) gateway platform and its `yb_*` tools (`yb_query_group_info`, `yb_query_group_members`, `yb_send_dm`, `yb_search_sticker`, `yb_send_sticker`) are no longer part of Thor core. They ship as the `yuanbao` plugin in [NousResearch/thor-labs-plugins](https://github.com/NousResearch/thor-labs-plugins/tree/main/yuanbao), which carries the full setup guide.
+The [Yuanbao](https://yuanbao.tencent.com/) gateway platform and its `yb_*` tools (`yb_query_group_info`, `yb_query_group_members`, `yb_send_dm`, `yb_search_sticker`, `yb_send_sticker`) are no longer part of Thor core. They ship as the `yuanbao` plugin in [dwisetyabudi15581/thor-labs-plugins](https://github.com/dwisetyabudi15581/thor-labs-plugins/tree/main/yuanbao), which carries the full setup guide.
 
 ## Install
 

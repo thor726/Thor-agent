@@ -18,7 +18,7 @@ interface Cookie {
 }
 
 /** Partition -> cookies, behind the slice of Electron's Session API removal uses. */
-function cookieJars(sharedUrls: () => unknown[] = () => ['https://portal.nousresearch.com']) {
+function cookieJars(sharedUrls: () => unknown[] = () => ['https://portal.thor-agent.local']) {
   const jars = new Map<string, Cookie[]>()
   const mirrorCleared: string[] = []
 
@@ -73,7 +73,7 @@ it('removing a gateway that went secondary -> primary clears both jars, so a re-
 
   jars.seed(privateJar, 'gw.example.invalid', 'thor_session')
   jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'thor_session')
-  jars.seed(LEGACY_OAUTH_PARTITION, 'portal.nousresearch.com', 'portal_session')
+  jars.seed(LEGACY_OAUTH_PARTITION, 'portal.thor-agent.local', 'portal_session')
   const otherJar = resolveOauthPartition(other.url, { registry: primary })
   jars.seed(otherJar, 'other.example.invalid', 'thor_session')
 
@@ -81,7 +81,7 @@ it('removing a gateway that went secondary -> primary clears both jars, so a re-
 
   // Re-added as a secondary (recycled id) or as primary: no sign-in either way.
   expect(jars.names(resolveOauthPartition(URL_A, { registry: secondary }))).toEqual([])
-  expect(jars.names(LEGACY_OAUTH_PARTITION)).toEqual(['portal.nousresearch.com:portal_session'])
+  expect(jars.names(LEGACY_OAUTH_PARTITION)).toEqual(['portal.thor-agent.local:portal_session'])
   expect(jars.names(otherJar)).toEqual(['other.example.invalid:thor_session'])
   expect(jars.mirrorCleared).toEqual([`${privateJar}|*`, `${LEGACY_OAUTH_PARTITION}|${URL_A}`])
 })
@@ -119,7 +119,7 @@ it('a removal another writer (the Webapp) made reaches the cleanup with the list
 
   onTestFinished(stop)
 
-  // fs.watchFile takes its baseline stat asynchronously, so a write that lands before it becomes the
+  // fs.watchFile takes its baseline stat asynchrothorly, so a write that lands before it becomes the
   // baseline instead of a change. Re-issue the (idempotent) outside removal until the watcher reacts;
   // main.ts registers the watcher at load, long before any outside edit.
   const webapp = store(list('local', []))
@@ -142,7 +142,7 @@ it('a removal another writer (the Webapp) made reaches the cleanup with the list
 
 it("a connection.json per-profile route on the removed gateway's host keeps its shared-jar sign-in", async () => {
   const config = { remote: {}, profiles: { coder: { mode: 'remote', url: 'https://gw.example.invalid:9000' } } }
-  const jars = cookieJars(() => ['https://portal.nousresearch.com', ...connectionConfigUrls(config)])
+  const jars = cookieJars(() => ['https://portal.thor-agent.local', ...connectionConfigUrls(config)])
   const secondary = { ...gateway, url: 'https://gw.example.invalid:8000' }
   jars.seed(LEGACY_OAUTH_PARTITION, 'gw.example.invalid', 'thor_session')
 

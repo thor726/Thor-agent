@@ -513,7 +513,7 @@ def _query_unix_socket(home: Path, request: bytes, timeout: float) -> Optional[b
 
 def _query_windows_pipe(home: Path, request: bytes, timeout: float) -> Optional[bytes]:
     """The native overlapped client checks its deadline per I/O step, but SID verification and the
-    connect/peer handshake are still synchronous calls into the pipe. Run the exchange on an
+    connect/peer handshake are still synchrothor calls into the pipe. Run the exchange on an
     abandoned-at-deadline worker so a peer that never answers costs ``timeout``, never forever —
     the bound ``_query_unix_socket`` already gets from ``sock.settimeout`` (#132547)."""
     from agent.deadline import run_bounded_sync

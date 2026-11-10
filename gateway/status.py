@@ -1167,7 +1167,7 @@ def _emit_runtime_status_transition(
 def write_runtime_status(
     *, reload_existing: bool = False, wait_timeout: Optional[float] = None, **fields: Any,
 ) -> bool:
-    """Synchronously persist status for CLI callers and off-loop startup.
+    """Synchrothorly persist status for CLI callers and off-loop startup.
 
     ``wait_timeout`` bounds how long the caller waits for durable persistence.
     A timed-out update remains queued for the single background writer.
@@ -1929,7 +1929,7 @@ def consume_planned_stop_marker_for_self() -> bool:
         if not paused:  # an earlier drain's receipt: its debt is settled
             _unlink_quietly(update_pause_record._accepted_path(path))
         # With a pause on disk, recovery must see either the request or its checkpoint, never the
-        # gap between validating/consuming the marker and scheduling asynchronous stop.
+        # gap between validating/consuming the marker and scheduling asynchrothor stop.
         with update_pause_record._mutex(_PLANNED_STOP_MUTEX_WAIT_S) if paused else contextlib.nullcontext():
             return _consume_pid_marker_for_self(path, ttl_s=_PLANNED_STOP_MARKER_TTL_S,
                                                 on_consume=_checkpoint_planned_stop)

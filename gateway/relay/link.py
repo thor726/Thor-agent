@@ -153,9 +153,9 @@ def _get(path: str) -> dict:
 def portal_agents_url() -> str:
     """The Portal this instance signs in to (operator override, stored login, then default)."""
     from thor_cli.auth import get_provider_auth_state
-    from thor_cli.auth_nous import _nous_portal_base_url
+    from thor_cli.auth_thor import _thor_portal_base_url
 
-    return f"{_nous_portal_base_url(get_provider_auth_state('nous') or {})}/agents"
+    return f"{_thor_portal_base_url(get_provider_auth_state('thor') or {})}/agents"
 
 
 def managed_by() -> str:
@@ -188,7 +188,7 @@ def request_link(platform: str) -> dict[str, Any]:
     if managed_by() == "portal":
         raise RelayLinkError(
             "managed_by_portal",
-            "Accounts for this agent are linked from Nous Portal: open the agent there and use Message platforms.",
+            "Accounts for this agent are linked from Thor Portal: open the agent there and use Message platforms.",
             409)
     payload = _post("/manage/link", {"platform": platform})
     code = str(payload.get("code") or "").strip()

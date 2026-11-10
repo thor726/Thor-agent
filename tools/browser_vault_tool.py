@@ -11,7 +11,7 @@ paid per request) and available wherever a browser is. Its actions:
   handle: the password field for logins, card fields for payment items (after
   the user confirms), address fields for address items. The secret is
   resolved locally, the page origin must EXACTLY match the item's bound
-  origin (pre-checked AND re-asserted synchronously inside the fill script),
+  origin (pre-checked AND re-asserted synchrothorly inside the fill script),
   the field is chosen by the ported login-control classifier, injection runs
   exclusively over the supervisor CDP WebSocket (never argv) — or, for a plugin browser with no CDP
   endpoint, through its registered ``BrowserPageBackend`` (Camofox's REST evaluate) — and the tool

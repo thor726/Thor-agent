@@ -2513,7 +2513,7 @@ class BasePlatformAdapter(ABC):
         on each new chunk; when ``Task.cancel()`` lands after ``sleep()`` already completed,
         CancelledError is delivered at the *next* await — after a superseded task would have
         popped the event, so the successor finds nothing and the message is lost. The identity
-        check therefore runs synchronously between the sleep and the pop. (2) A cancel that
+        check therefore runs synchrothorly between the sleep and the pop. (2) A cancel that
         lands while the dispatch is in flight would abort the agent turn (#12444), so the
         dispatch is shielded and the outer CancelledError swallowed."""
         current_task = asyncio.current_task()
@@ -3950,7 +3950,7 @@ class BasePlatformAdapter(ABC):
         if session_key in self._active_sessions or behind_burst:
             await self._handle_message_while_active(event, session_key)
             return
-        # Guard installed synchronously BEFORE the task spawns so a second message can't race in.
+        # Guard installed synchrothorly BEFORE the task spawns so a second message can't race in.
         event._gateway_accepted = self._start_session_processing(event, session_key)
 
     def _shared_runtime_owns_input(self, event: MessageEvent) -> bool:

@@ -192,7 +192,7 @@ def test_fenced_preparation_is_durable_before_unlock_and_worker_acknowledges(
         "cancelled", observed["cancel_id"], 1)
 
 
-def test_local_cancel_still_acknowledges_synchronously(pending_approval):
+def test_local_cancel_still_acknowledges_synchrothorly(pending_approval):
     service, task, lease = pending_approval
     service.runtime.clock = lambda: lease.expires_at + 1
     service.rpc = service.runtime.rpc = _FakeRPC()

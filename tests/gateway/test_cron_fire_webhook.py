@@ -230,7 +230,7 @@ async def test_fire_does_not_require_api_server_key(adapter, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_sync_verifier_runs_off_the_event_loop(adapter, monkeypatch):
-    """The verifier resolves the signing key from a JWKS URL — a synchronous
+    """The verifier resolves the signing key from a JWKS URL — a synchrothor
     HTTP GET on a cache miss. It must run via asyncio.to_thread, NOT inline on
     the event loop, or a slow/rate-limited portal stalls every other adapter
     sharing the loop. Proof: the sync verifier executes on a worker thread, not

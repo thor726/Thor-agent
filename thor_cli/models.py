@@ -187,7 +187,7 @@ _ai_gateway_catalog_cache: list[tuple[str, str]] | None = None
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal free-model helpers — the Portal models endpoint is the source of truth for what is
+# Thor Portal free-model helpers — the Portal models endpoint is the source of truth for what is
 # offered (free or paid); we surface it as-is, no local allowlist filtering.
 # ---------------------------------------------------------------------------
 
@@ -214,10 +214,10 @@ def _is_model_free(model_id: str, pricing: dict[str, dict[str, str]]) -> bool:
     return bool(entry) and (_is_subscription_billed(entry) or _zero_priced(entry, ("prompt", "completion"), "1"))
 
 
-def partition_nous_models_by_tier(
+def partition_thor_models_by_tier(
     model_ids: list[str], pricing: dict[str, dict[str, str]], free_tier: bool
 ) -> tuple[list[str], list[str]]:
-    """Split Nous models into (selectable, unavailable): free-tier users may only select free models
+    """Split Thor models into (selectable, unavailable): free-tier users may only select free models
     (paid ones are returned as unavailable, shown grayed out)."""
     if not free_tier or not pricing:  # no pricing → can't determine, show everything
         return (model_ids, [])
@@ -235,7 +235,7 @@ def _union_with_portal_recommendations(
     silently return the inputs unchanged — never block the picker on a Portal-side hiccup.
     """
     try:
-        payload = fetch_nous_recommended_models(portal_base_url, force_refresh=force_refresh)
+        payload = fetch_thor_recommended_models(portal_base_url, force_refresh=force_refresh)
     except Exception:
         payload = None
     block = payload.get(tier_key) if isinstance(payload, dict) else None
@@ -271,8 +271,8 @@ def union_with_portal_paid_recommendations(
         force_refresh=force_refresh, synthesize_free_pricing=False)
 
 
-def union_with_nous_on_sale_models(curated_ids: list[str], pricing: dict[str, dict[str, Any]]) -> list[str]:
-    """Curated list plus every paid Nous model the gateway is discounting right now, deepest
+def union_with_thor_on_sale_models(curated_ids: list[str], pricing: dict[str, dict[str, Any]]) -> list[str]:
+    """Curated list plus every paid Thor model the gateway is discounting right now, deepest
     discount first. A sale lives only in ``/v1/models`` ``pricing.original``, so without this the
     picker badges discounts on curated rows but never shows a discounted model the curated list and
     Portal recommendations omit. Free rows stay with ``freeRecommendedModels``; rows the gateway
@@ -310,7 +310,7 @@ def _pricing_profile_key() -> str:
     return thor_home_key()
 
 
-def get_cached_nous_free_tier() -> Optional[bool]:
+def get_cached_thor_free_tier() -> Optional[bool]:
     """This profile's live cached entitlement, or ``None`` if unknown/expired."""
     cached = _free_tier_cache.get(_pricing_profile_key())
     if cached is None or time.monotonic() - cached[1] >= _FREE_TIER_CACHE_TTL:
@@ -318,22 +318,22 @@ def get_cached_nous_free_tier() -> Optional[bool]:
     return cached[0]
 
 
-def check_nous_free_tier(*, force_fresh: bool = False, cached_only: bool = False) -> bool:
-    """True only when the Nous Portal user is KNOWN to be free-tier (unknown/error → False so this
+def check_thor_free_tier(*, force_fresh: bool = False, cached_only: bool = False) -> bool:
+    """True only when the Thor Portal user is KNOWN to be free-tier (unknown/error → False so this
     never blocks users). Cached ``_FREE_TIER_CACHE_TTL`` seconds so an upgrade shows within minutes.
     ``cached_only`` returns the live cached answer or the fail-open ``False`` without contacting Portal."""
     now = time.monotonic()
     profile_key = _pricing_profile_key()
     if not force_fresh:
-        cached_result = get_cached_nous_free_tier()
+        cached_result = get_cached_thor_free_tier()
         if cached_result is not None:
             return cached_result
     if cached_only:
         return False
     try:
-        from thor_cli.nous_account import get_nous_portal_account_info
+        from thor_cli.thor_account import get_thor_portal_account_info
 
-        result = get_nous_portal_account_info(force_fresh=force_fresh).is_free_tier
+        result = get_thor_portal_account_info(force_fresh=force_fresh).is_free_tier
     except Exception:
         result = False  # default to paid on error — don't block users
     _free_tier_cache[profile_key] = (result, now)
@@ -341,26 +341,26 @@ def check_nous_free_tier(*, force_fresh: bool = False, cached_only: bool = False
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal recommended models — curated paid/free suggestions plus dedicated compaction (aux)
+# Thor Portal recommended models — curated paid/free suggestions plus dedicated compaction (aux)
 # and vision picks, TTL-cached per process. Fields read: {paid,free}RecommendedModels:
 # [{modelName}], {paid,free}Recommended{Compaction,Vision}Model: {modelName} | null
 # ---------------------------------------------------------------------------
 
-NOUS_RECOMMENDED_MODELS_MIRROR = "https://web-assets.nousresearch.com/dynamic"
-_NOUS_MIRROR_TIMEOUT: float = 2.0  # seconds: a hanging mirror delays the Portal fallback by at most this
-_NOUS_RECOMMENDED_CACHE_TTL: int = 600  # seconds (10 minutes)
+THOR_PORTAL_RECOMMENDED_MODELS_MIRROR = "https://web-assets.thor-agent.local/dynamic"
+_THOR_PORTAL_MIRROR_TIMEOUT: float = 2.0  # seconds: a hanging mirror delays the Portal fallback by at most this
+_THOR_PORTAL_RECOMMENDED_CACHE_TTL: int = 600  # seconds (10 minutes)
 # (result_dict, monotonic timestamp), scoped to the profile and portal.
-_nous_recommended_cache: dict[tuple[str, str], tuple[dict[str, Any], float]] = {}
+_thor_recommended_cache: dict[tuple[str, str], tuple[dict[str, Any], float]] = {}
 
 
-def _nous_recommended_disk_path() -> Path:
+def _thor_recommended_disk_path() -> Path:
     from thor_constants import get_thor_home
-    return get_thor_home() / "cache" / "nous_recommended_cache.json"
+    return get_thor_home() / "cache" / "thor_recommended_cache.json"
 
 
-def _read_nous_recommended_disk(base: str) -> tuple[dict[str, Any], float] | None:
+def _read_thor_recommended_disk(base: str) -> tuple[dict[str, Any], float] | None:
     """Return the last good payload and its age for the freshness check."""
-    blob = _read_json_cache(_nous_recommended_disk_path(), errors=(OSError, json.JSONDecodeError, UnicodeDecodeError))
+    blob = _read_json_cache(_thor_recommended_disk_path(), errors=(OSError, json.JSONDecodeError, UnicodeDecodeError))
     entry = (blob or {}).get(base)
     data = entry.get("data") if isinstance(entry, dict) else None
     if not isinstance(data, dict) or not data:
@@ -372,65 +372,65 @@ def _read_nous_recommended_disk(base: str) -> tuple[dict[str, Any], float] | Non
     return data, age
 
 
-def _write_nous_recommended_disk(base: str, data: dict[str, Any]) -> None:
+def _write_thor_recommended_disk(base: str, data: dict[str, Any]) -> None:
     """Merge ``data`` into the per-base disk map atomically; failures are debug-logged (the in-process
     cache still works)."""
     if not data:
         return
-    path = _nous_recommended_disk_path()
+    path = _thor_recommended_disk_path()
     try:
         blob = _read_json_cache(path, errors=(OSError, json.JSONDecodeError, UnicodeDecodeError)) or {}
         blob[base] = {"data": data, "ts": time.time()}
         _write_json_cache(path, blob, indent=2)
     except OSError as exc:
-        logger.debug("nous recommended-models disk cache write failed: %s", exc)
+        logger.debug("thor recommended-models disk cache write failed: %s", exc)
 
 
-def fetch_nous_recommended_models(
+def fetch_thor_recommended_models(
     portal_base_url: str = "", timeout: float = 5.0, *, force_refresh: bool = False
 ) -> dict[str, Any]:
     """Fetch the Portal's public recommended models (no auth): its R2 mirror, else the Portal itself.
-    Results are reused for ``_NOUS_RECOMMENDED_CACHE_TTL`` s across restarts unless ``force_refresh``;
+    Results are reused for ``_THOR_PORTAL_RECOMMENDED_CACHE_TTL`` s across restarts unless ``force_refresh``;
     stale disk data is the fallback on failure, and reading it never renews its freshness."""
-    base = (portal_base_url or "https://portal.nousresearch.com").rstrip("/")
+    base = (portal_base_url or "https://portal.thor-agent.local").rstrip("/")
     now = time.monotonic()
     cache_key = (_pricing_profile_key(), base)
-    cached = _nous_recommended_cache.get(cache_key)
-    if not force_refresh and cached is not None and now - cached[1] < _NOUS_RECOMMENDED_CACHE_TTL:
+    cached = _thor_recommended_cache.get(cache_key)
+    if not force_refresh and cached is not None and now - cached[1] < _THOR_PORTAL_RECOMMENDED_CACHE_TTL:
         return cached[0]
-    disk = _read_nous_recommended_disk(base)
-    if not force_refresh and disk is not None and 0 <= disk[1] < _NOUS_RECOMMENDED_CACHE_TTL:
+    disk = _read_thor_recommended_disk(base)
+    if not force_refresh and disk is not None and 0 <= disk[1] < _THOR_PORTAL_RECOMMENDED_CACHE_TTL:
         data, age = disk
-        _nous_recommended_cache[cache_key] = (data, now - age)
+        _thor_recommended_cache[cache_key] = (data, now - age)
         return data
     parts = urllib.parse.urlsplit(base)
     mirror = [] if is_loopback_host(parts.hostname) else [
-        (f"{NOUS_RECOMMENDED_MODELS_MIRROR}/{parts.netloc}", min(timeout, _NOUS_MIRROR_TIMEOUT))]
+        (f"{THOR_PORTAL_RECOMMENDED_MODELS_MIRROR}/{parts.netloc}", min(timeout, _THOR_PORTAL_MIRROR_TIMEOUT))]
     for origin, origin_timeout in [*mirror, (base, timeout)]:  # the Portal itself when its mirror is missing (404) or failing
         try:
-            data = _get_json(f"{origin}/api/nous/recommended-models", timeout=origin_timeout,
+            data = _get_json(f"{origin}/api/thor/recommended-models", timeout=origin_timeout,
                              headers={"Accept": "application/json", "Accept-Encoding": "gzip"})
         except Exception:
             continue
         if isinstance(data, dict) and data:
-            _write_nous_recommended_disk(base, data)
+            _write_thor_recommended_disk(base, data)
             break
     else:
         data = disk[0] if disk is not None else {}
-    _nous_recommended_cache[cache_key] = (data, now)
+    _thor_recommended_cache[cache_key] = (data, now)
     return data
 
 
-def _resolve_nous_portal_url() -> str:
+def _resolve_thor_portal_url() -> str:
     """Best-effort lookup of the Portal base URL the user is authed against."""
     try:
-        from thor_cli.auth import DEFAULT_NOUS_PORTAL_URL, get_provider_auth_state
+        from thor_cli.auth import DEFAULT_THOR_PORTAL_URL, get_provider_auth_state
 
-        state = get_provider_auth_state("nous") or {}
+        state = get_provider_auth_state("thor") or {}
         portal = str(state.get("portal_base_url") or "").strip()
-        return (portal or str(DEFAULT_NOUS_PORTAL_URL)).rstrip("/")
+        return (portal or str(DEFAULT_THOR_PORTAL_URL)).rstrip("/")
     except Exception:
-        return "https://portal.nousresearch.com"
+        return "https://portal.thor-agent.local"
 
 
 def _extract_model_name(entry: Any) -> Optional[str]:
@@ -439,18 +439,18 @@ def _extract_model_name(entry: Any) -> Optional[str]:
     return model_name.strip() if isinstance(model_name, str) and model_name.strip() else None
 
 
-def get_nous_recommended_aux_model(
+def get_thor_recommended_aux_model(
     *, vision: bool = False, free_tier: Optional[bool] = None, portal_base_url: str = "",
     force_refresh: bool = False) -> Optional[str]:
     """The Portal's recommended model for an auxiliary task: free tier → free pick only; paid tier →
     paid pick, falling back to the free one when the Portal returned ``null`` (staged rollouts)."""
-    base = portal_base_url or _resolve_nous_portal_url()
-    payload = fetch_nous_recommended_models(base, force_refresh=force_refresh)
+    base = portal_base_url or _resolve_thor_portal_url()
+    payload = fetch_thor_recommended_models(base, force_refresh=force_refresh)
     if not payload:
         return None
     if free_tier is None:
         try:
-            free_tier = check_nous_free_tier()
+            free_tier = check_thor_free_tier()
         except Exception:
             free_tier = False  # assume paid on detection error — paid users see both fields anyway
     kind = "Vision" if vision else "Compaction"
@@ -530,36 +530,36 @@ def pick_silent_default_model(model_ids: list[str], provider: str = "openrouter"
     return model_ids[0]
 
 
-def recommended_nous_default_model() -> dict[str, Any]:
-    """The model a Nous account lands on without choosing one, honouring the account's tier.
+def recommended_thor_default_model() -> dict[str, Any]:
+    """The model a Thor account lands on without choosing one, honouring the account's tier.
 
     Curated catalog plus the Portal's recommendations for the tier, narrowed to the org's policy,
     then (free tier) to the rows the tier may select, then :func:`pick_silent_default_model`.
     Contacts the Portal for a fresh tier read, so never call it on a hot path. Returns
-    ``{"provider": "nous", "model": str, "free_tier": bool}``; ``model`` may be ``""`` when nothing
+    ``{"provider": "thor", "model": str, "free_tier": bool}``; ``model`` may be ``""`` when nothing
     is selectable (callers degrade). Shared by ``GET /api/model/recommended-default`` and the
     sign-in completion in ``thor_cli.anon_auth`` so both land on the same model.
     """
     from thor_cli import model_picker_usage, models_pricing as mp
     from thor_cli.auth import get_provider_auth_state
-    model_ids = get_curated_nous_model_ids()
-    pricing = mp.get_pricing_for_provider("nous") or {}
-    free_tier = check_nous_free_tier(force_fresh=True)
+    model_ids = get_curated_thor_model_ids()
+    pricing = mp.get_pricing_for_provider("thor") or {}
+    free_tier = check_thor_free_tier(force_fresh=True)
     try:
-        portal_url = (get_provider_auth_state("nous") or {}).get("portal_base_url", "") or ""
+        portal_url = (get_provider_auth_state("thor") or {}).get("portal_base_url", "") or ""
     except Exception:
         portal_url = ""
     # Narrow to policy BEFORE the tier split, so a rescued id still has to pass the free/paid predicate.
-    policy_allowed = mp.nous_policy_allowed_ids()
+    policy_allowed = mp.thor_policy_allowed_ids()
     union = union_with_portal_free_recommendations if free_tier else union_with_portal_paid_recommendations
     model_ids, pricing = union(model_ids, pricing, portal_url)
-    model_ids = mp.restrict_to_nous_policy(model_ids, policy_allowed, rescue_empty=True)
+    model_ids = mp.restrict_to_thor_policy(model_ids, policy_allowed, rescue_empty=True)
     if free_tier:
-        model_ids, _unavailable = partition_nous_models_by_tier(model_ids, pricing, free_tier=True)
+        model_ids, _unavailable = partition_thor_models_by_tier(model_ids, pricing, free_tier=True)
         # Never default onto a subscription-billed row: spending that plan is the user's call.
         model_ids = [mid for mid in model_ids if not _is_subscription_billed(pricing.get(mid))] or model_ids
     model = "" if free_tier else model_picker_usage.window_plan_default(model_ids, pricing)
-    return {"provider": "nous", "model": model or pick_silent_default_model(model_ids, provider="nous"),
+    return {"provider": "thor", "model": model or pick_silent_default_model(model_ids, provider="thor"),
             "free_tier": bool(free_tier)}
 
 
@@ -600,7 +600,7 @@ def _openrouter_model_is_free(pricing: Any) -> bool:
 
 def _openrouter_model_supports_tools(item: Any) -> bool:
     """True when ``supported_parameters`` advertises ``tools`` (thor-agent is tool-calling-first).
-    Permissive when the field is absent/malformed: some OpenRouter-compatible gateways (Nous Portal,
+    Permissive when the field is absent/malformed: some OpenRouter-compatible gateways (Thor Portal,
     private mirrors) don't populate it, and the picker must not silently empty for them.
 
     Ported from Kilo-Org/kilocode#9068.
@@ -609,7 +609,7 @@ def _openrouter_model_supports_tools(item: Any) -> bool:
     return "tools" in params if isinstance(params, list) else True
 
 
-# Reasoning-capability cache slots, one set per catalog (OpenRouter, Nous Portal). The logic
+# Reasoning-capability cache slots, one set per catalog (OpenRouter, Thor Portal). The logic
 # lives in models_reasoning_caps and reads/writes these by name so tests can reset them here.
 # ``*_cache``: model id → parsed caps for the process lifetime; ``*_failed_at``: monotonic time
 # of the last failed fetch (60s re-fetch suppression); the flags are once-per-process guards.
@@ -617,10 +617,10 @@ _openrouter_reasoning_caps_cache: dict[str, Optional[dict[str, Any]]] | None = N
 _openrouter_reasoning_caps_failed_at: float | None = None
 _openrouter_caps_disk_checked = False
 _openrouter_caps_warm_started = False
-_nous_reasoning_caps_cache: dict[str, Optional[dict[str, Any]]] | None = None
-_nous_reasoning_caps_failed_at: float | None = None
-_nous_caps_disk_checked = False
-_nous_caps_warm_started = False
+_thor_reasoning_caps_cache: dict[str, Optional[dict[str, Any]]] | None = None
+_thor_reasoning_caps_failed_at: float | None = None
+_thor_caps_disk_checked = False
+_thor_caps_warm_started = False
 
 
 from agent.reasoning_effort import CODEX_ASTRA_EFFORTS, clamp_effort as _clamp_effort, is_astra_model
@@ -725,15 +725,15 @@ def model_ids(*, force_refresh: bool = False) -> list[str]:
     return [mid for mid, _ in fetch_openrouter_models(force_refresh=force_refresh)]
 
 
-def get_curated_nous_model_ids() -> list[str]:
-    """Curated Nous Portal model ids: the remote catalog manifest, else the in-repo
-    ``_PROVIDER_MODELS["nous"]`` snapshot. Always a list."""
+def get_curated_thor_model_ids() -> list[str]:
+    """Curated Thor Portal model ids: the remote catalog manifest, else the in-repo
+    ``_PROVIDER_MODELS["thor"]`` snapshot. Always a list."""
     try:
-        from thor_cli.model_catalog import get_curated_nous_models
-        remote = get_curated_nous_models()
+        from thor_cli.model_catalog import get_curated_thor_models
+        remote = get_curated_thor_models()
     except Exception:
         remote = None
-    return list(remote or _PROVIDER_MODELS.get("nous", []))
+    return list(remote or _PROVIDER_MODELS.get("thor", []))
 
 
 def _ai_gateway_model_is_free(pricing: Any) -> bool:
@@ -956,7 +956,7 @@ def curated_models_for_provider(
     if normalized == "openrouter":
         return fetch_openrouter_models(force_refresh=force_refresh)
 
-    # Try live API first (Codex, Nous, etc. all support /models)
+    # Try live API first (Codex, Thor, etc. all support /models)
     live = provider_model_ids(normalized)
     if live:
         # StepFun's Step Plan /models merge now lives in its provider fetcher
@@ -1031,14 +1031,14 @@ def detect_static_provider_for_model(
     if alias_match:
         return alias_match
 
-    # Step 0: a bare provider name typed as the model (`/model nous`) is a provider switch to that
+    # Step 0: a bare provider name typed as the model (`/model thor`) is a provider switch to that
     # provider's default. Skip "custom" (no catalog) and "openrouter" (needs an explicit model).
     resolved_provider = _PROVIDER_ALIASES.get(name_lower, name_lower)
     if resolved_provider not in {"custom", "openrouter"}:
         default_models = static_catalog(resolved_provider)
         if resolved_provider in _PROVIDER_LABELS and default_models and resolved_provider not in current_keys:
             # Cost-safe default, not ``default_models[0]``: metered aggregators list most-capable-first,
-            # so [0] would silently escalate `/model nous` to the priciest flagship.
+            # so [0] would silently escalate `/model thor` to the priciest flagship.
             return (resolved_provider, get_default_model_for_provider(resolved_provider) or default_models[0])
 
     # A model in the current provider's own catalog never suggests switching.
@@ -1088,10 +1088,10 @@ def _configured_provider_ids() -> set[str]:
 
 
 def _resolve_provider_prefix(model_name: str) -> Optional[tuple[str, str]]:
-    """Route an explicit ``vendor/model`` prefix (``nous/deepseek-v4-pro``, ``ollama/qwen3.5:4b``) to
+    """Route an explicit ``vendor/model`` prefix (``thor/deepseek-v4-pro``, ``ollama/qwen3.5:4b``) to
     a provider the user defined in ``providers:`` (by raw name or alias) instead of the default.
 
-    ``nous/deepseek-v4-pro`` or ``ollama/qwen3.5:4b`` should route to the named provider instead of falling
+    ``thor/deepseek-v4-pro`` or ``ollama/qwen3.5:4b`` should route to the named provider instead of falling
     back to the configured default (which silently sends non-default models to the wrong endpoint, #87189).
     """
     if "/" not in model_name:
@@ -1117,7 +1117,7 @@ def detect_provider_for_model(
 
     Never hands back a provider the user holds no credentials for: an unauthenticated guess is
     skipped and the ladder continues (``None`` = stay on the current provider). Exceptions: the user
-    NAMED the provider (``/model nous``), or there is no current provider yet (``auto``) — then the
+    NAMED the provider (``/model thor``), or there is no current provider yet (``auto``) — then the
     first guess is returned so the credential step fails loudly instead of silently ignoring input."""
     from thor_cli.models_detect import (
         current_provider_catalog_match, current_provider_owns_vendor, provider_has_credentials)
@@ -1361,20 +1361,20 @@ def _codex_catalog(normalized: str, force_refresh: bool) -> list[str]:
     return get_codex_model_ids(access_token=access_token, base_url=base_url)
 
 
-def _nous_catalog(normalized: str, force_refresh: bool) -> Optional[list[str]]:
+def _thor_catalog(normalized: str, force_refresh: bool) -> Optional[list[str]]:
     try:
         from thor_cli.anon_challenge import background_caller
-        from thor_cli.auth import fetch_nous_models, resolve_nous_runtime_credentials
+        from thor_cli.auth import fetch_thor_models, resolve_thor_runtime_credentials
         with background_caller():  # never waits on or opens a challenge
-            creds = resolve_nous_runtime_credentials()
+            creds = resolve_thor_runtime_credentials()
         if creds:
-            live = fetch_nous_models(api_key=creds.get("api_key", ""), inference_base_url=creds.get("base_url", ""))
+            live = fetch_thor_models(api_key=creds.get("api_key", ""), inference_base_url=creds.get("base_url", ""))
             if live:
                 return live
     except Exception:
         pass
     # Live failed / no creds: the docs-hosted manifest, so new Portal models surface without a release.
-    return get_curated_nous_model_ids() or None
+    return get_curated_thor_model_ids() or None
 
 
 def _api_key_credentials(normalized: str) -> tuple[str, str]:
@@ -1524,7 +1524,7 @@ def _azure_foundry_catalog(normalized: str, force_refresh: bool) -> Optional[lis
 _PROVIDER_CATALOG_FETCHERS: dict[str, Any] = {
     "openrouter": lambda normalized, force_refresh: model_ids(force_refresh=force_refresh),
     "openai-codex": _codex_catalog,
-    "nous": _nous_catalog,
+    "thor": _thor_catalog,
     "stepfun": _stepfun_catalog,
     "gmi": _api_key_provider_live,
     "anthropic": _anthropic_catalog,

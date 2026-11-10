@@ -31,17 +31,17 @@ def _jwt(label):
 
 def _home(home, label, *, expired):
     home.mkdir(parents=True)
-    (home / "config.yaml").write_text("model:\n  provider: nous\n  default: fixture-model\n")
+    (home / "config.yaml").write_text("model:\n  provider: thor\n  default: fixture-model\n")
     (home / ".env").write_text(
         f"THOR_PORTAL_BASE_URL=https://{label}-portal.invalid\n"
-        f"NOUS_INFERENCE_BASE_URL=https://{label}-inference.invalid/v1\n"
+        f"THOR_PORTAL_INFERENCE_BASE_URL=https://{label}-inference.invalid/v1\n"
     )
-    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"nous": {
+    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"thor": {
         "access_token": _jwt(label), "refresh_token": f"{label}-refresh",
         "expires_at": "2000-01-01T00:00:00+00:00" if expired else "2999-01-01T00:00:00+00:00",
         "scope": "inference:invoke", "client_id": "fixture-client",
-        "portal_base_url": "https://portal.nousresearch.com",
-        "inference_base_url": "https://inference-api.nousresearch.com/v1",
+        "portal_base_url": "https://portal.thor-agent.local",
+        "inference_base_url": "https://inference-api.thor-agent.local/v1",
     }}}))
 
 
@@ -56,18 +56,18 @@ def runtime(request, tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     from agent import billing_usage, billing_view, secret_scope, subscription_view
-    from thor_cli import auth, nous_account, nous_billing
+    from thor_cli import auth, thor_account, thor_billing
     from tui_gateway import launch_profile_policy, server
 
-    for key in ("THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL",
+    for key in ("THOR_PORTAL_BASE_URL", "THOR_PORTAL_BASE_URL", "THOR_PORTAL_INFERENCE_BASE_URL",
                 "THOR_DEV_BILLING_FIXTURE", "THOR_DEV_SUBSCRIPTION_FIXTURE", "THOR_DEV_CREDITS_FIXTURE"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(launch_profile_policy, "_snapshot", None)
     monkeypatch.setattr(server, "_thor_home", str(launch))
     monkeypatch.setattr(server, "_served_profile_homes", set())
     monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
-    monkeypatch.setattr(nous_billing, "_token_cache", {})
-    nous_account.reset_nous_portal_account_info_cache()
+    monkeypatch.setattr(thor_billing, "_token_cache", {})
+    thor_account.reset_thor_portal_account_info_cache()
     previous = secret_scope.is_multiplex_active()
     launch_profile_policy.activate_multi_profile_hosting()
     calls = []
@@ -77,7 +77,7 @@ def runtime(request, tmp_path, monkeypatch):
         label = "secondary" if request.url.host == "secondary-portal.invalid" else "launch"
         if request.url.path.endswith("/token"):
             return httpx.Response(200, json={
-                # Nous deliberately mirrors refreshed OAuth tokens across profiles.
+                # Thor deliberately mirrors refreshed OAuth tokens across profiles.
                 "access_token": _jwt("shared-account"), "refresh_token": "shared-rotated",
                 "expires_in": 3600, "scope": "inference:invoke",
                 "inference_base_url": f"https://{label}-inference.invalid/v1",
@@ -133,7 +133,7 @@ def test_reads_keep_scope_and_route_every_request(runtime, caplog, monkeypatch, 
     params = {} if profile == "launch" else {"profile": "secondary"}
     # A sibling's later ambient edit must not override the frozen launch scope or the selected profile.
     monkeypatch.setenv("THOR_PORTAL_BASE_URL", "https://ambient-other.invalid")
-    monkeypatch.setenv("NOUS_INFERENCE_BASE_URL", "https://ambient-other-inference.invalid/v1")
+    monkeypatch.setenv("THOR_PORTAL_INFERENCE_BASE_URL", "https://ambient-other-inference.invalid/v1")
     ambient = dict(os.environ)
     with caplog.at_level(logging.WARNING):
         result = _call(runtime.server, method, params)
@@ -194,7 +194,7 @@ def test_step_up_binds_the_profile_before_starting_the_external_flow(runtime, mo
     def external_device_flow(**kwargs):
         seen.append((get_thor_home(), get_secret("THOR_PORTAL_BASE_URL")))
         return True
-    monkeypatch.setattr(auth, "step_up_nous_billing_scope", external_device_flow)
+    monkeypatch.setattr(auth, "step_up_thor_billing_scope", external_device_flow)
     result = _call(runtime.server, "billing.step_up", {} if profile == "launch" else {"profile": profile})
     assert result == {"ok": True, "granted": True}, result
     assert seen == [(runtime.homes[profile], f"https://{profile}-portal.invalid")]

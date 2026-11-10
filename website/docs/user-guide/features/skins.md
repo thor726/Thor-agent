@@ -46,7 +46,7 @@ display:
 
 The Desktop app lists your CLI skins next to its own themes in **Settings → Appearance**, with a few differences:
 
-- `default` (and `/skin default`) means the Desktop default theme, **Nous**. A stock `display.skin: default` therefore never repaints Desktop, and a runtime switch to `default` from the CLI/TUI or `config.yaml` moves a Desktop pick back to Nous.
+- `default` (and `/skin default`) means the Desktop default theme, **Thor**. A stock `display.skin: default` therefore never repaints Desktop, and a runtime switch to `default` from the CLI/TUI or `config.yaml` moves a Desktop pick back to Thor.
 - The classic gold look is a separate Desktop theme named `classic` (**Classic Thor**). Pick it in Appearance, or run `/skin classic`, `/skin gold` or `/skin thor` in a Desktop chat. It follows the light/dark toggle: gold on navy in dark mode, the CLI's light-terminal goldenrod palette in light mode.
 - `classic` is a reserved Desktop theme name, like the other Desktop built-ins (`mono`, `slate`, …). A user skin file with one of those names keeps the Desktop palette there; its `customCSS` still applies.
 
@@ -243,7 +243,7 @@ The field is capped at 32 KiB and applies to GUI surfaces only — the CLI and T
 
 [Thor Mod](https://github.com/cocktailpeanut/thor-mod) is a community-built web UI for creating and managing skins visually. Instead of writing YAML by hand, you get a point-and-click editor with live preview.
 
-![Thor Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/thor-mod/master/nous.png)
+![Thor Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/thor-mod/master/thor.png)
 
 **What it does:**
 

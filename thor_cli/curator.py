@@ -152,7 +152,7 @@ def _cmd_run(args) -> int:
         return 1
     dry = bool(getattr(args, "dry_run", False))
     background = bool(getattr(args, "background", False))
-    synchronous = bool(getattr(args, "synchronous", False)) or not background
+    synchrothor = bool(getattr(args, "synchrothor", False)) or not background
     # --consolidate forces the LLM umbrella pass on; absent => None so run_curator_review reads
     # curator.consolidate from config.
     consolidate = True if getattr(args, "consolidate", False) else None
@@ -165,7 +165,7 @@ def _cmd_run(args) -> int:
             "(deterministic stale/archive). Pass --consolidate or set "
             "`curator.consolidate: true` to enable the LLM merge pass.")
     result = curator.run_curator_review(
-        on_summary=print, synchronous=synchronous, dry_run=dry, consolidate=consolidate)
+        on_summary=print, synchrothor=synchrothor, dry_run=dry, consolidate=consolidate)
     auto = result.get("auto_transitions", {})
     if auto and dry:
         print(
@@ -177,13 +177,13 @@ def _cmd_run(args) -> int:
             f"stale={auto.get('marked_stale', 0)} "
             f"archived={auto.get('archived', 0)} "
             f"reactivated={auto.get('reactivated', 0)}")
-    if not synchronous:
+    if not synchrothor:
         print("llm pass running in background — check `thor curator status` later")
     if dry:
         print(
             "dry-run: no changes applied. Read the report with "
             "`thor curator status` and run `thor curator run` (no flag) to apply."
-            if synchronous else
+            if synchrothor else
             "dry-run: no changes applied. When the report lands, read it with "
             "`thor curator status` and run `thor curator run` (no flag) to apply.")
     return 0
@@ -664,7 +664,7 @@ _SUBCOMMANDS = (
         _arg("--json", **_STORE_TRUE, help="Emit the full report as JSON instead of a table")),
     (
         "run", "Trigger a curator review now", _cmd_run,
-        _arg("--sync", "--synchronous", dest="synchronous", **_STORE_TRUE,
+        _arg("--sync", "--synchrothor", dest="synchrothor", **_STORE_TRUE,
              help="Wait for the LLM review pass to finish (default for manual runs)"),
         _arg("--background", dest="background", **_STORE_TRUE,
              help="Start the LLM review pass in a background thread and return immediately"),

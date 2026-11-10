@@ -1470,7 +1470,7 @@ class ThorCLI(CLIBacktrackMixin, CLIInitMixin, CLITuiRuntimeMixin, CLIProcessNot
                     # must be scheduled via ensure_future so the coroutine is actually awaited; calling it
                     # bare would leave it unawaited and silently drop the output (fixes #23185 Bug A). •
                     # None (some mocks / older PT builds) — just call the inner function directly since PT
-                    # already executed it synchronously. Do NOT fall back to a bare _pt_print when
+                    # already executed it synchrothorly. Do NOT fall back to a bare _pt_print when
                     # ensure_future raises, because run_in_terminal already invoked the lambda in that case
                     # (the mock path), which would double-print the line.
                     import asyncio as _aio
@@ -1710,7 +1710,7 @@ def main(
         toolsets: Comma-separated list of toolsets to enable (e.g., "web,terminal")
         skills: Comma-separated or repeated list of skills to preload for the session
         model: Model to use (default: anthropic/claude-opus-4-20250514)
-        provider: Inference provider ("auto", "openrouter", "nous", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
+        provider: Inference provider ("auto", "openrouter", "thor", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
         reasoning: Reasoning effort for this run (none|minimal|low|medium|high|xhigh|max|ultra). Overrides agent.reasoning_effort.
         api_key: API key for authentication
         base_url: Base URL for the API

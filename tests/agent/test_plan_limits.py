@@ -95,7 +95,7 @@ class TestSuggestions:
             ("example/model-a", "Model A", pl.NOTE_INCLUDED),
             ("example/model-b", "Model B", pl.NOTE_INCLUDED),
         ]
-        assert all(s.provider == "nous" for s in out)
+        assert all(s.provider == "thor" for s in out)
 
     def test_window_limit_offers_only_free_models(self):
         out = pl.suggest_models("example/model-b", DAY_FULL, pricing=PRICING, featured=FEATURED)
@@ -154,7 +154,7 @@ class TestCreditsOption:
 def _agent(model: str, gauges, **state_kw):
     state = SimpleNamespace(is_usage_window=True, gauges=gauges, paused_reason=None, purchased_micros=0,
                             keep_going_on_credits=None, **state_kw)
-    return SimpleNamespace(_credits_state=state, model=model, base_url="https://inference-api.nousresearch.com/v1")
+    return SimpleNamespace(_credits_state=state, model=model, base_url="https://inference-api.thor-agent.local/v1")
 
 
 class TestLimitHit:
@@ -166,7 +166,7 @@ class TestLimitHit:
         payload = hit.to_payload()
         assert payload["message"] == "You've hit your monthly large-model limit"
         assert payload["suggestions"][0] == {"model": "example/model-a", "label": "Model A",
-                                             "note": "included", "provider": "nous"}
+                                             "note": "included", "provider": "thor"}
         assert payload["credits"] == {"action": "add_credits"} and payload["current_model"] == "example/model-c"
 
     def test_a_daily_refusal(self):
@@ -199,7 +199,7 @@ class TestLimitHit:
 class TestNextSteps:
     def _payload(self, **kw):
         base = {"gauge_id": "day", "scope": "all", "limit_name": "daily", "resets_at_ms": RESET, "message": "m",
-                "suggestions": [{"model": "example/model-free:free", "label": "Model Free", "note": "free", "provider": "nous"}],
+                "suggestions": [{"model": "example/model-free:free", "label": "Model Free", "note": "free", "provider": "thor"}],
                 "credits": {"action": "add_credits"}}
         base.update(kw)
         return base
@@ -251,12 +251,12 @@ def test_free_picks_come_from_this_profiles_own_portal_entry(monkeypatch):
     calling profile's own Portal picks, else its own disk copy; another profile's entry never answers."""
     from thor_cli import models as m
     portal = "https://portal.example.test"
-    monkeypatch.setattr(m, "_resolve_nous_portal_url", lambda: portal)
+    monkeypatch.setattr(m, "_resolve_thor_portal_url", lambda: portal)
     other = {"freeRecommendedModels": [{"modelName": "other/profile:free"}]}
     mine = {"freeRecommendedModels": [{"modelName": "mine/model:free"}]}
-    monkeypatch.setattr(m, "_nous_recommended_cache", {})
-    m._nous_recommended_cache[("other-profile", portal)] = (other, 0.0)
+    monkeypatch.setattr(m, "_thor_recommended_cache", {})
+    m._thor_recommended_cache[("other-profile", portal)] = (other, 0.0)
     assert _REAL_PORTAL_FREE_MODELS() == []  # this profile holds nothing, in memory or on disk
-    m._nous_recommended_cache[(m._pricing_profile_key(), portal)] = (mine, 0.0)
-    m._nous_recommended_cache[("other-profile", "https://other-portal.test")] = (other, 0.0)
+    m._thor_recommended_cache[(m._pricing_profile_key(), portal)] = (mine, 0.0)
+    m._thor_recommended_cache[("other-profile", "https://other-portal.test")] = (other, 0.0)
     assert _REAL_PORTAL_FREE_MODELS() == ["mine/model:free"]

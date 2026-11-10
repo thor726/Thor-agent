@@ -121,7 +121,7 @@ sudo mkdir -p /etc/thor
 # Pin some config values for every user on this machine
 sudo tee /etc/thor/config.yaml >/dev/null <<'YAML'
 model:
-  provider: nous
+  provider: thor
 security:
   redact_secrets: true
 YAML

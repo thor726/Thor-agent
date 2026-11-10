@@ -1,7 +1,7 @@
 """Contracts: config, setup readiness, free tier, model inventory, connectors, diagnostics,
 image generation and structured session control.
 
-Handlers: ``tui_gateway/methods_config.py`` (``config.get``, ``setup.*``, ``diagnostics.share_nous``),
+Handlers: ``tui_gateway/methods_config.py`` (``config.get``, ``setup.*``, ``diagnostics.share_thor``),
 ``methods_config_set.py`` (``config.set``), ``methods_free_tier.py``, ``methods_shared_metrics.py``,
 ``methods_complete.py``
 (``model.options``), ``methods_connectors.py``, ``methods_images.py``, ``methods_session_control.py``
@@ -151,16 +151,16 @@ method("setup.runtime_check", params=SetupRuntimeCheckParams, result=SetupRuntim
        doc="Strict provider check through the same runtime resolution the agent uses on session creation.")
 
 
-# ── diagnostics.share_nous ────────────────────────────────────────────────────────────────────
+# ── diagnostics.share_thor ────────────────────────────────────────────────────────────────────
 
 
-class DiagnosticsShareNousParams(Params):
+class DiagnosticsShareThorParams(Params):
     error_context: str | None = None
     extra_files: dict[str, str] | None = None
     log_lines: int | None = None
 
 
-class DiagnosticsShareNousResult(Result):
+class DiagnosticsShareThorResult(Result):
     """Structured envelope: ``ok=False`` + ``error`` renders inline instead of failing the RPC."""
 
     ok: bool
@@ -170,8 +170,8 @@ class DiagnosticsShareNousResult(Result):
     error: str | None = None
 
 
-method("diagnostics.share_nous", params=DiagnosticsShareNousParams, result=DiagnosticsShareNousResult,
-       doc="Upload a force-redacted debug bundle to Nous-internal diagnostics storage.")
+method("diagnostics.share_thor", params=DiagnosticsShareThorParams, result=DiagnosticsShareThorResult,
+       doc="Upload a force-redacted debug bundle to Thor-internal diagnostics storage.")
 
 
 # ── free tier ─────────────────────────────────────────────────────────────────────────────────
@@ -459,7 +459,7 @@ class ModelOptionsParams(ProfileParams):
 # ``model.save_key``'s ``provider`` — the parent consolidates into contracts/common.py.
 class ModelPricing(Result):
     """``thor_cli/inventory.py::_apply_pricing`` — formatted $/Mtok strings (``""`` unknown,
-    ``"free"``); the sale fields are Nous Portal-only."""
+    ``"free"``); the sale fields are Thor Portal-only."""
 
     input: str
     output: str

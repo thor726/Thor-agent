@@ -3,7 +3,7 @@ name: neuroskill-bci
 description: "Use live BCI cognitive and mood state from NeuroSkill."
 platforms: [linux, macos, windows]
 version: 1.0.0
-author: Thor Agent + Nous Research
+author: Thor Agent + Thor Agent
 license: MIT
 metadata:
   thor:

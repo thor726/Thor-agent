@@ -102,5 +102,5 @@ def _json_equal(left: Any, right: Any) -> bool:
 
 def _run_awaitable(value: Any) -> Any:
     return relay_llm._run_awaitable(
-        value, loop_error="Synchronous Thor Relay tool execution cannot run on an active event-loop thread",
+        value, loop_error="Synchrothor Thor Relay tool execution cannot run on an active event-loop thread",
     )

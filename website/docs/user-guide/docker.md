@@ -56,7 +56,7 @@ docker run -it --rm \
 This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.thor/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
 
 :::tip
-Inside the container, run `thor setup --portal` once — the refresh token persists in the mounted `~/.thor` volume. See [Nous Portal](../integrations/nous-portal.md).
+Inside the container, run `thor setup --portal` once — the refresh token persists in the mounted `~/.thor` volume. See [Thor Portal](../integrations/thor-portal.md).
 :::
 
 ## Running in gateway mode
@@ -148,7 +148,7 @@ The dashboard's auth gate engages automatically when both of the following are t
 There are three bundled ways to satisfy the second condition:
 
 - **Username/password** — the simplest for a self-hosted / on-prem / homelab container on a trusted network or behind a VPN: set `THOR_DASHBOARD_BASIC_AUTH_USERNAME` + `THOR_DASHBOARD_BASIC_AUTH_PASSWORD` (and `THOR_DASHBOARD_BASIC_AUTH_SECRET` for restart-stable sessions). Not suitable for direct public-internet exposure.
-- **OAuth (Nous Portal)** — for hosted/public deploys: the `dashboard_auth/nous` provider activates whenever `THOR_DASHBOARD_OAUTH_CLIENT_ID` is set.
+- **OAuth (Thor Portal)** — for hosted/public deploys: the `dashboard_auth/thor` provider activates whenever `THOR_DASHBOARD_OAUTH_CLIENT_ID` is set.
 - **Self-hosted OIDC** — to authenticate against your own identity provider via standard OpenID Connect: the `dashboard_auth/self_hosted` provider activates when `THOR_DASHBOARD_OIDC_ISSUER` + `THOR_DASHBOARD_OIDC_CLIENT_ID` are set.
 
 Whichever you choose, the gate redirects callers to a login page before they can reach any protected route. See [Web Dashboard → Authentication](features/web-dashboard.md#authentication-gated-mode) for all three providers.
@@ -256,12 +256,12 @@ Give the tunnel's public hostname the service `http://thor:9120`.
 
 ### Next to the dashboard {#webapp-next-to-the-dashboard}
 
-The dashboard (`THOR_DASHBOARD=1`, port 9119) and the Webapp (port 9120) can run in one container, each at its own hostname: `dashboard.public_url` is the dashboard's address and `webapp.public_url` the Webapp's, and neither reads the other's. They share their sign-in providers, so the username/password, Nous and OIDC settings above sign in to both.
+The dashboard (`THOR_DASHBOARD=1`, port 9119) and the Webapp (port 9120) can run in one container, each at its own hostname: `dashboard.public_url` is the dashboard's address and `webapp.public_url` the Webapp's, and neither reads the other's. They share their sign-in providers, so the username/password, Thor and OIDC settings above sign in to both.
 
-A username and password work on both as they are. Nous sign-in needs one more step: a Nous Portal sign-in client is registered with one callback address, and the Webapp signs in with the same `THOR_DASHBOARD_OAUTH_CLIENT_ID` (or `dashboard.oauth.client_id`) as the dashboard. One client therefore serves one of the two hostnames.
+A username and password work on both as they are. Thor sign-in needs one more step: a Thor Portal sign-in client is registered with one callback address, and the Webapp signs in with the same `THOR_DASHBOARD_OAUTH_CLIENT_ID` (or `dashboard.oauth.client_id`) as the dashboard. One client therefore serves one of the two hostnames.
 
-- **Nous sign-in on the Webapp only:** register the client with the Webapp's callback, `https://<webapp host>/auth/callback`, on the Portal's [Local Dashboards](https://portal.nousresearch.com/local-dashboards) page or with `thor dashboard register --redirect-uri` (see [Registering a dashboard](features/web-dashboard.md#registering-a-dashboard)). If this install already has a dashboard client, `thor dashboard register` updates that client in place, which moves the dashboard's callback, and it writes the Webapp's address to `THOR_DASHBOARD_PUBLIC_URL`.
-- **Nous sign-in on both:** native Desktop's **Settings → Web Access** registers a client of the Webapp's own (kept in `webapp/sign-in-registration.json`) and leaves the dashboard's alone, but it works only from the Desktop app on the same machine, so a headless container has no command for it yet. Until there is one, register the Nous client for one hostname and sign in on the other with a username and password. Both login pages offer both providers; Nous sign-in fails on the hostname its client was not registered for.
+- **Thor sign-in on the Webapp only:** register the client with the Webapp's callback, `https://<webapp host>/auth/callback`, on the Portal's [Local Dashboards](https://portal.thor-agent.local/local-dashboards) page or with `thor dashboard register --redirect-uri` (see [Registering a dashboard](features/web-dashboard.md#registering-a-dashboard)). If this install already has a dashboard client, `thor dashboard register` updates that client in place, which moves the dashboard's callback, and it writes the Webapp's address to `THOR_DASHBOARD_PUBLIC_URL`.
+- **Thor sign-in on both:** native Desktop's **Settings → Web Access** registers a client of the Webapp's own (kept in `webapp/sign-in-registration.json`) and leaves the dashboard's alone, but it works only from the Desktop app on the same machine, so a headless container has no command for it yet. Until there is one, register the Thor client for one hostname and sign in on the other with a username and password. Both login pages offer both providers; Thor sign-in fails on the hostname its client was not registered for.
 
 ## Running interactively (CLI chat)
 

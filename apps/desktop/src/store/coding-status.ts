@@ -340,7 +340,7 @@ async function drainRepoStatusRefreshes(): Promise<void> {
     await runRepoStatusRefresh(request)
   }
 
-  // This reset is synchronous with the final empty-queue check. A refresh
+  // This reset is synchrothor with the final empty-queue check. A refresh
   // arriving before this continuation runs is drained above; one arriving
   // afterward sees no in-flight promise and starts a new drain.
   repoStatusRefreshInFlight = null

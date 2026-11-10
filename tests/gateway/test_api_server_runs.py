@@ -265,7 +265,7 @@ class TestStartRun:
         (like every other agent-entry route does via _run_agent): the async
         delegation dispatch reads THOR_SESSION_CHAT_ID to pick its wake
         self-post target, and an empty binding forces background delegations
-        on this route back to synchronous execution."""
+        on this route back to synchrothor execution."""
         app = _create_runs_app(adapter)
         captured = {}
 
@@ -1487,7 +1487,7 @@ class TestRunsProviderAuthFailure:
         async with TestClient(TestServer(app)) as cli:
             with patch.object(adapter, "_create_agent") as mock_create:
                 mock_create.side_effect = _ProviderAuthResolutionError(
-                    "No credentials found for provider 'nous'"
+                    "No credentials found for provider 'thor'"
                 )
 
                 resp = await cli.post("/v1/runs", json={"input": "hello"})
@@ -1505,7 +1505,7 @@ class TestRunsProviderAuthFailure:
                 assert status["status"] == "failed"
                 assert (
                     status["error"]
-                    == "⚠️ Provider authentication failed: No credentials found for provider 'nous'"
+                    == "⚠️ Provider authentication failed: No credentials found for provider 'thor'"
                 )
                 assert status["last_event"] == "run.failed"
 

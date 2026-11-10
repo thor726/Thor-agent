@@ -180,10 +180,10 @@ export const zhOverrides = {
         `先退出已保存的远程浏览器会话，然后打开${signInLabel}。也可以使用本地网关切换到随应用提供的后端。`,
       signOutAndSignIn: '退出并重新登录',
       remoteFailureHint: '在“网关设置”中检查网关 URL 和登录，或切换到本地网关。',
-      cloudDownTitle: 'Nous Cloud 代理已宕机',
+      cloudDownTitle: 'Thor Cloud 代理已宕机',
       cloudDownDescription:
-        '此网关连接的 Nous 托管云代理正在返回服务器错误。无法在此处重启——请检查其状态、切换到本地网关或获取支持。',
-      cloudDownHint: '使用下方按钮打开 Nous Portal（查看实例状态与操作）或加入 Discord 获取支持。',
+        '此网关连接的 Thor 托管云代理正在返回服务器错误。无法在此处重启——请检查其状态、切换到本地网关或获取支持。',
+      cloudDownHint: '使用下方按钮打开 Thor Portal（查看实例状态与操作）或加入 Discord 获取支持。',
       cloudDownCheckPortal: '查看 Portal 状态',
       cloudDownDiscord: '在 Discord 获取帮助',
       hideRecentLogs: '隐藏最近日志',
@@ -292,9 +292,9 @@ export const zhOverrides = {
   ...zhNotices,
 
   sendDiagnostics: {
-    title: '向 Nous 发送诊断信息',
+    title: '向 Thor 发送诊断信息',
     privacyNotice:
-      '这会将调试包上传到 Nous 内部存储（并非公开粘贴板）。内容包括系统信息（操作系统、版本、服务商、已配置的 API 密钥种类 — 绝不包含密钥本身）以及完整的 agent、gateway 和桌面端日志（每个最多 512 KB，很可能包含对话内容、工具输出与文件路径）。上传前会先脱敏。仅 Nous 员工与获准的 Discord 版主可查看，14 天后自动删除。',
+      '这会将调试包上传到 Thor 内部存储（并非公开粘贴板）。内容包括系统信息（操作系统、版本、服务商、已配置的 API 密钥种类 — 绝不包含密钥本身）以及完整的 agent、gateway 和桌面端日志（每个最多 512 KB，很可能包含对话内容、工具输出与文件路径）。上传前会先脱敏。仅 Thor 员工与获准的 Discord 版主可查看，14 天后自动删除。',
     upload: '上传',
     uploading: '上传中…',
     cancel: '取消',
@@ -305,11 +305,11 @@ export const zhOverrides = {
     doneDescription: '调试包已私密上传。在您的支持会话中分享以下链接，团队即可查看您的日志。',
     failedTitle: '上传失败',
     failedHint:
-      '您也可以在终端运行 `thor debug share --nous`，或运行 `thor debug share --local` 在不上传的情况下查看报告。',
+      '您也可以在终端运行 `thor debug share --thor`，或运行 `thor debug share --local` 在不上传的情况下查看报告。',
     handoffLead: '在以下位置继续讨论:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous Portal 支持',
+      portal: 'Thor Portal 支持',
       discord: 'Discord'
     }
   },
@@ -675,7 +675,7 @@ export const zhOverrides = {
         missingEnv: (_name, vars) => `缺少环境变量：${vars}。请在设置 → 密钥中添加。`,
         verified: '已验证',
         unverified: '未验证',
-        reviewedByNous: '已由 Nous 审核。',
+        reviewedByThor: '已由 Thor 审核。',
         installsAndEnables: profile => `安装到 ${profile}，并立即启用。`,
         installsOnly: profile => `安装到 ${profile}。`,
         advanced: '高级',
@@ -1432,7 +1432,7 @@ export const zhOverrides = {
       cloudLoadingAgents: '正在加载你的智能体…',
       cloudNoAgents: {
         before: '此账户下未找到智能体。请在',
-        linkText: 'Nous 门户',
+        linkText: 'Thor 门户',
         after: '中创建一个，然后刷新。'
       },
       cloudRefresh: '刷新',
@@ -1537,7 +1537,7 @@ export const zhOverrides = {
         'SSH 认证失败。请将密钥加载到 ssh-agent（ssh-add），或在 ~/.ssh/config 中设置 IdentityFile——Thor 以非交互方式运行 ssh。',
       sshErrHostKey: '自上次连接以来主机密钥已更改。请确认这是预期的，然后运行 ssh-keygen -R <host> 并重新连接。',
       sshErrNotInstalled:
-        '远程主机上未安装 Thor。请在远程安装（curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh）或设置 Thor 路径。',
+        '远程主机上未安装 Thor。请在远程安装（curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh）或设置 Thor 路径。',
       sshErrPlatform: '不支持的远程平台。Thor Desktop 的 SSH 模式支持 Linux、macOS 和 Windows 远程主机。',
       sshErrTimeout: 'SSH 连接超时。主机可能无法访问或处于休眠状态。',
       sshErrUpdateRequired: '使用 Desktop SSH 连接前，请更新远程主机上的 Thor。',
@@ -1609,11 +1609,11 @@ export const zhOverrides = {
       usageLabel: label => `${label}用量`,
       freeTier: {
         signIn: '登录',
-        title: '你正在使用 Nous 免费服务',
-        message: '登录 Nous 账户以解锁更多模型和工具。',
-        caption: '使用 nous/welcome，包含连接器。登录后会保留连接器，并增加需要账户的工具和其他所有模型。',
-        name: 'Nous · 免费服务',
-        footnote: '免费服务没有余额，无需支付。登录 Nous 账户后才会显示支付与用量。',
+        title: '你正在使用 Thor 免费服务',
+        message: '登录 Thor 账户以解锁更多模型和工具。',
+        caption: '使用 thor/welcome，包含连接器。登录后会保留连接器，并增加需要账户的工具和其他所有模型。',
+        name: 'Thor · 免费服务',
+        footnote: '免费服务没有余额，无需支付。登录 Thor 账户后才会显示支付与用量。',
         plan: '免费服务',
         model: '模型',
         connectors: '连接器',
@@ -1721,8 +1721,8 @@ export const zhOverrides = {
       state: {
         notice: {
           loggedOut: {
-            title: '连接你的 Nous 账户',
-            message: '登录你的 Nous 账户，即可在此查看余额、套餐和用量。',
+            title: '连接你的 Thor 账户',
+            message: '登录你的 Thor 账户，即可在此查看余额、套餐和用量。',
             action: '登录'
           },
           openPortal: '打开门户 ↗',
@@ -1932,13 +1932,13 @@ export const zhOverrides = {
       activeBackend: '当前后端',
       activeBackendHint: '这是你当前使用的后端',
       useBackend: '使用此后端',
-      nousIncluded: '包含在 Nous 订阅中；登录 Nous Portal 即可激活。',
-      nousAuthNeededTitle: '登录 Nous Portal',
-      nousAuthNeededMessage: provider => `已保存 ${provider}，但在登录 Nous Portal 之前不会激活。`,
-      nousAuthSignIn: '登录',
-      nousAuthDoneTitle: '已连接 Nous Portal',
-      nousAuthDoneMessage: '订阅后端现已激活。',
-      nousAuthFailed: 'Nous Portal 登录未完成',
+      thorIncluded: '包含在 Thor 订阅中；登录 Thor Portal 即可激活。',
+      thorAuthNeededTitle: '登录 Thor Portal',
+      thorAuthNeededMessage: provider => `已保存 ${provider}，但在登录 Thor Portal 之前不会激活。`,
+      thorAuthSignIn: '登录',
+      thorAuthDoneTitle: '已连接 Thor Portal',
+      thorAuthDoneMessage: '订阅后端现已激活。',
+      thorAuthFailed: 'Thor Portal 登录未完成',
       noApiKeyRequired: '不需要 API 密钥。',
       postSetupHint: step => `此后端需要一次性安装 (${step})。将在此机器上执行，可能需要几分钟。`,
       postSetupInstalledHint: '已安装。仅在出现问题时才需要重新运行安装。',
@@ -2544,8 +2544,8 @@ export const zhOverrides = {
       qrAlt: (platform: string) => `共享 ${platform} 机器人的二维码`,
       managed: '由 Team Gateway 管理',
       managedNote: (platform: string) => `此实例的消息由 Team Gateway 承载，因此网关每次启动都会关闭 ${platform} 的直连。若要与中继同时使用，请在网关环境中设置 GATEWAY_RELAY_ALLOW_DIRECT_PLATFORMS=true（直连会使实例无法缩容到零，并可能重复投递消息）。`,
-      managedIntro: '此代理的账号在 Nous Portal 中关联。',
-      openPortal: '在 Nous Portal 中关联账号',
+      managedIntro: '此代理的账号在 Thor Portal 中关联。',
+      openPortal: '在 Thor Portal 中关联账号',
       noNewAccount: (platform: string) => `该代码已失效，且没有出现新账号。如果你的 ${platform} 账号不在列表中，请获取新代码后重试。`
     },
     telegramQr: {
@@ -3345,8 +3345,8 @@ export const zhOverrides = {
       '/browser': '管理智能体浏览器 [connect|disconnect|status]',
       '/palette': '打开模糊搜索命令面板（也可使用 Ctrl+P）',
       '/usage': '显示 Token 用量与速率限制；`reset` 可兑换保留的 Codex 限额重置',
-      '/subscription': '查看你的 Nous 方案，并在浏览器中更改',
-      '/topup': '显示你的 Nous 余额，并在 Portal 管理账务',
+      '/subscription': '查看你的 Thor 方案，并在浏览器中更改',
+      '/topup': '显示你的 Thor 余额，并在 Portal 管理账务',
       '/platform': '暂停、恢复或列出故障的网关平台',
       '/version': '显示 Thor Agent 版本',
       '/debug': '上传调试报告（系统信息与日志），并获取可分享链接',
@@ -3822,21 +3822,21 @@ export const zhOverrides = {
   // Not yet translated — English fallbacks so the free-tier surfaces stay
   // readable until a zh pass lands.
   freeTier: {
-    providerRowTitle: 'Nous · 免费层',
-    providerRowPitch: '登录 Nous 账户以解锁更多模型和工具。',
+    providerRowTitle: 'Thor · 免费层',
+    providerRowPitch: '登录 Thor 账户以解锁更多模型和工具。',
     readyTitle: 'Thor 已就绪。',
     readyCaption: '免费 · 含连接器',
     begin: '开始',
-    signInInstead: '改为登录 Nous 账户',
+    signInInstead: '改为登录 Thor 账户',
     otherProviders: '其他提供方',
-    stripTitle: '免费的 Nous 推理和连接器现已可用。',
-    stripBody: '打开模型选择器试用，或登录 Nous 账户。',
+    stripTitle: '免费的 Thor 推理和连接器现已可用。',
+    stripBody: '打开模型选择器试用，或登录 Thor 账户。',
     openModelPicker: '打开模型选择器',
     dismiss: '关闭',
-    providerName: 'Nous',
-    statusLabel: model => `Nous · ${model}`,
+    providerName: 'Thor',
+    statusLabel: model => `Thor · ${model}`,
     signIn: '登录',
-    signInHeading: '登录 Nous 账户以解锁更多模型和工具。',
+    signInHeading: '登录 Thor 账户以解锁更多模型和工具。',
     settingUp: '正在设置免费推理…',
     finishInBrowser: '在浏览器中完成',
     doNotShare: '请勿分享此代码。',
@@ -3859,10 +3859,10 @@ export const zhOverrides = {
     timedOutBody: '代码未在有效期内使用。你仍在免费层。',
     errorBody: '登录未完成；请重试。',
     alreadySignedInHeading: '已登录。',
-    alreadySignedInBody: '此 Thor 已登录 Nous 账户。',
+    alreadySignedInBody: '此 Thor 已登录 Thor 账户。',
     offer: {
       heading: '继续使用 Thor',
-      body: '你正在使用免费额度。继续使用 Thor 的话，你会开始遇到限制。登录免费的 Nous 账户，即可获得更多额度。',
+      body: '你正在使用免费额度。继续使用 Thor 的话，你会开始遇到限制。登录免费的 Thor 账户，即可获得更多额度。',
       signIn: '登录',
       notNow: '暂不'
     }
@@ -3881,7 +3881,7 @@ export const zhOverrides = {
     localDownloadsHeading: '本地',
     noAuthenticatedProviders: '没有已认证的提供方。',
     pro: 'Pro',
-    proNeedsSubscription: 'Pro 模型需要付费 Nous 订阅。',
+    proNeedsSubscription: 'Pro 模型需要付费 Thor 订阅。',
     free: '免费',
     freeTier: '免费层',
     priceTitle: '每百万 token 的输入/输出价格',

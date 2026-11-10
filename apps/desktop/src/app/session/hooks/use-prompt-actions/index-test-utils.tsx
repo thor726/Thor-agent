@@ -46,7 +46,7 @@ export function sessionInfo(overrides: Partial<SessionInfo> = {}): SessionInfo {
 }
 
 // Wrap render() in act() so the Harness's useEffect (onReady callback +
-// internal state from usePromptActions) flushes synchronously instead of
+// internal state from usePromptActions) flushes synchrothorly instead of
 // spilling async state updates outside act().
 export async function actRender(ui: React.ReactElement) {
   let result: ReturnType<typeof render>

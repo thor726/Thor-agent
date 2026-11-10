@@ -1,8 +1,8 @@
-"""Guest ledger connections must inherit the configured database.synchronous.
+"""Guest ledger connections must inherit the configured database.synchrothor.
 
 apply_durability_barriers() is the guest-connection entry point (secondary
 state.db users that must NOT touch journal mode). The configured
-``database.synchronous`` level normally rides on apply_database_pragmas()
+``database.synchrothor`` level normally rides on apply_database_pragmas()
 during the owner's journal-mode setup — a path guests deliberately skip — so
 the guest entry point applies it directly.
 """
@@ -23,14 +23,14 @@ def _config(monkeypatch, database_section):
     return cfg
 
 
-def test_guest_barriers_apply_configured_synchronous(monkeypatch, tmp_path):
-    _config(monkeypatch, {"synchronous": "FULL"})
+def test_guest_barriers_apply_configured_synchrothor(monkeypatch, tmp_path):
+    _config(monkeypatch, {"synchrothor": "FULL"})
     conn = sqlite3.connect(tmp_path / "state.db")
     try:
         conn.execute("PRAGMA journal_mode=DELETE")
-        conn.execute("PRAGMA synchronous=1")
+        conn.execute("PRAGMA synchrothor=1")
         apply_durability_barriers(conn)
-        assert conn.execute("PRAGMA synchronous").fetchone()[0] == 2
+        assert conn.execute("PRAGMA synchrothor").fetchone()[0] == 2
         # And the journal mode was NOT touched — that is the whole contract.
         assert (
             str(conn.execute("PRAGMA journal_mode").fetchone()[0]).lower()
@@ -40,14 +40,14 @@ def test_guest_barriers_apply_configured_synchronous(monkeypatch, tmp_path):
         conn.close()
 
 
-def test_guest_barriers_leave_synchronous_alone_when_unset(monkeypatch, tmp_path):
+def test_guest_barriers_leave_synchrothor_alone_when_unset(monkeypatch, tmp_path):
     _config(monkeypatch, {})
     conn = sqlite3.connect(tmp_path / "state.db")
     try:
         conn.execute("PRAGMA journal_mode=DELETE")
-        conn.execute("PRAGMA synchronous=1")
+        conn.execute("PRAGMA synchrothor=1")
         apply_durability_barriers(conn)
-        assert conn.execute("PRAGMA synchronous").fetchone()[0] == 1
+        assert conn.execute("PRAGMA synchrothor").fetchone()[0] == 1
     finally:
         conn.close()
 

@@ -37,7 +37,7 @@ Concretely, on every successful `write_file` or `patch`:
    server. The write waits for the verdict only while the whole tool call
    stays under about 80 ms.
 2. Thor asks for the verdict directly where the server supports it:
-   TypeScript (`typescript-language-server`) answers a synchronous
+   TypeScript (`typescript-language-server`) answers a synchrothor
    diagnostics request, and pyright answers a document pull. Warm servers
    usually reply in 10–90 ms. When the verdict has diagnostics, Thor
    compares them against the verdict on the pre-edit content and keeps

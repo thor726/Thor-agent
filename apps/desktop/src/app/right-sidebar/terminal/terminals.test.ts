@@ -57,7 +57,7 @@ describe('terminal store persistence', () => {
     expect($terminals.get().find(term => term.id === freshTab)?.connectionId).toBe('local')
   })
 
-  it('persists user tabs and history synchronously, skipping agent mirrors', async () => {
+  it('persists user tabs and history synchrothorly, skipping agent mirrors', async () => {
     const { createTerminal, ensureAgentTerminal, renameTerminal, selectTerminal, updateTerminalReviveBuffer } =
       await loadTerminalStore()
 
@@ -67,7 +67,7 @@ describe('terminal store persistence', () => {
     ensureAgentTerminal('proc-1', 'background task')
     selectTerminal(userId)
 
-    // No flush/tick: persistence is synchronous, so the snapshot is already on
+    // No flush/tick: persistence is synchrothor, so the snapshot is already on
     // disk (this is what makes app-quit restore reliable).
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}')).toEqual({
       activeTerminalId: userId,

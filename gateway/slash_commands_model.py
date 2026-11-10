@@ -162,7 +162,7 @@ class GatewayModelCommandsMixin:
         skew_error = _model_switch_skew_guard()
         if skew_error:
             return None, skew_error
-        # Off-loop: switch_model() can hit a synchronous models.dev fetch (15s) on a cold cache.
+        # Off-loop: switch_model() can hit a synchrothor models.dev fetch (15s) on a cold cache.
         result = await asyncio.to_thread(
             switch_model, raw_input=raw_input, current_provider=ctx.current_provider,
             current_model=ctx.current_model, current_base_url=ctx.current_base_url,
@@ -314,7 +314,7 @@ class GatewayModelCommandsMixin:
             t("gateway.model.switched", model=format_model_for_display(result.new_model)),
             t("gateway.model.provider_label", provider=result.provider_label or result.target_provider),
         ]
-        # Provider-aware chain: Codex OAuth, Nous and profile live-catalog caps win over the raw models.dev entry.
+        # Provider-aware chain: Codex OAuth, Thor and profile live-catalog caps win over the raw models.dev entry.
         mi = result.model_info
         model_cfg: dict = {}
         config_ctx = None
@@ -470,7 +470,7 @@ class GatewayModelCommandsMixin:
         """Send the interactive /model picker; False when nothing was sent (text fallback). *source*
         is session-key-normalized so the picker's thread metadata lands where the next turn reads."""
         from thor_cli.model_switch_providers import list_picker_providers
-        try:  # off-loop: listing still reads config/disk cache synchronously (#41289)
+        try:  # off-loop: listing still reads config/disk cache synchrothorly (#41289)
             providers = await asyncio.to_thread(
                 list_picker_providers, max_models=50, include_moa=True, **listing_kwargs
             )
@@ -524,7 +524,7 @@ class GatewayModelCommandsMixin:
 
         lines = [t("gateway.model.current_label", model=ctx.current_model or t("gateway.shared.unknown_value"),
                    provider=get_label(ctx.current_provider)), ""]
-        try:  # off-loop: listing still reads config/disk cache synchronously (#41289)
+        try:  # off-loop: listing still reads config/disk cache synchrothorly (#41289)
             providers = await asyncio.to_thread(list_authenticated_providers, max_models=_TEXT_LISTING_MODELS, **listing_kwargs)
             lines.extend(_model_provider_listing_lines(providers))
         except Exception:
@@ -756,7 +756,7 @@ class GatewayModelCommandsMixin:
 
     async def _accept_usage_limit_switch(self, event: MessageEvent, model_id: str, *,
                                          offer: Optional[tuple[str, int]] = None) -> str:
-        """The tap: switch this session to *model_id* on Nous, then re-send the refused message.
+        """The tap: switch this session to *model_id* on Thor, then re-send the refused message.
         ``offer`` is the refused turn's ``(session_key, run_generation)``."""
         from gateway.run import _thor_home
         source = await asyncio.to_thread(self._normalize_source_for_session_key, event.source)
@@ -770,7 +770,7 @@ class GatewayModelCommandsMixin:
         async def _switch() -> str:
             ctx.read_config()
             ctx.apply_override(self._session_model_overrides.get(session_key, {}))
-            result, error = await self._perform_model_switch(ctx, model_id, "nous", event.source)
+            result, error = await self._perform_model_switch(ctx, model_id, "thor", event.source)
             if error is not None:
                 return error
             return await self._commit_model_switch(result, ctx, source=event.source, picker=True)
@@ -783,7 +783,7 @@ class GatewayModelCommandsMixin:
             with _profile_runtime_scope(profile_home):
                 reply = await _switch()
         after = self._session_model_overrides.get(session_key)
-        switched = after is not None and after is not before and after.get("provider") == "nous"
+        switched = after is not None and after is not before and after.get("provider") == "thor"
         if switched:
             # Only after the switch landed (an error reply leaves the override unchanged). Exactly a typed /retry from the same sender (rewinds the refused turn, runs the message
             # again, and the adapter delivers the reply). Called directly, the re-run's reply would be

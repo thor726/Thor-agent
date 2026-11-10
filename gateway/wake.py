@@ -17,7 +17,7 @@ from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
-# A wake self-post runs the whole agent turn synchronously (stream=false); generous ceiling so long
+# A wake self-post runs the whole agent turn synchrothorly (stream=false); generous ceiling so long
 # tool-using turns aren't killed mid-flight.
 WAKE_TURN_TIMEOUT_SECONDS = 600.0
 

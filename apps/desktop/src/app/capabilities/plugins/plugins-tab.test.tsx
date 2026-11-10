@@ -211,8 +211,8 @@ describe('PluginsTab', () => {
       {
         description: '',
         has_desktop_half: true,
-        key: 'nous-prices',
-        name: 'nous-prices',
+        key: 'thor-prices',
+        name: 'thor-prices',
         source: 'catalog',
         status: 'enabled',
         version: '1'
@@ -221,7 +221,7 @@ describe('PluginsTab', () => {
 
     renderPlugins({ profile: null })
 
-    const detail = within(screen.getByRole('row', { name: /^nous-prices/ }))
+    const detail = within(screen.getByRole('row', { name: /^thor-prices/ }))
     expect(detail.getByText('unavailable (remote backend)')).toBeTruthy()
     expect(detail.queryByText('copying…')).toBeNull()
   })
@@ -231,8 +231,8 @@ describe('PluginsTab', () => {
       {
         description: '',
         has_desktop_half: true,
-        key: 'nous-prices',
-        name: 'nous-prices',
+        key: 'thor-prices',
+        name: 'thor-prices',
         source: 'catalog',
         status: 'enabled',
         version: '1'
@@ -241,7 +241,7 @@ describe('PluginsTab', () => {
 
     renderPlugins({ profile: null })
 
-    const detail = within(screen.getByRole('row', { name: /^nous-prices/ }))
+    const detail = within(screen.getByRole('row', { name: /^thor-prices/ }))
     expect(detail.getByText('copying…')).toBeTruthy()
     expect(detail.queryByText('unavailable (remote backend)')).toBeNull()
   })
@@ -278,7 +278,7 @@ describe('PluginsTab', () => {
         kind: 'disk',
         status: 'loaded',
         packageName: 'thor-media-studio',
-        packageOrigin: { repo: 'https://github.com/NousResearch/thor-media-studio.git', sha: 'abc' }
+        packageOrigin: { repo: 'https://github.com/dwisetyabudi15581/thor-media-studio.git', sha: 'abc' }
       }
     })
 
@@ -291,7 +291,7 @@ describe('PluginsTab', () => {
       expect($pluginInstallRequest.get()).toMatchObject({
         legacyHint: 'agent',
         profile: 'workbot',
-        repo: 'https://github.com/NousResearch/thor-media-studio.git',
+        repo: 'https://github.com/dwisetyabudi15581/thor-media-studio.git',
         sha: 'abc'
       })
     })
@@ -308,7 +308,7 @@ describe('PluginsTab', () => {
         packageName: 'thor-media-studio',
         packageOrigin: {
           catalogName: 'thor-media-studio',
-          repo: 'https://github.com/NousResearch/thor-media-studio.git',
+          repo: 'https://github.com/dwisetyabudi15581/thor-media-studio.git',
           sha: 'abc'
         }
       }

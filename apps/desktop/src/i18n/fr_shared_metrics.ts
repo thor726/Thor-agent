@@ -16,18 +16,18 @@ export const frSharedMetrics = {
   collectedMachine:
     'Machine : système d’exploitation, plage de RAM, type de GPU, version de Thor, utilisation de modèles locaux',
   sending:
-    'Si vous partagez, Thor envoie les statistiques à Nous une fois par jour avec un identifiant aléatoire propre à ce profil. Hormis une note unique indiquant que Thor a été installé, les statistiques d’avant votre accord ne sont jamais envoyées. Modifiez ce choix à tout moment dans les Paramètres.',
+    'Si vous partagez, Thor envoie les statistiques à Thor une fois par jour avec un identifiant aléatoire propre à ce profil. Hormis une note unique indiquant que Thor a été installé, les statistiques d’avant votre accord ne sont jamais envoyées. Modifiez ce choix à tout moment dans les Paramètres.',
   readDocs: 'Lire tous les détails',
-  share: 'Partager avec Nous',
+  share: 'Partager avec Thor',
   off: 'Non merci',
   saveFailed: 'Impossible d’enregistrer votre choix',
-  sendLabel: 'Partager les statistiques d’utilisation avec Nous',
+  sendLabel: 'Partager les statistiques d’utilisation avec Thor',
   sendDesc:
     'Uniquement des comptages, envoyés une fois par jour avec un identifiant aléatoire pour ce profil. Jamais vos messages, fichiers, chemins ni textes d’erreur.',
   unavailable: 'Mettez à jour le backend Thor pour modifier ce réglage.',
   stripBody: 'Uniquement des comptages. Jamais vos messages ni vos fichiers.',
   stripReaskBody:
     'Nouvelle demande : une version précédente pouvait enregistrer « Non merci » avant que vous ne voyiez cette question.',
-  stripChoices: { share: 'Partager avec Nous', off: 'Non merci' },
+  stripChoices: { share: 'Partager avec Thor', off: 'Non merci' },
   stripDetails: 'Détails'
 }

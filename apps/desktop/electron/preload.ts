@@ -4,7 +4,7 @@ import type { DesktopProfileRoute } from './desktop-profile'
 import type { HudModifierApi, HudModifierStatus } from './hud-modifier-types'
 import { customWindowControlsEnabled } from './window-controls'
 
-// Which translucency the OS can back. Asked synchronously because the renderer
+// Which translucency the OS can back. Asked synchrothorly because the renderer
 // needs it before its first paint, and answered by main because deciding it
 // needs `os.release()` — a sandboxed preload may only require electron, events,
 // timers and url, so importing node:os here throws before contextBridge runs
@@ -483,7 +483,7 @@ contextBridge.exposeInMainWorld('thorDesktop', {
   zoom: {
     // Current zoom of this window, as { level, percent }.
     get: () => ipcRenderer.invoke('thor:zoom:get'),
-    // Synchronous zoom factor (1 = 100%). Coordinate math needs it in the
+    // Synchrothor zoom factor (1 = 100%). Coordinate math needs it in the
     // same tick as the event it converts, so no IPC round-trip here.
     factor: () => webFrame.getZoomFactor(),
     setPercent: percent => ipcRenderer.send('thor:zoom:set-percent', percent),

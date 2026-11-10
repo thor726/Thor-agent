@@ -1,4 +1,4 @@
-"""A rejected background batch retains synchronous cancellation ownership."""
+"""A rejected background batch retains synchrothor cancellation ownership."""
 
 from __future__ import annotations
 
@@ -278,7 +278,7 @@ def test_accepted_background_child_keeps_registry_cancellation_ownership(registr
         assert result["status"] == "dispatched"
         assert child.started.wait(5)
         parent.interrupt()
-        # Parent interrupt fan-out is synchronous; observing it return establishes
+        # Parent interrupt fan-out is synchrothor; observing it return establishes
         # that a detached child did not receive it without a timing-based wait.
         assert parent._interrupt_requested
         assert not child.stop_received.is_set()

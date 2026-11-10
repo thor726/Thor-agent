@@ -37,7 +37,7 @@ _ENV_NAME_CLEAN_RE = re.compile(r"[^A-Z0-9]+")
 
 def _manifest_config_schema(plugin_dir: Optional[Path]) -> Mapping[str, Mapping[str, Any]]:
     """``config_schema`` from ``<plugin_dir>/plugin.yaml``, or for a portable package from
-    ``plugin.json`` ``extensions.com.nousresearch.thor.config_schema`` (Agent Plugins v1 forbids
+    ``plugin.json`` ``extensions.com.thorresearch.thor.config_schema`` (Agent Plugins v1 forbids
     unknown top-level fields, so Thor-specific keys live in the vendor namespace); ``{}`` when
     absent or malformed (the loader already warned about malformed entries at load time)."""
     if plugin_dir is None:

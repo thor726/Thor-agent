@@ -2,7 +2,7 @@
 ``logging.Handler.lock`` (P1: gateway watchdog exit-75 death loop).
 
 Same bug class as #111091 (skill-slash fallthrough) and #110707 (Telegram command-menu scan).
-The fix mirrors #111498's ``await asyncio.to_thread(...)`` shape: move the synchronous log call
+The fix mirrors #111498's ``await asyncio.to_thread(...)`` shape: move the synchrothor log call
 off the event loop so a contended ``Handler.lock`` cannot freeze the Discord heartbeat.
 """
 

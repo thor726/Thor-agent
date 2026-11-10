@@ -32,19 +32,19 @@ def guest(nas, monkeypatch):
 
 def _set_guest_off():
     from thor_constants import get_thor_home
-    (get_thor_home() / "config.yaml").write_text("nous:\n  guest: false\n", encoding="utf-8")
+    (get_thor_home() / "config.yaml").write_text("thor:\n  guest: false\n", encoding="utf-8")
 
 
 def test_status_is_pull_from_local_state_and_ack_persists_on_the_identity(guest, monkeypatch):
     status = _call("free_tier.status")
     assert status == {"has_guest": True, "enabled": True, "available": True, "notice_pending": True,
-                      "model": "nous/welcome", "label": anon_auth.FREE_TIER_LABEL}
+                      "model": "thor/welcome", "label": anon_auth.FREE_TIER_LABEL}
 
     assert _call("free_tier.ack_notice") == {"acked": True}
     assert _call("free_tier.status")["notice_pending"] is False
-    assert _load_auth_store()["providers"]["nous"][anon_auth.GUEST_NOTICE_FLAG] is True
+    assert _load_auth_store()["providers"]["thor"][anon_auth.GUEST_NOTICE_FLAG] is True
 
-    # nous.guest: false -> the identity exists but carries nothing; no notice either.
+    # thor.guest: false -> the identity exists but carries nothing; no notice either.
     _set_guest_off()
     status = _call("free_tier.status")
     assert status["has_guest"] is True and status["enabled"] is False
@@ -90,7 +90,7 @@ def test_billing_state_answers_the_free_tier_locally(guest, monkeypatch):
     monkeypatch.setattr(bv, "build_billing_state", lambda *a, **kw: pytest.fail("free tier must not call the portal"))
     res = _call("billing.state")
     assert res["ok"] is True and res["logged_in"] is False
-    assert res["free_tier_account"] is True and res["free_tier_model"] == "nous/welcome"
+    assert res["free_tier_account"] is True and res["free_tier_model"] == "thor/welcome"
     assert res["usage"] == {"available": False}
 
     _set_guest_off()
@@ -154,9 +154,9 @@ def test_sign_in_offer_is_reported_then_claimed_once(guest, monkeypatch):
 def test_sign_in_offer_is_moot_once_signed_in(guest, monkeypatch):
     monkeypatch.setattr(free_tier_offer, "_clock", lambda: 10_000.0)
     free_tier_offer.record_task_done()
-    with _auth_store_lock():   # the user signed in: the profile's Nous identity is an account now
+    with _auth_store_lock():   # the user signed in: the profile's Thor identity is an account now
         store = _load_auth_store()
-        store["providers"]["nous"] = {"auth_method": "oauth", "access_token": "acct-token"}
+        store["providers"]["thor"] = {"auth_method": "oauth", "access_token": "acct-token"}
         _save_auth_store(store)
     assert "nudge_due_in" not in _call("free_tier.status")
     assert _call("free_tier.claim_nudge") == {"claimed": False}

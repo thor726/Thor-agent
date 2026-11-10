@@ -154,7 +154,7 @@ def test_owner_restart_mid_child_retires_the_child_and_never_replays_it(tmp_path
 def test_relay_driven_worker_builds_and_runs_its_child_off_the_relay_loop(tmp_path):
     """NeMo Relay drives tool callbacks on its own event loop: the child's construction reads the
     store (bind_session_state) and its close finishes the execution, and the worker RPC refuses a
-    synchronous call on a running loop, so every child store call must hop off it."""
+    synchrothor call on a running loop, so every child store call must hop off it."""
     relay = pytest.importorskip('nemo_relay')
     if getattr(relay, '_native', None) is None:
         pytest.skip('NeMo Relay native binding unavailable')

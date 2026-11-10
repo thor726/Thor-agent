@@ -1,7 +1,7 @@
 import type { ModelOptionsResult } from '@thor/shared'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { invalidateProfileScopedQueries, keepWarmNousRow, queryClient } from './query-client'
+import { invalidateProfileScopedQueries, keepWarmThorRow, queryClient } from './query-client'
 
 function invalidated(key: unknown[]): boolean {
   return queryClient.getQueryState(key)?.isInvalidated ?? false
@@ -62,8 +62,8 @@ const warm: ModelOptionsResult = {
   providers: [
     {
       models: ['example/model-a', 'example/model-free:free'],
-      name: 'Nous Portal',
-      slug: 'nous',
+      name: 'Thor Portal',
+      slug: 'thor',
       unavailable_models: [],
       usage_levels: { 'example/model-a': 'top_tier', 'example/model-free:free': 'free' }
     }
@@ -75,16 +75,16 @@ const pending: ModelOptionsResult = {
     {
       free_tier_pending: true,
       models: ['example/model-a', 'example/model-free:free'],
-      name: 'Nous Portal',
-      slug: 'nous',
+      name: 'Thor Portal',
+      slug: 'thor',
       unavailable_models: ['example/model-a', 'example/model-free:free']
     }
   ]
 }
 
-describe('keepWarmNousRow', () => {
+describe('keepWarmThorRow', () => {
   it('keeps the last warm Large / Free tags while a cache-only read is still pending', () => {
-    const merged = keepWarmNousRow(warm, pending) as ModelOptionsResult
+    const merged = keepWarmThorRow(warm, pending) as ModelOptionsResult
     const row = merged.providers?.[0]
 
     expect(row?.usage_levels).toEqual(warm.providers?.[0].usage_levels)
@@ -94,13 +94,13 @@ describe('keepWarmNousRow', () => {
   })
 
   it('takes a warm reply as is, and leaves a first pending reply alone', () => {
-    expect(keepWarmNousRow(pending, warm)).toEqual(warm)
-    expect(keepWarmNousRow(undefined, pending)).toEqual(pending)
+    expect(keepWarmThorRow(pending, warm)).toEqual(warm)
+    expect(keepWarmThorRow(undefined, pending)).toEqual(pending)
   })
 
   it('keeps the warm tags across several pending replies in a row', () => {
-    const once = keepWarmNousRow(warm, pending)
-    const twice = keepWarmNousRow(once, structuredClone(pending)) as ModelOptionsResult
+    const once = keepWarmThorRow(warm, pending)
+    const twice = keepWarmThorRow(once, structuredClone(pending)) as ModelOptionsResult
     const row = twice.providers?.[0]
 
     expect(row?.usage_levels).toEqual(warm.providers?.[0].usage_levels)
@@ -125,7 +125,7 @@ describe('keepWarmNousRow', () => {
       providers: [{ ...pending.providers![0], plan_usage: { gauges: fresh, kind: 'usage_window' } }]
     }
 
-    const row = (keepWarmNousRow(warmSubscribed, pendingSubscribed) as ModelOptionsResult).providers?.[0]
+    const row = (keepWarmThorRow(warmSubscribed, pendingSubscribed) as ModelOptionsResult).providers?.[0]
 
     expect(row?.usage_levels?.['example/model-sub']).toBe('free')
     expect(row?.plan_usage?.subscription_model_ids).toEqual(['example/model-sub'])

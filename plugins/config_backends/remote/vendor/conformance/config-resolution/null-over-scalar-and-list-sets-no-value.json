@@ -7,8 +7,8 @@
       "kind": "global",
       "values": {
         "model": {
-          "default": "hermes-4-405b",
-          "provider": "nous"
+          "default": "thor-4-405b",
+          "provider": "thor"
         },
         "tools": {
           "disabled": [
@@ -50,7 +50,7 @@
     "effective": {
       "model": {
         "default": null,
-        "provider": "nous"
+        "provider": "thor"
       },
       "tools": {
         "disabled": null
@@ -87,7 +87,7 @@
     "expect": {
       "model": {
         "default": null,
-        "provider": "nous"
+        "provider": "thor"
       },
       "tools": {
         "disabled": null

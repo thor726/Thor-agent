@@ -46,7 +46,7 @@ MODELS = {
     "claude": "anthropic/claude-sonnet-4.5",
     "gpt": "openai/gpt-5",
     "gemini": "google/gemini-2.5-pro",
-    "thor": "nousresearch/hermes-4-405b",
+    "thor": "thorresearch/thor-4-405b",
 }
 # (surface, platform, model family, cwd is a code workspace). Model names gate guidance blocks
 # and the patch dialect, so the matrix runs on cli; one row per other surface catches its hint

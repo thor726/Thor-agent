@@ -180,7 +180,7 @@ export const $sessionDotStateById = computed(
     // Async delegation: the parent turn has ended but its subagents are still
     // running, so the session's work continues in child sessions. Same visual
     // claim as background processes — and it yields to `working` below the
-    // moment the parent turn itself is live (synchronous orchestrator children).
+    // moment the parent turn itself is live (synchrothor orchestrator children).
     claim(delegating, 'background')
     // A queue paused behind a turn lost in a restart waits on the user's Discard, and a turn that
     // never finished must not read as finished-unread. A turn actually running speaks over it.

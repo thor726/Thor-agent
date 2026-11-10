@@ -332,7 +332,7 @@ def _submit_prompt_to_compute_host(
         session.pop("_compute_host_activity_ns", None)
 
     def _complete(done: dict) -> None:
-        # submit_turn reports a synchronous pipe failure via the callback before re-raising;
+        # submit_turn reports a synchrothor pipe failure via the callback before re-raising;
         # leave the session untouched so prompt.submit can fail open to the in-process path.
         if done.get("reason") != "send_failed":
             with session["history_lock"]:

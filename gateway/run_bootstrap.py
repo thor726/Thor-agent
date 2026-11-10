@@ -486,15 +486,15 @@ async def _start_gateway_shutdown_tail(
             logger.debug("Control socket stop failed (non-fatal)", exc_info=True)
 
     def _stop_keepalive() -> None:
-        from thor_cli.nous_auth_keepalive import stop_nous_auth_keepalive
-        stop_nous_auth_keepalive()
+        from thor_cli.thor_auth_keepalive import stop_thor_auth_keepalive
+        stop_thor_auth_keepalive()
 
     _best_effort(_stop_keepalive)
 
     # Never join(): an in-flight cron delivery is a coroutine on THIS loop; a sync join would drop it.
     # Stop cron scheduler + housekeeping cleanly. These MUST be awaited cooperatively, not join()ed. A cron
     # delivery in flight when the gateway restarts is a coroutine scheduled onto THIS event loop
-    # (safe_schedule_threadsafe); the ticker thread is blocked on its future.result(). A synchronous
+    # (safe_schedule_threadsafe); the ticker thread is blocked on its future.result(). A synchrothor
     # cron_thread.join() would block the loop, so that delivery could never run — it timed out and the
     # message was silently dropped (#58818). Awaiting keeps the loop alive so the in-flight delivery
     # finishes before we tear down.
@@ -899,11 +899,11 @@ async def _start_gateway_runtime(config: Optional[GatewayConfig] = None, replace
             return record_startup()
 
         def _start_keepalive() -> None:
-            from thor_cli.nous_auth_keepalive import start_nous_auth_keepalive
-            start_nous_auth_keepalive()
+            from thor_cli.thor_auth_keepalive import start_thor_auth_keepalive
+            start_thor_auth_keepalive()
 
         _unclean_exit = _best_effort(_lifecycle_record_startup, "Lifecycle ledger startup record failed: %s")
-        _best_effort(_start_keepalive, "Nous auth keepalive did not start: %s")
+        _best_effort(_start_keepalive, "Thor auth keepalive did not start: %s")
         _ensure_windows_gateway_venv_imports()
 
         _early_verdict = await _start_gateway_run_runner(runner, _signal_initiated_shutdown)

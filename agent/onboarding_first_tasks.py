@@ -61,7 +61,7 @@ FIRST_TASKS: tuple[FirstTask, ...] = (
         "thor", "Explain how Thor works", lambda facts, picks: False, ("thor-agent", "claude-design", "p5js"),
         goal="build a living page that shows how Thor works, from the real docs and this install",
         steps=(
-            "Read https://thor-agent.nousresearch.com/docs/llms.txt once with web_extract. Open a page only to "
+            "Read https://thor-agent.thor-agent.local/docs/llms.txt once with web_extract. Open a page only to "
             "check a fact you show.",
             "Read this install: the model, how many skills are installed, the connected apps, and what this chat did "
             "(tools called, skills loaded, their name and picks).",

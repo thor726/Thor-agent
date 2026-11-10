@@ -91,7 +91,7 @@ export function UpdateHoldOverlay() {
       data-testid="update-hold-overlay"
       role="alertdialog"
     >
-      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-thor) bg-(--ui-chat-bubble-background) shadow-thor">
         <div className="flex items-start gap-3 px-5 py-4">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-500" />
           <div>

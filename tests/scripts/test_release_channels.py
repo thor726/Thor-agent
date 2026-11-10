@@ -130,9 +130,9 @@ def test_stable_branded_channel_reuses_the_published_stable_identity(monkeypatch
     from thor_cli.release_channels import ChannelError, canonical_json
     from scripts.releases import channel_releases
     product = {"token": "f204dc6857361e33", "displayName": "Thor Agent",
-               "appId": "com.nousresearch.thor-bundled", "appNamePascal": "ThorBundled",
+               "appId": "com.thorresearch.thor-bundled", "appNamePascal": "ThorBundled",
                "artifactNamePascal": "ThorBundled", "cliName": "thor",
-               "windowsExecutableName": "Thor Agent", "msixAppIdWithOrg": "NousResearch.ThorBundled"}
+               "windowsExecutableName": "Thor Agent", "msixAppIdWithOrg": "dwisetyabudi15581.ThorBundled"}
     monkeypatch.setattr(channel_releases, "product_identity", lambda tag: dict(product))
     with object_server() as (url, objects, _headers, _requests, _faults):
         pub = publisher(url)

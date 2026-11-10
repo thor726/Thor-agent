@@ -590,7 +590,7 @@ class TestSessionLifecycle:
             model_config={
                 "_branched_from": "parent-session",
                 "browser_model_lock": {
-                    "provider": "nous",
+                    "provider": "thor",
                     "model": "x-ai/grok-4.5",
                     "confirmed": True,
                 },

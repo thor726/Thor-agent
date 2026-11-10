@@ -3,7 +3,7 @@
 Thor runs shell commands through a pluggable set of **terminal backends**.
 The built-in backends (local, Docker, Modal, Daytona, Vercel Sandbox, SSH)
 live in the core repo under `tools/environments/`. The official
-[Singularity/Apptainer plugin](https://github.com/NousResearch/thor-official-plugins/tree/main/singularity)
+[Singularity/Apptainer plugin](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/singularity)
 is a complete worked example of this page. Third-party
 sandbox vendors integrate as **plugins** instead — a standalone plugin repo
 installed under `~/.thor/plugins/`, registering a backend the user selects
@@ -230,7 +230,7 @@ class AcmeBoxEnvironment:
 ```
 
 The sandbox image still needs the desktop stack (Xvnc, Xfce, Chromium,
-`cua-driver`); `nousresearch/thor-sandbox:desktop` has it. Bot Desktop and
+`cua-driver`); `thor-agent/thor-sandbox:desktop` has it. Bot Desktop and
 the browser keep their scratch files under the environment's
 `get_temp_dir()`. An environment that doesn't subclass `BaseEnvironment` and
 has no such method gets the same default `BaseEnvironment` uses.

@@ -103,7 +103,7 @@ describe('project scope', () => {
 
   it('enterProject scopes the sidebar to the project id', () => {
     // setActiveProject fires best-effort (no gateway in test → it rejects and is
-    // swallowed); the synchronous scope change is what matters here.
+    // swallowed); the synchrothor scope change is what matters here.
     enterProject('p_123')
     expect($projectScope.get()).toBe('p_123')
   })
@@ -1078,7 +1078,7 @@ describe('project tree profile isolation', () => {
 
     applyRenamedSessionTitle('tip-row', 'New title')
 
-    // Synchronous patch: every cached copy carries the new title.
+    // Synchrothor patch: every cached copy carries the new title.
     const project = $projectTree.get()[0]
     const lane = project.repos[0].groups[0]
     expect(lane.sessions.find(s => s.id === 'tip-row')?.title).toBe('New title')

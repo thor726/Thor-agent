@@ -7,12 +7,12 @@ description: "元宝（Yuanbao）已移出 Thor 核心，改为 yuanbao Thor Lab
 # Yuanbao
 
 :::warning Thor Labs 插件
-Yuanbao is now a Thor Labs plugin: built by Nous Research, not supported, and likely not maintained going forward. Fixes from the community are welcome.
+Yuanbao is now a Thor Labs plugin: built by Thor Agent, not supported, and likely not maintained going forward. Fixes from the community are welcome.
 
-元宝现在是 Thor Labs 插件：由 Nous Research 构建，不提供支持，今后很可能不再维护。欢迎社区提交修复。
+元宝现在是 Thor Labs 插件：由 Thor Agent 构建，不提供支持，今后很可能不再维护。欢迎社区提交修复。
 :::
 
-[元宝（Yuanbao）](https://yuanbao.tencent.com/) 网关平台及其 `yb_*` 工具（`yb_query_group_info`、`yb_query_group_members`、`yb_send_dm`、`yb_search_sticker`、`yb_send_sticker`）已不再属于 Thor 核心，而是作为 [NousResearch/thor-labs-plugins](https://github.com/NousResearch/thor-labs-plugins/tree/main/yuanbao) 中的 `yuanbao` 插件发布，完整的配置指南见插件仓库。
+[元宝（Yuanbao）](https://yuanbao.tencent.com/) 网关平台及其 `yb_*` 工具（`yb_query_group_info`、`yb_query_group_members`、`yb_send_dm`、`yb_search_sticker`、`yb_send_sticker`）已不再属于 Thor 核心，而是作为 [dwisetyabudi15581/thor-labs-plugins](https://github.com/dwisetyabudi15581/thor-labs-plugins/tree/main/yuanbao) 中的 `yuanbao` 插件发布，完整的配置指南见插件仓库。
 
 ## 安装
 

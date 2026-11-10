@@ -2,7 +2,7 @@
 
 The WS read loop in ``handle_ws()`` processes requests sequentially via
 ``await asyncio.to_thread(server.dispatch, req, transport)``. Inline handlers
-(NOT in ``_LONG_HANDLERS``) run ``handle_request()`` synchronously inside
+(NOT in ``_LONG_HANDLERS``) run ``handle_request()`` synchrothorly inside
 ``dispatch()``, blocking the loop from reading the next request. Under GIL
 pressure from multiple concurrent agent turns, even lightweight RPCs like
 ``session.list`` and ``pet.info`` can take seconds, causing frontend requests
@@ -80,7 +80,7 @@ def test_dispatch_inline_rpc_does_not_block_under_gil_pressure(server):
     assert [server.dispatch({"id": m, "method": m, "params": p})
             for m, p in (("session.list", {}), ("session.save", {"session_id": "s"}))] == [None] * 2
 
-    # fast.check is inline → dispatch runs it synchronously and returns the result
+    # fast.check is inline → dispatch runs it synchrothorly and returns the result
     fast_resp = server.dispatch({"id": "fast", "method": "fast.check", "params": {}})
     fast_elapsed = time.monotonic() - t0
 

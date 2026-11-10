@@ -1015,7 +1015,7 @@ class TestToolsetsEndpoint:
             "thor_cli.tools_config._get_platform_tools",
             return_value={"default"},
         ), patch(
-            "thor_cli.tools_config.get_nous_subscription_features",
+            "thor_cli.tools_config.get_thor_subscription_features",
             return_value=feature_snapshot,
         ) as resolve_features, patch(
             "thor_cli.tools_config._toolset_has_keys",
@@ -2723,12 +2723,12 @@ class TestStoredSessionModelFilter:
 
 
 # ---------------------------------------------------------------------------
-# Event-loop offloading for synchronous SessionDB calls (P1)
+# Event-loop offloading for synchrothor SessionDB calls (P1)
 # ---------------------------------------------------------------------------
 
 
 class TestSessionDbOffEventLoop:
-    """Regression: synchronous SessionDB calls in the OpenAI-compatible API
+    """Regression: synchrothor SessionDB calls in the OpenAI-compatible API
     server must run OFF the aiohttp event loop. A blocking SQLite read/write on
     the loop freezes every in-flight request under load (same class of bug as
     gateway build_channel_directory, #60794 / #60810), so each call is wrapped

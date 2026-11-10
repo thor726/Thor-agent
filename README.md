@@ -11,9 +11,7 @@
 
 **Agen AI yang menyempurnakan dirinya sendiri** — Thor Agent membuat *skill* dari pengalaman, memperbaikinya saat dipakai, mengingat percakapan lama, dan membangun pemahaman yang makin dalam tentang Anda di setiap sesi. Ia tidak terikat pada satu laptop: bicara dengannya dari Telegram sementara ia bekerja di VM cloud, atau jalankan langsung di terminal Anda.
 
-Gunakan model apa pun yang Anda mau — Nous Portal, OpenRouter, OpenAI, Anthropic, atau endpoint Anda sendiri. Ganti kapan saja dengan `thor model` — tanpa mengubah kode, tanpa lock-in.
-
-> ⚡ **Thor Agent** adalah rebrand dari [Hermes Agent](https://github.com/NousResearch/hermes-agent) karya [Nous Research](https://nousresearch.com) (lisensi MIT), yang dikelola oleh [Dwi Setyabudi](https://github.com/dwisetyabudi15581). Dokumentasi repo ini menggunakan Bahasa Indonesia.
+Gunakan model apa pun yang Anda mau — OpenRouter, OpenAI, Anthropic, atau endpoint Anda sendiri. Ganti kapan saja dengan `thor model` — tanpa mengubah kode, tanpa lock-in.
 
 ## Daftar Isi
 
@@ -27,7 +25,7 @@ Gunakan model apa pun yang Anda mau — Nous Portal, OpenRouter, OpenAI, Anthrop
 - [Menjalankan di Docker (Opsional)](#menjalankan-di-docker-opsional)
 - [Konfigurasi](#konfigurasi)
 - [Keamanan](#keamanan)
-- [Lisensi & Atribusi](#lisensi--atribusi)
+- [Lisensi](#lisensi)
 
 ## Fitur Utama
 
@@ -104,7 +102,7 @@ Lihat bagian [Menjalankan di Docker (Opsional)](#menjalankan-di-docker-opsional)
 thor setup
 ```
 
-Wizard interaktif ini memandu Anda memilih penyedia model (Nous Portal, OpenRouter, OpenAI, dll.), memasukkan kunci API, dan (opsional) menyiapkan platform chat untuk gateway. Kunci API tersimpan di `~/.thor/.env`.
+Wizard interaktif ini memandu Anda memilih penyedia model (OpenRouter, OpenAI, dll.), memasukkan kunci API, dan (opsional) menyiapkan platform chat untuk gateway. Kunci API tersimpan di `~/.thor/.env`.
 
 ### 2) Ngobrol di terminal
 
@@ -136,7 +134,7 @@ thor -c "Nama Sesi"     # lanjutkan sesi bernama tertentu
 | `thor gateway run` | Jalankan gateway multi-platform di latar depan |
 | `thor mcp` | Kelola server MCP |
 | `thor plugins` | Kelola plugin |
-| `thor auth login` | Login penyedia (mis. Nous Portal) |
+| `thor auth login` | Login penyedia via OAuth |
 | `thor dashboard` | Dasbor web bawaan |
 | `thor logs` | Lihat log |
 | `thor update` | Perbarui Thor Agent |
@@ -253,7 +251,7 @@ docker run -d \
 - **`~/.thor/config.yaml`** — konfigurasi utama (model bawaan, penyedia, gateway, backend terminal). Lebih mudah lewat `thor setup` / `thor model` / `thor config`.
 - **`~/.thor/.env`** — kunci API per penyedia, antara lain:
   `OPENROUTER_API_KEY`, `FIREWORKS_API_KEY`, `NOVITA_API_KEY`, `GOOGLE_API_KEY`, `GROQ_API_KEY`, `KIMI_API_KEY`, `DEEPINFRA_API_KEY`, dan banyak lagi — daftar lengkap beserta contohnya ada di [`.env.example`](.env.example).
-- **`thor auth login`** — login OAuth untuk penyedia yang mendukungnya (Anthropic, OpenAI Codex, xAI, Qwen, MiniMax, OpenRouter, Nous Portal) — tanpa perlu menaruh kunci manual.
+- **`thor auth login`** — login OAuth untuk penyedia yang mendukungnya (Anthropic, OpenAI Codex, xAI, Qwen, MiniMax, OpenRouter) — tanpa perlu menaruh kunci manual.
 - **`THOR_HOME`** — variabel lingkungan untuk memindahkan lokasi data (default `~/.thor`), berguna untuk instance terpisah.
 
 ## Keamanan
@@ -267,8 +265,6 @@ docker run -d \
 
 README dan panduan repo ini berbahasa Indonesia. Antarmuka CLI mendukung banyak bahasa (Inggris, Jerman, Spanyol, Prancis, Korea, Jepang, Arab, Portugis, Rusia, Mandarin, dll.) melalui berkas locale di `locales/` — terjemahan Bahasa Indonesia (`locales/id.yaml`) belum tersedia dan kontribusi sangat diterima.
 
-## Lisensi & Atribusi
+## Lisensi
 
-[MIT](LICENSE) — © 2025 Nous Research, © 2026 Dwi Setyabudi.
-
-Thor Agent adalah rebrand dari [Hermes Agent](https://github.com/NousResearch/hermes-agent) karya [Nous Research](https://nousresearch.com). Terima kasih kepada seluruh kontributor upstream. Referensi ke keluarga model LLM "Hermes" (mis. `NousResearch/Hermes-4-70B`) sengaja dipertahankan karena merupakan nama model sungguhan di penyedia pihak ketiga.
+[MIT](LICENSE) — silakan lihat berkas `LICENSE` untuk teks lengkapnya.

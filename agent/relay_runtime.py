@@ -464,7 +464,7 @@ class RelayRuntime:
     ) -> None:
         """Push a fresh SESSION_SCOPE for ``session`` (bounded by ``SCOPE_OP_TIMEOUT``); record handle + context.
         Subagents parent under their spawning turn/session handle (``resolve_parent`` creates the parent when
-        unknown). ``exit_fallback``: at interpreter shutdown the executor refuses futures; push synchronously."""
+        unknown). ``exit_fallback``: at interpreter shutdown the executor refuses futures; push synchrothorly."""
         parent_handle = None
         if session.parent_session_id:
             with self._sessions_lock:
@@ -620,7 +620,7 @@ class RelayRuntime:
     ) -> Any:
         """Run a Relay operation against a session's isolated scope stack.
         ``timeout`` bounds the native call on the daemon executor (``TimeoutError`` on breach); ``None``
-        runs synchronously. Lifecycle ops pass ``SCOPE_OP_TIMEOUT``: a wedged pipeline costs one span."""
+        runs synchrothorly. Lifecycle ops pass ``SCOPE_OP_TIMEOUT``: a wedged pipeline costs one span."""
         with self._operation():
             return self._run_in_session_untracked(
                 session, callback, *args, allow_closing=allow_closing, timeout=timeout, **kwargs
@@ -932,7 +932,7 @@ _CURRENT_TURN: contextvars.ContextVar[RelayTurnContext | None] = contextvars.Con
 
 # >0 while the native pipeline is mid-dispatch of a Thor tool/LLM callback. Nested managed
 # execution there is structurally broken (the pipeline binds its Futures to the OUTER call's
-# loop, blocked inside the synchronous callback), so resolve_execution_context() bypasses Relay.
+# loop, blocked inside the synchrothor callback), so resolve_execution_context() bypasses Relay.
 # A ContextVar so the marker follows copy_context() into worker threads / per-thread loops.
 _MANAGED_CALLBACK_DEPTH: contextvars.ContextVar[int] = contextvars.ContextVar(
     "thor_relay_managed_callback_depth", default=0
@@ -1278,7 +1278,7 @@ def resolve_execution_context(session_id: str) -> tuple[RelayRuntime | None, Rel
         # A managed Relay callback is already executing on this logical call path (e.g. the native
         # ``tools.execute`` pipeline is mid-dispatch of a Thor tool). Nested managed execution here is
         # structurally impossible: the native pipeline binds its Futures to the OUTER call's event loop,
-        # which is blocked inside the synchronous tool callback until the tool returns. A nested managed LLM
+        # which is blocked inside the synchrothor tool callback until the tool returns. A nested managed LLM
         # call (the vision_analyze auxiliary path) therefore awaits a foreign-loop Future that can never
         # complete — "attached to a different loop" at best, deadlock at worst, and "Event loop is closed"
         # during shutdown when the orphaned Future is completed late (#77244).
@@ -1415,7 +1415,7 @@ def _is_relay_host_conflict(exc: BaseException) -> bool:
 
 
 def _resolve_plugin_awaitable(value: Any) -> Any:
-    """Resolve Relay's async plugin API from synchronous host construction."""
+    """Resolve Relay's async plugin API from synchrothor host construction."""
     if not inspect.isawaitable(value):
         return value
     # Only the "no running loop" probe is guarded: a RuntimeError raised by the awaitable itself

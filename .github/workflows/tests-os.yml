@@ -217,7 +217,7 @@ jobs:
           # test may reach a real provider API.
           OPENROUTER_API_KEY: ''
           OPENAI_API_KEY: ''
-          NOUS_API_KEY: ''
+          THOR_PORTAL_API_KEY: ''
 
       - name: Check the checkout is clean
         # Last step of every job (tests/ci/test_clean_worktree_check.py): a test or CI step that
@@ -284,7 +284,7 @@ jobs:
           THOR_TEST_FILE_RETRIES: '0'
           OPENROUTER_API_KEY: ''
           OPENAI_API_KEY: ''
-          NOUS_API_KEY: ''
+          THOR_PORTAL_API_KEY: ''
 
       - name: No leftover Python / Thor processes
         # Backstop for the per-test ownership checks: a file killed by its 900 s timeout,

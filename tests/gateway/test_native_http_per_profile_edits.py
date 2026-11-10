@@ -49,7 +49,7 @@ def test_per_profile_grants_edit_old_local_rows_of_their_own_profile(tmp_path):
     (beta / 'config.yaml').write_text(json.dumps(model))
     _seed(home, [('old-desktop-root', 'desktop', None), ('old-tui-root', 'tui', None)])
     _seed(beta, [('old-desktop-beta', 'desktop', None), ('old-oneshot-beta', 'oneshot', None),
-                 ('old-desktop-nous', 'desktop', 'nous:account'), ('old-desktop-foreign', 'desktop', 'telegram:42')])
+                 ('old-desktop-thor', 'desktop', 'thor:account'), ('old-desktop-foreign', 'desktop', 'telegram:42')])
     root = Path(__file__).resolve().parents[2]
     env = {k: os.environ[k] for k in ('PATH', 'LANG', 'TZ', 'TIRITH_ENABLED') if k in os.environ}
     env.update(HOME=str(user), USERPROFILE=str(user), THOR_HOME=str(home), PYTHONPATH=str(root),
@@ -91,7 +91,7 @@ def test_per_profile_grants_edit_old_local_rows_of_their_own_profile(tmp_path):
                 # Each old local row, in each profile, through a grant for that profile (403 before).
                 for sid, profile in (('old-desktop-root', 'default'), ('old-tui-root', 'default'),
                                      ('old-desktop-beta', 'beta'), ('old-oneshot-beta', 'beta'),
-                                     ('old-desktop-nous', 'beta')):
+                                     ('old-desktop-thor', 'beta')):
                     assert pin(sid, profile, profile) == 200, (sid, profile)
                 # The grant still reaches only its own profile, and a foreign identity stays refused.
                 assert pin('old-desktop-beta', 'beta', 'default') == 403

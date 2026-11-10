@@ -74,7 +74,7 @@ pytestmark = [
 ]
 
 # The adapter ticks every 100 ms on the gateway loop. Healthy gaps are ~0.11 s, worst seen
-# 0.6 s at load average ~100 (10x margin -> 6 s). A turn run synchronously on the loop
+# 0.6 s at load average ~100 (10x margin -> 6 s). A turn run synchrothorly on the loop
 # freezes it for the whole faulted turn (>= 22 s for a provider hang with the chaos timeouts,
 # LONG_TIMEOUT_S in the interrupt scenarios), so the bound still catches it.
 HEARTBEAT_MAX_GAP_S = 6.0

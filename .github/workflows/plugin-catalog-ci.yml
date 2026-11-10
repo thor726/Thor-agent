@@ -11,10 +11,7 @@ name: Plugin Catalog CI
 #                            `thor plugins validate`.
 
 on:
-  pull_request:
-    paths:
-      - "plugin-catalog/**"
-
+  workflow_dispatch:
 permissions:
   contents: read
 

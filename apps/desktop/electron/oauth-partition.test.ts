@@ -81,10 +81,10 @@ describe('resolveOauthPartition (#92183 per-connection cookie jars)', () => {
 
   it('keeps cloud connections on the legacy partition (silent portal cascade needs the shared jar)', () => {
     const reg = registry('local', [
-      { id: 'cloud-1', kind: 'cloud', url: 'https://agent.nousresearch.com', authMode: 'oauth' }
+      { id: 'cloud-1', kind: 'cloud', url: 'https://agent.thor-agent.local', authMode: 'oauth' }
     ])
 
-    expect(resolveOauthPartition('https://agent.nousresearch.com/api/status', { registry: reg })).toBe(
+    expect(resolveOauthPartition('https://agent.thor-agent.local/api/status', { registry: reg })).toBe(
       LEGACY_OAUTH_PARTITION
     )
   })
@@ -98,7 +98,7 @@ describe('resolveOauthPartition (#92183 per-connection cookie jars)', () => {
   it('falls back to the legacy partition for unmatched, portal, and malformed inputs', () => {
     const reg = registry('local', [remote('conn-a', 'https://gw-a.example.com')])
 
-    expect(resolveOauthPartition('https://portal.nousresearch.com/api/agents', { registry: reg })).toBe(
+    expect(resolveOauthPartition('https://portal.thor-agent.local/api/agents', { registry: reg })).toBe(
       LEGACY_OAUTH_PARTITION
     )
     expect(resolveOauthPartition('not a url', { registry: reg })).toBe(LEGACY_OAUTH_PARTITION)
@@ -225,7 +225,7 @@ describe('resolveOauthPartition with connectionId (pre-save sign-in identity)', 
       { id: 'local', kind: 'local' },
       remote('conn-a', 'https://gw-a.example.com'),
       remote('tok-1', 'https://gw-t.example.com', { authMode: 'token' }),
-      { id: 'cloud-1', kind: 'cloud', url: 'https://agent.nousresearch.com', authMode: 'oauth' }
+      { id: 'cloud-1', kind: 'cloud', url: 'https://agent.thor-agent.local', authMode: 'oauth' }
     ])
 
     expect(resolveOauthPartition('https://gw-a.example.com', { registry: reg, connectionId: 'conn-a' })).toBe(
@@ -237,7 +237,7 @@ describe('resolveOauthPartition with connectionId (pre-save sign-in identity)', 
     expect(resolveOauthPartition('https://gw-t.example.com', { registry: reg, connectionId: 'tok-1' })).toBe(
       LEGACY_OAUTH_PARTITION
     )
-    expect(resolveOauthPartition('https://agent.nousresearch.com', { registry: reg, connectionId: 'cloud-1' })).toBe(
+    expect(resolveOauthPartition('https://agent.thor-agent.local', { registry: reg, connectionId: 'cloud-1' })).toBe(
       LEGACY_OAUTH_PARTITION
     )
   })
@@ -414,7 +414,7 @@ describe('oauthJarsToClearOnRemoval (#98242 stale auth state on re-add)', () => 
     const reg = registry('local', [
       remote('tok-1', 'https://gw-t.example.com', { authMode: 'token' }),
       { id: 'ssh-1', kind: 'ssh', host: 'gw.example.com' },
-      { id: 'cloud-1', kind: 'cloud', url: 'https://agent.nousresearch.com', authMode: 'oauth' },
+      { id: 'cloud-1', kind: 'cloud', url: 'https://agent.thor-agent.local', authMode: 'oauth' },
       { id: 'local', kind: 'local' },
       remote('bad', '')
     ])

@@ -2,7 +2,7 @@
 name: anatomy
 description: Explain an idea as an interactive isometric machine figure.
 version: 1.0.0
-author: Ryan (wheresryan22), ported to Thor by Nous Research
+author: Ryan (wheresryan22), ported to Thor by Thor Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:

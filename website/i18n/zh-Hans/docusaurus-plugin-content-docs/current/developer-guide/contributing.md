@@ -94,7 +94,7 @@ npm run build:fast --prefix website
 
 `npx`、`npm exec` 和 `npm run` 仍可使用，因此 MCP 服务器和工具照常启动。但 `engine-strict` 作用于整个检出目录：这些目录本身，以及通过根目录 `.npmrc` 作用于所有没有自己 `package.json` 的位置（`agent/`、`tools/`、Docker 镜像的 `/opt/thor`）。在这些位置，如果 `npx` 要安装的包或它带入的任一非可选依赖声明的 `engines` 与当前 Node 或 npm 不符，`npx` 会拒绝安装，而在检出目录之外只会警告。
 
-图标从 `assets/nous-girl-*.svg` 和 `assets/backgrounds/` 生成。
+图标从 `assets/thor-mark-*.svg` 和 `assets/backgrounds/` 生成。
 `node scripts/generate-icons.mjs` 使用 Thor 运行时 Python（`THOR_PYTHON`，否则为 PATH 上的 `python`）渲染图标：Pillow 和 resvg-py 是核心依赖。不要提交生成的 PNG/ICO/ICNS 文件。
 
 ### 运行测试
@@ -239,7 +239,7 @@ fix(security): prevent shell injection in sudo password piping
 
 ## 社区
 
-- **Discord**：[discord.gg/NousResearch](https://discord.gg/NousResearch)
+- **Discord**：[github.com/dwisetyabudi15581/Thor-agent](https://github.com/dwisetyabudi15581/Thor-agent)
 - **GitHub Discussions**：用于设计提案和架构讨论
 - **Skills Hub**：上传专业 skill 并与社区共享
 

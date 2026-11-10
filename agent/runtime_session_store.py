@@ -62,8 +62,8 @@ def _caller_summary(limit=8):
 def call_off_event_loop(fn, *args, **kwargs):
     """Call ``fn`` here, or on a worker thread when this thread is running an event loop.
 
-    For synchronous best-effort writers that can run inside a callback Relay drives on its private
-    loop (provider/tool callbacks): there ``WorkerRPC`` refuses the call (``synchronous_rpc_on_event_loop``,
+    For synchrothor best-effort writers that can run inside a callback Relay drives on its private
+    loop (provider/tool callbacks): there ``WorkerRPC`` refuses the call (``synchrothor_rpc_on_event_loop``,
     sticky for the rest of the turn; #139029). The callback already blocks that loop, so waiting for the
     thread costs it nothing; the context is copied so session-scoped state survives the hop, and errors
     re-raise here. Async code awaits ``asyncio.to_thread`` instead.
@@ -118,7 +118,7 @@ class _OwnerLink:
 class WorkerRPC:
     """Bounded authenticated calls to an existing owner; never starts a daemon.
 
-    No owner-loop synchronous self-RPC or SQLite fallback is permitted.
+    No owner-loop synchrothor self-RPC or SQLite fallback is permitted.
     One connection serves every call (serialized by ``lock``, correlated by id); it is
     discovered, identified and ticketed on connect exactly as each call once was.
     """
@@ -149,7 +149,7 @@ class WorkerRPC:
         endpoint = self.endpoint
         descriptor = query_identify(control_home_for(self.home, endpoint), timeout=5)
         if descriptor.get('pid') == os.getpid():
-            raise WorkerPersistenceError('synchronous_self_rpc')
+            raise WorkerPersistenceError('synchrothor_self_rpc')
         ticket = _session_ticket(self.home, endpoint, purpose='worker-adoption')
         url, protocols = gateway_ws_target(endpoint, ticket)
         # The owner is loopback, like connect_gateway's peer: an inherited HTTPS_PROXY must not carry it.
@@ -175,9 +175,9 @@ class WorkerRPC:
         except RuntimeError:
             pass
         else:
-            logger.warning('synchronous_rpc_on_event_loop: %s on thread %s; caller: %s',
+            logger.warning('synchrothor_rpc_on_event_loop: %s on thread %s; caller: %s',
                            method, threading.current_thread().name, _caller_summary())
-            raise WorkerPersistenceError('synchronous_rpc_on_event_loop')
+            raise WorkerPersistenceError('synchrothor_rpc_on_event_loop')
         from websockets.exceptions import ConnectionClosed
         with self.lock:
             self.request_id += 1
@@ -214,7 +214,7 @@ from agent.runtime_session_lifecycle import RuntimeSessionLifecycleMixin
 
 
 class RuntimeSessionStore(RuntimeSessionCompressionMixin, RuntimeSessionLifecycleMixin):
-    """Synchronous durable results with a private byte-bounded retry journal.
+    """Synchrothor durable results with a private byte-bounded retry journal.
 
     A failed write remains pending, and failure is sticky until explicit retry or
     adoption. Local queue acceptance is never returned as canonical commit.

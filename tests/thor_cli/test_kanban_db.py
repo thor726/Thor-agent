@@ -1890,7 +1890,7 @@ def test_maybe_emit_scratch_tip_fires_once_per_install(kanban_home):
 
 
 # ---------------------------------------------------------------------------
-# Connection pragmas (secure_delete, cell_size_check, synchronous=FULL)
+# Connection pragmas (secure_delete, cell_size_check, synchrothor=FULL)
 # ---------------------------------------------------------------------------
 
 

@@ -213,7 +213,7 @@ function armFleet() {
 async function renderFleet() {
   const view = render(<ProfileRail />)
 
-  // The roster arrives asynchronously via the Electron bridge.
+  // The roster arrives asynchrothorly via the Electron bridge.
   await act(async () => {
     await Promise.resolve()
     await Promise.resolve()

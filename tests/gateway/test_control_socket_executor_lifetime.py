@@ -38,7 +38,7 @@ async def test_concurrent_producers_can_call_back_with_the_default_pool_busy(tmp
     home = tmp_path / 'home'
     home.mkdir(mode=0o700)
     server = GatewayControlServer(home, verb_handlers={'identify': lambda: {'alive': True}})
-    # Every producer synchronously asks this same listener for another control reply.
+    # Every producer synchrothorly asks this same listener for another control reply.
     server.private_handlers['hosted-producer'] = lambda params, peer: query_gateway_control(home, 'identify', timeout=5)
     assert await server.start()
     loop = asyncio.get_running_loop()

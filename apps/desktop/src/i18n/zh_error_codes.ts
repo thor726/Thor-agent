@@ -56,14 +56,14 @@ export const zhErrorCodes: Partial<ThreadCopy['errorCodes']> = {
     title: '磁盘已满',
     body: 'Thor 无法保存此对话。请释放空间后重试。'
   },
-  // Nous free tier. The body is normally the backend's own sentence; these stand in for an older backend.
+  // Thor free tier. The body is normally the backend's own sentence; these stand in for an older backend.
   free_tier_disabled: {
     title: '登录以继续聊天',
-    body: '使用 Nous 账户登录即可继续聊天，完全免费。'
+    body: '使用 Thor 账户登录即可继续聊天，完全免费。'
   },
   free_tier_rate_limited: {
     title: '免费额度已用完',
-    body: '额度很快就会刷新。使用 Nous 账户登录可获得更多额度，完全免费。'
+    body: '额度很快就会刷新。使用 Thor 账户登录可获得更多额度，完全免费。'
   },
   free_tier_at_capacity: {
     title: '免费服务繁忙',
@@ -71,11 +71,11 @@ export const zhErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_model_not_free: {
     title: '此模型需要登录',
-    body: 'Thor 暂时使用免费模型。使用 Nous 账户登录可使用更多模型，完全免费。'
+    body: 'Thor 暂时使用免费模型。使用 Thor 账户登录可使用更多模型，完全免费。'
   },
   free_tier_route: {
     title: '无法连接免费模型',
-    body: '使用 Nous 账户免费登录，或检查 NOUS_INFERENCE_BASE_URL 设置。'
+    body: '使用 Thor 账户免费登录，或检查 THOR_PORTAL_INFERENCE_BASE_URL 设置。'
   },
   free_tier_outage: {
     title: '免费模型出现问题',
@@ -83,7 +83,7 @@ export const zhErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_refused: {
     title: '登录以继续聊天',
-    body: '使用 Nous 账户登录是免费的。'
+    body: '使用 Thor 账户登录是免费的。'
   },
   cron_session_read_only: {
     title: '此聊天属于一个定时任务',

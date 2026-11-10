@@ -4,7 +4,7 @@
     PRD_BASE_TREE=<checkout of the base SHA> PRD_PR_TREE=<checkout of the PR SHA> PRD_PYTHON=<thor env python> \\
     python3 run.py <model> <reps> [--parallel=N] [--only=task1,task2]
 
-Inference: PRD_INFERENCE_URL + PRD_INFERENCE_KEY, or (default) the Nous Portal agent key read fresh from
+Inference: PRD_INFERENCE_URL + PRD_INFERENCE_KEY, or (default) the Thor Portal agent key read fresh from
 $THOR_HOME/auth.json for every cell. Read-only: the harness never refreshes or copies the OAuth grant.
     python3 run.py --report
 
@@ -28,8 +28,8 @@ def _inference_env():
     env = dict(os.environ)
     if not env.get("PRD_INFERENCE_KEY"):
         home = Path(os.environ.get("THOR_HOME") or Path.home() / ".thor")
-        nous = json.loads((home / "auth.json").read_text())["providers"]["nous"]
-        env["PRD_INFERENCE_URL"], env["PRD_INFERENCE_KEY"] = nous["inference_base_url"], nous["agent_key"]
+        thor = json.loads((home / "auth.json").read_text())["providers"]["thor"]
+        env["PRD_INFERENCE_URL"], env["PRD_INFERENCE_KEY"] = thor["inference_base_url"], thor["agent_key"]
     return env
 
 

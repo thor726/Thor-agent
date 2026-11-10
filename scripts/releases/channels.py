@@ -98,7 +98,7 @@ def preview_identity(name: str, token: str) -> dict:
     return {"token": token, "displayName": f"Thor {name}",
             "appId": f"ai.thor.channel.h{token}", "appNamePascal": pascal,
             "artifactNamePascal": pascal, "cliName": f"thor-{name}",
-            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"NousResearch.{pascal}"}
+            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"dwisetyabudi15581.{pascal}"}
 
 
 class ChannelPublisher:

@@ -2401,11 +2401,11 @@ class APIServerAdapter(OpenAICompatRoutesMixin, BasePlatformAdapter):
             from thor_cli.config import load_config
             from thor_cli.tools_config import (
                 _get_effective_configurable_toolsets, _get_platform_tools, _toolset_has_keys,
-                get_nous_subscription_features)
+                get_thor_subscription_features)
             from toolsets import resolve_toolset
             config = load_config()
             enabled_toolsets = _get_platform_tools(config, "api_server", include_default_mcp_servers=False)
-            features = get_nous_subscription_features(config)
+            features = get_thor_subscription_features(config)
             data: list[dict[str, Any]] = []
             for name, label, desc in _get_effective_configurable_toolsets():
                 try:
@@ -3038,7 +3038,7 @@ class APIServerAdapter(OpenAICompatRoutesMixin, BasePlatformAdapter):
 
     @_admit_api_agent_request
     async def _handle_session_chat(self, request: web.Request) -> web.Response:
-        """POST /api/sessions/{session_id}/chat — one synchronous agent turn (plus the delivery lanes'
+        """POST /api/sessions/{session_id}/chat — one synchrothor agent turn (plus the delivery lanes'
         one bounded re-run of a transient failure; ``thor peer dm`` is the client)."""
         from tools.bot_failure_reasons import RETRY_NONE, result_retry_action
         # This turn runs through _run_agent, so it already COUNTS toward the cap (#7483).
@@ -3574,7 +3574,7 @@ class APIServerAdapter(OpenAICompatRoutesMixin, BasePlatformAdapter):
         """Bind an API turn with push disabled and history delivery default-denied.
 
         Only routes whose continuation reads SessionDB may pass "1". An omitted
-        declaration or fingerprint-derived identity keeps delegation synchronous.
+        declaration or fingerprint-derived identity keeps delegation synchrothor.
 
         ``profile`` is the ``/p/<profile>/`` prefix serving the request (``""`` = default). It must
         reach ``THOR_SESSION_PROFILE``: the persistent-Docker container key is derived from it, so an

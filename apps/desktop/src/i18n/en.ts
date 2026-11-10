@@ -133,14 +133,14 @@ export const en: Translations = {
       showAllMatches: 'Show all matches',
       segmentNoMatch: (segment: string) => `No match in ${segment}, so every match is shown.`,
       freeTierNote: 'Connections stay on this computer until you sign in.',
-      signInLine: 'Sign in to Nous to use managed apps.',
+      signInLine: 'Sign in to Thor to use managed apps.',
       signIn: 'Sign in',
       managedUnavailable: 'Managed apps are not available for this account yet.',
       writeFailed: 'That change was not saved.',
       refreshFailed: 'The tool list was not refreshed.',
       disconnectNoAccount: 'Thor has no account to disconnect here. Refresh the page and try again.',
       disconnectRefused:
-        'Nous could not remove this sign-in right now. Turn the app off with the switch instead, or try again later.'
+        'Thor could not remove this sign-in right now. Turn the app off with the switch instead, or try again later.'
     },
 
     add: {
@@ -194,7 +194,7 @@ export const en: Translations = {
       providedByPlugin: (plugin: string) => `Provided by plugin ${plugin}`,
       openPlugins: 'Open the Plugins tab',
       // Verbatim, by decision of the design of record.
-      nousLine: 'Nous apps follow your account, not the profile.',
+      thorLine: 'Thor apps follow your account, not the profile.',
       rulesReadOnly: 'Rules cannot be changed right now.',
       rulesAppOff: (name: string) => `Turn ${name} on to change its tools.`,
       rulesSignIn: 'Sign in to change what Thor may do here.',
@@ -251,7 +251,7 @@ export const en: Translations = {
       remove: 'Remove',
       offTitle: (name: string) => `${name} is off.`,
       offBody: 'Turn it on with the switch above to read the tools it brings.',
-      signedOutTitle: 'Sign in to Nous to read the tool list.',
+      signedOutTitle: 'Sign in to Thor to read the tool list.',
       signedOutBody: 'Your servers on this computer are unaffected.',
       conflictTitle: 'Someone changed this rule while you were editing.',
       // Two sentences at most, and the second says the work is still here.
@@ -500,9 +500,9 @@ export const en: Translations = {
   ...enBilling,
 
   sendDiagnostics: {
-    title: 'Send diagnostics to Nous',
+    title: 'Send diagnostics to Thor',
     privacyNotice:
-      'This uploads a debug bundle to Nous-internal storage (not a public paste). It includes system info (OS, versions, provider, which API keys are configured — never the keys themselves) and full agent, gateway, and desktop logs (up to 512 KB each), which likely contain conversation content, tool outputs, and file paths. Secrets are redacted before upload. The bundle is viewable only by Nous staff and allowlisted Discord moderators, and auto-deletes after 14 days.',
+      'This uploads a debug bundle to Thor-internal storage (not a public paste). It includes system info (OS, versions, provider, which API keys are configured — never the keys themselves) and full agent, gateway, and desktop logs (up to 512 KB each), which likely contain conversation content, tool outputs, and file paths. Secrets are redacted before upload. The bundle is viewable only by Thor staff and allowlisted Discord moderators, and auto-deletes after 14 days.',
     upload: 'Upload',
     uploading: 'Uploading…',
     cancel: 'Cancel',
@@ -514,11 +514,11 @@ export const en: Translations = {
       'Your bundle was uploaded privately. Share the link below in your support thread so the team can see your logs.',
     failedTitle: 'Upload failed',
     failedHint:
-      'You can also run `thor debug share --nous` from a terminal, or `thor debug share --local` to print the report without uploading.',
+      'You can also run `thor debug share --thor` from a terminal, or `thor debug share --local` to print the report without uploading.',
     handoffLead: 'Pick up the discussion in:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous Portal Support',
+      portal: 'Thor Portal Support',
       discord: 'Discord'
     }
   },
@@ -789,7 +789,7 @@ export const en: Translations = {
         repoLabel: 'Repository',
         verified: 'Verified',
         unverified: 'Unverified',
-        reviewedByNous: 'Reviewed by Nous.',
+        reviewedByThor: 'Reviewed by Thor.',
         installsAndEnables: profile => `Installs for ${profile} and turns on right away.`,
         installsOnly: profile => `Installs for ${profile}.`,
         advanced: 'Advanced',
@@ -1386,7 +1386,7 @@ export const en: Translations = {
       cloudLoadingAgents: 'Loading your agents…',
       cloudNoAgents: {
         before: 'No agents found on this account. Create one in the ',
-        linkText: 'Nous portal',
+        linkText: 'Thor portal',
         after: ', then refresh.'
       },
       cloudRefresh: 'Refresh',
@@ -1495,7 +1495,7 @@ export const en: Translations = {
       sshErrHostKey:
         'The host key has CHANGED since you last connected. Verify this is expected, then run ssh-keygen -R <host> and reconnect.',
       sshErrNotInstalled:
-        'Thor is not installed on the remote host. Install it there (curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh) or set the Thor path.',
+        'Thor is not installed on the remote host. Install it there (curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh) or set the Thor path.',
       sshErrPlatform:
         'Unsupported remote platform. Thor Desktop SSH mode supports Linux, macOS, and Windows remote hosts.',
       sshErrTimeout: 'SSH connection timed out. The host may be unreachable or asleep.',
@@ -1569,13 +1569,13 @@ export const en: Translations = {
       usageLabel: label => `${label} usage`,
       freeTier: {
         signIn: 'Sign in',
-        title: "You're on the Nous free tier",
-        message: 'Sign in with a Nous account to unlock more models and tools.',
+        title: "You're on the Thor free tier",
+        message: 'Sign in with a Thor account to unlock more models and tools.',
         caption:
-          'Runs on nous/welcome with connectors included. Signing in keeps your connectors and adds the tools that need an account and every other model.',
-        name: 'Nous · free tier',
+          'Runs on thor/welcome with connectors included. Signing in keeps your connectors and adds the tools that need an account and every other model.',
+        name: 'Thor · free tier',
         footnote:
-          'The free tier has no balance and nothing to pay. Payment and usage appear when you sign in with a Nous account.',
+          'The free tier has no balance and nothing to pay. Payment and usage appear when you sign in with a Thor account.',
         plan: 'Free tier',
         model: 'Model',
         connectors: 'Connectors',
@@ -1692,8 +1692,8 @@ export const en: Translations = {
       state: {
         notice: {
           loggedOut: {
-            title: 'Connect your Nous account',
-            message: 'Sign in with your Nous account to see your balance, plan and usage here.',
+            title: 'Connect your Thor account',
+            message: 'Sign in with your Thor account to see your balance, plan and usage here.',
             action: 'Sign in'
           },
           openPortal: 'Open portal ↗',
@@ -1948,16 +1948,16 @@ export const en: Translations = {
       activeBackend: 'Active',
       activeBackendHint: 'This is your active backend',
       useBackend: 'Use this backend',
-      nousIncluded: 'Included with a Nous subscription — sign in with your Nous account to activate.',
-      nousAuthNeededTitle: 'Sign in with your Nous account',
-      nousAuthNeededMessage: provider =>
-        `${provider} is saved but will only work once you sign in with your Nous account.`,
-      nousAuthSignIn: 'Sign in',
-      nousAuthDoneTitle: 'Nous account connected',
-      nousAuthDoneMessage: 'Your subscription backends are now active.',
-      nousAuthFailed: 'Nous sign-in did not complete',
-      nousAuthFailedMessage: 'Try again.',
-      nousAuthTryAgain: 'Try again',
+      thorIncluded: 'Included with a Thor subscription — sign in with your Thor account to activate.',
+      thorAuthNeededTitle: 'Sign in with your Thor account',
+      thorAuthNeededMessage: provider =>
+        `${provider} is saved but will only work once you sign in with your Thor account.`,
+      thorAuthSignIn: 'Sign in',
+      thorAuthDoneTitle: 'Thor account connected',
+      thorAuthDoneMessage: 'Your subscription backends are now active.',
+      thorAuthFailed: 'Thor sign-in did not complete',
+      thorAuthFailedMessage: 'Try again.',
+      thorAuthTryAgain: 'Try again',
       noApiKeyRequired: 'No API key required.',
       postSetupHint: step =>
         `This backend needs a one-time install (${step}). Runs on this machine — may take a few minutes.`,
@@ -2618,8 +2618,8 @@ export const en: Translations = {
       qrAlt: (platform: string) => `QR code for the shared ${platform} bot`,
       managed: 'Managed by Team Gateway',
       managedNote: (platform: string) => `Team Gateway carries messaging on this deployment, so the gateway turns the direct ${platform} connection off at every start. To run it alongside the relay, set GATEWAY_RELAY_ALLOW_DIRECT_PLATFORMS=true in the gateway's environment (a direct connection keeps the instance from scaling to zero and can deliver messages twice).`,
-      managedIntro: "This agent's accounts are linked from Nous Portal.",
-      openPortal: 'Link accounts in Nous Portal',
+      managedIntro: "This agent's accounts are linked from Thor Portal.",
+      openPortal: 'Link accounts in Thor Portal',
       noNewAccount: (platform: string) => `The code is no longer active and no new account appeared. If your ${platform} account isn't listed, get a new code and try again.`
     },
     telegramQr: {
@@ -3447,8 +3447,8 @@ export const en: Translations = {
       '/browser': 'Manage the agent browser [connect|disconnect|status]',
       '/palette': 'Open the fuzzy command palette (also Ctrl+P)',
       '/usage': 'Show token usage and rate limits; `reset` redeems a banked Codex limit reset',
-      '/subscription': 'View your Nous plan and change it in the browser',
-      '/topup': 'Show your Nous balance and manage billing on the portal',
+      '/subscription': 'View your Thor plan and change it in the browser',
+      '/topup': 'Show your Thor balance and manage billing on the portal',
       '/platform': 'Pause, resume, or list a failing gateway platform',
       '/version': 'Show Thor Agent version',
       '/debug': 'Upload debug report (system info + logs) and get shareable links',
@@ -3946,21 +3946,21 @@ export const en: Translations = {
   onboarding: enOnboarding,
 
   freeTier: {
-    providerRowTitle: 'Nous · free tier',
-    providerRowPitch: 'Sign in with a Nous account to unlock more models and tools.',
+    providerRowTitle: 'Thor · free tier',
+    providerRowPitch: 'Sign in with a Thor account to unlock more models and tools.',
     readyTitle: 'Thor is ready.',
     readyCaption: 'Free · connectors included',
     begin: 'Begin',
-    signInInstead: 'Sign in with a Nous account instead',
+    signInInstead: 'Sign in with a Thor account instead',
     otherProviders: 'Other providers',
-    stripTitle: 'Free Nous inference and connectors are now available.',
-    stripBody: 'Open the model picker to try them, or sign in with a Nous account.',
+    stripTitle: 'Free Thor inference and connectors are now available.',
+    stripBody: 'Open the model picker to try them, or sign in with a Thor account.',
     openModelPicker: 'Open model picker',
     dismiss: 'Dismiss',
-    providerName: 'Nous',
-    statusLabel: model => `Nous · ${model}`,
+    providerName: 'Thor',
+    statusLabel: model => `Thor · ${model}`,
     signIn: 'Sign in',
-    signInHeading: 'Sign in with a Nous account to unlock more models and tools.',
+    signInHeading: 'Sign in with a Thor account to unlock more models and tools.',
     settingUp: 'Setting up free inference…',
     finishInBrowser: 'Finish in your browser',
     doNotShare: 'Do not share it.',
@@ -3980,37 +3980,37 @@ export const en: Translations = {
     tryAgain: 'Try again',
     didNotComplete: "Sign-in didn't finish",
     timedOutHeading: 'That sign-in link has expired',
-    timedOutBody: "Start again whenever you're ready. You're still on the free Nous service.",
+    timedOutBody: "Start again whenever you're ready. You're still on the free Thor service.",
     errorBody: "Sign-in didn't finish. Try again whenever you're ready.",
     busyHeading: 'Almost there',
     busyBody: wait =>
-      `Thor couldn't finish signing you in because the Nous service is busy. Try again in ${wait}. Your session is still here in the meantime.`,
+      `Thor couldn't finish signing you in because the Thor service is busy. Try again in ${wait}. Your session is still here in the meantime.`,
     unreachableBody:
-      "Thor couldn't reach the Nous service to finish signing you in. Check your internet connection and try again. Your session is still here.",
+      "Thor couldn't reach the Thor service to finish signing you in. Check your internet connection and try again. Your session is still here.",
     alreadySignedInHeading: 'Already signed in.',
-    alreadySignedInBody: 'This Thor is already signed in to a Nous account.',
+    alreadySignedInBody: 'This Thor is already signed in to a Thor account.',
     offer: {
       heading: 'Keep going with Thor',
-      body: "You're on the free allowance. If you keep using Thor, you'll start running into limits. Sign in with a free Nous account for a bigger allowance.",
+      body: "You're on the free allowance. If you keep using Thor, you'll start running into limits. Sign in with a free Thor account for a bigger allowance.",
       signIn: 'Sign in',
       notNow: 'Not now'
     },
     setupFailed: {
       gateClosed:
-        "This version of Thor can't start without a Nous account. Sign in or create one, it's free and only takes a minute.",
+        "This version of Thor can't start without a Thor account. Sign in or create one, it's free and only takes a minute.",
       paused:
         'Using Thor without signing in is paused for a moment. Thor will keep checking. Signing in is free and gets you going right now.',
       rateLimited: wait =>
         `Lots of people are getting started right now, so Thor will try again in ${wait}. Signing in is free and skips the wait.`,
       unreachable:
-        "Thor couldn't reach the Nous service. Check your internet connection, then tap Try again. Or connect another provider for now.",
-      serverError: 'The Nous service had a hiccup. Tap Try again in a moment, or connect another provider for now.',
+        "Thor couldn't reach the Thor service. Check your internet connection, then tap Try again. Or connect another provider for now.",
+      serverError: 'The Thor service had a hiccup. Tap Try again in a moment, or connect another provider for now.',
       powRequired:
-        "The Nous server asked for a proof of work, but that isn't implemented in your Agent yet. Sign in or create a free Nous account to continue.",
-      locked: "This session can't continue without signing in. Sign in or create a free Nous account to keep going.",
+        "The Thor server asked for a proof of work, but that isn't implemented in your Agent yet. Sign in or create a free Thor account to continue.",
+      locked: "This session can't continue without signing in. Sign in or create a free Thor account to keep going.",
       generic:
         "Thor couldn't set up free access without signing in. Signing in is free, or connect another provider.",
-      signInBelow: 'Signing in is free. Pick Nous below.',
+      signInBelow: 'Signing in is free. Pick Thor below.',
       tryAgain: 'Try again',
       retrying: 'Trying again…'
     }
@@ -4029,7 +4029,7 @@ export const en: Translations = {
     localDownloadsHeading: 'Local',
     noAuthenticatedProviders: 'No authenticated providers.',
     pro: 'Pro',
-    proNeedsSubscription: 'Pro models need a paid Nous subscription.',
+    proNeedsSubscription: 'Pro models need a paid Thor subscription.',
     free: 'Free',
     freeTier: 'Free tier',
     priceTitle: 'Input / Output price per million tokens',
@@ -4530,7 +4530,7 @@ export const en: Translations = {
       errorOpenThorFolderFailed: 'Could not open the Thor folder',
       errorUpdateApiKey: 'Update API key',
       errorSignInAgain: provider => `Sign in to ${provider} again`,
-      errorSignInFreeTier: 'Sign in with a Nous account',
+      errorSignInFreeTier: 'Sign in with a Thor account',
       errorOauthExpired: provider => `Your ${provider} sign-in expired or was revoked. Sign in again to keep chatting.`,
       errorOpenLogs: 'Open logs',
       errorOpenLogsFailed: 'Could not open the logs folder',

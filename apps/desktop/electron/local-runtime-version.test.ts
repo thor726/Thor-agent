@@ -50,7 +50,7 @@ describe('local client version source', (): void => {
   })
 
   // A historical source install (launcher published only to user-bin) proves the launcher's
-  // identity with its own `--version`. That probe ran synchronously before the cache check, so
+  // identity with its own `--version`. That probe ran synchrothorly before the cache check, so
   // every About/focus/profile refresh froze the Electron main thread for the launcher's runtime.
   it.skipIf(process.platform === 'win32')(
     'a historical user-bin launcher never blocks the event loop, first call or cached',

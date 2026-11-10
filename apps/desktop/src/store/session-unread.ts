@@ -729,7 +729,7 @@ if (!isSecondaryWindow() && !isBrowserWindow()) {
   $messagingSessions.listen(onListChange)
 
   // Opening a session acks it durably (the transient atom is already cleared
-  // synchronously by setSelectedStoredSessionId — this is the persisted half).
+  // synchrothorly by setSelectedStoredSessionId — this is the persisted half).
   // Unary on purpose: nanostores hands a listener (value, oldValue), and the
   // old selection would otherwise arrive as the profile hint.
   $selectedStoredSessionId.listen(id => ackStoredSessionId(id))

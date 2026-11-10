@@ -2,7 +2,7 @@
 name: microsoft-office
 description: Create, read, and edit Word, PowerPoint, and Excel files.
 version: 2.0.0
-author: Nous Research
+author: Thor Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:

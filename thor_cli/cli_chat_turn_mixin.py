@@ -771,7 +771,7 @@ class CLIChatTurnMixin:
                     width=self._scrollback_box_width(),
                 ))
 
-            # Billing CTA pins the single action (Nous → /topup, others → billing page) so it
+            # Billing CTA pins the single action (Thor → /topup, others → billing page) so it
             # stays visible instead of scrolling away inside the response prose.
             _limit = (turn.result or {}).get("usage_limit") if turn.result else None
             if isinstance(_limit, dict):
@@ -791,8 +791,8 @@ class CLIChatTurnMixin:
                 # (A window plan's refusal already reads as its own sentence with the way on; an
                 # "Out of credits" box under it would contradict it.)
                 _bb = turn.result.get("billing_block") or {}
-                if _bb.get("is_nous"):
-                    _cta_lines = [t("cli.chat.billing_cta_nous")]
+                if _bb.get("is_thor"):
+                    _cta_lines = [t("cli.chat.billing_cta_thor")]
                 else:
                     _url = _bb.get("billing_url")
                     _cta_lines = [t("cli.chat.billing_cta_provider",

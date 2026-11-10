@@ -88,8 +88,8 @@ async function stampExeIdentity(
     'version-string': {
       ProductName: 'Thor',
       FileDescription: 'Thor',
-      CompanyName: 'Nous Research',
-      LegalCopyright: 'Copyright (c) 2026 Nous Research'
+      CompanyName: 'Thor Agent',
+      LegalCopyright: 'Copyright (c) 2026 Thor Agent'
     }
   }
 

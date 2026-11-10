@@ -92,7 +92,7 @@ def check_runtime_readiness(requested=None, *, strict_profile_scope=False, resol
             or has_usable_secret(api_key_text) or bool(runtime.get('command'))):
         return fail(f'No usable credentials found for {blamed}.{missing_credentials_suffix(blamed)}', runtime.get('source'))
     from thor_cli.anon_auth import route_is_welcome_host
-    # free_tier_route is keyed on the SELECTED route (the welcome host serves only nous/welcome), not
-    # on profile state: a paid Nous key beside a free-tier identity must not read as free.
+    # free_tier_route is keyed on the SELECTED route (the welcome host serves only thor/welcome), not
+    # on profile state: a paid Thor key beside a free-tier identity must not read as free.
     return {'ok': True, 'provider': runtime.get('provider'), 'model': model, 'source': runtime.get('source'),
-            'free_tier_route': provider == 'nous' and route_is_welcome_host(runtime.get('base_url'))}
+            'free_tier_route': provider == 'thor' and route_is_welcome_host(runtime.get('base_url'))}

@@ -216,7 +216,7 @@ def test_real_run_takes_pre_snapshot(backup_env, monkeypatch):
     )
 
     # Only the consolidation pass rewrites content in place, so only it snapshots first.
-    curator.run_curator_review(synchronous=True, consolidate=True)
+    curator.run_curator_review(synchrothor=True, consolidate=True)
     rows = cb.list_backups()
     assert any(r.get("reason") == "pre-curator-run" for r in rows), (
         f"expected a pre-curator-run snapshot, got {[r.get('reason') for r in rows]}"

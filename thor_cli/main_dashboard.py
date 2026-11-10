@@ -662,7 +662,7 @@ def _maybe_setup_dashboard_auth_interactively(args) -> None:
     print()
     print("  How do you want to authenticate the dashboard?")
     print("    [1] Username & password (quickest; for a trusted LAN / VPN)")
-    print("    [2] OAuth via Nous Portal (run `thor dashboard register`)\n    [3] Cancel\n")
+    print("    [2] OAuth via Thor Portal (run `thor dashboard register`)\n    [3] Cancel\n")
 
     try:
         choice = input("  Choice [1]: ").strip() or "1"
@@ -675,9 +675,9 @@ def _maybe_setup_dashboard_auth_interactively(args) -> None:
             "  Run this on the host where the dashboard lives, then start "
             "the dashboard again:\n"
             "    thor dashboard register\n"
-            "  It provisions a Nous Portal OAuth client and writes "
+            "  It provisions a Thor Portal OAuth client and writes "
             "THOR_DASHBOARD_OAUTH_CLIENT_ID into ~/.thor/.env for you.\n"
-            "  Docs: https://thor-agent.nousresearch.com/docs/"
+            "  Docs: https://thor-agent.thor-agent.local/docs/"
             "user-guide/features/web-dashboard#authentication-gated-mode"
         )
         sys.exit(0)

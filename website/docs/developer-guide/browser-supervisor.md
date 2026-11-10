@@ -31,7 +31,7 @@ in its snapshot, and exposing a `browser_dialog` tool for explicit responses.
 auto-dismisses native dialogs within ~10ms, so `Page.handleJavaScriptDialog`
 can't keep up. The supervisor injects a bridge script via
 `Page.addScriptToEvaluateOnNewDocument` that overrides
-`window.alert`/`confirm`/`prompt` with a synchronous XHR to a magic host
+`window.alert`/`confirm`/`prompt` with a synchrothor XHR to a magic host
 (`thor-dialog-bridge.invalid`). `Fetch.enable` intercepts those XHRs before
 they touch the network — the dialog becomes a `Fetch.requestPaused` event the
 supervisor captures, and `respond_to_dialog` fulfills via
@@ -135,7 +135,7 @@ title = reply["result"]["result"]["value"]
   that arrives after `timeout` is dropped, so a timed-out attach can leave a
   session attached until the connection closes. Use `timeout=None` with a retained
   acquisition worker to own and detach late replies, rather than guessing a large timeout.
-- `before_send` is a trusted synchronous, nonblocking validator on the supervisor
+- `before_send` is a trusted synchrothor, nonblocking validator on the supervisor
   loop immediately before dispatch. Return `None`, or raise to refuse; do not call
   capture/CDP APIs from it. It does not revoke commands already dispatched.
 

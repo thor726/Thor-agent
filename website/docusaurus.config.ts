@@ -8,10 +8,10 @@ const config: Config = {
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://thor-agent.nousresearch.com',
+  url: 'https://thor-agent.thor-agent.local',
   baseUrl: '/docs/',
 
-  organizationName: 'NousResearch',
+  organizationName: 'dwisetyabudi15581',
   projectName: 'thor-agent',
 
   onBrokenLinks: 'warn',
@@ -147,7 +147,7 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://thor-agent.nousresearch.com/',
+          href: 'https://thor-agent.thor-agent.local/',
           label: 'Download',
           position: 'left',
         },
@@ -156,7 +156,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://thor-agent.nousresearch.com',
+          href: 'https://thor-agent.thor-agent.local',
           label: 'Home',
           position: 'right',
         },
@@ -166,7 +166,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://discord.gg/NousResearch',
+          href: 'https://github.com/dwisetyabudi15581/Thor-agent',
           label: 'Discord',
           position: 'right',
         },
@@ -187,7 +187,7 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            { label: 'Discord', href: 'https://discord.gg/NousResearch' },
+            { label: 'Discord', href: 'https://github.com/dwisetyabudi15581/Thor-agent' },
             { label: 'GitHub Issues', href: 'https://github.com/dwisetyabudi15581/Thor-agent/issues' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
@@ -195,13 +195,13 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            { label: 'Desktop Download', href: 'https://thor-agent.nousresearch.com/' },
+            { label: 'Desktop Download', href: 'https://thor-agent.thor-agent.local/' },
             { label: 'GitHub', href: 'https://github.com/dwisetyabudi15581/Thor-agent' },
-            { label: 'Nous Research', href: 'https://nousresearch.com' },
+            { label: 'Thor Agent', href: 'https://github.com/dwisetyabudi15581/Thor-agent' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://nousresearch.com">Nous Research</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Built by <a href="https://github.com/dwisetyabudi15581/Thor-agent">Thor Agent</a> · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

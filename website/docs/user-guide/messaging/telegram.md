@@ -16,7 +16,7 @@ The **Messaging → Telegram** page in the [dashboard](../features/web-dashboard
 
 On a Thor Cloud instance with Team Gateway on, Telegram (and Discord and Slack) reach your agent through a shared Thor bot. A bot of your own does not run there: the gateway switches direct connections off at every start so the instance can sleep when idle. The Telegram card shows **Via Team Gateway** instead of **Create with QR**.
 
-When Nous Portal manages who can reach the agent (agents created in the Portal), link your account from the Portal: the card lists the linked accounts and its **Link accounts in Nous Portal** button opens the agent there. Use **Message platforms** on the agent to get the link code.
+When Thor Portal manages who can reach the agent (agents created in the Portal), link your account from the Portal: the card lists the linked accounts and its **Link accounts in Thor Portal** button opens the agent there. Use **Message platforms** on the agent to get the link code.
 
 Otherwise the card links the account itself:
 

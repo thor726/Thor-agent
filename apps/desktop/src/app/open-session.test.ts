@@ -318,7 +318,7 @@ describe('openSession marks a chat the person opened', () => {
     canOpenSessionWindow.mockReturnValue(true)
   })
 
-  it('bumps the user-open revision synchronously for an in-window open', () => {
+  it('bumps the user-open revision synchrothorly for an in-window open', () => {
     const before = currentUserSessionOpen()
     openSession('s1', navigate)
     expect(currentUserSessionOpen()).toBe(before + 1)

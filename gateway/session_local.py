@@ -239,7 +239,7 @@ def project_plugins_warning(policy):
 
 def create_local_session(authority, actor, params, *, trusted_policy=None, trusted_secrets=None, skills_prompt=None,
                          client_local=False):
-    """Stage, commit and publish a local session inline (synchronous callers)."""
+    """Stage, commit and publish a local session inline (synchrothor callers)."""
     from gateway.session_local_recovery import restore_local_session
     from thor_state_local import commit_local_session
     staged = stage_local_session(authority, actor, params, trusted_policy=trusted_policy,
@@ -397,7 +397,7 @@ def publish_local_policy(authority, session_id, *, evict=True):
 
 def _lazy_model(authority, policy):
     """The model a not-yet-built session will run: with no provider pinned, the free tier's agent
-    build pins ``nous/welcome`` (``pin_model_for_route``), so the configured default is not it."""
+    build pins ``thor/welcome`` (``pin_model_for_route``), so the configured default is not it."""
     import json
     model = policy.current_model(authority) if policy else None
     if (policy is None or json.loads(policy.request_json).get('model')

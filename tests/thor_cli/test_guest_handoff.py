@@ -1,4 +1,4 @@
-"""The guest handoff step: a Nous account replacing the free tier moves the free tier's apps into it.
+"""The guest handoff step: a Thor account replacing the free tier moves the free tier's apps into it.
 
 Driven end to end through Thor' real writers, stores and HTTP client against a fake account
 service (``anon_portal.FakePortal`` plus the claim and token-refresh routes).
@@ -23,7 +23,7 @@ def _account(sub: str = DESTINATION, refresh: str = "rt_1") -> dict:
     expires = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
     return {
         "auth_method": "oauth_device_code", "portal_base_url": PORTAL, "client_id": "thor-cli",
-        "inference_base_url": "https://inference-api.nousresearch.com/v1", "scope": "inference:invoke",
+        "inference_base_url": "https://inference-api.thor-agent.local/v1", "scope": "inference:invoke",
         "token_type": "Bearer", "access_token": make_jwt(sub=sub, client_id="thor-cli", account_tier="standard"),
         "refresh_token": refresh, "obtained_at": datetime.now(UTC).isoformat(), "expires_at": expires,
         "expires_in": 3600}
@@ -66,8 +66,8 @@ class ClaimPortal(FakePortal):
 
 
 def holds_auth_locks() -> bool:
-    from thor_cli import auth, auth_nous
-    if getattr(auth_nous._nous_shared_lock_holder, "depth", 0):
+    from thor_cli import auth, auth_thor
+    if getattr(auth_thor._thor_shared_lock_holder, "depth", 0):
         return True
     with auth._auth_target_lock_holders_guard:
         holders = list(auth._auth_target_lock_holders.values())
@@ -103,8 +103,8 @@ def _only_record() -> dict:
 # --- Writer coverage: every way an account replaces the guest records the move -------------------
 
 def _save(account):
-    from thor_cli.auth import persist_nous_credentials
-    persist_nous_credentials(account)
+    from thor_cli.auth import persist_thor_credentials
+    persist_thor_credentials(account)
 
 
 def _persist(account):
@@ -116,41 +116,41 @@ def _persist(account):
 
 def _step_up(account, monkeypatch):
     from thor_cli import auth
-    monkeypatch.setattr(auth, "_nous_device_code_login", lambda **_kw: account)
-    auth.step_up_nous_billing_scope(open_browser=False)
+    monkeypatch.setattr(auth, "_thor_device_code_login", lambda **_kw: account)
+    auth.step_up_thor_billing_scope(open_browser=False)
 
 
-def _login_nous(account, monkeypatch):
-    from thor_cli import auth, auth_nous
-    monkeypatch.setattr(auth, "_nous_device_code_login", lambda **_kw: account)
-    monkeypatch.setattr(auth_nous, "_pick_nous_model_after_login", lambda *_a: None)
-    auth_nous._login_nous(SimpleNamespace(), auth.PROVIDER_REGISTRY["nous"])
+def _login_thor(account, monkeypatch):
+    from thor_cli import auth, auth_thor
+    monkeypatch.setattr(auth, "_thor_device_code_login", lambda **_kw: account)
+    monkeypatch.setattr(auth_thor, "_pick_thor_model_after_login", lambda *_a: None)
+    auth_thor._login_thor(SimpleNamespace(), auth.PROVIDER_REGISTRY["thor"])
 
 
 def _subscription_login(account, monkeypatch):
-    from thor_cli import auth, nous_subscription
-    monkeypatch.setattr(auth, "_nous_device_code_login", lambda **_kw: account)
-    monkeypatch.setattr(nous_subscription, "_confirm", lambda _p: True)
-    assert nous_subscription._run_nous_portal_login_only(capability="Web search")
+    from thor_cli import auth, thor_subscription
+    monkeypatch.setattr(auth, "_thor_device_code_login", lambda **_kw: account)
+    monkeypatch.setattr(thor_subscription, "_confirm", lambda _p: True)
+    assert thor_subscription._run_thor_portal_login_only(capability="Web search")
 
 
 def _sibling_adoption(account, monkeypatch, tmp_path):
     """Another profile signed in (account in the shared store); this one adopts it on next use."""
     import os
-    from thor_cli import anon_auth, auth_nous
+    from thor_cli import anon_auth, auth_thor
     mine, sibling = os.environ["THOR_HOME"], tmp_path / "sibling-profile"
     sibling.mkdir()
     monkeypatch.setenv("THOR_HOME", str(sibling))
-    auth_nous._write_shared_nous_state(account, renewal=False)
+    auth_thor._write_shared_thor_state(account, renewal=False)
     monkeypatch.setenv("THOR_HOME", mine)
     anon_auth.ensure_portal_identity(explicit=True)
 
 
 WRITERS = {
-    "persist_nous_credentials": lambda a, mp, tp: _persist(a),
-    "step_up_nous_billing_scope": lambda a, mp, tp: _step_up(a, mp),
-    "_login_nous": lambda a, mp, tp: _login_nous(a, mp),
-    "nous_subscription_login": lambda a, mp, tp: _subscription_login(a, mp),
+    "persist_thor_credentials": lambda a, mp, tp: _persist(a),
+    "step_up_thor_billing_scope": lambda a, mp, tp: _step_up(a, mp),
+    "_login_thor": lambda a, mp, tp: _login_thor(a, mp),
+    "thor_subscription_login": lambda a, mp, tp: _subscription_login(a, mp),
     "shared_store_adoption": _sibling_adoption,
 }
 
@@ -390,14 +390,14 @@ def test_gone_on_a_first_attempt_reads_as_neutral(portal):
 
 
 def test_a_long_lived_process_with_a_guest_still_runs_the_handoff_worker(portal, monkeypatch):
-    from thor_cli import guest_handoff, nous_auth_keepalive
-    monkeypatch.setattr(nous_auth_keepalive, "get_provider_auth_state",
+    from thor_cli import guest_handoff, thor_auth_keepalive
+    monkeypatch.setattr(thor_auth_keepalive, "get_provider_auth_state",
                         lambda _p: {"auth_method": "anonymous", "anon_token": "anon_x"})
     try:
-        nous_auth_keepalive.start_nous_auth_keepalive()
+        thor_auth_keepalive.start_thor_auth_keepalive()
         assert guest_handoff._worker_thread is not None and guest_handoff._worker_thread.is_alive()
     finally:
-        nous_auth_keepalive.stop_nous_auth_keepalive()
+        thor_auth_keepalive.stop_thor_auth_keepalive()
     assert guest_handoff._worker_thread is None
 
 
@@ -415,9 +415,9 @@ def test_auth_status_shows_what_moved(portal, capsys):
     _mint_guest()
     _persist(_account())
     capsys.readouterr()
-    auth_commands.auth_status_command(SimpleNamespace(provider="nous"))
+    auth_commands.auth_status_command(SimpleNamespace(provider="thor"))
     out = capsys.readouterr().out
-    assert "nous: logged in" in out and "Your apps moved to sid@example.com: Gmail." in out
+    assert "thor: logged in" in out and "Your apps moved to sid@example.com: Gmail." in out
 
 
 @pytest.mark.parametrize("kind", ["moved", "swapped"])

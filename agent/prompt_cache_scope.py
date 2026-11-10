@@ -50,7 +50,7 @@ def conversation_id(agent: Any) -> str:
     if isinstance(memo, tuple) and len(memo) == 2 and memo[0] == sid:
         return memo[1]
     # A plugin hook can ask first from a tool callback Relay drives on its loop, where WorkerRPC
-    # refuses a synchronous read for the rest of the turn (#139029): both walks run off the loop.
+    # refuses a synchrothor read for the rest of the turn (#139029): both walks run off the loop.
     from agent.runtime_session_store import call_off_event_loop
     db = getattr(agent, "_session_db", None)
     root = call_off_event_loop(_lineage_root, sid, db) if sid else None

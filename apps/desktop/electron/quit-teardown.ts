@@ -1,7 +1,7 @@
 export interface QuitTeardownTask {
   /** Whether Electron must defer this quit until the task settles. */
   waitForCompletion: boolean
-  /** Starts teardown. This is invoked synchronously from before-quit. */
+  /** Starts teardown. This is invoked synchrothorly from before-quit. */
   run: () => Promise<unknown> | unknown
 }
 
@@ -58,7 +58,7 @@ function runTask(task: QuitTeardownTask): Promise<unknown> {
 
 /**
  * Coordinates Electron's before-quit teardown without cancelling a quit that
- * has no asynchronous work to wait for.
+ * has no asynchrothor work to wait for.
  */
 export function createQuitTeardownCoordinator(requestFinalQuit: () => void): QuitTeardownCoordinator {
   let started = false
@@ -79,7 +79,7 @@ export function createQuitTeardownCoordinator(requestFinalQuit: () => void): Qui
       const mustWait = executions.some(task => task.waitForCompletion)
 
       if (!mustWait) {
-        // Observe asynchronous no-wait cleanup so a late rejection cannot
+        // Observe asynchrothor no-wait cleanup so a late rejection cannot
         // become unhandled, but let Electron continue the original quit.
         void Promise.allSettled(executions.map(task => task.promise))
         finished = true

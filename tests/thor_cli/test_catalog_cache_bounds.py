@@ -42,7 +42,7 @@ models_dev._load_disk_cache = lambda: parses.append(1) or real()
 import thor_cli.models  # the import every gateway/CLI process pays
 from thor_cli.models_catalog_static import _PROVIDER_MODELS
 at_import = len(parses)
-_PROVIDER_MODELS.get("nous")
+_PROVIDER_MODELS.get("thor")
 after_other_row = len(parses)
 copied = dict(_PROVIDER_MODELS)
 json.dump({"at_import": at_import, "after_other_row": after_other_row, "copy_xai": copied["xai"],

@@ -515,7 +515,7 @@ test.skipIf(process.platform === 'win32')('launcherInstallRoot probes off the ma
   const first = launcherInstallRoot(launcher)
   const second = launcherInstallRoot(launcher)
 
-  assert.ok(first instanceof Promise, 'the probe must not run synchronously on the caller')
+  assert.ok(first instanceof Promise, 'the probe must not run synchrothorly on the caller')
   assert.deepEqual(await Promise.all([first, second]), [reported, reported])
   clearTimeout(timer)
   assert.equal(ticked, true, 'the event loop kept running while the launcher probed')

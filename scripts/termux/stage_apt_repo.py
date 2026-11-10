@@ -269,7 +269,7 @@ def stage(
                 "Package": fields["Package"],
                 "Version": fields["Version"],
                 "Architecture": arch,
-                "Maintainer": fields.get("Maintainer", "Thor Agent <noreply@nousresearch.com>"),
+                "Maintainer": fields.get("Maintainer", "Thor Agent <noreply@thor-agent.local>"),
                 "Installed-Size": fields.get("Installed-Size", "0"),
                 "Description": fields.get("Description", "Thor Agent"),
                 "Filename": filename,
@@ -519,7 +519,7 @@ def main(argv: list | None = None) -> int:
     ap.add_argument("--pool", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
     # thor-nightly is the suite actually published today
-    # (https://thor-assets.nousresearch.com/releases/termux/nightly/,
+    # (https://thor-assets.thor-agent.local/releases/termux/nightly/,
     # verified 2026-09-06); thor-stable/thor-canary are what CI stages
     # for the stable/canary channels.
     ap.add_argument(

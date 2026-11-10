@@ -20,7 +20,7 @@ Forked from Anthropic's claude-plugins-official repository
   See the License for the specific language governing permissions and
   limitations under the License.
 
-NousResearch modifications: pattern data unchanged from upstream; the upstream RuleId
+dwisetyabudi15581 modifications: pattern data unchanged from upstream; the upstream RuleId
 telemetry table (Claude Code PostToolUse metrics) is dropped — Thor has no consumer.
 Thor-side wiring lives in __init__.py.
 """

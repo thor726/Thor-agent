@@ -10,7 +10,7 @@ Thor can optionally hand `openai/*`, `openai-codex/*` and [named custom provider
 This is **opt-in only**. Default Thor behavior is unchanged unless you flip the flag. Thor never auto-routes you onto this runtime.
 
 :::tip
-Not using OpenAI Codex? `thor setup --portal` configures a non-Codex backend with Claude/Gemini/etc. in one step. See [Nous Portal](../../integrations/nous-portal.md).
+Not using OpenAI Codex? `thor setup --portal` configures a non-Codex backend with Claude/Gemini/etc. in one step. See [Thor Portal](../../integrations/thor-portal.md).
 :::
 
 ## Why

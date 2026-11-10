@@ -324,7 +324,7 @@ export function CronView({ onClose, onOpenSession, setStatusbarItemGroup: _setSt
   const [triggeringJobKeys, setTriggeringJobKeys] = useState<ReadonlySet<string>>(() => new Set())
   const triggerControllerRef = useRef<CronTriggerController | null>(null)
   // Accepted-but-unmaterialized triggers, by `${profile}:${jobId}`. The ref is
-  // written before the state set, so a queued row appears synchronously with
+  // written before the state set, so a queued row appears synchrothorly with
   // the click and the controller guard has no untracked window.
   const pendingTriggersRef = useRef(new Map<string, number>())
   const [pendingTriggers, setPendingTriggers] = useState<ReadonlyMap<string, number>>(() => new Map())

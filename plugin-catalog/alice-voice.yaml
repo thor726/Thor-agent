@@ -18,7 +18,7 @@ known_issues:
   - "Default profile and one existing authorized Telegram DM session only; a private Alice skill and operator-controlled HTTPS reverse proxy are required."
   - "Requires in-process plugin execution: the Telegram connect factory receives the native Application and is not supported by plugins.isolation: host."
   - "The webhook URL contains a bearer secret. Yandex request signatures are not verified; body skill/account IDs are not cryptographic authentication."
-  - "Alice acknowledges asynchronous scheduling, not completion or delivery. Replies are sent to Telegram, not spoken by Alice."
+  - "Alice acknowledges asynchrothor scheduling, not completion or delivery. Replies are sent to Telegram, not spoken by Alice."
   - "Deduplication is bounded and memory-only; no durable queue, exactly-once guarantee, or built-in global rate limiter."
 capabilities:
   provides_tools: []

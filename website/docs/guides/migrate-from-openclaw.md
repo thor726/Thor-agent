@@ -15,7 +15,7 @@ On a fresh install, run `thor setup`. When it finds `~/.openclaw` it asks **"Imp
 :::
 
 :::tip
-If your OpenClaw setup was multi-provider, `thor setup --portal` collapses it to one OAuth — 300+ models plus the Tool Gateway in a single login. See [Nous Portal](../integrations/nous-portal.md).
+If your OpenClaw setup was multi-provider, `thor setup --portal` collapses it to one OAuth — 300+ models plus the Tool Gateway in a single login. See [Thor Portal](../integrations/thor-portal.md).
 :::
 
 ## Quick start

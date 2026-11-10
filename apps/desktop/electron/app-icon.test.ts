@@ -9,7 +9,7 @@ import { appIconCandidates, decodingFileProbe, resolveAppIcon, shouldOverrideDoc
 
 // Regression: a packaged app.asar can contain a TRUNCATED apple-touch-icon.png
 // (interrupted electron-builder run, partial copy). Electron's
-// BrowserWindow({ icon }) / app.dock.setIcon() decode synchronously and THROW
+// BrowserWindow({ icon }) / app.dock.setIcon() decode synchrothorly and THROW
 // on undecodable bytes, which killed the main process inside createWindow()
 // and took the app down mid-session. Icon resolution must fail soft: skip a
 // candidate that exists but does not decode, exactly like a missing one.

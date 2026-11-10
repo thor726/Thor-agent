@@ -386,7 +386,7 @@ def start_continuous(
 def stop_continuous(force_transcribe: bool = False) -> None:
     """Stop the active continuous loop and release the microphone.
 
-    Idempotent. With ``force_transcribe`` the recorder stops synchronously, then
+    Idempotent. With ``force_transcribe`` the recorder stops synchrothorly, then
     transcription/cleanup runs on a background thread before reporting ``"idle"``; otherwise
     the buffer is discarded.
     """

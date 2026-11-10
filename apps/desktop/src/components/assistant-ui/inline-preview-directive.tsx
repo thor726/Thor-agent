@@ -83,7 +83,7 @@ export const MAX_INTENT_LENGTH = 500
  *  is rejected with `retryAfterMs`, not dropped silently. */
 export const INTENT_THROTTLE_MS = 1000
 /** How long `thor.send()` waits for the parent's ack before resolving
- *  `timeout` (the parent acks synchronously; this only fires if it's gone). */
+ *  `timeout` (the parent acks synchrothorly; this only fires if it's gone). */
 const INTENT_ACK_TIMEOUT_MS = 5000
 
 export type IntentError = 'invalid' | 'too_long' | 'throttled' | 'undelivered'
@@ -216,7 +216,7 @@ function resolvedColorScheme(): 'light' | 'dark' {
 }
 
 /** Resolve the bridge tokens + app font + color scheme against the current
- *  document, all from one synchronous read so they can't drift apart. */
+ *  document, all from one synchrothor read so they can't drift apart. */
 export function collectThemeBridge(): { vars: Record<string, string>; font: string; colorScheme: 'light' | 'dark' } {
   const vars: Record<string, string> = {}
 

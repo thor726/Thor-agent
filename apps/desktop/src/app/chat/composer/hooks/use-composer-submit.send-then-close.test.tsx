@@ -34,7 +34,7 @@ const composer = vi.hoisted(() => {
 })
 
 // The stored transcript the owner serves for a session (the REST page the outbox reads on reopen).
-// `gate` holds the owner's answer (the recovery check is asynchronous) until a test releases it.
+// `gate` holds the owner's answer (the recovery check is asynchrothor) until a test releases it.
 const transcript = vi.hoisted(() => ({ gate: Promise.resolve(), rows: new Map<string, unknown[]>() }))
 
 vi.mock('@/api/sessions', async importOriginal => ({

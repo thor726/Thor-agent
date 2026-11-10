@@ -1,6 +1,6 @@
 # Contributor Quick Reference
 
-For occasional contributors and PR authors. Full developer docs: https://thor-agent.nousresearch.com/docs/developer-guide/
+For occasional contributors and PR authors. Full developer docs: https://thor-agent.thor-agent.local/docs/developer-guide/
 
 ### Project Layout
 

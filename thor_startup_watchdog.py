@@ -494,7 +494,7 @@ def kick_startup_watchdog(extra_s: float = 0.0) -> None:
 def report_startup_progress(expected_s: float, phase: str = "") -> None:
     """Declare a phase-owned progress lease on the armed startup watchdog.
 
-    Call from startup phases about to do legitimately long synchronous work — most
+    Call from startup phases about to do legitimately long synchrothor work — most
     importantly ``state.db`` schema migrations and corruption repair/backup inside
     ``SessionDB.__init__`` — with an honest worst case, renewing for multi-step phases.
     Per-call duration is clamped to ``_MAX_LEASE_S``. No-op when not armed; never

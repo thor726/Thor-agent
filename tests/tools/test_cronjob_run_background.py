@@ -1,6 +1,6 @@
 """Tests for cronjob action='run' background dispatch.
 
-A manual `cronjob(action='run')` used to execute the job synchronously on the
+A manual `cronjob(action='run')` used to execute the job synchrothorly on the
 calling agent's tool thread — a full agent run (minutes to hours) inside ONE
 tool call, uninterruptible and serial. It now dispatches through the async
 delegation registry (same rail as delegate_task background mode): the tool

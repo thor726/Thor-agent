@@ -44,7 +44,7 @@ Thor 拥有一个共享的 provider 运行时解析器，用于以下场景：
 
 - AI Gateway（Vercel）
 - OpenRouter
-- Nous Portal
+- Thor Portal
 - OpenAI Codex
 - Anthropic（原生）
 - Google / Gemini（`gemini`）

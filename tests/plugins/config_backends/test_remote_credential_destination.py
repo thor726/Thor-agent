@@ -70,7 +70,7 @@ def listeners():
 
 
 @pytest.fixture
-def nous_bearer(monkeypatch, tmp_path):
+def thor_bearer(monkeypatch, tmp_path):
     """Cloud credential path with a known bearer; no IdP configured."""
     for k in ("GATEWAY_RELAY_IDP_TOKEN_URL", "GATEWAY_RELAY_IDP_CLIENT_ID", "GATEWAY_RELAY_IDP_CLIENT_SECRET"):
         monkeypatch.delenv(k, raising=False)
@@ -114,29 +114,29 @@ def captured(monkeypatch):
 
 @pytest.mark.parametrize("url", [
     "http://foreign.example:8443/plane",          # ambient non-loopback http
-    "http://config-config.nousresearch.com",       # HTTPS -> HTTP downgrade of the real default
+    "http://config-config.thor-agent.local",       # HTTPS -> HTTP downgrade of the real default
     "ftp://plane.example",
     "https://user:pw@plane.example",               # userinfo: ambiguous destination
     "https://plane.example/?next=https://evil.example",
     "https://",
 ])
-def test_bearer_refused_before_send_for_forbidden_plane_url(monkeypatch, tmp_path, nous_bearer, captured, url):
+def test_bearer_refused_before_send_for_forbidden_plane_url(monkeypatch, tmp_path, thor_bearer, captured, url):
     monkeypatch.setenv(client.URL_ENV, url)
     with pytest.raises(destination.CredentialDestinationError) as exc:
         client.request("GET", tmp_path, "default")
     assert exc.value.retryable is False
     assert captured == []          # nothing left the process
-    assert nous_bearer == []       # the bearer was never even resolved
+    assert thor_bearer == []       # the bearer was never even resolved
 
 
 @pytest.mark.parametrize("url, expect", [
-    ("", "https://config-config.nousresearch.com/v1/config/self?profile=default"),   # D19 default
+    ("", "https://config-config.thor-agent.local/v1/config/self?profile=default"),   # D19 default
     ("https://config.corp.internal:9443/plane/", "https://config.corp.internal:9443/plane/v1/config/self?profile=default"),
     ("http://localhost:8080", "http://localhost:8080/v1/config/self?profile=default"),
     ("http://127.0.0.1:9", "http://127.0.0.1:9/v1/config/self?profile=default"),
     ("http://[::1]:9", "http://[::1]:9/v1/config/self?profile=default"),
 ])
-def test_bearer_sent_to_allowed_plane_origin(monkeypatch, tmp_path, nous_bearer, captured, url, expect):
+def test_bearer_sent_to_allowed_plane_origin(monkeypatch, tmp_path, thor_bearer, captured, url, expect):
     monkeypatch.setenv(client.URL_ENV, url)
     resp = client.request("GET", tmp_path, "default")
     assert resp.status == 200
@@ -145,7 +145,7 @@ def test_bearer_sent_to_allowed_plane_origin(monkeypatch, tmp_path, nous_bearer,
 
 
 @pytest.mark.parametrize("code", [301, 302, 303, 307, 308])
-def test_plane_redirect_is_not_followed_with_the_bearer(monkeypatch, tmp_path, nous_bearer, listeners, code):
+def test_plane_redirect_is_not_followed_with_the_bearer(monkeypatch, tmp_path, thor_bearer, listeners, code):
     """A real cross-origin redirect: the plane answers 3xx to another origin; the target never sees
     a request, let alone the bearer, and the refusal is not retried."""
     target = listeners()

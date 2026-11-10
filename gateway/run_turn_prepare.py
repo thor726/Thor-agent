@@ -243,7 +243,7 @@ class GatewayTurnPrepareMixin:
                         override_runtime["credential_pool"] = _credential_pool_for_provider(override.get("provider"))
                     return _recover_or_remember_model(self, skey, override_model), override_runtime
                 # Layering the override on the default runtime sent its model to the default provider's
-                # endpoint (openai-codex on the Nous URL). Run this turn on the whole default route and say
+                # endpoint (openai-codex on the Thor URL). Run this turn on the whole default route and say
                 # so; the persisted override is kept, so the next turn retries it.
                 logger.warning("Session /model override provider %s unavailable: %s", override["provider"], exc,
                                exc_info=True)

@@ -892,7 +892,7 @@ _background_discovery_lock = threading.Lock()
 
 def start_background_plugin_discovery() -> None:
     """Run discovery in a daemon thread to overlap the rest of CLI startup (~150ms). Every
-    synchronous consumer joins it via :func:`discover_plugins`, so no one sees a half-loaded
+    synchrothor consumer joins it via :func:`discover_plugins`, so no one sees a half-loaded
     registry. No-op when already done or in flight."""
     from agent.safe_worker_policy import safe_worker_enabled
 

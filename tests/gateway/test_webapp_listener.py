@@ -255,7 +255,7 @@ LAN = "192.168.1.20"
 
 def _lan_webapp(monkeypatch, tmp_path, *, registered=None, address=LAN, public_url=""):
     """A gateway serving the Webapp on every interface (``webapp.host: 0.0.0.0``) behind the sign-in
-    gate, this machine's LAN address being *address*, after Web Access Start registered Nous sign-in
+    gate, this machine's LAN address being *address*, after Web Access Start registered Thor sign-in
     for the callback *registered* (None: never)."""
     from thor_cli import webapp_access
 
@@ -275,7 +275,7 @@ def _lan_webapp(monkeypatch, tmp_path, *, registered=None, address=LAN, public_u
 
 
 def test_on_the_lan_the_launcher_opens_the_address_web_access_registered_for_sign_in(monkeypatch, tmp_path):
-    """Nous sign-in returns to the callback Web Access Start registered with the Portal, the LAN
+    """Thor sign-in returns to the callback Web Access Start registered with the Portal, the LAN
     address's. Opened at the loopback address, sign-in would send a callback the Portal never saw,
     so the launcher opens the registered address."""
     runner = _lan_webapp(monkeypatch, tmp_path, registered=f"http://{LAN}:9555/auth/callback")

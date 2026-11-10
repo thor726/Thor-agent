@@ -227,7 +227,7 @@ class TestVaultEgressRedaction:
 class TestLegacyCloudMigration:
     """Pre-CLI direct-API Browser Use cloud configs (cloud_provider:
     "browser-use" + BROWSER_USE_API_KEY) run on the CLI's native Browser Use
-    cloud (BU_AUTOSPAWN); Nous-gateway users stay on the provider path."""
+    cloud (BU_AUTOSPAWN); Thor-gateway users stay on the provider path."""
 
     _LEGACY = {"browser": {"cloud_provider": "browser-use"}}
 
@@ -458,7 +458,7 @@ class TestBackendCdpResolution:
         assert _fake_managed_chromium == ["t1"]
 
     def test_picker_managed_selection_resolves_gateway_provider(self, monkeypatch):
-        """``cloud_provider: nous`` (the `thor tools` managed row) must resolve through the
+        """``cloud_provider: thor`` (the `thor tools` managed row) must resolve through the
         provider: the picker never writes the legacy ``use_gateway`` flag, and the direct-API
         branch leaves browser_exec with no CDP endpoint at all (#108310)."""
         class _BUProvider:
@@ -470,14 +470,14 @@ class TestBackendCdpResolution:
             bs, "get_session_info",
             lambda task_id: {"cdp_url": "wss://gateway.example/cdp/managed"},
         )
-        monkeypatch.setattr(bu_cli, "_read_browser_cfg", lambda: {"cloud_provider": "nous"})
+        monkeypatch.setattr(bu_cli, "_read_browser_cfg", lambda: {"cloud_provider": "thor"})
         env = {}
         assert bu_cli._resolve_backend_cdp(env, "t1") is None
         assert env["BU_CDP_WS"] == "wss://gateway.example/cdp/managed"
 
     def test_never_configured_autodetect_managed_provider_resolves_through_provider(self, monkeypatch):
         """A never-configured install (no ``browser.cloud_provider``, no BROWSER_USE_API_KEY) can
-        still get a ``browser-use`` provider back from autodetect — via the managed Nous gateway
+        still get a ``browser-use`` provider back from autodetect — via the managed Thor gateway
         token, which needs no API key. That provider DOES have a session/CDP path, so it must
         resolve through the provider instead of the direct-API shortcut: the shortcut leaves
         BU_CDP_* unset and the harness falls back to hunting the user's profile dirs

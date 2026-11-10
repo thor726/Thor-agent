@@ -185,7 +185,7 @@ MODEL_STRATEGIES = {
             ),
         },
     },
-    # Nous/Thor models — already uncensored, just needs clean prompt
+    # Thor/Thor models — already uncensored, just needs clean prompt
     "thor": {
         "order": ["prefill_only"],
         "system_templates": {},
@@ -312,7 +312,7 @@ def _detect_model_family(model: str) -> str:
         return "gemini"
     if "grok" in model_lower or "x-ai" in model_lower:
         return "grok"
-    if "thor" in model_lower or "nous" in model_lower:
+    if "thor" in model_lower or "thor" in model_lower:
         return "thor"
     if "deepseek" in model_lower:
         return "deepseek"

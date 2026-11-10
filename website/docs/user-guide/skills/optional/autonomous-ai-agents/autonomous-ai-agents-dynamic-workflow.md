@@ -80,7 +80,7 @@ cannot read `out_*.csv` on the line after the call. Finish whatever does not
 depend on the children, give a one-line status, and END YOUR TURN; act on each
 result message as it lands. An ordinary follow-up user message does not cancel
 children; `/stop`, `/new` and process exit do. Only a delegation issued by an
-orchestrator subagent (depth > 0) is synchronous.
+orchestrator subagent (depth > 0) is synchrothor.
 
 ## Quick Reference
 

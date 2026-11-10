@@ -32,7 +32,7 @@ All of this is available to Thor itself through the `cronjob_manage` tool, so yo
 
 Whichever provider a job resolves to, its provider-specific request settings (e.g. `request_overrides` such as `extra_body`/`extra_headers` for custom providers) carry into the scheduled run just like an interactive session.
 
-`thor setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Nous Portal](../../integrations/nous-portal.md).
+`thor setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Thor Portal](../../integrations/thor-portal.md).
 :::
 
 :::tip
@@ -53,7 +53,7 @@ unknown and is not retried automatically.
 
 An interrupted execution or a prepared fire that cannot be found stays paused for operator review.
 Recovery never creates another admission for it. Paused jobs are not automatically resumed, even
-when their completed result is recovered. `thor cron run` exits nonzero for a known synchronous
+when their completed result is recovered. `thor cron run` exits nonzero for a known synchrothor
 execution failure; background dispatch is not a terminal success/failure verdict.
 
 ## Creating scheduled tasks
@@ -1286,7 +1286,7 @@ cronjob(action="remove", job_id="...")
 
 For `update`, pass `skills=[]` to remove all attached skills.
 
-### Manual runs are asynchronous
+### Manual runs are asynchrothor
 
 `cronjob(action="run")` fires the job immediately **in the background** (like
 `delegate_task`): the tool call returns at once with a handle, and the job's
@@ -1308,7 +1308,7 @@ definition, and it passes the same prompt-injection scan as stored prompts.
 
 Runtimes that can't receive detached results (one-shot `thor -z`, `thor
 cron run` from the CLI, cron child sessions, Kanban workers) fall back to
-synchronous execution automatically.
+synchrothor execution automatically.
 
 ## Toolsets available to cron jobs
 

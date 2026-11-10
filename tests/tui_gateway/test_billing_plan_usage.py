@@ -10,7 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 import thor_cli.model_picker_usage as mpu
-import thor_cli.nous_account as na
+import thor_cli.thor_account as na
 from tests.usage_window_fixtures import usage_window
 from tui_gateway import billing_view as srv
 
@@ -27,12 +27,12 @@ def lookups(monkeypatch):
         return mpu.picker_usage_from_account({"logged_in": True, "subscription": {"plan": "Window Plan"},
                                               "usage_window": _WINDOW})
 
-    monkeypatch.setattr(mpu, "nous_picker_usage", _fake)
+    monkeypatch.setattr(mpu, "thor_picker_usage", _fake)
     return calls
 
 
 def _snapshot(monkeypatch, info):
-    monkeypatch.setattr(na, "cached_nous_portal_account_info", lambda *, any_age=False: info)
+    monkeypatch.setattr(na, "cached_thor_portal_account_info", lambda *, any_age=False: info)
 
 
 @pytest.mark.parametrize("info", [

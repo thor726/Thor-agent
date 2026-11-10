@@ -1,4 +1,4 @@
-"""Salt R11-B1: synchronous child failure echo above the CLI spinner is an automatic diagnostic presentation
+"""Salt R11-B1: synchrothor child failure echo above the CLI spinner is an automatic diagnostic presentation
 and honors display.suppress_warning_notifications under the parent's turn snapshot; the child result and the
 relayed subagent.complete event are never gated."""
 import json

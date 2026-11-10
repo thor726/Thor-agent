@@ -1,8 +1,8 @@
 """Remote Webapp access (``thor_cli.webapp_access``, ``/api/webapp-access/*``).
 
 Contracts: Web Access writes only the ``webapp:`` block (the own-URL mode's URL in
-``webapp.public_url``), LAN access registers the LAN callback on a Nous Portal client of Web Access's
-own (never the dashboard's, never in ``.env``), and nothing is written or restarted without a Nous
+``webapp.public_url``), LAN access registers the LAN callback on a Thor Portal client of Web Access's
+own (never the dashboard's, never in ``.env``), and nothing is written or restarted without a Thor
 account to sign in with.
 """
 
@@ -39,13 +39,13 @@ def restarts(monkeypatch):
 
 
 @pytest.fixture()
-def nous(monkeypatch):
-    """A signed-in Nous account; portal registration is captured (no network)."""
+def thor(monkeypatch):
+    """A signed-in Thor account; portal registration is captured (no network)."""
     from thor_cli import webapp_access
 
     callbacks: list[str] = []
-    monkeypatch.setattr(webapp_access, "nous_signed_in", lambda: True)
-    monkeypatch.setattr(webapp_access, "_register_nous_sign_in", callbacks.append)
+    monkeypatch.setattr(webapp_access, "thor_signed_in", lambda: True)
+    monkeypatch.setattr(webapp_access, "_register_thor_sign_in", callbacks.append)
     monkeypatch.setattr(webapp_access, "lan_address", lambda: "192.168.1.50")
     return callbacks
 
@@ -79,7 +79,7 @@ def _dashboard_setup() -> tuple[object, object]:
     return read_raw_config().get("dashboard", {}).get("public_url"), load_env().get("THOR_DASHBOARD_PUBLIC_URL")
 
 
-def test_web_access_keeps_its_url_in_the_webapp_block_and_leaves_the_dashboard_alone(client, restarts, nous):
+def test_web_access_keeps_its_url_in_the_webapp_block_and_leaves_the_dashboard_alone(client, restarts, thor):
     """Start and stop write only ``webapp.*``: the own-URL mode pins ``webapp.public_url``, LAN mode
     drops it (its callback follows each request), and the standalone dashboard's
     ``dashboard.public_url`` and ``.env`` pin, which a tunnelled dashboard needs after a restart,
@@ -92,7 +92,7 @@ def test_web_access_keeps_its_url_in_the_webapp_block_and_leaves_the_dashboard_a
 
     response = client.post("/api/webapp-access/start", json={"mode": "public", "public_url": "https://thor.example.test"})
     assert response.status_code == 200, response.text
-    assert nous == ["https://thor.example.test/auth/callback"]
+    assert thor == ["https://thor.example.test/auth/callback"]
     assert {key: _config()["webapp"].get(key) for key in ("enabled", "host", "public_url")} == {
         "enabled": True, "host": "127.0.0.1", "public_url": "https://thor.example.test"}
     assert response.json()["public_url"] == "https://thor.example.test"
@@ -103,20 +103,20 @@ def test_web_access_keeps_its_url_in_the_webapp_block_and_leaves_the_dashboard_a
     assert _dashboard_setup() == dashboard
 
     assert client.post("/api/webapp-access/start", json={"mode": "lan"}).status_code == 200
-    assert nous[-1] == "http://192.168.1.50:9120/auth/callback"
+    assert thor[-1] == "http://192.168.1.50:9120/auth/callback"
     assert _config()["webapp"]["host"] == "0.0.0.0"
     assert not _config()["webapp"].get("public_url")
     assert _dashboard_setup() == dashboard
     assert restarts == ["turning on Web Access", "turning off Web Access", "turning on Web Access"]
 
 
-def test_start_without_a_nous_account_writes_and_restarts_nothing(client, restarts, nous, monkeypatch):
+def test_start_without_a_thor_account_writes_and_restarts_nothing(client, restarts, thor, monkeypatch):
     from thor_cli import webapp_access
 
-    monkeypatch.setattr(webapp_access, "nous_signed_in", lambda: False)
+    monkeypatch.setattr(webapp_access, "thor_signed_in", lambda: False)
 
     assert client.post("/api/webapp-access/start", json={"mode": "lan"}).status_code == 400
-    assert nous == []
+    assert thor == []
     assert restarts == []
     assert not _config().get("webapp", {}).get("enabled")
 
@@ -141,7 +141,7 @@ def test_status_names_the_mode_the_config_serves(client, webapp, mode):
     assert status.json()["mode"] == mode
 
 
-def test_start_keeps_a_custom_port_and_builds_the_addresses_on_it(client, restarts, nous):
+def test_start_keeps_a_custom_port_and_builds_the_addresses_on_it(client, restarts, thor):
     """A ``webapp.port`` the user chose (a second gateway on this machine needs its own) survives
     every start and stop, and the status and the LAN callback use it, even while Web Access is off."""
     from thor_cli.config import save_config
@@ -150,7 +150,7 @@ def test_start_keeps_a_custom_port_and_builds_the_addresses_on_it(client, restar
     assert client.get("/api/webapp-access/status").json()["port"] == 9333
 
     assert client.post("/api/webapp-access/start", json={"mode": "lan"}).status_code == 200
-    assert nous == ["http://192.168.1.50:9333/auth/callback"]
+    assert thor == ["http://192.168.1.50:9333/auth/callback"]
     assert _config()["webapp"]["port"] == 9333
 
     assert client.post("/api/webapp-access/stop").status_code == 200
@@ -185,22 +185,22 @@ def test_status_never_shows_a_public_url_the_gateway_refuses(client, public_url,
     "https://thor.example.test/a@b",
     "https://thor.example.test/a b",
 ])
-def test_start_refuses_a_public_url_the_gateway_would_refuse(client, restarts, nous, public_url):
+def test_start_refuses_a_public_url_the_gateway_would_refuse(client, restarts, thor, public_url):
     """Start checks the URL with the gateway's own ``webapp.public_url`` reader (plus https on a host
     other devices reach), so it never registers, saves and restarts onto a Webapp the gateway then
     keeps off."""
     response = client.post("/api/webapp-access/start", json={"mode": "public", "public_url": public_url})
     assert response.status_code == 400, response.text
-    assert nous == []
+    assert thor == []
     assert restarts == []
     assert not _config().get("webapp", {}).get("enabled")
 
 
-def test_start_takes_the_public_url_as_typed(client, restarts, nous):
+def test_start_takes_the_public_url_as_typed(client, restarts, thor):
     """Spaces around the URL and a trailing slash are not part of the address."""
     response = client.post("/api/webapp-access/start", json={"mode": "public", "public_url": "  https://thor.example.test/ "})
     assert response.status_code == 200, response.text
-    assert nous == ["https://thor.example.test/auth/callback"]
+    assert thor == ["https://thor.example.test/auth/callback"]
     assert _config()["webapp"]["public_url"] == "https://thor.example.test"
 
 
@@ -229,7 +229,7 @@ def lan_browser(monkeypatch):
     clear_providers()
 
 
-def test_a_browser_signed_in_over_the_network_cannot_use_web_access(lan_browser, restarts, nous):
+def test_a_browser_signed_in_over_the_network_cannot_use_web_access(lan_browser, restarts, thor):
     """Web Access decides what this machine exposes, so only its owner here may use it. A browser
     signed in behind the sign-in gate may be on another device: every Web Access route answers it
     403 and changes nothing, while the same session still reaches an ordinary route."""
@@ -239,7 +239,7 @@ def test_a_browser_signed_in_over_the_network_cannot_use_web_access(lan_browser,
     assert lan_browser.get("/api/webapp-access/status").status_code == 403
     assert lan_browser.post("/api/webapp-access/start", json={"mode": "lan"}, headers=page).status_code == 403
     assert lan_browser.post("/api/webapp-access/stop?profile=default", headers=page).status_code == 403
-    assert nous == []
+    assert thor == []
     assert restarts == []
     assert not _config()["webapp"]["enabled"]
 
@@ -260,7 +260,7 @@ def webapp_tab(monkeypatch):
     tab.close()
 
 
-def test_a_webapp_tab_cannot_use_web_access(webapp_tab, restarts, nous):
+def test_a_webapp_tab_cannot_use_web_access(webapp_tab, restarts, thor):
     """Web Access decides what this machine exposes, so only native Desktop on this computer may use
     it: each of its requests carries a one-use grant from the gateway's private control socket, which
     answers only this OS user, and no Origin, and a browser tab can present neither. The browser
@@ -271,7 +271,7 @@ def test_a_webapp_tab_cannot_use_web_access(webapp_tab, restarts, nous):
     assert webapp_tab.post("/api/webapp-access/start", json={"mode": "lan"}).status_code == 403
     assert webapp_tab.post("/api/webapp-access/stop").status_code == 403
     assert webapp_tab.post("/api/webapp-access/restart").status_code == 403
-    assert nous == []
+    assert thor == []
     assert restarts == []
     assert not _config().get("webapp", {}).get("enabled")
 
@@ -286,7 +286,7 @@ def test_native_desktop_uses_web_access_on_the_webapps_own_listener(client, monk
     assert client.get("/api/webapp-access/status").status_code == 200
 
 
-def test_start_builds_the_webapp_bundle_before_turning_it_on(client, restarts, nous, builds):
+def test_start_builds_the_webapp_bundle_before_turning_it_on(client, restarts, thor, builds):
     """Start builds the bundle the gateway serves (``apps/desktop/dist-webapp``) with the function
     ``thor webapp`` uses, reusing it when current, so it never reports a Webapp with nothing to
     serve as running."""
@@ -297,7 +297,7 @@ def test_start_builds_the_webapp_bundle_before_turning_it_on(client, restarts, n
     assert restarts == ["turning on Web Access"]
 
 
-def test_a_failed_build_turns_nothing_on_and_says_how_to_build(client, restarts, nous, monkeypatch):
+def test_a_failed_build_turns_nothing_on_and_says_how_to_build(client, restarts, thor, monkeypatch):
     """When the bundle cannot be built, Start registers nothing with the Portal, writes nothing and
     restarts nothing, and its error names the command that builds the bundle."""
     from thor_cli import webapp
@@ -311,13 +311,13 @@ def test_a_failed_build_turns_nothing_on_and_says_how_to_build(client, restarts,
     assert response.status_code == 400
     assert "npm exited 1" in response.json()["detail"]
     assert "thor webapp --build-only" in response.json()["detail"]
-    assert nous == []
+    assert thor == []
     assert restarts == []
     assert not _config()["webapp"]["enabled"]
 
 
 @pytest.mark.parametrize("step", ["build", "registration"])
-def test_other_requests_answer_while_start_builds_and_registers(client, restarts, nous, monkeypatch, step):
+def test_other_requests_answer_while_start_builds_and_registers(client, restarts, thor, monkeypatch, step):
     """Start's slow steps hold no lock that ordinary requests take: while the bundle builds (it may
     compile for minutes or wait up to 30 minutes on another build) and while the Portal registers
     the callback (a network round trip), a config request answers at once."""
@@ -341,7 +341,7 @@ def test_other_requests_answer_while_start_builds_and_registers(client, restarts
     if step == "build":
         monkeypatch.setattr(webapp, "prepare_webapp_renderer", slow_step)
     else:
-        monkeypatch.setattr(webapp_access, "_register_nous_sign_in", slow_step)
+        monkeypatch.setattr(webapp_access, "_register_thor_sign_in", slow_step)
 
     response = client.post("/api/webapp-access/start", json={"mode": "lan"})
     assert response.status_code == 200, response.text
@@ -349,7 +349,7 @@ def test_other_requests_answer_while_start_builds_and_registers(client, restarts
     assert restarts == ["turning on Web Access"]
 
 
-def test_restart_applies_the_saved_config_and_does_nothing_else(client, restarts, nous, builds):
+def test_restart_applies_the_saved_config_and_does_nothing_else(client, restarts, thor, builds):
     """The pane's "Restart gateway" (a saved change the gateway has not applied yet) restarts the
     gateway serving the profile and nothing else: no Portal registration, no build, no config
     write."""
@@ -363,12 +363,12 @@ def test_restart_applies_the_saved_config_and_does_nothing_else(client, restarts
     assert response.json()["restart_started"] is True
     assert response.json()["mode"] == "lan"
     assert restarts == ["applying Web Access"]
-    assert nous == []
+    assert thor == []
     assert builds == []
     assert read_raw_config() == saved
 
 
-def test_a_restart_refused_by_a_running_chat_is_reported_as_busy(client, nous, monkeypatch):
+def test_a_restart_refused_by_a_running_chat_is_reported_as_busy(client, thor, monkeypatch):
     """When a running chat refuses the gateway restart, the change stays saved and the answer says
     so in a field the pane can word plainly (``restart_busy``), beside the CLI's own refusal text."""
     import thor_cli.web_server_gateway as gw
@@ -391,7 +391,7 @@ LAN_CALLBACK = "http://192.168.1.50:9120/auth/callback"
 
 @pytest.fixture()
 def portal(monkeypatch):
-    """A signed-in Nous account and a fake Nous Portal (no network). Its self-hosted-client endpoint
+    """A signed-in Thor account and a fake Thor Portal (no network). Its self-hosted-client endpoint
     mints ``agent:client-N`` for a request without a known client id and, for one it knows, REPLACES
     that client's redirect URI: the worst case the real Portal may do. It already holds the
     standalone dashboard's client (``agent:dashboard``)."""
@@ -412,8 +412,8 @@ def portal(monkeypatch):
     monkeypatch.delenv("THOR_DASHBOARD_OAUTH_CLIENT_ID", raising=False)
     monkeypatch.setenv("THOR_DASHBOARD_PORTAL_URL", "https://portal.example.test")
     monkeypatch.setattr(dashboard_register, "_register_self_hosted_client", register)
-    monkeypatch.setattr(auth, "resolve_nous_access_token", lambda: "throwaway-access-token")
-    monkeypatch.setattr(webapp_access, "nous_signed_in", lambda: True)
+    monkeypatch.setattr(auth, "resolve_thor_access_token", lambda: "throwaway-access-token")
+    monkeypatch.setattr(webapp_access, "thor_signed_in", lambda: True)
     monkeypatch.setattr(webapp_access, "lan_address", lambda: "192.168.1.50")
     return SimpleNamespace(clients=clients, requests=requests)
 
@@ -543,31 +543,31 @@ def test_dashboard_register_leaves_web_access_and_its_client_alone(portal):
 
 
 async def _login_client_id(mount, origin: str) -> str:
-    """The Portal client id the listener behind *mount* sends a browser starting Nous sign-in with."""
+    """The Portal client id the listener behind *mount* sends a browser starting Thor sign-in with."""
     from urllib.parse import parse_qs, urlsplit
 
     import httpx
 
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=mount), base_url=origin) as browser:
-        started = await browser.get("/auth/login", params={"provider": "nous"})
+        started = await browser.get("/auth/login", params={"provider": "thor"})
     assert started.status_code in {302, 307}, started.text
     location = urlsplit(started.headers["location"])
     assert f"{location.scheme}://{location.netloc}" == "https://portal.example.test"
     return parse_qs(location.query)["client_id"][0]
 
 
-def _load_nous_plugin_as_discovery_does():
-    """The bundled Nous sign-in plugin imported as plugin discovery imports it: from its folder under
-    a module name of the loader's own (``thor_plugins.<key>``), not as ``plugins.dashboard_auth.nous``,
+def _load_thor_plugin_as_discovery_does():
+    """The bundled Thor sign-in plugin imported as plugin discovery imports it: from its folder under
+    a module name of the loader's own (``thor_plugins.<key>``), not as ``plugins.dashboard_auth.thor``,
     so its module-level state is not that of any other import of it."""
     import importlib.util
     from pathlib import Path
 
-    import plugins.dashboard_auth.nous as source
+    import plugins.dashboard_auth.thor as source
 
     folder = Path(source.__file__).parent
     spec = importlib.util.spec_from_file_location(
-        "thor_plugins_test_f5.dashboard_auth__nous", folder / "__init__.py", submodule_search_locations=[str(folder)])
+        "thor_plugins_test_f5.dashboard_auth__thor", folder / "__init__.py", submodule_search_locations=[str(folder)])
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -577,7 +577,7 @@ def _load_nous_plugin_as_discovery_does():
 def gateway_listeners(tmp_path, monkeypatch):
     """The gateway's dashboard mount over the process's dashboard app, as the gateway builds it at
     start: ``listener(webapp=True)`` is the Webapp's listener (every interface, behind sign-in), else
-    the private one. ``discover()`` runs the Nous plugin's registration as plugin discovery does at
+    the private one. ``discover()`` runs the Thor plugin's registration as plugin discovery does at
     gateway start (and on a plugin reload), on the plugin imported the way discovery imports it. The
     auth registry and the listener's sign-in client are reset before and after."""
     import types
@@ -597,7 +597,7 @@ def gateway_listeners(tmp_path, monkeypatch):
     dist.mkdir()
     (dist / "index.html").write_text("<!doctype html><html><body>WEBAPP</body></html>", encoding="utf-8")
     discovery = types.SimpleNamespace(register_dashboard_auth_provider=register_global_provider)
-    nous_plugin = _load_nous_plugin_as_discovery_does()
+    thor_plugin = _load_thor_plugin_as_discovery_does()
 
     def listener(*, webapp: bool):
         state = types.SimpleNamespace(bound_host="0.0.0.0", bound_port=9120,
@@ -605,17 +605,17 @@ def gateway_listeners(tmp_path, monkeypatch):
         return GatewayDashboardMount(types.SimpleNamespace(session_authority=None), state)
 
     clear_providers()
-    yield types.SimpleNamespace(listener=listener, discover=lambda: nous_plugin.register(discovery))
+    yield types.SimpleNamespace(listener=listener, discover=lambda: thor_plugin.register(discovery))
     clear_providers()
 
 
 @pytest.mark.parametrize("dashboard_client", [DASHBOARD_CLIENT, None])
-def test_the_webapps_nous_sign_in_uses_its_own_client_and_the_dashboards_keeps_its_own(
+def test_the_webapps_thor_sign_in_uses_its_own_client_and_the_dashboards_keeps_its_own(
         portal, gateway_listeners, monkeypatch, dashboard_client):
-    """The gateway's Webapp listener signs browsers in to Nous with the client Web Access registered
+    """The gateway's Webapp listener signs browsers in to Thor with the client Web Access registered
     for it, also on a home with no dashboard client at all. The gateway's private listener mounted
     after it signs in with ``THOR_DASHBOARD_OAUTH_CLIENT_ID`` as on main (the standalone dashboard
-    reads the same setting), or offers no Nous sign-in when that is unset."""
+    reads the same setting), or offers no Thor sign-in when that is unset."""
     import asyncio
 
     from thor_cli import webapp_access
@@ -634,7 +634,7 @@ def test_the_webapps_nous_sign_in_uses_its_own_client_and_the_dashboards_keeps_i
         finally:
             await webapp.close()
         if dashboard_client is None:
-            assert get_provider("nous") is None
+            assert get_provider("thor") is None
             return
         private = gateway_listeners.listener(webapp=False)
         await private.ensure()
@@ -647,7 +647,7 @@ def test_the_webapps_nous_sign_in_uses_its_own_client_and_the_dashboards_keeps_i
 
 
 def test_a_plugin_reload_while_the_webapp_serves_keeps_its_own_client(portal, gateway_listeners, monkeypatch):
-    """Reloading plugins re-registers the Nous provider; while the gateway serves the Webapp it
+    """Reloading plugins re-registers the Thor provider; while the gateway serves the Webapp it
     is rebuilt on Web Access's client, not on ``THOR_DASHBOARD_OAUTH_CLIENT_ID``."""
     import asyncio
 
@@ -669,10 +669,10 @@ def test_a_plugin_reload_while_the_webapp_serves_keeps_its_own_client(portal, ga
     asyncio.run(scenario())
 
 
-def test_a_disabled_nous_plugin_keeps_nous_sign_in_off_the_webapp(portal, gateway_listeners, tmp_path):
-    """Web Access's client signs the Webapp in only through the Nous sign-in plugin: where
+def test_a_disabled_thor_plugin_keeps_thor_sign_in_off_the_webapp(portal, gateway_listeners, tmp_path):
+    """Web Access's client signs the Webapp in only through the Thor sign-in plugin: where
     ``plugins.disabled`` keeps that plugin from loading (discovery never registered it), the Webapp
-    gets no Nous sign-in from Web Access either."""
+    gets no Thor sign-in from Web Access either."""
     from gateway.webapp_listener import WebappMount, use_own_sign_in
     from thor_cli import webapp_access
     from thor_cli.dashboard_auth import get_provider
@@ -681,11 +681,11 @@ def test_a_disabled_nous_plugin_keeps_nous_sign_in_off_the_webapp(portal, gatewa
     webapp_access.register(LAN_CALLBACK)
 
     assert use_own_sign_in(WebappMount(tmp_path, get_thor_home())) is None
-    assert get_provider("nous") is None
+    assert get_provider("thor") is None
 
 
 def test_a_webapp_without_a_web_access_client_signs_in_with_the_configured_one(portal, gateway_listeners, monkeypatch):
-    """A Webapp whose Nous sign-in was set up by hand (``thor dashboard register`` for its address,
+    """A Webapp whose Thor sign-in was set up by hand (``thor dashboard register`` for its address,
     no Web Access Start) keeps signing in with ``THOR_DASHBOARD_OAUTH_CLIENT_ID``."""
     import asyncio
 
@@ -722,7 +722,7 @@ def _lock_is_free(lock) -> bool:
 
 
 @pytest.mark.parametrize("action", ["start", "stop", "restart"])
-def test_the_gateway_restart_and_status_run_outside_the_config_lock(client, nous, monkeypatch, action):
+def test_the_gateway_restart_and_status_run_outside_the_config_lock(client, thor, monkeypatch, action):
     """Start and Stop write the config under the config lock every config, skills and tools request
     takes, then restart the gateway and read its status outside that lock: the restart spawn and the
     status query (a control-socket round trip of up to 5 seconds) hold no other request up."""
@@ -752,11 +752,11 @@ def test_the_gateway_restart_and_status_run_outside_the_config_lock(client, nous
 
 
 @pytest.mark.parametrize(("held", "second"), [("build", "stop"), ("registration", "public")])
-def test_web_access_changes_run_one_at_a_time(client, restarts, nous, monkeypatch, held, second):
+def test_web_access_changes_run_one_at_a_time(client, restarts, thor, monkeypatch, held, second):
     """Start, Stop and Restart each build, register, write and restart as one change, and a second
     change waits for the one in flight. A Stop sent while a Start builds therefore ends with the
     Webapp off, and two windows starting different modes end with the Portal's callback and the
-    served mode both the last one's: never Nous sign-in returning to an address the Webapp does not
+    served mode both the last one's: never Thor sign-in returning to an address the Webapp does not
     serve, nor the Webapp on the network after the user stopped it."""
     import threading
 
@@ -790,8 +790,8 @@ def test_web_access_changes_run_one_at_a_time(client, restarts, nous, monkeypatc
     if held == "build":
         monkeypatch.setattr(webapp, "prepare_webapp_renderer", lambda root, **options: hold())
     else:
-        monkeypatch.setattr(webapp_access, "_register_nous_sign_in",
-                            lambda callback: (hold(), nous.append(callback)))
+        monkeypatch.setattr(webapp_access, "_register_thor_sign_in",
+                            lambda callback: (hold(), thor.append(callback)))
     public_url = "https://thor.example.test"
     requests = {"lan": ("/api/webapp-access/start", {"mode": "lan"}),
                 "stop": ("/api/webapp-access/stop", None),
@@ -820,7 +820,7 @@ def test_web_access_changes_run_one_at_a_time(client, restarts, nous, monkeypatc
         assert restarts == ["turning on Web Access", "turning off Web Access"]
         assert block["enabled"] is False
     else:
-        assert nous == ["http://192.168.1.50:9120/auth/callback", f"{public_url}/auth/callback"]
+        assert thor == ["http://192.168.1.50:9120/auth/callback", f"{public_url}/auth/callback"]
         assert (block["enabled"], block.get("public_url")) == (True, public_url)
 
 

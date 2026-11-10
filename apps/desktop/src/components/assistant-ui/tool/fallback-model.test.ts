@@ -239,28 +239,28 @@ describe('buildToolView browser_navigate title', () => {
     const view = buildToolView(
       part({
         toolName: 'browser_navigate',
-        args: { url: 'https://thor-agent.nousresearch.com/docs' },
+        args: { url: 'https://thor-agent.thor-agent.local/docs' },
         result: { success: false, error: 'Command timed out after 60 seconds' }
       }),
       ''
     )
 
     expect(view.status).toBe('error')
-    expect(view.title).toContain('thor-agent.nousresearch.com/docs')
+    expect(view.title).toContain('thor-agent.thor-agent.local/docs')
   })
 
   it('shows opened title on success', () => {
     const view = buildToolView(
       part({
         toolName: 'browser_navigate',
-        args: { url: 'https://thor-agent.nousresearch.com/docs' },
-        result: { success: true, url: 'https://thor-agent.nousresearch.com/docs', title: 'Docs' }
+        args: { url: 'https://thor-agent.thor-agent.local/docs' },
+        result: { success: true, url: 'https://thor-agent.thor-agent.local/docs', title: 'Docs' }
       }),
       ''
     )
 
     expect(view.status).toBe('success')
-    expect(view.title).toContain('thor-agent.nousresearch.com/docs')
+    expect(view.title).toContain('thor-agent.thor-agent.local/docs')
   })
 })
 

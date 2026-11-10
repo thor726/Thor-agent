@@ -707,7 +707,7 @@ export const UserEditComposer: FC<UserEditComposerProps> = ({ cwd, gateway, sess
 
       // Clear latch after cooldown to allow re-submission. This prevents rapid
       // double-Enter but doesn't require tracking when onEdit settles (which may
-      // be synchronous or async, and whose promise we don't have access to).
+      // be synchrothor or async, and whose promise we don't have access to).
       scheduleTimeout(() => {
         setSubmitting(false)
       }, 200)

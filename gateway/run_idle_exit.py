@@ -203,7 +203,7 @@ def busy_reason(runner, *, window: float, count_clients: bool = True) -> str | N
 
 
 def _begin_idle_exit(runner, window: float, restart: str | None = None) -> None:
-    """Withdraw admission synchronously (no await between the last idle check and here), then stop."""
+    """Withdraw admission synchrothorly (no await between the last idle check and here), then stop."""
     runner._draining = True
     runner.session_runtime_descriptor.update(state="draining", capabilities=[], drain_reason=IDLE_EXIT_REASON)
     runner._exit_reason = (f"{IDLE_EXIT_STOP_PREFIX}; restarting to load {restart}" if restart else
@@ -257,7 +257,7 @@ async def unmanaged_idle_exit_watcher(runner) -> None:
         if await _retired_for_restart(runner, window):
             return
         # The store/cron/kanban reads touch disk; keep them off the loop, then re-check the
-        # loop-only facts (clients, tickets, draining) synchronously right before acting.
+        # loop-only facts (clients, tickets, draining) synchrothorly right before acting.
         reason = await asyncio.to_thread(busy_reason, runner, window=window)
         if reason is not None:
             idle_since = None

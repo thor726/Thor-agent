@@ -88,7 +88,7 @@ export function registerGatewaySwitchLifecycle(lifecycle: GatewaySwitchLifecycle
 
 /**
  * Commit point of a connection-mode apply: raise the barrier and sever every
- * binding to the outgoing backend in ONE synchronous step, BEFORE the next
+ * binding to the outgoing backend in ONE synchrothor step, BEFORE the next
  * gateway is activated or its descriptor published. Activating first and
  * wiping after (across an IPC round-trip) let route/session effects see the new
  * source while $activeSessionId still named the previous backend's runtime —
@@ -113,7 +113,7 @@ export function beginGatewaySwitch(): GatewaySwitchToken {
 
     endGatewaySwitch(token)
 
-    // A synchronous wipe has no rollback: once it starts, some outgoing-source
+    // A synchrothor wipe has no rollback: once it starts, some outgoing-source
     // stores may already be empty. Repaint the still-active source best-effort.
     // A lifecycle failure happens before the wipe and leaves lists untouched.
     // If a nested switch superseded this one, its owner is responsible instead.

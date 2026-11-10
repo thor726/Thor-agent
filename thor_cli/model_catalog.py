@@ -2,7 +2,7 @@
 
 ``get_catalog()`` returns the parsed manifest: in-process cache (TTL) → disk cache at
 ``~/.thor/cache/model_catalog.json`` → master URL fetch; any fetch failure keeps the stale copy
-(or ``{}``, and the URL is not retried for ``FETCH_RETRY_DELAY_SECONDS``). ``get_curated_openrouter_models()`` / ``get_curated_nous_models()`` are thin accessors
+(or ``{}``, and the URL is not retried for ``FETCH_RETRY_DELAY_SECONDS``). ``get_curated_openrouter_models()`` / ``get_curated_thor_models()`` are thin accessors
 whose callers fall back to the in-repo lists on ``None``.
 """
 
@@ -24,7 +24,7 @@ from utils import atomic_json_write
 logger = logging.getLogger(__name__)
 
 DEFAULT_CATALOG_URL = (
-    "https://thor-agent.nousresearch.com/docs/api/model-catalog.json")
+    "https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/website/static/api/model-catalog.json")
 # The Docusaurus site sits behind Vercel, which occasionally 403s non-browser clients (bot
 # challenge); the raw GitHub copy is the same manifest and is not bot-gated.
 DEFAULT_CATALOG_FALLBACK_URLS: tuple[str, ...] = (
@@ -291,7 +291,7 @@ def refresh_interval_seconds() -> float:
 
 def refresh_catalogs() -> bool:
     """Force-refresh every remote catalog the picker reads (manifest, OpenRouter live list, and the
-    Nous Portal recommendations for a Nous account, the only reader), writing each disk cache so the
+    Thor Portal recommendations for a Thor account, the only reader), writing each disk cache so the
     next ``/model`` open in ANY process sees them. Blocking; run it off the event loop."""
     if not _load_catalog_config()["enabled"]:
         return False
@@ -299,14 +299,14 @@ def refresh_catalogs() -> bool:
     catalog = get_catalog(force_refresh=True)
     try:
         from agent.secret_scope import get_secret
-        from thor_cli.anon_auth import current_nous_state, is_guest_state
+        from thor_cli.anon_auth import current_thor_state, is_guest_state
         from thor_cli.auth import read_credential_pool
-        from thor_cli.models import _resolve_nous_portal_url, fetch_nous_recommended_models, fetch_openrouter_models
+        from thor_cli.models import _resolve_thor_portal_url, fetch_thor_recommended_models, fetch_openrouter_models
 
         fetch_openrouter_models(force_refresh=True)
-        logins = [current_nous_state(), *read_credential_pool("nous")]
-        if any(e and not is_guest_state(e) for e in logins) or get_secret("NOUS_API_KEY"):
-            fetch_nous_recommended_models(_resolve_nous_portal_url(), force_refresh=True)
+        logins = [current_thor_state(), *read_credential_pool("thor")]
+        if any(e and not is_guest_state(e) for e in logins) or get_secret("THOR_PORTAL_API_KEY"):
+            fetch_thor_recommended_models(_resolve_thor_portal_url(), force_refresh=True)
     except Exception:
         logger.debug("provider catalog refresh failed", exc_info=True)
     return bool(catalog)
@@ -355,9 +355,9 @@ def get_curated_openrouter_models() -> list[tuple[str, str]] | None:
     return [(mid, str(m.get("description") or "")) for mid, m in rows] or None
 
 
-def get_curated_nous_models() -> list[str] | None:
-    """Nous Portal's curated model ids from the manifest."""
-    return [mid for mid, _ in _block_ids(_get_provider_block("nous"))] or None
+def get_curated_thor_models() -> list[str] | None:
+    """Thor Portal's curated model ids from the manifest."""
+    return [mid for mid, _ in _block_ids(_get_provider_block("thor"))] or None
 
 
 def _default_model_from_block(block: dict[str, Any] | None) -> str | None:

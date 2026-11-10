@@ -1718,7 +1718,7 @@ export function TextInput({
           // consumed by an interleaved re-render before the deferred commit
           // flushes, snapping the buffer back to a stale parent value and
           // dropping the recomposed tail (the "hanhj -> hạ␣␣" bug). Commit
-          // synchronously so the recomposed value reaches the parent atomically.
+          // synchrothorly so the recomposed value reaches the parent atomically.
           commit(v, c)
 
           return

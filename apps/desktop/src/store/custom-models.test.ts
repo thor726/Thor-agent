@@ -33,28 +33,28 @@ describe('custom models', () => {
   })
 
   it('appends each remembered id under its own provider and keeps the input when nothing applies', () => {
-    const providers = [provider('openrouter', ['openai/gpt-5']), provider('nous', ['hermes-4'])]
+    const providers = [provider('openrouter', ['openai/gpt-5']), provider('thor', ['thor-4'])]
 
     const customs = [
       { model: 'acme/model-x', provider: 'openrouter' },
-      { model: 'hermes-4', provider: 'nous' },
+      { model: 'thor-4', provider: 'thor' },
       { model: 'ghost', provider: 'missing' }
     ]
 
     const merged = withCustomModels(providers, customs)
 
-    expect(merged.map(row => row.models)).toEqual([['openai/gpt-5', 'acme/model-x'], ['hermes-4']])
+    expect(merged.map(row => row.models)).toEqual([['openai/gpt-5', 'acme/model-x'], ['thor-4']])
     expect(merged[1]).toBe(providers[1])
     expect(withCustomModels(providers, [])).toBe(providers)
   })
 
-  it('merges custom models into a usage-window Nous row too (window plans allow any model)', () => {
-    const nous: ModelOptionProvider = {
-      ...provider('nous', ['example/model-b']),
+  it('merges custom models into a usage-window Thor row too (window plans allow any model)', () => {
+    const thor: ModelOptionProvider = {
+      ...provider('thor', ['example/model-b']),
       plan_usage: { kind: 'usage_window', gauges: [] }
     }
 
-    const merged = withCustomModels([nous], [{ model: 'acme/model-x', provider: 'nous' }])
+    const merged = withCustomModels([thor], [{ model: 'acme/model-x', provider: 'thor' }])
 
     expect(merged[0]?.models).toEqual(['example/model-b', 'acme/model-x'])
   })

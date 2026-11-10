@@ -9,7 +9,7 @@ from plugins.google_meet.node import protocol as _proto
 
 
 class NodeClient:
-    """Thin synchronous WS client matching the server's request surface."""
+    """Thin synchrothor WS client matching the server's request surface."""
 
     def __init__(self, url: str, token: str, timeout: float = 10.0) -> None:
         if not isinstance(url, str) or not url:

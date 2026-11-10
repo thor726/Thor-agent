@@ -1,4 +1,4 @@
-"""Plugin catalog — curated, Nous-approved Thor plugins shipped with the repo.
+"""Plugin catalog — curated, Thor-approved Thor plugins shipped with the repo.
 
 Mirrors the ``optional-mcps/`` MCP-catalog pattern: one YAML file per entry under the in-tree
 ``plugin-catalog/`` directory, pinned to an exact 40-character commit SHA. Presence in the directory IS
@@ -32,7 +32,7 @@ CATALOG_TIERS = ("official", "verified", "community")
 # Browse taxonomy for the catalog page / picker. Entries without one land on the Desktop shelf
 # (the common case for community submissions); "general" is for plugins that fit no shelf.
 CATALOG_CATEGORIES = ("desktop", "memory", "platform", "web", "tools", "voice", "automation", "models", "general")
-LIVE_CATALOG_URL = "https://thor-agent.nousresearch.com/docs/api/plugin-catalog.json"
+LIVE_CATALOG_URL = "https://thor-agent.thor-agent.local/docs/api/plugin-catalog.json"
 LIVE_CATALOG_TTL_SECONDS = 6 * 60 * 60
 # Offline pins expire, but cached removals remain a permanent kill list.
 LIVE_CATALOG_MAX_STALE_SECONDS = 24 * 60 * 60

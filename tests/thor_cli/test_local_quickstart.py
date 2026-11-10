@@ -1,7 +1,7 @@
 """Quickstart route: one POST from nothing to a working local default.
 
 Contract, not implementation: the route must (a) preflight-fail
-synchronously when automatic setup has no recommendation, (b) report which legs the job will run
+synchrothorly when automatic setup has no recommendation, (b) report which legs the job will run
 (runtime install / model download), skipping legs already satisfied,
 and (c) run install -> download -> activate through the same code paths
 the individual routes use. The slow legs are stubbed at their module
@@ -112,7 +112,7 @@ def test_quickstart_without_recommendation_requires_explicit_choice(client, monk
 
 
 def test_quickstart_refuses_when_nothing_fits(client, monkeypatch):
-    """Preflight is synchronous: a machine no catalog entry fits gets a 409
+    """Preflight is synchrothor: a machine no catalog entry fits gets a 409
     with guidance, not a doomed background job."""
     monkeypatch.setattr(
         "thor_cli.local_runtime.catalog.select_variant", lambda *a, **k: None)

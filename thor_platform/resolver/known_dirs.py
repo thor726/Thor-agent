@@ -38,11 +38,11 @@ def machine_marker_files() -> tuple[str, ...]:
     The first entry is the one written; the rest are read too (Windows: MSIX builds that ran with
     filesystem virtualisation wrote under the package's LocalCache)."""
     if _WIN:
-        return ("%LOCALAPPDATA%/Nous Research/.machine",
-                "%LOCALAPPDATA%/Packages/NousResearch*_*/LocalCache/Local/Nous Research/.machine")
+        return ("%LOCALAPPDATA%/Thor Agent/.machine",
+                "%LOCALAPPDATA%/Packages/dwisetyabudi15581*_*/LocalCache/Local/Thor Agent/.machine")
     if sys.platform == "darwin":
-        return ("~/Library/Application Support/Nous Research/.machine",)
-    return ("$XDG_STATE_HOME/nous-research/.machine", "~/.local/state/nous-research/.machine")
+        return ("~/Library/Application Support/Thor Agent/.machine",)
+    return ("$XDG_STATE_HOME/thor-research/.machine", "~/.local/state/thor-research/.machine")
 
 
 def thor_home_globs() -> tuple[str, ...]:
@@ -50,7 +50,7 @@ def thor_home_globs() -> tuple[str, ...]:
     root, and the per-package roots of MSIX builds that ran with filesystem virtualisation."""
     if _WIN:
         return ("%LOCALAPPDATA%/thor*", "%USERPROFILE%/.thor",
-                "%LOCALAPPDATA%/Packages/NousResearch*_*/LocalCache/Local/thor*")
+                "%LOCALAPPDATA%/Packages/dwisetyabudi15581*_*/LocalCache/Local/thor*")
     return ("~/.thor*",)
 
 

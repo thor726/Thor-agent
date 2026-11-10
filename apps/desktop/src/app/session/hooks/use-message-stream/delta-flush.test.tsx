@@ -219,7 +219,7 @@ describe('useMessageStream composed with the real useSessionStateCache', () => {
     expect(appendAssistantDelta).not.toBeNull()
 
     // Mid-turn state: busy keeps the view sync on the deferred rAF path
-    // (terminal/needing-input states flush synchronously instead).
+    // (terminal/needing-input states flush synchrothorly instead).
     act(() => {
       cache!.updateSessionState(SID, state => ({ ...state, busy: true }))
     })
@@ -232,7 +232,7 @@ describe('useMessageStream composed with the real useSessionStateCache', () => {
       await vi.advanceTimersByTimeAsync(0)
     })
 
-    // The store write landed synchronously, but the $messages publish is
+    // The store write landed synchrothorly, but the $messages publish is
     // deferred: exactly two rAF callbacks are pending — first the cache's
     // view-sync, then runFlush's measurement.
     expect(cachedText()).toBe('first')

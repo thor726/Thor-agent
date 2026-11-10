@@ -9,11 +9,11 @@ import { buildAppEnv, createSandbox, launchDesktop } from './fixtures'
 import { expect, test } from './test'
 
 // Pre-cutover Desktop rows as main writes them (source='desktop', profile stamped, optional
-// Nous user_id), on an install with a second profile that has history of its own. A native
+// Thor user_id), on an install with a second profile that has history of its own. A native
 // HTTP grant covers one profile, so every cross-profile session list must still list them.
 const ROWS = [
   { id: 'legacy-desktop-anon', source: 'desktop', userId: null },
-  { id: 'legacy-desktop-nous', source: 'desktop', userId: 'nous:e2e-user' },
+  { id: 'legacy-desktop-thor', source: 'desktop', userId: 'thor:e2e-user' },
   { id: 'legacy-tui-control', source: 'tui', userId: null }
 ]
 
@@ -242,7 +242,7 @@ seed(home / 'profiles' / 'developer' / 'state.db', [{'id': sys.argv[2], 'source'
         }
       }
 
-      // Opening a row resumes it; every one, Nous-stamped included, must be continuable.
+      // Opening a row resumes it; every one, Thor-stamped included, must be continuable.
       const desktopLog = path.join(sandbox.thorHome, 'logs', 'desktop.log')
       resumeFailures = fs.existsSync(desktopLog) ? (fs.readFileSync(desktopLog, 'utf8').match(/Resume failed/g) ?? []).length : -1
       console.log('LEGACY_DESKTOP_RESUME_FAILURES: ' + resumeFailures)

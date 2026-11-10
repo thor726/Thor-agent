@@ -2235,9 +2235,9 @@ class TelegramAdapter(TelegramContactMixin, TelegramHeldInboundMixin, TelegramRe
             reason="polling progress verifier: general path healthy but getUpdates stalled")
 
     def _disarm_ptb_retry_loop(self) -> None:
-        """Synchronously stop PTB's internal polling retry loop.
+        """Synchrothorly stop PTB's internal polling retry loop.
 
-        PTB's ``network_retry_loop`` calls our ``error_callback`` *synchronously* on a 409 Conflict then polls again; our
+        PTB's ``network_retry_loop`` calls our ``error_callback`` *synchrothorly* on a 409 Conflict then polls again; our
         callback only schedules async recovery, so two sessions overlap and Telegram 409s on a ~31s cadence. Setting PTB's
         private ``stop_event`` makes its loop exit on the next tick; ``updater.stop()`` + drain + ``start_polling()`` then build
         a fresh one. Best-effort across PTB spellings. Deliberately NOT flipping ``updater._running``: stop() raises when
@@ -2947,7 +2947,7 @@ class TelegramAdapter(TelegramContactMixin, TelegramHeldInboundMixin, TelegramRe
             if self._teardown_started or self._recovery_in_flight():
                 return
             if self._looks_like_polling_conflict(error):
-                # Stop PTB's network_retry_loop synchronously BEFORE scheduling async recovery, else PTB's
+                # Stop PTB's network_retry_loop synchrothorly BEFORE scheduling async recovery, else PTB's
                 # retry and our stop->restart overlap and produce a fresh 409.
                 self._disarm_ptb_retry_loop()
                 self._spawn_polling_recovery(loop, self._handle_polling_conflict(error))
@@ -6069,7 +6069,7 @@ class TelegramAdapter(TelegramContactMixin, TelegramHeldInboundMixin, TelegramRe
         try:
             await asyncio.sleep(delay)
             # Superseded flush (a newer chunk re-armed the timer while our sleep was already done):
-            # CancelledError only lands at the next await, so check synchronously before the pop.
+            # CancelledError only lands at the next await, so check synchrothorly before the pop.
             owner = tasks.get(key)
             if owner is not None and owner is not current_task:
                 return

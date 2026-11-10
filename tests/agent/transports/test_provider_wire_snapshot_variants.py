@@ -117,7 +117,7 @@ AUX_CELLS: list[tuple[str, str, str, str | None, dict[str, Any]]] = [
     ("aux:openrouter", "openrouter", "anthropic/claude-opus-5.5", "https://openrouter.ai/api/v1", {}),
     # OpenRouter forwards max_tokens; an OpenAI-family model name turns it into max_completion_tokens.
     ("aux:openrouter-gpt-5.5", "openrouter", "openai/gpt-5.5", "https://openrouter.ai/api/v1", {}),
-    ("aux:nous", "nous", "anthropic/claude-opus-5.5", "https://inference-api.nousresearch.com/v1", {}),
+    ("aux:thor", "thor", "anthropic/claude-opus-5.5", "https://inference-api.thor-agent.local/v1", {}),
     ("aux:kimi-coding", "kimi-coding", "kimi-k2-turbo-preview", "https://api.kimi.com/coding/v1", {}),
     ("aux:zai", "zai", "glm-4.5-flash", "https://api.z.ai/api/paas/v4", {}),
     ("aux:deepseek", "deepseek", "deepseek-flash", "https://api.deepseek.com/v1", {}),
@@ -126,7 +126,7 @@ AUX_CELLS: list[tuple[str, str, str, str | None, dict[str, Any]]] = [
     ("aux:nvidia", "nvidia", "nvidia/nemotron-3-super", "https://integrate.api.nvidia.com/v1", {}),
     # No profile (base_url-only caller): the generic extra_body.reasoning fallback.
     ("aux:no-profile", "", "my-model", "https://llm.example.com/v1", {}),
-    # Configured main endpoint is api.openai.com, no OpenRouter key, no Nous auth: a forwarded
+    # Configured main endpoint is api.openai.com, no OpenRouter key, no Thor auth: a forwarded
     # max_tokens (MoA reference slot) becomes max_completion_tokens for a non-OpenAI model name.
     ("aux:custom-direct-openai-moa", "custom", "my-model", None, {
         "task": "moa_reference",

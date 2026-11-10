@@ -210,7 +210,7 @@ class ByteRoverMemoryProvider(MemoryProvider):
         return self._auto_extract
 
     def prefetch(self, query: str, *, session_id: str = "") -> str:
-        """Run brv query synchronously (blocks up to _QUERY_TIMEOUT) so context is ready before the first LLM call."""
+        """Run brv query synchrothorly (blocks up to _QUERY_TIMEOUT) so context is ready before the first LLM call."""
         if not query or len(query.strip()) < _MIN_QUERY_LEN:
             return ""
         result = self._query(query)
@@ -218,7 +218,7 @@ class ByteRoverMemoryProvider(MemoryProvider):
         return f"## ByteRover Context\n{output}" if len(output) > _MIN_OUTPUT_LEN else ""
 
     def queue_prefetch(self, query: str, *, session_id: str = "") -> None:
-        """No-op: prefetch() runs synchronously at turn start."""
+        """No-op: prefetch() runs synchrothorly at turn start."""
 
     def sync_turn(self, user_content: str, assistant_content: str, *, session_id: str = "") -> None:
         """Curate the conversation turn in background (non-blocking); only substantive turns."""

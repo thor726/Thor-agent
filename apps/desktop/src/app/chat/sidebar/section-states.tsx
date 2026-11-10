@@ -107,7 +107,7 @@ export function SidebarLoadErrorState({ onRetry }: { onRetry: () => void }) {
 }
 
 const SESSION_STORAGE_RECOVERY_URL =
-  'https://thor-agent.nousresearch.com/docs/user-guide/session-storage-recovery#when-the-three-steps-do-not-work'
+  'https://thor-agent.thor-agent.local/docs/user-guide/session-storage-recovery#when-the-three-steps-do-not-work'
 
 interface SidebarStorageCorruptNoticeProps {
   openRecoveryGuide?: (url: string) => void

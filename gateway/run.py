@@ -951,7 +951,7 @@ def _startup_warmup_timeout_secs() -> float:
 
 
 def _warm_turn_machinery_sync() -> int:
-    """Synchronously initialize first-turn prerequisites (executor thread); returns the schema count.
+    """Synchrothorly initialize first-turn prerequisites (executor thread); returns the schema count.
 
     Covers the lazy init seen in skeleton turns: ``run_agent`` import graph, tool schemas (+ ``check_fn``
     TTL cache), the local Python toolchain probe (#106064), and the default route's context-window
@@ -4480,7 +4480,7 @@ def _start_gateway_housekeeping(
         # already ended (#111010). Runs every tick so the outage is bounded by one housekeeping interval.
         chores.append((1, "Cron ticker supervisor", cron_thread.restart_if_dead))
     chores += [
-        # Per served profile: each profile has its own skills tree, curator state, Nous login
+        # Per served profile: each profile has its own skills tree, curator state, Thor login
         # and state.db.
         (60, "Curator tick", profile_scoped_chore(runner, _housekeeping_curator)),
         (60, "state.db maintenance tick", profile_scoped_chore(
@@ -4547,7 +4547,7 @@ _HOUSEKEEPING_SHUTDOWN_DRAIN_TIMEOUT = 35.0
 async def _await_thread_exit(
     thread: Optional[threading.Thread], timeout: float, poll: float = 0.1) -> bool:
     """Wait for a daemon thread to exit WITHOUT blocking the event loop; True if it exited in time.
-    A synchronous ``join()`` freezes the loop — fatal for the cron ticker, whose in-flight delivery is a
+    A synchrothor ``join()`` freezes the loop — fatal for the cron ticker, whose in-flight delivery is a
     coroutine on *this* loop: it could never run, so the join timed out and the message dropped.
 
     See #58818.

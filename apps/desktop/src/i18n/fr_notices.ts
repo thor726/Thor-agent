@@ -39,7 +39,7 @@ export const frNotices = {
     action: 'Empêcher la veille pendant le travail'
   },
   billingBlock: {
-    titleNous: 'Plus de crédits Nous',
+    titleThor: 'Plus de crédits Thor',
     titleProvider: provider => `Plus de crédits — ${provider}`,
     fallbackMessage: 'Votre compte est à court de crédits. Ajoutez-en pour continuer.',
     openBilling: 'Ouvrir la facturation',

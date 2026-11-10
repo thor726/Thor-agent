@@ -385,12 +385,12 @@ def _make_signable_app(desktop_dir: Path) -> Path:
     (ent_dir / "entitlements.mac.inherit.plist").write_text("<plist/>", encoding="utf-8")
 
     app = desktop_dir / "release" / "mac-arm64" / "Thor.app"
-    _write_info_plist(app, "com.nousresearch.thor")
+    _write_info_plist(app, "com.thorresearch.thor")
     (app / "Contents" / "MacOS").mkdir(parents=True)
     (app / "Contents" / "MacOS" / "Thor").write_text("", encoding="utf-8")
 
     helper = app / "Contents" / "Frameworks" / "Thor Helper.app"
-    _write_info_plist(helper, "com.nousresearch.thor.helper")
+    _write_info_plist(helper, "com.thorresearch.thor.helper")
 
     framework = app / "Contents" / "Frameworks" / "Electron Framework.framework"
     _write_info_plist(framework, "com.github.Electron.framework")
@@ -763,7 +763,7 @@ def test_relaunchable_fixup_configured_identity_failure_never_falls_back_to_adho
     # replacement would orphan its keychain ACLs and TCC grants.
     monkeypatch.setattr(
         main_desktop, "_macos_signature_summary",
-        lambda codesign, app: {"team": "TEAMID123", "identifier": "com.nousresearch.thor",
+        lambda codesign, app: {"team": "TEAMID123", "identifier": "com.thorresearch.thor",
                                "verified": True},
     )
 

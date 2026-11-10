@@ -17,7 +17,7 @@ Explain an idea as an interactive isometric machine figure.
 | Source | Optional — install with `thor skills install official/creative/anatomy` |
 | Path | `optional-skills/creative/anatomy` |
 | Version | `1.0.0` |
-| Author | Ryan (wheresryan22), ported to Thor by Nous Research |
+| Author | Ryan (wheresryan22), ported to Thor by Thor Agent |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `isometric`, `svg`, `webgl`, `3d`, `diagram`, `explainer`, `illustration`, `docs`, `html`, `react` |

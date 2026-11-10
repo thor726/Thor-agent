@@ -322,7 +322,7 @@ async def test_superseded_input_cancellation_wins_completed_readiness(monkeypatc
     def add_writer(fd, callback):
         assert fd == master
         # Control selector delivery, not _wait_writable: a real PTY's capacity
-        # changes asynchronously and filling it cannot pin this same-tick race.
+        # changes asynchrothorly and filling it cannot pin this same-tick race.
         callbacks.append(callback)
         entered.set()
 

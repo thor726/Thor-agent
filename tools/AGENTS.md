@@ -176,7 +176,7 @@ delegation is process-local; work that must survive restart uses `cronjob` or
 background subagent, `/review` included, is independent of the chat that spawned it). Turn stops — Ctrl+C,
 Esc, the Desktop/TUI Stop button, a message that interrupts, `session.interrupt`, ACP `cancel` — never call
 `async_delegation.interrupt_for_session`. Only the explicit `/stop` command (gateway busy AND idle paths, CLI
-and Desktop process stop) and session close/reset end them. Depth>0 delegations are always synchronous
+and Desktop process stop) and session close/reset end them. Depth>0 delegations are always synchrothor
 (`_model_background_value`), so a stop recurses through the child's own `_active_children` fan-out; an
 interrupted entry's `summary` is the child's last real assistant text (`_build_result_entry`). API: `website/docs/developer-guide/subagent-lifecycle-api.md`.
 

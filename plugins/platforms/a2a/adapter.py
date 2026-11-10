@@ -308,7 +308,7 @@ class A2AAdapter(BasePlatformAdapter):
         # FIFO so adapter.send() — which only knows the context — resolves the oldest task.
         self._pending: dict[str, tuple[str, Future]] = {}
         self._pending_order: dict[str, deque[str]] = {}
-        # Request ownership outlives reply Futures and also covers synchronous profile forwards.
+        # Request ownership outlives reply Futures and also covers synchrothor profile forwards.
         self._active_tasks: set[str] = set()
         # Admission ids this process already forwarded; a resend of one is a retry, not a new turn.
         self._forwarded_inputs: OrderedDict[str, None] = OrderedDict()

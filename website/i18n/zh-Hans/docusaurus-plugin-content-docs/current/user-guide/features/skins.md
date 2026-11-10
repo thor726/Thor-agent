@@ -216,7 +216,7 @@ tool_prefix: "▏"
 
 [Thor Mod](https://github.com/cocktailpeanut/thor-mod) 是一个社区构建的 Web UI，用于可视化创建和管理皮肤。无需手写 YAML，提供带实时预览的点击式编辑器。
 
-![Thor Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/thor-mod/master/nous.png)
+![Thor Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/thor-mod/master/thor.png)
 
 **功能说明：**
 

@@ -62,23 +62,23 @@ def _micros(dollars: float) -> str:
 def _window_headers(day_bp: int = 1_200, week_bp: int = 900, *, top_tier_bp: int | None = 0, purchased: float = 0.0,
                     source: str | None = "included", paid: bool = True, paused: str | None = None, **extra) -> dict:
     h = {
-        "x-nous-credits-version": "1",
-        "x-nous-credits-remaining-micros": _micros(purchased),
-        "x-nous-credits-remaining-usd": f"{purchased:.2f}",
-        "x-nous-credits-subscription-micros": "0",
-        "x-nous-credits-subscription-usd": "0.00",
-        "x-nous-credits-rollover-micros": "0",
-        "x-nous-credits-purchased-micros": _micros(purchased),
-        "x-nous-credits-purchased-usd": f"{purchased:.2f}",
-        "x-nous-credits-paid-access": "true" if paid else "false",
-        "x-nous-credits-as-of-ms": str(NOW_MS),
-        "x-nous-credits-denominator-kind": "usage_window",
-        "x-nous-credits-window-gauges": json.dumps(_gauges(day_bp, week_bp, top_tier_bp=top_tier_bp)),
+        "x-thor-credits-version": "1",
+        "x-thor-credits-remaining-micros": _micros(purchased),
+        "x-thor-credits-remaining-usd": f"{purchased:.2f}",
+        "x-thor-credits-subscription-micros": "0",
+        "x-thor-credits-subscription-usd": "0.00",
+        "x-thor-credits-rollover-micros": "0",
+        "x-thor-credits-purchased-micros": _micros(purchased),
+        "x-thor-credits-purchased-usd": f"{purchased:.2f}",
+        "x-thor-credits-paid-access": "true" if paid else "false",
+        "x-thor-credits-as-of-ms": str(NOW_MS),
+        "x-thor-credits-denominator-kind": "usage_window",
+        "x-thor-credits-window-gauges": json.dumps(_gauges(day_bp, week_bp, top_tier_bp=top_tier_bp)),
     }
     if source is not None:
-        h["x-nous-credits-spend-source"] = source
+        h["x-thor-credits-spend-source"] = source
     if paused is not None:
-        h["x-nous-credits-window-paused-reason"] = paused
+        h["x-thor-credits-window-paused-reason"] = paused
     h.update(extra)
     return h
 
@@ -125,13 +125,13 @@ class TestParser:
 
     def test_a_window_note_without_a_readable_gauge_list_is_a_miss(self):
         h = _window_headers()
-        del h["x-nous-credits-window-gauges"]
+        del h["x-thor-credits-window-gauges"]
         assert parse_credits_headers(h) is None
         for bad in ("not json", "{}", "[]", json.dumps(_gauges(top_tier_bp=None)[1:0])):
-            assert parse_credits_headers({**h, "x-nous-credits-window-gauges": bad}) is None
+            assert parse_credits_headers({**h, "x-thor-credits-window-gauges": bad}) is None
         # Only a top-tier allowance: nothing stops every model, so not a usage window.
         top_only = [g for g in _gauges() if g["scope"] == "top_tier"]
-        assert parse_credits_headers({**h, "x-nous-credits-window-gauges": json.dumps(top_only)}) is None
+        assert parse_credits_headers({**h, "x-thor-credits-window-gauges": json.dumps(top_only)}) is None
 
     def test_the_server_list_decides_which_allowances_exist(self):
         """A new allowance (here a 5-hour window) parses and binds with no Thor release; an entry with an
@@ -142,7 +142,7 @@ class TestParser:
                   {"id": "week", "scope": "all", "label": "dup", "used_bp": 1, "resets_at_ms": 1},
                   {"id": "x", "scope": "per_model", "label": "x", "used_bp": 1, "resets_at_ms": 1},
                   {"id": "y", "scope": "all", "label": "y", "used_bp": 10_001, "resets_at_ms": 1}]
-        s = parse_credits_headers(_window_headers(**{"x-nous-credits-window-gauges": json.dumps(gauges)}))
+        s = parse_credits_headers(_window_headers(**{"x-thor-credits-window-gauges": json.dumps(gauges)}))
         assert s is not None and [g.id for g in s.gauges] == ["five_hour", "day", "week", "top_tier"]
         assert s.window_exhausted and s.binding_gauge.id == "five_hour" and s.window_resets_at_ms == NOW_MS + 3600_000
         assert _gauge(s, "week").label == "This week"
@@ -151,7 +151,7 @@ class TestParser:
 
     def test_month_and_top_tier_reset_come_from_the_list(self):
         top_reset = NOW_MS + 20 * 86_400_000
-        s = parse_credits_headers(_window_headers(**{"x-nous-credits-window-gauges": json.dumps(
+        s = parse_credits_headers(_window_headers(**{"x-thor-credits-window-gauges": json.dumps(
             _gauges(month_bp=3_300, top_reset=top_reset))}))
         assert s is not None and _gauge(s, "month").used_bp == 3_300 and s.top_tier_resets_at_ms == top_reset
         old = parse_credits_headers(_window_headers())  # no month allowance listed: no month gauge
@@ -160,7 +160,7 @@ class TestParser:
     def test_a_list_without_top_tier_reads_as_not_used(self):
         s = parse_credits_headers(_window_headers(top_tier_bp=None, source=None))
         assert s is not None and s.top_tier_used_bp is None and not s.top_tier_exhausted and s.spend_source is None
-        s = parse_credits_headers(_window_headers(**{"x-nous-credits-spend-source": "wallet"}))
+        s = parse_credits_headers(_window_headers(**{"x-thor-credits-spend-source": "wallet"}))
         assert s is not None and s.spend_source is None  # outside the vocabulary → absent
 
     def test_paused_reason_header(self):
@@ -169,10 +169,10 @@ class TestParser:
 
     def test_top_up_setting_header(self):
         """``on`` / ``off`` is the account's top-up-for-Thor setting; absent or unrecognised = an older server."""
-        on = parse_credits_headers(_window_headers(purchased=5.0, **{"x-nous-credits-keep-going-on-credits": "on"}))
-        off = parse_credits_headers(_window_headers(purchased=5.0, **{"x-nous-credits-keep-going-on-credits": "OFF"}))
+        on = parse_credits_headers(_window_headers(purchased=5.0, **{"x-thor-credits-keep-going-on-credits": "on"}))
+        off = parse_credits_headers(_window_headers(purchased=5.0, **{"x-thor-credits-keep-going-on-credits": "OFF"}))
         old = parse_credits_headers(_window_headers(purchased=5.0))
-        bad = parse_credits_headers(_window_headers(purchased=5.0, **{"x-nous-credits-keep-going-on-credits": "maybe"}))
+        bad = parse_credits_headers(_window_headers(purchased=5.0, **{"x-thor-credits-keep-going-on-credits": "maybe"}))
         assert (on.keep_going_on_credits, off.keep_going_on_credits, old.keep_going_on_credits, bad.keep_going_on_credits) == (True, False, None, None)
         # A balance pays only when the setting is not off.
         assert on.credits_pay and old.credits_pay and not off.credits_pay
@@ -210,12 +210,12 @@ class TestParser:
     def test_legacy_notes_ignore_window_headers(self):
         """A credit-grant note carrying stray window headers stays a credit-grant state (no gauge)."""
         h = _window_headers()
-        h["x-nous-credits-denominator-kind"] = "none"
+        h["x-thor-credits-denominator-kind"] = "none"
         s = parse_credits_headers(h)
         assert s is not None and not s.is_usage_window and s.gauges == () and s.spend_source is None
 
     def test_unknown_kind_is_still_a_miss(self):
-        assert parse_credits_headers(_window_headers(**{"x-nous-credits-denominator-kind": "usage_windows"})) is None
+        assert parse_credits_headers(_window_headers(**{"x-thor-credits-denominator-kind": "usage_windows"})) is None
 
     def test_a_window_note_may_drop_the_credit_grant_fields(self):
         """The server can retire the grant headers with legacy plans; a window note still parses, and only
@@ -224,18 +224,18 @@ class TestParser:
                  "as-of-ms"]
         h = _window_headers(1_200, 900, purchased=5.0)
         for name in grant:
-            del h[f"x-nous-credits-{name}"]
+            del h[f"x-thor-credits-{name}"]
         s = parse_credits_headers(h)
         assert s is not None and s.is_usage_window and _gauge(s, "day").used_bp == 1_200
         assert s.purchased_micros == 5_000_000 and s.remaining_micros == 0 and s.subscription_usd == ""
-        assert parse_credits_headers({**h, "x-nous-credits-denominator-kind": "none"}) is None
+        assert parse_credits_headers({**h, "x-thor-credits-denominator-kind": "none"}) is None
         # A refused (402) window response carries no top-up balance; it still parses (balance defaults to 0).
-        bare = {k: v for k, v in h.items() if not k.startswith("x-nous-credits-purchased-")}
+        bare = {k: v for k, v in h.items() if not k.startswith("x-thor-credits-purchased-")}
         s = parse_credits_headers(bare)
         assert s is not None and s.is_usage_window and s.purchased_micros == 0
-        assert parse_credits_headers({**bare, "x-nous-credits-denominator-kind": "none"}) is None
+        assert parse_credits_headers({**bare, "x-thor-credits-denominator-kind": "none"}) is None
         # Present but malformed is still a contract violation.
-        assert parse_credits_headers({**h, "x-nous-credits-rollover-micros": "-1"}) is None
+        assert parse_credits_headers({**h, "x-thor-credits-rollover-micros": "-1"}) is None
 
 
 # ── derived state ─────────────────────────────────────────────────────────────
@@ -454,7 +454,7 @@ class TestHardStops:
     def test_a_pause_for_another_reason_never_claims_a_payment_failed(self):
         """The server may send any reason (\"unknown\" for a malformed one): still a pause, neutral copy."""
         from agent import account_usage
-        from thor_cli import nous_account
+        from thor_cli import thor_account
         show, _ = _run(_state(paid_access=False, paused_reason="unknown", spend_source=None), new_credits_latch())
         assert [k for k, _l, _t in show] == [CREDITS_DEPLETED_KEY]
         assert "payment" not in show[0][2] and "add credits in /topup" in show[0][2]
@@ -462,9 +462,9 @@ class TestHardStops:
                                  paused_reason="unknown", keep_going_on_credits=None)
         info = SimpleNamespace(logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
                                paid_service_access_info=SimpleNamespace(purchased_credits_remaining=0.0), subscription=None)
-        lines = account_usage.render_account_usage_lines(account_usage.build_nous_credits_snapshot(info))
+        lines = account_usage.render_account_usage_lines(account_usage.build_thor_credits_snapshot(info))
         assert account_usage._WINDOW_PAUSED_OTHER_LINE in lines and account_usage._WINDOW_PAUSED_LINE not in lines
-        assert nous_account.format_usage_window_block_guidance(info).startswith("Included usage is paused, or add credits")
+        assert thor_account.format_usage_window_block_guidance(info).startswith("Included usage is paused, or add credits")
 
     def test_payment_paused_wins_over_exhausted_and_survives_a_free_model(self):
         s = _state(paid_access=False, paused_reason="payment_past_due", window_day_used_bp=10_000, spend_source=None)
@@ -718,7 +718,7 @@ class TestUsageCommand:
     def test_portal_window_account_renders_today_week_and_top_tier(self, monkeypatch):
         from agent import account_usage
         top_reset_ms = int(time.time() * 1000) + 20 * 86_400_000
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
+        monkeypatch.setattr("thor_cli.thor_account.thor_portal_topup_url", lambda info: "https://portal/topup")
         info = SimpleNamespace(
             logged_in=True, paid_service_access=True,
             paid_service_access_info=SimpleNamespace(purchased_credits_remaining=5.0, subscription_credits_remaining=0.0, total_usable_credits=5.0),
@@ -727,7 +727,7 @@ class TestUsageCommand:
                                                         week_reset=int(time.time() * 1000) + 3 * 86_400_000, top_reset=top_reset_ms),
                                          auto_top_up_enabled=False, paused_reason=None),
         )
-        snap = account_usage.build_nous_credits_snapshot(info)
+        snap = account_usage.build_thor_credits_snapshot(info)
         assert snap is not None and snap.plan == "Window Plan"
         assert [w.label for w in snap.windows] == ["Today", "This week", "Large models (monthly)"]
         # The monthly row resets on the large-model allowance's own clock, and the used-up line names that date.
@@ -755,16 +755,16 @@ class TestUsageCommand:
         window = SimpleNamespace(gauges=_gauges(100, 200, **kw))
         info = SimpleNamespace(logged_in=True, paid_service_access=True, paid_service_access_info=None, subscription=None,
                                usage_window=window)
-        assert [w.label for w in account_usage.build_nous_credits_snapshot(info).windows] == [
+        assert [w.label for w in account_usage.build_thor_credits_snapshot(info).windows] == [
             "Today", "This week", "Large models (monthly)"]  # no month allowance listed: no month row
         window.gauges = _gauges(100, 200, month_bp=3_300, **kw)
-        snap = account_usage.build_nous_credits_snapshot(info)
+        snap = account_usage.build_thor_credits_snapshot(info)
         assert [w.label for w in snap.windows] == ["Today", "This week", "This month", "Large models (monthly)"]
         assert round(snap.windows[2].used_percent) == 33
         # A new allowance renders with the server's label, where the server put it.
         window.gauges = [{"id": "five_hour", "scope": "all", "label": "Next 5 hours", "used_bp": 5_000,
                           "resets_at_ms": now + 3600_000}, *_gauges(100, 200, **kw)]
-        assert next(w.label for w in account_usage.build_nous_credits_snapshot(info).windows) == "Next 5 hours"
+        assert next(w.label for w in account_usage.build_thor_credits_snapshot(info).windows) == "Next 5 hours"
 
     def test_an_unknown_reset_keeps_the_allowance_row(self):
         """A valid percent with no usable reset still shows as a window row (no reset phrase), never the
@@ -774,14 +774,14 @@ class TestUsageCommand:
                   {"id": "week", "scope": "all", "label": "This week", "used_bp": 1_000, "resets_at_ms": "soon"}]
         info = SimpleNamespace(logged_in=True, paid_service_access=True, paid_service_access_info=None, subscription=None,
                                usage_window=SimpleNamespace(gauges=gauges, paused_reason=None))
-        snap = account_usage.build_nous_credits_snapshot(info)
+        snap = account_usage.build_thor_credits_snapshot(info)
         assert snap.usage_window and [(w.label, round(w.used_percent), w.reset_at) for w in snap.windows] == [
             ("Today", 42, None), ("This week", 10, None)]
         assert not any("resets" in line for line in account_usage.render_account_usage_lines(snap))
 
     def test_header_gauge_raises_stale_portal_percents(self, monkeypatch):
         from agent import account_usage
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
+        monkeypatch.setattr("thor_cli.thor_account.thor_portal_topup_url", lambda info: "https://portal/topup")
         info = SimpleNamespace(
             logged_in=True, paid_service_access=True,
             paid_service_access_info=SimpleNamespace(purchased_credits_remaining=5.0, subscription_credits_remaining=0.0, total_usable_credits=5.0),
@@ -790,7 +790,7 @@ class TestUsageCommand:
                                                         week_reset=int(time.time() * 1000) + 3 * 86_400_000),
                                          auto_top_up_enabled=False, paused_reason=None),
         )
-        snap = account_usage.build_nous_credits_snapshot(info)
+        snap = account_usage.build_thor_credits_snapshot(info)
         future = int(time.time() * 1000) + 3600_000
         raised = account_usage.apply_header_gauge(snap, _state(
             window_day_used_bp=4_000, window_week_used_bp=1_600, window_top_tier_used_bp=10_000,
@@ -809,7 +809,7 @@ class TestUsageCommand:
 
     def test_portal_paused_window_account(self, monkeypatch):
         from agent import account_usage
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
+        monkeypatch.setattr("thor_cli.thor_account.thor_portal_topup_url", lambda info: "https://portal/topup")
         info = SimpleNamespace(
             logged_in=True, paid_service_access=False,
             paid_service_access_info=SimpleNamespace(purchased_credits_remaining=0.0),
@@ -818,16 +818,16 @@ class TestUsageCommand:
                                                         week_reset=int(time.time() * 1000) + 2),
                                          auto_top_up_enabled=False, paused_reason="payment_past_due"),
         )
-        lines = account_usage.render_account_usage_lines(account_usage.build_nous_credits_snapshot(info))
+        lines = account_usage.render_account_usage_lines(account_usage.build_thor_credits_snapshot(info))
         assert account_usage._WINDOW_PAUSED_LINE in lines and account_usage._DEPLETED_LINE not in lines
 
     def test_portal_keep_going_off_says_so_and_never_says_add_credits(self, monkeypatch):
         """Keep going on credits off: /usage names the setting, the used-up line points at the other
         included usage (a balance doesn't unlock it), and the 402 guidance links billing, not top-up."""
         from agent import account_usage
-        from thor_cli import nous_account
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_billing_url", lambda info: "https://portal/billing")
+        from thor_cli import thor_account
+        monkeypatch.setattr("thor_cli.thor_account.thor_portal_topup_url", lambda info: "https://portal/topup")
+        monkeypatch.setattr("thor_cli.thor_account.thor_portal_billing_url", lambda info: "https://portal/billing")
         now = int(time.time() * 1000)
         window = SimpleNamespace(gauges=_gauges(7_600, 4_000, top_tier_bp=10_000, day_reset=now + 3600_000,
                                                 week_reset=now + 3 * 86_400_000, top_reset=now + 20 * 86_400_000),
@@ -837,11 +837,11 @@ class TestUsageCommand:
             paid_service_access_info=SimpleNamespace(purchased_credits_remaining=5.0),
             subscription=None, usage_window=window,
         )
-        lines = account_usage.render_account_usage_lines(account_usage.build_nous_credits_snapshot(info))
+        lines = account_usage.render_account_usage_lines(account_usage.build_thor_credits_snapshot(info))
         assert account_usage._WINDOW_KEEP_GOING_OFF_LINE in lines
         assert any(line.endswith("Your other included usage is still available.") for line in lines)
         assert not any("use your credits" in line for line in lines)
-        guidance = nous_account.format_usage_window_block_guidance(info)
+        guidance = thor_account.format_usage_window_block_guidance(info)
         # Points at the setting (billing page or /topup), never at the buy-credits modal.
         assert guidance is not None and "https://portal/billing" in guidance and "topup=open" not in guidance
         assert "/topup" in guidance
@@ -850,25 +850,25 @@ class TestUsageCommand:
         # On (says so, and that credits = the pay-as-you-go balance), or a portal that predates the setting.
         for keep_going in (True, None):
             info.usage_window = SimpleNamespace(**{**vars(window), "keep_going_on_credits": keep_going})
-            lines = account_usage.render_account_usage_lines(account_usage.build_nous_credits_snapshot(info))
+            lines = account_usage.render_account_usage_lines(account_usage.build_thor_credits_snapshot(info))
             assert account_usage._WINDOW_KEEP_GOING_OFF_LINE not in lines
             assert (account_usage._WINDOW_KEEP_GOING_ON_LINE in lines) is (keep_going is True)
             assert any(line.endswith("Past this, large models use your credits.") for line in lines)
-            assert "https://portal/topup" in nous_account.format_usage_window_block_guidance(info)
+            assert "https://portal/topup" in thor_account.format_usage_window_block_guidance(info)
 
     def test_account_dto_carries_keep_going_on_credits(self):
-        from thor_cli.nous_account import NousUsageWindowInfo, _coerced_dataclass
-        assert _coerced_dataclass(NousUsageWindowInfo, {"keep_going_on_credits": False}).keep_going_on_credits is False
-        assert _coerced_dataclass(NousUsageWindowInfo, {}).keep_going_on_credits is None
+        from thor_cli.thor_account import ThorUsageWindowInfo, _coerced_dataclass
+        assert _coerced_dataclass(ThorUsageWindowInfo, {"keep_going_on_credits": False}).keep_going_on_credits is False
+        assert _coerced_dataclass(ThorUsageWindowInfo, {}).keep_going_on_credits is None
 
     def test_partial_or_empty_usage_window_block_is_treated_as_absent(self):
         """Gate on a readable gauge list, not on the block's presence: an empty block, or one whose list
         has nothing that stops every model, keeps the dollar usage model and the credit-grant 402 guidance."""
         from agent.billing_usage import usage_model_from_account
-        from thor_cli.nous_account import NousUsageWindowInfo, format_usage_window_block_guidance
-        complete = NousUsageWindowInfo(gauges=ct.parse_gauges(_gauges(100, 50)))
-        top_only = NousUsageWindowInfo(gauges=ct.parse_gauges([g for g in _gauges() if g["scope"] == "top_tier"]))
-        for window, is_window in ((complete, True), (NousUsageWindowInfo(), False), (top_only, False)):
+        from thor_cli.thor_account import ThorUsageWindowInfo, format_usage_window_block_guidance
+        complete = ThorUsageWindowInfo(gauges=ct.parse_gauges(_gauges(100, 50)))
+        top_only = ThorUsageWindowInfo(gauges=ct.parse_gauges([g for g in _gauges() if g["scope"] == "top_tier"]))
+        for window, is_window in ((complete, True), (ThorUsageWindowInfo(), False), (top_only, False)):
             info = SimpleNamespace(
                 logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
                 paid_service_access_info=SimpleNamespace(purchased_credits_remaining=1.0, subscription_credits_remaining=18.0,
@@ -881,18 +881,18 @@ class TestUsageCommand:
 
     def test_portal_legacy_account_is_unchanged(self, monkeypatch):
         from agent import account_usage
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
+        monkeypatch.setattr("thor_cli.thor_account.thor_portal_topup_url", lambda info: "https://portal/topup")
         info = SimpleNamespace(
             logged_in=True, paid_service_access=True,
             paid_service_access_info=SimpleNamespace(purchased_credits_remaining=1.0, subscription_credits_remaining=18.0, total_usable_credits=19.0),
             subscription=SimpleNamespace(plan="Credit Plan", monthly_credits=20.0, credits_remaining=18.0, rollover_credits=0, current_period_end=None),
             usage_window=None,
         )
-        snap = account_usage.build_nous_credits_snapshot(info)
+        snap = account_usage.build_thor_credits_snapshot(info)
         assert snap is not None and not snap.usage_window
         lines = account_usage.render_account_usage_lines(snap)
         # Byte-for-byte today's layout: emoji title, provider line, "% remaining (% used)", portal link.
-        assert lines[0] == "📈 Nous credits" and lines[1] == "Provider: nous (Credit Plan)"
+        assert lines[0] == "📈 Thor credits" and lines[1] == "Provider: thor (Credit Plan)"
         assert any(l.startswith("Subscription: 90% remaining (10% used)") for l in lines)
         assert "Subscription credits: $18.00" in lines
         assert "Top up: https://portal/topup" in lines and "(or run /topup)" in lines
@@ -901,7 +901,7 @@ class TestUsageCommand:
     def test_fixture_window_state_renders(self, monkeypatch):
         from agent import account_usage
         monkeypatch.setattr(ct, "dev_fixture_credits_state", _PLAN_STATES["top_tier_blocked"])
-        lines = account_usage.nous_credits_lines()
+        lines = account_usage.thor_credits_lines()
         joined = "\n".join(lines)
         assert "40% used" in joined and "This week" in joined and "[" in joined
         assert any(l.startswith(account_usage._WINDOW_TOP_TIER_USED_UP) for l in lines) and "Top-up credits: $0.00" in lines
@@ -925,12 +925,12 @@ class TestClassifier:
         from agent.error_classifier import FailoverReason, classify_api_error
         c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted",
                                          "Your included Thor usage for today is used up and you have no top-up credits. It resets at 18:00."),
-                               provider="nous", model="example/model-c")
+                               provider="thor", model="example/model-c")
         assert c.reason == FailoverReason.billing and not c.retryable
         assert c.error_context.get("usage_window") is True
 
     def test_other_402_billing_codes_keep_main_text_rules(self):
-        """Only the Nous window code is decisive on a 402; any other provider's billing code
+        """Only the Thor window code is decisive on a 402; any other provider's billing code
         with transient wording stays a rate limit, as on main."""
         from agent.error_classifier import FailoverReason, classify_api_error
         c = classify_api_error(self._err(402, "insufficient_quota",
@@ -942,20 +942,20 @@ class TestClassifier:
     def test_window_402_carries_the_server_wording_when_sent(self):
         from agent.error_classifier import classify_api_error
         err = self._err(402, "usage_window_and_credits_exhausted", "Your included Thor usage for today is used up.")
-        assert "display_message" not in classify_api_error(err, provider="nous", model="m").error_context
+        assert "display_message" not in classify_api_error(err, provider="thor", model="m").error_context
         err.body = {"status": 402, "code": "usage_window_and_credits_exhausted", "message": "m",
                     "display_message": "Daily limit hit. Back at 4pm."}
-        c = classify_api_error(err, provider="nous", model="m")
+        c = classify_api_error(err, provider="thor", model="m")
         assert c.error_context == {"usage_window": True, "display_message": "Daily limit hit. Back at 4pm."}
         # Never on any other 402.
         other = self._err(402, "insufficient_credit", "no credits")
         other.body["display_message"] = "x"
-        assert "display_message" not in classify_api_error(other, provider="nous", model="m").error_context
+        assert "display_message" not in classify_api_error(other, provider="thor", model="m").error_context
 
     def test_window_402_never_falls_back_to_another_model(self):
         """A plan limit is the user's call (the limit card offers a switch): never the fallback chain."""
         from agent.error_classifier import classify_api_error
-        c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted", "used up"), provider="nous", model="m")
+        c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted", "used up"), provider="thor", model="m")
         assert c.should_fallback is False
 
     def test_window_402_code_from_another_upstream_keeps_main_rules(self):
@@ -976,7 +976,7 @@ class TestClassifier:
 
     def test_a_plain_403_still_classifies_as_before(self):
         from agent.error_classifier import FailoverReason, classify_api_error
-        c = classify_api_error(self._err(403, "forbidden", "Forbidden"), provider="nous", model="m")
+        c = classify_api_error(self._err(403, "forbidden", "Forbidden"), provider="thor", model="m")
         assert c.reason != FailoverReason.model_not_found
 
 
@@ -984,13 +984,13 @@ class TestClassifier:
 
 
 class TestBlockedResponseCapture:
-    def test_a_nous_402_refreshes_the_credits_state(self, monkeypatch):
+    def test_a_thor_402_refreshes_the_credits_state(self, monkeypatch):
         from agent.rate_limit_credits import RateLimitCreditsMixin
 
         class Agent(RateLimitCreditsMixin):
-            provider = "nous"
+            provider = "thor"
             model = "example/model-c"
-            base_url = "https://inference-api.nousresearch.com/v1"
+            base_url = "https://inference-api.thor-agent.local/v1"
             _credits_state = None
             _credits_session_start_micros = None
             _credits_latch = new_credits_latch()
@@ -1016,23 +1016,23 @@ class TestBlockedResponseCapture:
         monkeypatch.setattr(ct, "rewarm_pricing_before_depleted_notice", lambda agent: False)
         err = SimpleNamespace(status_code=402, response=SimpleNamespace(
             headers=_window_headers(4_000, 2_000, top_tier_bp=10_000, source=None)))
-        # Mirror the turn_api_error hook: a 402 from Nous feeds the same capture path as a stream open.
+        # Mirror the turn_api_error hook: a 402 from Thor feeds the same capture path as a stream open.
         agent._capture_credits(err.response, refused=True)
         assert agent._credits_state is not None and agent._credits_state.top_tier_exhausted
         assert [n.key for n in agent.emitted] == [CREDITS_WINDOW_LIMIT_KEY]
         assert "You've hit your monthly large-model limit" in agent.emitted[0].text
 
     def test_non_streaming_success_feeds_the_header_capture(self):
-        """A non-streaming 200 must observe x-nous-credits-* like a stream open does
+        """A non-streaming 200 must observe x-thor-credits-* like a stream open does
         (spend_source / window gauges otherwise go stale until the next stream or 402)."""
         from agent.chat_completion_headers import _chat_completion_capturing_headers
 
         seen = []
         agent = SimpleNamespace(
-            provider="nous", _credits_state=_state(),
+            provider="thor", _credits_state=_state(),
             _capture_rate_limits=lambda r: seen.append(("rl", r)),
             _capture_credits=lambda r: seen.append(("credits", r)),
-            _capture_nous_model_switch=lambda r: None,
+            _capture_thor_model_switch=lambda r: None,
             _check_openrouter_cache_status=lambda r: None,
         )
         parsed = SimpleNamespace(choices=[])
@@ -1055,7 +1055,7 @@ class TestBlockedResponseCapture:
         # Other providers keep the plain call they had before (no raw response).
         plain = SimpleNamespace(choices=["plain"])
         other = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
-            with_raw_response=SimpleNamespace(create=lambda **kw: pytest.fail("raw must not be used off Nous")),
+            with_raw_response=SimpleNamespace(create=lambda **kw: pytest.fail("raw must not be used off Thor")),
             create=lambda **kw: plain)))
         assert _chat_completion_capturing_headers(
             SimpleNamespace(provider="example"), other, {"model": "m"}) is plain
@@ -1074,14 +1074,14 @@ class TestBlockedResponseCapture:
 
         seen = []
         agent = SimpleNamespace(
-            provider="nous", _credits_state=_state(),
+            provider="thor", _credits_state=_state(),
             _capture_rate_limits=lambda r: seen.append("rl"), _capture_credits=lambda r: seen.append("credits"),
-            _capture_nous_model_switch=lambda r: seen.append("switch"),
+            _capture_thor_model_switch=lambda r: seen.append("switch"),
             _check_openrouter_cache_status=lambda r: seen.append("or"),
         )
         parsed = SimpleNamespace(choices=[])
-        grant = {**_window_headers(), "x-nous-credits-denominator-kind": "subscription_cap"}
-        for headers in ({}, grant, {"x-nous-credits-remaining-micros": "1"}):
+        grant = {**_window_headers(), "x-thor-credits-denominator-kind": "subscription_cap"}
+        for headers in ({}, grant, {"x-thor-credits-remaining-micros": "1"}):
             raw = SimpleNamespace(headers=headers, parse=lambda: parsed)
             client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
                 with_raw_response=SimpleNamespace(create=lambda **kw: raw), create=lambda **kw: None)))
@@ -1099,21 +1099,21 @@ class TestBlockedResponseCapture:
 
     def test_response_is_usage_window(self):
         assert ct.response_is_usage_window(SimpleNamespace(headers=_window_headers()))
-        grant = {**_window_headers(), "x-nous-credits-denominator-kind": "subscription_cap"}
-        partial = {k: v for k, v in _window_headers().items() if k != "x-nous-credits-window-gauges"}
+        grant = {**_window_headers(), "x-thor-credits-denominator-kind": "subscription_cap"}
+        partial = {k: v for k, v in _window_headers().items() if k != "x-thor-credits-window-gauges"}
         for headers in ({}, grant, partial):
             assert not ct.response_is_usage_window(SimpleNamespace(headers=headers))
         assert not ct.response_is_usage_window(None)
 
     @pytest.mark.parametrize("provider, status, headers, captured", [
-        ("nous", 402, "window", True),
-        ("nous", 403, "window", True),
+        ("thor", 402, "window", True),
+        ("thor", 403, "window", True),
         ("openrouter", 402, "window", False),  # window headers from any other provider: main's behaviour
-        ("nous", 402, "grant", False),         # a credit-grant account: main's behaviour
-        ("nous", 500, "window", False),
+        ("thor", 402, "grant", False),         # a credit-grant account: main's behaviour
+        ("thor", 500, "window", False),
     ])
-    def test_handle_api_error_captures_only_a_nous_window_refusal(self, provider, status, headers, captured):
-        """A refused (402/403) Nous request's usage-window headers reach the credits capture, marked refused;
+    def test_handle_api_error_captures_only_a_thor_window_refusal(self, provider, status, headers, captured):
+        """A refused (402/403) Thor request's usage-window headers reach the credits capture, marked refused;
         nothing else does. The turn is stopped right after the capture (interpreter shutdown) so only the
         hook runs."""
         from unittest.mock import patch
@@ -1123,12 +1123,12 @@ class TestBlockedResponseCapture:
         with patch("model_tools.get_tool_definitions", return_value=[]), \
                 patch("model_tools.check_toolset_requirements", return_value={}), \
                 patch("agent.process_bootstrap.OpenAI"):
-            agent = AIAgent(api_key="test-key-1234567890", base_url="https://inference-api.nousresearch.com/v1",
+            agent = AIAgent(api_key="test-key-1234567890", base_url="https://inference-api.thor-agent.local/v1",
                             quiet_mode=True, skip_context_files=True, skip_memory=True)
         agent.provider = provider
         h = _window_headers(10_000, source=None)
         if headers == "grant":
-            h = {**h, "x-nous-credits-denominator-kind": "subscription_cap"}
+            h = {**h, "x-thor-credits-denominator-kind": "subscription_cap"}
         error = type("_Err", (Exception,), {"status_code": status})("refused")
         error.response = SimpleNamespace(headers=h, status_code=status)
         seen = []
@@ -1161,7 +1161,7 @@ class TestPicker:
         assert picker._CUSTOM_LABEL in captured["choices"]
 
     def test_account_payload_usage_window_is_parsed(self):
-        from thor_cli import nous_account as na
+        from thor_cli import thor_account as na
         payload = {
             "user": {"email": "x@y.z"}, "organisation": {"id": "o1"},
             "paid_service_access": {"allowed": True},
@@ -1192,7 +1192,7 @@ class TestRefusalReadsAsTheStopLine:
     def _agent(self, **state_kw):
         state = _state(window_day_used_bp=10_000, spend_source=None, **state_kw)
         return SimpleNamespace(_credits_state=state, _credits_latch=new_credits_latch(), model="example/model-b",
-                               base_url="https://inference-api.nousresearch.com/v1")
+                               base_url="https://inference-api.thor-agent.local/v1")
 
     def test_the_refusal_text_is_the_stop_line(self):
         from agent.conversation_loop import _usage_window_refusal
@@ -1253,7 +1253,7 @@ class TestRefusalReadsAsTheStopLine:
         """A new subscriber's first limit (setting off by default, no top-up): the stop line, the next-steps
         payload and the 402 guidance all name both steps, since either one alone is still refused."""
         from agent.conversation_loop import _usage_window_refusal
-        from thor_cli import nous_account
+        from thor_cli import thor_account
         agent = self._agent(purchased_micros=0, keep_going_on_credits=False)
         text, _resets_at, limit = _usage_window_refusal(agent, SimpleNamespace(error_context={"usage_window": True}))
         assert text.endswith(" · add credits and turn on Keep going in /topup")
@@ -1263,7 +1263,7 @@ class TestRefusalReadsAsTheStopLine:
         for purchased in (0.0, None):
             info = SimpleNamespace(logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
                                    paid_service_access_info=SimpleNamespace(purchased_credits_remaining=purchased))
-            guidance = nous_account.format_usage_window_block_guidance(info)
+            guidance = thor_account.format_usage_window_block_guidance(info)
             assert guidance.startswith("Add credits and turn on Keep going in /topup")
         # Any other billing failure keeps its own copy and carries no limit.
         assert _usage_window_refusal(agent, SimpleNamespace(error_context={})) == ("", None, None)
@@ -1286,7 +1286,7 @@ class TestRefusalReadsAsTheStopLine:
         (which on desktop meant an "Out of credits" card + toast + banner)."""
         from agent.conversation_loop import _usage_window_refusal
         quiet = SimpleNamespace(_credits_state=_state(), _credits_latch=new_credits_latch(), model="example/model-b",
-                                base_url="https://inference-api.nousresearch.com/v1")
+                                base_url="https://inference-api.thor-agent.local/v1")
         refused = SimpleNamespace(error_context={"usage_window": True},
                                   message="Your included Thor usage for this week is used up.")
         assert _usage_window_refusal(quiet, refused)[0] == "Your included Thor usage for this week is used up."
@@ -1302,7 +1302,7 @@ class TestRefusalReadsAsTheStopLine:
         })
         _text, _at, limit = _usage_window_refusal(self._agent(), SimpleNamespace(error_context={"usage_window": True}))
         # The day is spent: only the free pick still works; never the current model.
-        assert limit["suggestions"] == [{"model": "example/model-free:free", "label": "Model Free", "note": "free", "provider": "nous"}]
+        assert limit["suggestions"] == [{"model": "example/model-free:free", "label": "Model Free", "note": "free", "provider": "thor"}]
         assert limit["credits"] == {"action": "add_credits"}
 
     def test_the_text_never_carries_a_command_hint(self):
@@ -1317,25 +1317,25 @@ class TestRefusalReadsAsTheStopLine:
         monkeypatch.setattr(cl, "_billing_or_entitlement_message", lambda **kw: "Add credits to keep going now: https://x")
         classified = SimpleNamespace(billing_unverified=False, retryable=False, reason=SimpleNamespace(value="billing"))
         kw = dict(classified=classified, summary="HTTP 402", messages=[], api_call_count=1,
-                  provider="nous", base_url="https://inference-api.nousresearch.com/v1", model="m")
+                  provider="thor", base_url="https://inference-api.thor-agent.local/v1", model="m")
         sentence = "You've hit your daily limit · resets 15:56 · /topup to add credits"
         limit = {"gauge_id": "day", "scope": "all", "message": sentence, "credits": {"action": "add_credits"},
-                 "suggestions": [{"model": "a/b:free", "label": "A", "note": "free", "provider": "nous"}]}
+                 "suggestions": [{"model": "a/b:free", "label": "A", "note": "free", "provider": "thor"}]}
         result = cl._billing_failure_result(**kw, usage_window=(sentence, 1_800_000_000.0, limit))
         assert result["final_response"] == sentence and result["failure_reason"] == "billing"
         assert result["usage_limit"] == limit
-        surface = build_error_surface_from_result(result, provider="nous", model="m")
+        surface = build_error_surface_from_result(result, provider="thor", model="m")
         assert surface["layer"] == "billing" and surface["code"] == "usage_window" and surface["message"] == sentence
         assert surface["usage_limit"] == limit
         # An older 2-item tuple still reads (no structured limit).
         two = cl._billing_failure_result(**kw, usage_window=(sentence, 1_800_000_000.0))
-        assert "usage_limit" not in two and "usage_limit" not in build_error_surface_from_result(two, provider="nous", model="m")
+        assert "usage_limit" not in two and "usage_limit" not in build_error_surface_from_result(two, provider="thor", model="m")
         # Retry at the reset is offered: the card's "Retry at 15:56".
         assert surface["retryable"] is True and surface["resets_at"] == 1_800_000_000.0
         # Without it (every other account): the generic billing result and card, unchanged.
         plain = cl._billing_failure_result(**kw)
         assert "usage_window_message" not in plain and plain["final_response"].startswith("Billing or credits exhausted")
-        assert build_error_surface_from_result(plain, provider="nous", model="m")["code"] == "billing"
+        assert build_error_surface_from_result(plain, provider="thor", model="m")["code"] == "billing"
 
 
 class TestRebuildMemory:
@@ -1392,14 +1392,14 @@ def test_a_refused_request_keeps_the_last_known_top_up_balance():
     from agent.rate_limit_credits import RateLimitCreditsMixin
 
     class _Agent(RateLimitCreditsMixin):
-        provider = "nous"
+        provider = "thor"
         notice_callback = notice_clear_callback = None
         _credits_session_start_micros = None
 
     agent = _Agent()
     agent._credits_state = parse_credits_headers(_window_headers(9_800, 500, purchased=8.3, source="included"))
     refused = {k: v for k, v in _window_headers(10_000, 500, source=None).items()
-               if not k.startswith("x-nous-credits-purchased-")}
+               if not k.startswith("x-thor-credits-purchased-")}
     agent._capture_credits(NS(headers=refused))
     assert agent._credits_state.window_exhausted
     assert agent._credits_state.purchased_micros == 8_300_000 and agent._credits_state.purchased_usd == "8.30"
@@ -1418,7 +1418,7 @@ def test_leaving_a_window_plan_clears_its_limit_line():
 
 
 def test_window_headers_from_another_upstream_are_ignored():
-    """Only Nous replies can put a session on a window plan (no window UI or Keep going button from a proxy)."""
+    """Only Thor replies can put a session on a window plan (no window UI or Keep going button from a proxy)."""
     from types import SimpleNamespace as NS
     from agent.rate_limit_credits import RateLimitCreditsMixin
 
@@ -1440,7 +1440,7 @@ def test_an_unmetered_reply_raises_no_limit_stop():
     from agent.rate_limit_credits import RateLimitCreditsMixin
 
     class _Agent(RateLimitCreditsMixin):
-        provider = "nous"
+        provider = "thor"
         notice_callback = notice_clear_callback = None
         _credits_session_start_micros = None
         _credits_state = None

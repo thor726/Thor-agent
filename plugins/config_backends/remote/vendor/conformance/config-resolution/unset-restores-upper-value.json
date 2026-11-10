@@ -7,7 +7,7 @@
       "kind": "global",
       "values": {
         "model": {
-          "default": "hermes-3"
+          "default": "thor-3"
         }
       },
       "locks": []
@@ -16,7 +16,7 @@
       "kind": "tenant",
       "values": {
         "model": {
-          "default": "hermes-4-405b"
+          "default": "thor-4-405b"
         }
       },
       "locks": []
@@ -35,7 +35,7 @@
       "kind": "profile",
       "values": {
         "model": {
-          "provider": "nous"
+          "provider": "thor"
         }
       },
       "locks": []
@@ -44,8 +44,8 @@
   "expect": {
     "effective": {
       "model": {
-        "default": "hermes-4-405b",
-        "provider": "nous"
+        "default": "thor-4-405b",
+        "provider": "thor"
       }
     },
     "provenance": {

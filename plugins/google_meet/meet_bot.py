@@ -354,7 +354,7 @@ def _config_from_env() -> _BotConfig:
 
 def _join(page, cfg: _BotConfig, state: _BotState, timeout: float = 30.0) -> None:
     """Fill the guest-name field and click 'Join now' / 'Ask to join' (the latter → lobby_waiting).
-    Meet renders the pre-join buttons asynchronously after ``domcontentloaded``, so poll for up to
+    Meet renders the pre-join buttons asynchrothorly after ``domcontentloaded``, so poll for up to
     *timeout* seconds instead of checking once — a single miss leaves the bot silently in the lobby."""
     deadline = time.time() + timeout
     while True:

@@ -3,11 +3,11 @@
 from typing import Dict, Type
 
 from thor_cli.proxy.adapters.base import UpstreamAdapter
-from thor_cli.proxy.adapters.nous_portal import NousPortalAdapter
+from thor_cli.proxy.adapters.thor_portal import ThorPortalAdapter
 from thor_cli.proxy.adapters.xai import XAIGrokAdapter
 
 # Keyed by the ``thor proxy start --provider <name>`` value.
-ADAPTERS: dict[str, type[UpstreamAdapter]] = {"nous": NousPortalAdapter, "xai": XAIGrokAdapter}
+ADAPTERS: dict[str, type[UpstreamAdapter]] = {"thor": ThorPortalAdapter, "xai": XAIGrokAdapter}
 
 
 def get_adapter(name: str) -> UpstreamAdapter:

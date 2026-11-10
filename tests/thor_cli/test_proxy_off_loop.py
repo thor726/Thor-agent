@@ -1,15 +1,15 @@
 """`thor proxy` must resolve upstream credentials off the event loop.
 
-``UpstreamAdapter`` is a synchronous contract (``adapters/base.py`` — every
+``UpstreamAdapter`` is a synchrothor contract (``adapters/base.py`` — every
 method is a plain ``def``), and both shipped adapters implement it with
 blocking I/O:
 
-  * ``NousPortalAdapter.get_credential`` takes ``_auth_store_lock()``, a
+  * ``ThorPortalAdapter.get_credential`` takes ``_auth_store_lock()``, a
     *cross-process* advisory lock with ``AUTH_LOCK_TIMEOUT_SECONDS = 15.0``
     (``thor_cli/auth.py:110``), reads ``auth.json`` from disk, and may issue a
     token-refresh POST. Its terminal-error path takes that lock a second time to
     persist the quarantined state.
-  * ``NousPortalAdapter.get_retry_credential`` routes to that same
+  * ``ThorPortalAdapter.get_retry_credential`` routes to that same
     ``_get_credential`` with ``force_refresh=True``, so the refresh POST it only
     *may* perform above is unconditional here.
   * ``XAIGrokAdapter`` reads its key pool off disk under a ``threading.Lock``.
@@ -65,7 +65,7 @@ _MIN_TICKS_ACROSS_STALL = 3
 class _RecordingAdapter(UpstreamAdapter):
     """Adapter that records the thread each blocking call ran on.
 
-    ``get_credential`` and ``is_authenticated`` are plain synchronous methods
+    ``get_credential`` and ``is_authenticated`` are plain synchrothor methods
     that sleep, standing in for the auth-store lock and token refresh under the
     real adapters. Each also samples the loop-heartbeat counter on entry and
     exit, so ``ticks_across_*`` is the number of loop iterations that got to run
@@ -325,7 +325,7 @@ def test_get_retry_credential_runs_off_the_event_loop():
 
     ``get_retry_credential`` is the third and last blocking method on the
     ``UpstreamAdapter`` contract, and it is the most expensive of them:
-    ``NousPortalAdapter`` routes it into ``_get_credential(force_refresh=True)``,
+    ``ThorPortalAdapter`` routes it into ``_get_credential(force_refresh=True)``,
     so the token-refresh POST that ``get_credential`` performs only near expiry
     is unconditional here, and it happens under the same 15s cross-process
     ``_auth_store_lock()``. ``XAIGrokAdapter`` loads its key pool off disk and
@@ -462,7 +462,7 @@ def test_is_authenticated_runs_off_the_event_loop():
     """`/health` must not resolve auth state on the loop thread.
 
     ``adapters/base.py`` documents ``is_authenticated`` as "cheap — no network
-    calls", but ``NousPortalAdapter`` implements it via ``_read_state()``, which
+    calls", but ``ThorPortalAdapter`` implements it via ``_read_state()``, which
     takes the same 15s cross-process ``_auth_store_lock()``. ``/health`` is what
     a supervisor, systemd unit, container healthcheck or load balancer polls, so
     it is the endpoint least able to afford a lock wait.

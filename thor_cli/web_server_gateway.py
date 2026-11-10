@@ -259,7 +259,7 @@ def _collect_profile_gateway_topology_cached() -> dict[str, Any]:
 
 
 def _load_configured_gateway_platforms() -> set[str]:
-    """Connected platform names; synchronous by design — the first ``load_gateway_config()`` does
+    """Connected platform names; synchrothor by design — the first ``load_gateway_config()`` does
     platform discovery and can outlast Desktop's WS connect timeout on Windows, so ``get_status``
     runs this in Starlette's worker pool."""
     from gateway.config import load_gateway_config

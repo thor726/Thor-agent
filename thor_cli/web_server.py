@@ -884,10 +884,10 @@ def _no_auth_provider_message(host: str) -> str:
     """
     skip_reasons: list[str] = []
     try:
-        from plugins.dashboard_auth import nous as _nous_plugin
+        from plugins.dashboard_auth import thor as _thor_plugin
 
-        if _nous_plugin.LAST_SKIP_REASON:
-            skip_reasons.append(f"  • nous: {_nous_plugin.LAST_SKIP_REASON}")
+        if _thor_plugin.LAST_SKIP_REASON:
+            skip_reasons.append(f"  • thor: {_thor_plugin.LAST_SKIP_REASON}")
     except Exception:
         pass
 
@@ -927,7 +927,7 @@ def _no_auth_provider_message(host: str) -> str:
         "    (hash with: python -c \"from "
         "plugins.dashboard_auth.basic import hash_password; "
         "print(hash_password('your-password'))\")\n"
-        "  • OAuth: run `thor dashboard register` (Nous Portal) or "
+        "  • OAuth: run `thor dashboard register` (Thor Portal) or "
         "install a DashboardAuthProvider plugin.\n"
         "  • Deployment token: provision THOR_DASHBOARD_SESSION_TOKEN "
         "(a literal token, or 'file:<path>' naming a secret-manager-decrypted "
@@ -1006,7 +1006,7 @@ def _configure_auth_gate(
     else:
         app.state.auth_required = should_require_dashboard_auth(host, app.state.trusted_public_hosts)
 
-    # ``--insecure`` no longer disables the gate (June 2026 hermes-0day
+    # ``--insecure`` no longer disables the gate (June 2026 thor-0day
     # hardening); warn that it is a no-op rather than silently ignore it.
     if allow_public and host not in _LOOPBACK_HOST_VALUES:
         _log.warning(
@@ -1460,11 +1460,11 @@ def _start_server_runtime(
     import uvicorn
 
     try:
-        from thor_cli.nous_auth_keepalive import start_nous_auth_keepalive
+        from thor_cli.thor_auth_keepalive import start_thor_auth_keepalive
 
-        start_nous_auth_keepalive()
+        start_thor_auth_keepalive()
     except Exception as exc:
-        _log.debug("Nous auth keepalive did not start: %s", exc)
+        _log.debug("Thor auth keepalive did not start: %s", exc)
 
     _configure_auth_gate(host, allow_public, ssh_session_token, ssh_owner_nonce)
 

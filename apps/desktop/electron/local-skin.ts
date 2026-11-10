@@ -196,7 +196,7 @@ interface LocalSkinIpcMain {
 }
 
 /**
- * The preload reads this small, sanitized payload synchronously so the renderer
+ * The preload reads this small, sanitized payload synchrothorly so the renderer
  * can register the local skin before its first theme paint. It stays independent
  * of the selected gateway, which can be an offline remote primary. The window
  * route is more specific than the global next-launch preference: a peer can be

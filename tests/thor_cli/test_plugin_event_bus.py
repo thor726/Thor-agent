@@ -4,7 +4,7 @@ Covers:
   - Two plugins communicate via emit/subscribe; emit returns listener count
   - Namespace is FORCED to the emitting plugin's own key
   - Namespace spoofing (thor:, foreign, already-colon'd) is rejected
-  - Non-blocking bounded delivery for synchronous subscribers
+  - Non-blocking bounded delivery for synchrothor subscribers
   - Per-callback isolation and deep-copied payload ownership
   - Async subscribers resolved through the loop-safe host path
   - Owner unload / generation reset cancel zombie callbacks

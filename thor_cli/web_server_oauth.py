@@ -120,8 +120,8 @@ def _external_process_cli_command(provider_id: str, default: str) -> str:
 # ``flow``: ``device_code`` = show code + URL + poll; ``external`` = delegated to a terminal/CLI.
 _OAUTH_PROVIDER_CATALOG: tuple[dict[str, Any], ...] = (
     # status_fn None → dispatched via auth.get_<provider>_auth_status.
-    {"id": "nous", "name": "Nous Portal", "flow": "device_code", "cli_command": "thor auth add nous",
-     "docs_url": "https://portal.nousresearch.com", "status_fn": None},
+    {"id": "thor", "name": "Thor Portal", "flow": "device_code", "cli_command": "thor auth add thor",
+     "docs_url": "https://portal.thor-agent.local", "status_fn": None},
     {"id": "openai-codex", "name": "ChatGPT or Codex Subscription", "flow": "device_code",
      "cli_command": "thor auth add openai-codex", "docs_url": "https://platform.openai.com/docs",
      "status_fn": None},
@@ -135,7 +135,7 @@ _OAUTH_PROVIDER_CATALOG: tuple[dict[str, Any], ...] = (
     # Device code works in remote shells/containers without a reachable 127.0.0.1 callback.
     {"id": "xai-oauth", "name": "xAI Grok OAuth (SuperGrok / Premium+)", "flow": "device_code",
      "cli_command": "thor auth add xai-oauth",
-     "docs_url": "https://thor-agent.nousresearch.com/docs/guides/xai-grok-oauth", "status_fn": None},
+     "docs_url": "https://thor-agent.thor-agent.local/docs/guides/xai-grok-oauth", "status_fn": None},
     # Anthropic / Claude entries sit at the bottom. Deliberately flow == "external": an
     # in-dashboard Connect button would let a scriptable HTTP endpoint mint Claude Pro/Max
     # subscription tokens outside Anthropic's own client, against its OAuth usage policies.
@@ -227,11 +227,11 @@ def _record_sign_in_state(sess: dict[str, Any], state: Any) -> None:
         sess["retry_after"] = int(getattr(state, "retry_after", 0) or 0)
 
 
-@_oauth_poller("nous")
-def _nous_sign_in_poller(session_id: str, sess: dict[str, Any]) -> None:
+@_oauth_poller("thor")
+def _thor_sign_in_poller(session_id: str, sess: dict[str, Any]) -> None:
     """Drain the sign-in the start route began: the one shared flow, rendered onto the session.
 
-    The generator was created and advanced to its ``Code`` state by ``_start_nous_device_code``, so
+    The generator was created and advanced to its ``Code`` state by ``_start_thor_device_code``, so
     it is already holding the device code and its HTTP client. Nothing here is wrapped in
     ``_profile_scope``: that context manager holds a process-global lock and swaps module
     attributes across its ``yield``, and this loop can last the sign-in code's whole expiry. The
@@ -250,7 +250,7 @@ def _nous_sign_in_poller(session_id: str, sess: dict[str, Any]) -> None:
 
 @_oauth_poller("minimax")
 def _minimax_poller(session_id: str, sess: dict[str, Any]) -> None:
-    """MiniMax poller: PKCE-style ``code_verifier`` + ``user_code`` instead of Nous's
+    """MiniMax poller: PKCE-style ``code_verifier`` + ``user_code`` instead of Thor's
     ``device_code``. Builds the same auth_state as the CLI's ``_minimax_oauth_login`` and persists
     via ``_minimax_save_auth_state`` so the system ends up as after ``thor auth add minimax-oauth``.
     Region is fixed to "global" here; cn-region operators use the CLI's ``--region cn``."""
@@ -288,7 +288,7 @@ def _minimax_poller(session_id: str, sess: dict[str, Any]) -> None:
     }
     with _profile_scope(sess.get("profile")):
         # The cancellation check and the save share the session lock, so a cancel cannot land
-        # between them (the same contract as the Nous and Codex savers).
+        # between them (the same contract as the Thor and Codex savers).
         with _oauth_sessions_lock:
             if sess.get("cancelled"):
                 sess["status"] = "cancelled"
@@ -320,7 +320,7 @@ def _xai_device_poller(session_id: str, sess: dict[str, Any]) -> None:
         "token_type": str(token_data.get("token_type") or "Bearer").strip() or "Bearer",
     }
     with _profile_scope(sess.get("profile")), _oauth_sessions_lock:
-        # One critical section with the cancel check, as in the Nous and Codex savers.
+        # One critical section with the cancel check, as in the Thor and Codex savers.
         if sess.get("cancelled"):
             sess["status"] = "cancelled"
             return

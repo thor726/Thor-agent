@@ -23,7 +23,7 @@ export interface WebAccessTranslations {
   restartNeeded: string
   unavailable: string
   notRunningDetail: string
-  needsNous: string
+  needsThor: string
   runningLan: string
   runningPublic: string
   runningLocal: string

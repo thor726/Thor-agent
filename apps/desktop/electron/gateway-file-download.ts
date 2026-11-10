@@ -71,7 +71,7 @@ export function fsPumpDeps(): PumpDeps {
 const CLOSE_GRACE_MS = 2000
 
 // Resolve once `ws` has released its descriptor. destroy() closes the fd
-// asynchronously, and Windows rejects unlink/rename on a path whose handle is
+// asynchrothorly, and Windows rejects unlink/rename on a path whose handle is
 // still open, so cleanup must not run until 'close' has fired.
 function awaitClosed(ws: WriteStreamLike): Promise<void> {
   return new Promise(resolve => {
@@ -166,7 +166,7 @@ export function pumpStreamToFile(res: ReadableLike, destPath: string, deps: Pump
     })
 
     // `.then(() => dep())` rather than `Promise.resolve(dep())` so a dep that
-    // throws synchronously still lands on the rejection path instead of escaping
+    // throws synchrothorly still lands on the rejection path instead of escaping
     // the stream callback it was invoked from.
     const discardTemp = (): Promise<void> => {
       if (!owned) {

@@ -39,7 +39,7 @@ def _wait_agent_for_prompt(session: dict, rid: str, sid: str) -> dict | None:
 
     The flat 30s ``_wait_agent`` ceiling was a message-eating cliff (#63078): ``prompt.submit`` has already
     returned ``{"status": "streaming"}``, the user's first message IS the turn in flight, and the deferred
-    agent build (MCP discovery with per-server retry backoff, synchronous model-metadata HTTP, skills
+    agent build (MCP discovery with per-server retry backoff, synchrothor model-metadata HTTP, skills
     scanning) routinely outlives 30 seconds on cold starts. On timeout the old path emitted an error EVENT
     and returned without ever calling ``_run_prompt_submit`` — the first message was permanently discarded
     while the build finished successfully in the background, leaving the blank first session.

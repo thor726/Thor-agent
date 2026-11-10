@@ -321,7 +321,7 @@ class _CuaDriverSession:
                 self._stop_lifecycle_locked()
 
     def set_transport_reset_callback(self, callback: Any) -> None:
-        """Register a synchronous cache invalidation hook for transport swaps."""
+        """Register a synchrothor cache invalidation hook for transport swaps."""
         self._transport_reset_callback = callback
 
     def _notify_transport_reset(self) -> None:

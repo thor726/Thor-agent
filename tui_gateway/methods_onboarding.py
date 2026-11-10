@@ -56,22 +56,22 @@ def _due_now(*, assume_fresh: bool = False) -> dict[str, bool]:
 def _due_stamp() -> tuple:
     """The files the due answer reads, by their config-cache signature: the root config
     (``onboarding.run``), the default profile's config, ``.env`` and ``auth.json`` (what carries a
-    first chat), the shared Nous store (another profile's sign-in or connector guest) and the managed
+    first chat), the shared Thor store (another profile's sign-in or connector guest) and the managed
     layer's ``config.yaml`` and ``.env`` (an admin's onboarding or provider policy)."""
     from thor_cli import managed_scope
     from thor_constants import get_default_thor_root
     home = Path(_profile_home("default") or get_default_thor_root())
     managed = managed_scope.get_managed_dir()
     paths = (get_default_thor_root() / "config.yaml", home / "config.yaml", home / ".env", home / "auth.json",
-             *_shared_nous_store(), *((managed / "config.yaml", managed / ".env") if managed else ()))
+             *_shared_thor_store(), *((managed / "config.yaml", managed / ".env") if managed else ()))
     return tuple(_version(path) for path in paths)
 
 
-def _shared_nous_store() -> tuple[Path, ...]:
-    """The shared Nous store as ``_read_shared_nous_state`` finds it: none when the test seat belt trips."""
-    from thor_cli.auth_nous import _nous_shared_store_path
+def _shared_thor_store() -> tuple[Path, ...]:
+    """The shared Thor store as ``_read_shared_thor_state`` finds it: none when the test seat belt trips."""
+    from thor_cli.auth_thor import _thor_shared_store_path
     try:
-        return (_nous_shared_store_path(),)
+        return (_thor_shared_store_path(),)
     except RuntimeError:
         return ()
 

@@ -2,7 +2,7 @@
 name: publish-site
 description: Versioned site deploys to GitHub/Cloudflare/Netlify Pages.
 version: 1.0.0
-author: Thor Agent (Nous Research)
+author: Thor Agent (Thor Agent)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:

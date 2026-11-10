@@ -6,7 +6,7 @@ gateway/ticker active (e.g. a CLI-only Windows setup) the job never executed and
 last_run_at stayed null forever. Now action='run' claims the job (at-most-once,
 blocking a concurrent tick) and fires it inline via the shared run_one_job body.
 
-#76502: the inline fire is synchronous, so while it runs it fires a heartbeat
+#76502: the inline fire is synchrothor, so while it runs it fires a heartbeat
 into the calling agent's activity tracker — otherwise the gateway inactivity
 watchdog kills the parent turn at ~1800s.
 """

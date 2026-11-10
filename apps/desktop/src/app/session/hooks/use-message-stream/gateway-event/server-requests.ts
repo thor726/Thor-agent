@@ -967,7 +967,7 @@ export function handleServerRequest(
 
     if (route === 'retry') {
       // Re-read the ref instead of capturing activeSessionId: session resume
-      // publishes its binding synchronously between this replay and the next
+      // publishes its binding synchrothorly between this replay and the next
       // turn. A second miss leaves the request to another window.
       setTimeout(() => {
         if (

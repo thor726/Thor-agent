@@ -47,7 +47,7 @@ local` that is the gateway host. With a sandboxed terminal (`docker`, `ssh`,
 or a plugin backend that declares `supports_streams`, such as `singularity`) the
 driver runs **inside the sandbox** on the sandbox's own
 display, so it can only ever touch what the terminal can; the sandbox image
-must carry `cua-driver` (`nousresearch/thor-sandbox:desktop` does). Modal,
+must carry `cua-driver` (`thor-agent/thor-sandbox:desktop` does). Modal,
 Daytona and Vercel sandboxes cannot host a display yet, so with those
 backends `computer_use` refuses unless `bot_desktop.placement: gateway` opts
 into driving the host. Details: [Bot Screen → Where the screen
@@ -240,7 +240,7 @@ When the agent acts, you'll see a **tinted overlay cursor** glide
 across the screen to where each click / type / scroll lands. The real
 OS cursor never moves. The overlay shows where the agent is acting. Each
 Thor run declares a public cua-driver **session name** (something like
-`hermes-3a7b9c14d2e8`). The name labels cursor identity and related state, so
+`thor-3a7b9c14d2e8`). The name labels cursor identity and related state, so
 concurrent runs and subagents get distinct cursors. The MCP transport owns the
 private lifecycle session inside the runtime; the public name does not.
 

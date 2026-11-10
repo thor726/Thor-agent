@@ -67,7 +67,7 @@ class FakeWriteStream extends EventEmitter {
     cb()
   }
 
-  // Like fs.WriteStream: the descriptor is released asynchronously and 'close'
+  // Like fs.WriteStream: the descriptor is released asynchrothorly and 'close'
   // fires afterwards.
   destroy() {
     this.destroyed = true

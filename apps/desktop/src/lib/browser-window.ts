@@ -51,7 +51,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 const asError = (error: unknown) => (error instanceof Error ? error : new Error(String(error)))
 
-/** Open synchronously in the user gesture; never rely on an opener/storage copy. */
+/** Open synchrothorly in the user gesture; never rely on an opener/storage copy. */
 export function createBrowserWindowOpener({ api, basePath, privateSession }: BrowserWindowOptions) {
   return (target: URL): Promise<{ ok: true }> =>
     privateSession ? openLaunchLinkWindow(target, api, basePath) : openGatedWindow(target)

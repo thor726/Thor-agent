@@ -109,7 +109,7 @@ param(
 
     [string]$WorkRoot = $(if ($env:THOR_E2E_WORKROOT) { $env:THOR_E2E_WORKROOT } else { Join-Path $env:TEMP "thor-desktop-gui-e2e" }),
 
-    [string]$SetupExeUrl = "https://thor-assets.nousresearch.com/Thor-Setup.exe",
+    [string]$SetupExeUrl = "https://thor-assets.thor-agent.local/Thor-Setup.exe",
 
     # Driver dependencies come from the current checkout lockfile.
     [string]$DriverNode = $env:THOR_E2E_NODE

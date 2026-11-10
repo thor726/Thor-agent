@@ -85,7 +85,7 @@ _BACKEND_REASONS = {
     "agent-browser": "agent-browser left Thor; browser_exec is the browser now",
     "camofox": "Camofox is now the camofox plugin (`thor plugins install camofox`)",
     "local": "browser_exec launches Thor's packaged Chromium itself (browser.cloud_provider: local)",
-    **dict.fromkeys(("browserbase", "firecrawl", "nous"),
+    **dict.fromkeys(("browserbase", "firecrawl", "thor"),
                     "a cloud browser is chosen with browser.cloud_provider (`thor tools` → Browser Automation)"),
 }
 

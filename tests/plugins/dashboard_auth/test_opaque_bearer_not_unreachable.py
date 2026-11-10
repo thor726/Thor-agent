@@ -1,8 +1,8 @@
 """#94558 — a non-JWT bearer must not be reported as "Auth provider unreachable".
 
 Hosted agents answered every opaque/peer bearer on the gated API with a fast
-HTTP 503 ``{"detail": "Auth provider 'nous' unreachable"}`` while Portal was
-perfectly healthy: ``NousDashboardAuthProvider._verify_jwt`` folded *every*
+HTTP 503 ``{"detail": "Auth provider 'thor' unreachable"}`` while Portal was
+perfectly healthy: ``ThorDashboardAuthProvider._verify_jwt`` folded *every*
 ``PyJWKClient`` failure — including ``DecodeError('Not enough segments')`` for
 a token that is not a JWT at all — into ``ProviderError``. Only a transport
 failure fetching the JWKS is "unreachable"; anything else means "not my
@@ -12,7 +12,7 @@ The same 503 later came back for well-signed Portal JWTs this instance does not 
 user's Portal CLI token (``aud=thor-cli:thor-cli``), another instance's ``aud`` or
 ``agent_instance_id``, and a ``kid`` the reachable JWKS does not hold.
 
-Real ``NousDashboardAuthProvider`` + real ``SelfHostedOIDCProvider`` JWKS path,
+Real ``ThorDashboardAuthProvider`` + real ``SelfHostedOIDCProvider`` JWKS path,
 a real local HTTP JWKS server (reachable case) or a closed port (unreachable),
 and the real gated web_server app for the HTTP-level assertion.
 """
@@ -41,7 +41,7 @@ from thor_cli.dashboard_auth import (
     register_provider,
 )
 from thor_cli.dashboard_auth.cookies import SESSION_AT_COOKIE, SESSION_RT_COOKIE
-import plugins.dashboard_auth.nous as nous_plugin
+import plugins.dashboard_auth.thor as thor_plugin
 
 OPAQUE_PEER_KEY = "hk_live_opaque_peer_key_0123456789abcdef"
 # Well-formed RS256 JWT header with an unknown kid, bogus payload/signature.
@@ -100,8 +100,8 @@ def _mint(portal, *, aud=f"agent:{_INSTANCE}", kid=_KID, **extra) -> str:
     return jwt.encode(claims, private, algorithm="RS256", headers={"kid": kid})
 
 
-def _nous(portal_url: str) -> nous_plugin.NousDashboardAuthProvider:
-    return nous_plugin.NousDashboardAuthProvider(client_id=f"agent:{_INSTANCE}", portal_url=portal_url)
+def _thor(portal_url: str) -> thor_plugin.ThorDashboardAuthProvider:
+    return thor_plugin.ThorDashboardAuthProvider(client_id=f"agent:{_INSTANCE}", portal_url=portal_url)
 
 
 # ── classifier ────────────────────────────────────────────────────────────
@@ -127,34 +127,34 @@ def test_classifier_keeps_bare_jwk_client_error_as_provider_fault():
     assert isinstance(classify_jwks_lookup_error(jwt.PyJWKClientError("weird JWKS shape")), ProviderError)
 
 
-# ── Nous provider ─────────────────────────────────────────────────────────
+# ── Thor provider ─────────────────────────────────────────────────────────
 
 def test_opaque_bearer_with_healthy_portal_is_not_unreachable(empty_jwks_server):
-    provider = _nous(empty_jwks_server)
+    provider = _thor(empty_jwks_server)
     assert provider.verify_session(access_token=OPAQUE_PEER_KEY) is None
 
 
 def test_foreign_kid_jwt_with_healthy_portal_is_not_unreachable(empty_jwks_server):
-    provider = _nous(empty_jwks_server)
+    provider = _thor(empty_jwks_server)
     assert provider.verify_session(access_token=FOREIGN_KID_JWT) is None
 
 
 def test_unknown_kid_against_populated_jwks_is_not_unreachable(portal):
     """The JWKS was fetched fine; it just has no key for this kid (rotated out, or a forged
     header). That is an unverifiable token, not an unreachable provider."""
-    provider = _nous(portal[0])
+    provider = _thor(portal[0])
     assert provider.verify_session(access_token=_mint(portal, kid="rotated-out")) is None
 
 
 def test_real_jwt_with_unreachable_portal_still_raises_provider_error():
-    provider = _nous("http://127.0.0.1:9")  # discard port: connection refused
+    provider = _thor("http://127.0.0.1:9")  # discard port: connection refused
     with pytest.raises(ProviderError):
         provider.verify_session(access_token=FOREIGN_KID_JWT)
 
 
 def test_opaque_bearer_with_unreachable_portal_is_still_just_not_ours():
     """No network call is even needed to know an opaque string is not our JWT."""
-    provider = _nous("http://127.0.0.1:9")
+    provider = _thor("http://127.0.0.1:9")
     assert provider.verify_session(access_token=OPAQUE_PEER_KEY) is None
 
 
@@ -178,14 +178,14 @@ def test_self_hosted_provider_shares_the_classification(empty_jwks_server, monke
 
 @contextmanager
 def _gated_app(portal_url: str):
-    """The real gated dashboard app with only the Nous provider, pointed at ``portal_url``."""
+    """The real gated dashboard app with only the Thor provider, pointed at ``portal_url``."""
     clear_providers()
     keys = ("bound_host", "bound_port", "auth_required")
     prev = {k: getattr(web_server.app.state, k, None) for k in keys}
     web_server.app.state.bound_host = "agent.example.test"
     web_server.app.state.bound_port = 443
     web_server.app.state.auth_required = True
-    register_provider(_nous(portal_url))
+    register_provider(_thor(portal_url))
     try:
         yield TestClient(web_server.app, base_url="https://agent.example.test")
     finally:
@@ -195,7 +195,7 @@ def _gated_app(portal_url: str):
 
 
 @pytest.fixture
-def _gated_nous(empty_jwks_server):
+def _gated_thor(empty_jwks_server):
     with _gated_app(empty_jwks_server) as client:
         yield client
 
@@ -206,16 +206,16 @@ def gated_portal(portal):
         yield client
 
 
-def test_gated_api_rejects_opaque_bearer_with_401_not_503(_gated_nous):
-    r = _gated_nous.get("/api/auth/me", headers={"Authorization": f"Bearer {OPAQUE_PEER_KEY}"})
+def test_gated_api_rejects_opaque_bearer_with_401_not_503(_gated_thor):
+    r = _gated_thor.get("/api/auth/me", headers={"Authorization": f"Bearer {OPAQUE_PEER_KEY}"})
     assert r.status_code != 503, r.text
     assert r.status_code == 401
     assert "unreachable" not in r.text.lower()
 
 
-def test_gated_api_rejects_opaque_cookie_with_401_not_503(_gated_nous):
-    _gated_nous.cookies.set(SESSION_AT_COOKIE, OPAQUE_PEER_KEY)
-    r = _gated_nous.get("/api/auth/me")
+def test_gated_api_rejects_opaque_cookie_with_401_not_503(_gated_thor):
+    _gated_thor.cookies.set(SESSION_AT_COOKIE, OPAQUE_PEER_KEY)
+    r = _gated_thor.get("/api/auth/me")
     assert r.status_code != 503, r.text
     assert "unreachable" not in r.text.lower()
 
@@ -269,7 +269,7 @@ def test_forged_alg_with_published_kid_is_rejected_without_a_drift_warning(porta
     signature verified. A forged token naming the published kid with another alg is rejected
     before any signature check: a 401, and no attacker-sized log line."""
     forged = jwt.encode({"iss": "x" * 4000, "aud": "y"}, "k" * 32, algorithm="HS256", headers={"kid": _KID})
-    provider = _nous(portal[0])
+    provider = _thor(portal[0])
     with caplog.at_level(logging.WARNING, logger="plugins.dashboard_auth._shared"):
         assert provider.verify_session(access_token=forged) is None
     assert "verification failed" not in caplog.text

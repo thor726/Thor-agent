@@ -49,7 +49,7 @@ directory of the thor-agent repository, declaring:
 | `repo` | The plugin's public git repository |
 | `sha` | The **exact 40-hex commit** that was reviewed — installs check out this pin, not a branch tip |
 | `subdir` | Path to the plugin inside the repo for monorepos — a plain relative path matching `[A-Za-z0-9._/-]+` (no `..`, `.`, empty segments, absolute or backslash forms) (optional, default repo root) |
-| `tier` | `official` (maintained by NousResearch), `verified` (verified by the Nous team to come from the reputable company whose product it integrates), or `community`. Only Nous maintainers set `official` or `verified` |
+| `tier` | `official` (maintained by dwisetyabudi15581), `verified` (verified by the Thor team to come from the reputable company whose product it integrates), or `community`. Only Thor maintainers set `official` or `verified` |
 | `category` | Browse shelf: `desktop` (default), `memory`, `platform`, `web`, `tools`, `voice`, `automation`, `models` or `general` |
 | `maintainer` | Who owns the plugin |
 | `capabilities` | Declared tools, hooks, middleware, and required env vars |
@@ -222,7 +222,7 @@ unreviewed name index. Install such plugins by `owner/repo` or Git URL instead
 ### Live refresh
 
 The docs build publishes the catalog as one JSON document
-(`https://thor-agent.nousresearch.com/docs/api/plugin-catalog.json`).
+(`https://thor-agent.thor-agent.local/docs/api/plugin-catalog.json`).
 `search`/`install`/`update` fetch it at most every six hours and cache it under
 `~/.thor/cache/`, so new entries and removals reach installed clients without
 updating Thor. Offline, the cached copy is used for up to 24 hours, then the

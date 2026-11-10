@@ -1,6 +1,6 @@
 """Krea image generation backend: ``Krea 3`` (generates and edits) and ``Krea 2`` Medium / Large / Medium Turbo.
 
-Krea's API is asynchronous: submit returns a ``job_id`` polled at ``GET
+Krea's API is asynchrothor: submit returns a ``job_id`` polled at ``GET
 /jobs/{job_id}``; ``generate()`` hides that (submit, poll every 2s with light
 backoff, cache the result URL locally). Selection: ``model`` kwarg →
 ``KREA_IMAGE_MODEL`` → ``image_gen.krea.model`` → ``image_gen.model`` (when one
@@ -138,11 +138,11 @@ def _resolve_model(explicit: Optional[str] = None) -> tuple[str, dict[str, Any]]
 
 def _resolve_managed_krea_gateway():
     """Managed gateway config on the managed path, else ``None``. Managed when the stored
-    ``image_gen`` selection is ``nous`` (or legacy ``use_gateway: true``), or never-configured with
+    ``image_gen`` selection is ``thor`` (or legacy ``use_gateway: true``), or never-configured with
     no ``KREA_API_KEY``; an explicit vendor selection pins direct. Never raises (discovery scans)."""
     try:
         from tools.managed_tool_gateway import resolve_managed_tool_gateway
-        from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_selection
+        from tools.tool_backend_helpers import THOR_PORTAL_MANAGED_PROVIDER, read_selection
     except Exception as exc:
         logger.debug("Managed Krea gateway resolution unavailable: %s", exc)
         return None
@@ -150,7 +150,7 @@ def _resolve_managed_krea_gateway():
         selected = read_selection("image_gen")
     except Exception:
         selected = None
-    if selected is not None and selected != NOUS_MANAGED_PROVIDER:
+    if selected is not None and selected != THOR_PORTAL_MANAGED_PROVIDER:
         return None
     if selected is None and get_secret("KREA_API_KEY"):
         return None
@@ -425,11 +425,11 @@ def _submit_job(
             if managed and 400 <= status < 500:
                 hint = (
                     "Krea's shared-key concurrency cap was hit — retry shortly." if status == 429 else
-                    f"Model '{model_id}' may not be enabled/priced on the Nous Portal's Krea gateway. "
+                    f"Model '{model_id}' may not be enabled/priced on the Thor Portal's Krea gateway. "
                     "Set KREA_API_KEY to use Krea directly, or pick a different model via "
                     "`thor tools` → Image Generation.")
                 return None, submit_fail(
-                    f"Nous Subscription Krea gateway rejected '{model_id}' "
+                    f"Thor Subscription Krea gateway rejected '{model_id}' "
                     f"(HTTP {status}): {err_msg}. {hint}",
                     "api_error")
             return None, submit_fail(failure.error, "api_error")
@@ -482,7 +482,7 @@ def _krea2_payload(
         for what, arg in _MANAGED_UNSUPPORTED:
             if arg in payload:
                 return payload, fail(
-                    f"Managed Krea (Nous Subscription) does not support {what}. "
+                    f"Managed Krea (Thor Subscription) does not support {what}. "
                     f"Set KREA_API_KEY to use Krea directly, or omit `{arg}`.",
                     "unsupported_argument")
     # After the fail-fast above, so a request about to be refused never reads local files.
@@ -527,11 +527,11 @@ class KreaImageGenProvider(StaticImageGenProvider):
     default_model_id = DEFAULT_MODEL
     setup = dict(
         name="Krea", badge="paid",
-        tag="Krea 3 — generates and edits images ($0.03 at 1K, $0.06 at 2K) — and Krea 2 Medium ($0.03), Large ($0.06), Medium Turbo ($0.015) with style transfer and moodboards. Direct key or managed Nous Subscription gateway.",
+        tag="Krea 3 — generates and edits images ($0.03 at 1K, $0.06 at 2K) — and Krea 2 Medium ($0.03), Large ($0.06), Medium Turbo ($0.015) with style transfer and moodboards. Direct key or managed Thor Subscription gateway.",
         key="KREA_API_KEY", prompt="Krea API key", url="https://www.krea.ai/settings/api-tokens")
 
     def is_available(self) -> bool:
-        # Direct key OR managed Nous gateway (portal users without a Krea key).
+        # Direct key OR managed Thor gateway (portal users without a Krea key).
         return bool(get_secret("KREA_API_KEY")) or _managed_krea_gateway_ready()
 
     def capabilities(self) -> dict[str, Any]:
@@ -562,11 +562,11 @@ class KreaImageGenProvider(StaticImageGenProvider):
             return prompt_required_error("krea", aspect)
 
         # Managed gateway owns the shared Krea credential and meters per generation (token =
-        # Nous access token); otherwise direct Krea with a BYO ``KREA_API_KEY``.
+        # Thor access token); otherwise direct Krea with a BYO ``KREA_API_KEY``.
         managed = _resolve_managed_krea_gateway()
         if managed is not None:
             base_url = managed.gateway_origin.rstrip("/")
-            auth_token = managed.nous_user_token
+            auth_token = managed.thor_user_token
         else:
             base_url = BASE_URL
             auth_token = get_secret("KREA_API_KEY")
@@ -575,7 +575,7 @@ class KreaImageGenProvider(StaticImageGenProvider):
                     "KREA_API_KEY not set. Run `thor tools` → Image "
                     "Generation → Krea to configure, get a key at "
                     "https://www.krea.ai/settings/api-tokens, or sign in to "
-                    "a Nous account with the managed Krea gateway enabled "
+                    "a Thor account with the managed Krea gateway enabled "
                     "(`thor setup`).",
                     "auth_required")
 
@@ -595,7 +595,7 @@ class KreaImageGenProvider(StaticImageGenProvider):
         if err is not None:
             return err
 
-        # 2. Poll — same principal as submit, so the managed path polls the gateway with the Nous token.
+        # 2. Poll — same principal as submit, so the managed path polls the gateway with the Thor token.
         poll_errors: list[dict[str, Any]] = []
 
         def poll_error(kind: str, detail: Any) -> dict[str, Any]:

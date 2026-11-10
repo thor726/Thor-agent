@@ -160,7 +160,7 @@ def test_portable_plugin_declares_config_keys_in_its_thor_extension(thor_home, c
     plugin.mkdir(parents=True)
     (plugin / "plugin.json").write_text(json.dumps({
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json", "name": "portwidget",
-        "version": "1.0.0", "extensions": {"com.nousresearch.thor": {"config_keys": ["display.portwidget"]}},
+        "version": "1.0.0", "extensions": {"com.thorresearch.thor": {"config_keys": ["display.portwidget"]}},
     }))
 
     assert _set_notice("display.portwidget.size", "3", capsys)

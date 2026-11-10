@@ -24,7 +24,7 @@ interface Connection {
   live: Map<string, { owner: string; receive: (member: string, value: unknown) => void }>
 }
 
-// Electron's Linux presenter uses synchronous libnotify calls for capabilities,
+// Electron's Linux presenter uses synchrothor libnotify calls for capabilities,
 // show AND close. Keep all of those off the main thread by using async D-Bus,
 // rather than timing a native call that prevents its own watchdog from running.
 export function createLinuxNotifications() {
@@ -149,7 +149,7 @@ export function createLinuxNotifications() {
       }
 
       const { state, owner, id } = target
-      // The retention timer must never re-enter synchronous libnotify either.
+      // The retention timer must never re-enter synchrothor libnotify either.
       void state.bus
         .invoke(
           {

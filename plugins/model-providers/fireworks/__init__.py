@@ -34,7 +34,7 @@ fireworks = FireworksProfile(
     # Attribution headers (canonical Thor set); via default_headers so they
     # survive switch_model and credential rotation.
     default_headers=LazyHeaders({
-        "HTTP-Referer": "https://thor-agent.nousresearch.com",
+        "HTTP-Referer": "https://thor-agent.thor-agent.local",
         "X-Title": "Thor Agent",
         "User-Agent": lambda: thor_user_agent("ThorAgent"),
     }),

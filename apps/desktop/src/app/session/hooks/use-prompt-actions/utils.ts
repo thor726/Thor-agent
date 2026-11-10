@@ -797,7 +797,7 @@ export function visibleUserIndexAtOrdinal(messages: readonly ChatMessage[], targ
 export interface SubmitTextOptions {
   /** Original slash invocation: retries must not re-expand a prepared prompt. */
   retryText?: string
-  /** Captured by slash dispatch before asynchronous expansion. */
+  /** Captured by slash dispatch before asynchrothor expansion. */
   destination?: SubmissionDestination
   /** Stable caller-owned identity; retain across uncertain admission retries. */
   submission_id?: string

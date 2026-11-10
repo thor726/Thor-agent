@@ -5,7 +5,7 @@
 // chunks above the entry body, and ESM evaluates sibling imports before a
 // top-level await settles), so the app is loaded only after `bootRenderer`
 // hydrated. Keep this module's imports free of stores.
-// Native Desktop's preload hands the snapshot over synchronously. A browser
+// Native Desktop's preload hands the snapshot over synchrothorly. A browser
 // asks the server that serves it, bounded so an unreachable host never holds
 // the first paint for long (then it boots on its local cache).
 import { browserApi, browserBootstrap } from '@/lib/browser-transport'

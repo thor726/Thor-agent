@@ -32,7 +32,7 @@ def _write_portable_app_plugin(root: Path, app: Path, os_key: str | None = None)
     (root / "plugin.json").write_text(json.dumps({
         "$schema": PLUGIN_SCHEMA_V1,
         "name": "example-plugin",
-        "extensions": {"com.nousresearch.thor": {"servers": {"worker": {
+        "extensions": {"com.thorresearch.thor": {"servers": {"worker": {
             "app": {os_key or os_family(): {"presence": "executable", "location": str(app)}},
             "requires": {"app": True},
         }}}},

@@ -41,11 +41,11 @@ def restarts(monkeypatch):
 
 
 @pytest.fixture()
-def nous(monkeypatch):
+def thor(monkeypatch):
     from thor_cli import webapp_access
 
-    monkeypatch.setattr(webapp_access, "nous_signed_in", lambda: True)
-    monkeypatch.setattr(webapp_access, "_register_nous_sign_in", lambda _callback: None)
+    monkeypatch.setattr(webapp_access, "thor_signed_in", lambda: True)
+    monkeypatch.setattr(webapp_access, "_register_thor_sign_in", lambda _callback: None)
     monkeypatch.setattr(webapp_access, "lan_address", lambda: "192.168.1.50")
 
 
@@ -66,7 +66,7 @@ def _status_from_another_window(client, profile: str | None = None) -> dict:
     return answers[0]
 
 
-def test_status_names_each_step_of_a_start_in_flight_and_none_after(client, restarts, nous, monkeypatch):
+def test_status_names_each_step_of_a_start_in_flight_and_none_after(client, restarts, thor, monkeypatch):
     import thor_cli.web_server_gateway as gw
     from thor_cli import webapp, webapp_access
 
@@ -84,7 +84,7 @@ def test_status_names_each_step_of_a_start_in_flight_and_none_after(client, rest
         return {"restart_started": True}
 
     monkeypatch.setattr(webapp, "prepare_webapp_renderer", build)
-    monkeypatch.setattr(webapp_access, "_register_nous_sign_in", register)
+    monkeypatch.setattr(webapp_access, "_register_thor_sign_in", register)
     monkeypatch.setattr(gw, "_restart_gateway_after", restart)
     before = time.time()
 
@@ -99,7 +99,7 @@ def test_status_names_each_step_of_a_start_in_flight_and_none_after(client, rest
     assert client.get("/api/webapp-access/status").json()["start_progress"] is None
 
 
-def test_a_failed_build_leaves_no_start_in_flight(client, restarts, nous, monkeypatch):
+def test_a_failed_build_leaves_no_start_in_flight(client, restarts, thor, monkeypatch):
     from thor_cli import webapp
 
     def fail(_project_root, **_options):
@@ -112,7 +112,7 @@ def test_a_failed_build_leaves_no_start_in_flight(client, restarts, nous, monkey
     assert restarts == []
 
 
-def test_a_profile_with_its_own_gateway_never_shows_another_gateways_start(restarts, nous, monkeypatch):
+def test_a_profile_with_its_own_gateway_never_shows_another_gateways_start(restarts, thor, monkeypatch):
     """``solo`` runs a gateway of its own and ``served`` is served by the default one: while the
     default gateway's Start builds, ``served`` shows it and ``solo`` shows none."""
     from thor_cli import webapp
@@ -140,7 +140,7 @@ def test_a_profile_with_its_own_gateway_never_shows_another_gateways_start(resta
     assert seen["solo"] is None
 
 
-def test_a_status_read_during_the_last_step_still_reports_that_start(client, nous, monkeypatch):
+def test_a_status_read_during_the_last_step_still_reports_that_start(client, thor, monkeypatch):
     """A second window's status read that starts while the Start restarts the gateway, and whose
     control-socket round trip outlasts the Start, reports the Start it began during: the pane shows
     it running and polls again instead of showing Stopped with Start enabled until its next refetch."""

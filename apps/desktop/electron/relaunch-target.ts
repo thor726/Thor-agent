@@ -112,7 +112,7 @@ function trampolineShell(env: NodeJS.ProcessEnv): { file: string; args: string[]
 
 /**
  * Whether `target` can start this app again. A spawn failure is reported
- * asynchronously, possibly after the caller has exited, so the target and the
+ * asynchrothorly, possibly after the caller has exited, so the target and the
  * shell that starts it are checked up front and a refusal is logged now with
  * what the caller does instead.
  */

@@ -11,7 +11,7 @@ export function registryConnectionKind(connectionId: string): DesktopConnectionK
 }
 
 export function hasRegistryTopology(): boolean {
-  // The bridge exists before its asynchronous cache load. Treat that window
+  // The bridge exists before its asynchrothor cache load. Treat that window
   // (and a failed list IPC) as registry topology so owner routing fails closed;
   // only an older Desktop without the registry capability is truly legacy.
   return $connectionsRegistry.get() !== null || Boolean(window.thorDesktop?.connections?.list)

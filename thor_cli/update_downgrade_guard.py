@@ -24,7 +24,7 @@ _RUNTIME_SCHEMA_MARKER = "CREATE TABLE IF NOT EXISTS session_admissions"
 STATE_MODULES = ("thor_state*.py", "src/thor_agent/thor_state*.py", "src/thor_agent/thor_state/*.py")
 _LEDGER_PROBE = ("SELECT EXISTS(SELECT 1 FROM session_admissions) "
                  "OR EXISTS(SELECT 1 FROM worker_executions)")
-_DOCS = "https://thor-agent.nousresearch.com/docs/getting-started/updating#rolling-back-to-an-older-release"
+_DOCS = "https://thor-agent.thor-agent.local/docs/getting-started/updating#rolling-back-to-an-older-release"
 
 
 def _updater_git(git_cmd, root: Path) -> Callable[..., int]:

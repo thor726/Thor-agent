@@ -12,10 +12,7 @@ name: Skills Index Freshness Check
 # its own issue when a browser would block the fetch.
 
 on:
-  schedule:
-    - cron: '0 */4 * * *'
   workflow_dispatch:
-
 permissions:
   contents: read
   issues: write
@@ -39,7 +36,7 @@ jobs:
         id: probe
         run: |
           set -e
-          URL="https://thor-agent.nousresearch.com/docs/api/skills-index.json"
+          URL="https://thor-agent.thor-agent.local/docs/api/skills-index.json"
           echo "Probing $URL"
           # -L follows redirects; -f fails on HTTP errors; -s suppresses progress
           if ! curl -fsSL --retry 3 --retry-delay 10 -o /tmp/skills-index.json "$URL"; then

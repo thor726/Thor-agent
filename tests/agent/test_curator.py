@@ -41,7 +41,7 @@ def curator_env(tmp_path, monkeypatch):
 
     yield {"home": home, "curator": curator, "usage": usage}
 
-    # Teardown: a curator review launched with synchronous=False spawns a
+    # Teardown: a curator review launched with synchrothor=False spawns a
     # daemon "curator-review" thread that calls save_state() when it finishes.
     # save_state() resolves the state path from THOR_HOME at write time, so a
     # straggler thread that outlives this test would write into whatever home
@@ -425,7 +425,7 @@ def test_llm_prompt_does_not_invite_bundled_writes_when_prune_builtins_on(
                 "tool_calls": [], "error": None}
 
     monkeypatch.setattr(c, "_run_llm_review", _stub)
-    c.run_curator_review(synchronous=True, consolidate=True, dry_run=True)
+    c.run_curator_review(synchrothor=True, consolidate=True, dry_run=True)
 
     prompt = captured["prompt"]
     assert "agent-fixture" in prompt
@@ -436,7 +436,7 @@ def test_llm_prompt_does_not_invite_bundled_writes_when_prune_builtins_on(
     import shutil
     shutil.rmtree(skills_dir / "agent-fixture")
     captured.clear()
-    c.run_curator_review(synchronous=True, consolidate=True, dry_run=True)
+    c.run_curator_review(synchrothor=True, consolidate=True, dry_run=True)
     assert "prompt" not in captured
 
 
@@ -569,7 +569,7 @@ def test_run_review_records_state(curator_env):
     _write_skill(skills_dir, "a")
     u.mark_agent_created("a")
 
-    result = c.run_curator_review(synchronous=True)
+    result = c.run_curator_review(synchrothor=True)
     assert "started_at" in result
     state = c.load_state()
     assert state["last_run_at"] is not None
@@ -597,13 +597,13 @@ def test_dry_run_injects_report_only_banner(curator_env, monkeypatch):
                 "tool_calls": [], "error": None}
     monkeypatch.setattr(c, "_run_llm_review", _stub)
 
-    c.run_curator_review(synchronous=True, dry_run=True, consolidate=True)
+    c.run_curator_review(synchrothor=True, dry_run=True, consolidate=True)
     assert c.CURATOR_DRY_RUN_BANNER in captured["prompt"]
 
 
 
 
-def test_run_review_synchronous_invokes_llm_stub(curator_env, monkeypatch):
+def test_run_review_synchrothor_invokes_llm_stub(curator_env, monkeypatch):
     c = curator_env["curator"]
     u = curator_env["usage"]
     skills_dir = curator_env["home"] / "skills"
@@ -626,7 +626,7 @@ def test_run_review_synchronous_invokes_llm_stub(curator_env, monkeypatch):
     captured = []
     c.run_curator_review(
         on_summary=lambda s: captured.append(s),
-        synchronous=True,
+        synchrothor=True,
         consolidate=True,
     )
 
@@ -1145,7 +1145,7 @@ def test_threaded_llm_pass_keeps_callers_profile_scope(curator_env, tmp_path, mo
     home_tok = set_thor_home_override(profile)
     scope_tok = ss.set_secret_scope({"CURATOR_PROBE_KEY": "served"}, profile_home=str(profile))
     try:
-        c.run_curator_review(synchronous=False, consolidate=True)
+        c.run_curator_review(synchrothor=False, consolidate=True)
         for t in threading.enumerate():
             if t.name == "curator-review":
                 t.join(timeout=10.0)

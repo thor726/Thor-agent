@@ -63,10 +63,10 @@ def _arm(monkeypatch, *, url="wss://connector.example/relay", token="nas-token")
 
     Note there is intentionally no `managed` knob — self-provision no longer
     consults is_managed(). A test that wants the "no NAS identity" branch
-    monkeypatches resolve_nous_access_token to raise instead.
+    monkeypatches resolve_thor_access_token to raise instead.
     """
     monkeypatch.setattr(relay, "relay_url", lambda: url)
-    monkeypatch.setattr("thor_cli.auth.resolve_nous_access_token", lambda: token)
+    monkeypatch.setattr("thor_cli.auth.resolve_thor_access_token", lambda: token)
 
 
 # ─────────────────────────── config readers ───────────────────────────
@@ -220,7 +220,7 @@ def test_no_nas_token_is_non_fatal(monkeypatch):
     def _boom():
         raise RuntimeError("no token")
 
-    monkeypatch.setattr("thor_cli.auth.resolve_nous_access_token", _boom)
+    monkeypatch.setattr("thor_cli.auth.resolve_thor_access_token", _boom)
     # Must not raise; returns False; no creds set.
     assert relay.self_provision_relay() is False
     assert relay.relay_connection_auth() == (None, None)
@@ -247,21 +247,21 @@ def test_relay_display_name_suppresses_stock_brand(monkeypatch):
 
 
 def _boot_with_expired_login(tmp_path, monkeypatch, *, env_file: str, stored_portal: str) -> list[str]:
-    """Launch home whose Nous access token expired while the box slept, so the startup
+    """Launch home whose Thor access token expired while the box slept, so the startup
     self-provision is the first caller to refresh it. Returns the Portal URLs the refresh used."""
     launch_home = tmp_path / ".thor"
     launch_home.mkdir()
     (launch_home / ".env").write_text(env_file, encoding="utf-8")
     (launch_home / "auth.json").write_text(json.dumps({
-        "active_provider": "nous",
-        "providers": {"nous": {
+        "active_provider": "thor",
+        "providers": {"thor": {
             "portal_base_url": stored_portal,
             "access_token": "expired-access-token", "refresh_token": "refresh-token",
             "expires_at": "2000-01-01T00:00:00+00:00",
         }},
     }), encoding="utf-8")
     monkeypatch.setenv("THOR_HOME", str(launch_home))
-    for name in ("THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL"):
+    for name in ("THOR_PORTAL_BASE_URL", "THOR_PORTAL_BASE_URL", "THOR_PORTAL_INFERENCE_BASE_URL"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(relay, "relay_url", lambda: "wss://connector.example/relay")
     monkeypatch.setattr(relay, "register_relay_adapter", lambda: False)
@@ -271,7 +271,7 @@ def _boot_with_expired_login(tmp_path, monkeypatch, *, env_file: str, stored_por
         portals.append(kwargs["portal_base_url"])
         raise RuntimeError("stop before any network call")
 
-    monkeypatch.setattr("thor_cli.auth._refresh_nous_or_quarantine", _refresh)
+    monkeypatch.setattr("thor_cli.auth._refresh_thor_or_quarantine", _refresh)
     return portals
 
 
@@ -291,15 +291,15 @@ def test_startup_refresh_uses_launch_profile_portal_when_multiplexed(tmp_path, m
 
 def test_startup_refresh_without_override_stays_on_default_portal(tmp_path, monkeypatch):
     """With no override anywhere, the startup refresh keeps the default Portal."""
-    from thor_cli.auth_nous import DEFAULT_NOUS_PORTAL_URL
+    from thor_cli.auth_thor import DEFAULT_THOR_PORTAL_URL
 
     portals = _boot_with_expired_login(
-        tmp_path, monkeypatch, env_file="", stored_portal=DEFAULT_NOUS_PORTAL_URL)
+        tmp_path, monkeypatch, env_file="", stored_portal=DEFAULT_THOR_PORTAL_URL)
     secret_scope.set_multiplex_active(True)
 
     GatewayStartupMixin._start_register_plugins_relay_hooks()
 
-    assert portals == [DEFAULT_NOUS_PORTAL_URL]
+    assert portals == [DEFAULT_THOR_PORTAL_URL]
 
 
 def test_startup_refresh_single_profile_reads_process_env_override(tmp_path, monkeypatch):
@@ -314,7 +314,7 @@ def test_startup_refresh_single_profile_reads_process_env_override(tmp_path, mon
 
 
 def test_startup_idp_secret_ref_keeps_launch_env_value_when_multiplexed(tmp_path, monkeypatch):
-    """Only the Nous token step runs in the launch profile's scope: a ``${VAR}`` IdP secret injected
+    """Only the Thor token step runs in the launch profile's scope: a ``${VAR}`` IdP secret injected
     into the launch env (systemd, ``op run``) still reaches the IdP, as it did unscoped."""
     import io
     from unittest.mock import Mock

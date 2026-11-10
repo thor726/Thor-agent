@@ -46,7 +46,7 @@ test('shutdown joins a removed start and prevents its late spawn', async () => {
   await assert.rejects(lifecycle.start(async () => {}))
 })
 
-test('shutdown retains a child before asynchronous claim and joins an earlier stop', async () => {
+test('shutdown retains a child before asynchrothor claim and joins an earlier stop', async () => {
   const exit = deferred()
   const stopChild = vi.fn()
   const lifecycle = createLocalBackendLifecycle({ stopChild, waitForExit: () => exit.promise, cancelSetup: () => {} })

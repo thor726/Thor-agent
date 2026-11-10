@@ -6,7 +6,7 @@ import { type WatchHolder, watchInPage } from './watch-in-page'
  *  positioned. Give elements a plausible box the way the act-engine tests do. */
 beforeEach(() => {
   // Never run the callback: the tracking loop re-arms itself every frame, so a
-  // stub that invokes synchronously recurses until the stack gives out. The
+  // stub that invokes synchrothorly recurses until the stack gives out. The
   // first pass happens on the direct call, which is the one worth asserting on.
   vi.stubGlobal('requestAnimationFrame', () => 1)
   vi.stubGlobal('cancelAnimationFrame', () => {})

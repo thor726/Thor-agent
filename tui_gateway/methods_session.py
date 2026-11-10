@@ -209,7 +209,7 @@ def _active_pet():
 
 def _billing_call(rid, fn, extra: dict | None = None) -> dict:
     """Portal call → ok; BillingError → serialized envelope, else generic; ``extra`` rides both ERROR envelopes."""
-    from thor_cli.nous_billing import BillingError
+    from thor_cli.thor_billing import BillingError
     try:
         return _ok(rid, fn())
     except BillingError as exc:
@@ -981,7 +981,7 @@ def _resume_cold(ctx: _Resume) -> dict:
 
 
 def _resume_eager(ctx: _Resume) -> dict:
-    """Synchronous build OUTSIDE _session_resume_lock (it would stall session.close), then double-checked."""
+    """Synchrothor build OUTSIDE _session_resume_lock (it would stall session.close), then double-checked."""
     sid, source, _cwd = ctx.mint()
     with _profile_build_scope(ctx.profile_home):
         try:
@@ -1445,9 +1445,9 @@ def _(rid, params: dict, session: dict) -> dict:
     usage: dict = _session_usage_snapshot(session)
     if session.get("agent") is None and not usage:
         usage = {"calls": 0, "input": 0, "output": 0, "total": 0}
-    # Nous credits are agent-independent (portal fetch); fail-open when absent.
-    from agent.account_usage import nous_credits_usage_fields  # never raises (fail-open inside)
-    usage.update(nous_credits_usage_fields(session.get("agent")))
+    # Thor credits are agent-independent (portal fetch); fail-open when absent.
+    from agent.account_usage import thor_credits_usage_fields  # never raises (fail-open inside)
+    usage.update(thor_credits_usage_fields(session.get("agent")))
     return _ok(rid, usage)
 
 
@@ -1825,7 +1825,7 @@ def _billing_view(name: str, module: str, builder: str, serializer: str, fallbac
 @method("billing.state")
 @_profile_scoped
 def _(rid, params: dict) -> dict:
-    """Profile-bound read-only billing view; fail-open. The Nous free tier has no account to
+    """Profile-bound read-only billing view; fail-open. The Thor free tier has no account to
     bill, so its state is answered locally (``free_tier_account`` set, ``logged_in`` false) without a portal
     round-trip that could only fail."""
     try:
@@ -1850,7 +1850,7 @@ _billing_view("subscription.state", "agent.subscription_view", "build_subscripti
 def _(rid, params: dict) -> dict:
     """POST /api/billing/subscription/preview → chargeless effect quote. billing:manage."""
     from agent.subscription_view import subscription_change_preview_from_payload
-    from thor_cli.nous_billing import post_subscription_preview
+    from thor_cli.thor_billing import post_subscription_preview
     if not (tier_id := params.get("subscription_type_id")):
         return _billing_invalid(rid, "subscription_type_id is required")
     return _billing_call(rid, lambda: _serialize_subscription_preview(
@@ -1859,13 +1859,13 @@ def _(rid, params: dict) -> dict:
 
 def _billing_route(name: str, call, *, invalid=None, message: str = "", error: str = "invalid_request",
                    idempotent: bool = False):
-    """Portal write route on ``thor_cli.nous_billing`` (lazy; tests patch its functions): ``invalid(params)``
+    """Portal write route on ``thor_cli.thor_billing`` (lazy; tests patch its functions): ``invalid(params)``
     → ``_billing_invalid(message, error)``; ``call(nb, params, key)`` performs the request. ``idempotent``
     mints ``idempotency_key`` if absent and echoes it (also on error) so the TUI retries the SAME operation."""
     @method(name)
     @_profile_scoped
     def _(rid, params: dict) -> dict:
-        import thor_cli.nous_billing as nb
+        import thor_cli.thor_billing as nb
         if invalid is not None and invalid(params):
             return _billing_invalid(rid, message, error=error)
         key = extra = None
@@ -1923,8 +1923,8 @@ def _(rid, params: dict) -> dict:
     sid = params.get("session_id") or ""
 
     def call():
-        from thor_cli.auth import step_up_nous_billing_scope
-        granted = step_up_nous_billing_scope(
+        from thor_cli.auth import step_up_thor_billing_scope
+        granted = step_up_thor_billing_scope(
             open_browser=False,
             on_verification=lambda url, code: _emit(
                 "billing.step_up.verification", sid, {"verification_url": url, "user_code": code}))

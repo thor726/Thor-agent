@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Label } from "@nous-research/ui/ui/components/label";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Switch } from "@nous-research/ui/ui/components/switch";
+import { Button } from "@thor-research/ui/ui/components/button";
+import { Label } from "@thor-research/ui/ui/components/label";
+import { Spinner } from "@thor-research/ui/ui/components/spinner";
+import { Switch } from "@thor-research/ui/ui/components/switch";
 import type { Translations } from "@/i18n/types";
 import { api, type AgentPluginsUpdateAllResponse, type PluginAutoUpdateState } from "@/lib/api";
 

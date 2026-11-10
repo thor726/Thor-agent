@@ -1,7 +1,7 @@
 """Tests for cold-start GIL stall mitigations (#60800).
 
 The Desktop/TUI cold start could stall the event loop for ~14s because
-synchronous CPU-bound work ran on the loop thread during the window
+synchrothor CPU-bound work ran on the loop thread during the window
 between ``THOR_BACKEND_READY`` and the first prompt. Fix 1 (the Copilot
 ``gh auth token`` skip) is tested with the github-copilot plugin; here:
 

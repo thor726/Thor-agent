@@ -25,11 +25,11 @@ cannot select the backend, because the backend is what serves config.
 |---|---|
 | `THOR_CONFIG_BACKEND=remote` | Use the config plane instead of `config.yaml` (default `file`). |
 | `THOR_CONFIG_INSTANCE_ID` | This agent's id in the plane. Thor Cloud sets it; on-prem the operator sets it when registering the agent. Required. |
-| `THOR_CONFIG_REMOTE_URL` | The plane's base URL (default `https://config-config.nousresearch.com`). |
+| `THOR_CONFIG_REMOTE_URL` | The plane's base URL (default `https://config-config.thor-agent.local`). |
 
 The agent authenticates as itself:
 
-- **Thor Cloud**: the Nous access token in the profile's `auth.json`.
+- **Thor Cloud**: the Thor access token in the profile's `auth.json`.
 - **On-prem**: an OAuth2 client-credentials token from your identity provider,
   configured in `.env` with `GATEWAY_RELAY_IDP_TOKEN_URL`,
   `GATEWAY_RELAY_IDP_CLIENT_ID`, `GATEWAY_RELAY_IDP_CLIENT_SECRET`, and
@@ -39,7 +39,7 @@ These values, and the `THOR_CONFIG_*` variables above, must come from
 `auth.json`, a `.env` file (the profile's, the project `.env` a Thor command
 loads, or the managed one), or the process environment. If a `secrets:` source
 (1Password, Bitwarden, a command) supplies any of them, Thor refuses to
-start. The same holds for `THOR_PORTAL_BASE_URL`, `NOUS_PORTAL_BASE_URL` and
+start. The same holds for `THOR_PORTAL_BASE_URL`, `THOR_PORTAL_BASE_URL` and
 `THOR_SHARED_AUTH_DIR` (they decide where the Cloud token is read and sent).
 A multi-profile process (gateway, dashboard) that serves a profile whose
 `secrets:` source supplies one of these names refuses to serve that profile.

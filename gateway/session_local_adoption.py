@@ -4,7 +4,7 @@
 the owner loop that stalls every profile it serves (streams, controls, admissions), including during
 a hot-profile activation. So the async paths that restore a receipt (boot and hot-profile recovery, a
 socket's first read) commit the catch-up in a worker first, and the restore that follows only reads.
-A restore reached synchronously on the loop hands it to a tracked worker (``schedule_adoption``).
+A restore reached synchrothorly on the loop hands it to a tracked worker (``schedule_adoption``).
 """
 import asyncio
 import logging

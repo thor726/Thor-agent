@@ -194,7 +194,7 @@ _SCHEMA_OVERRIDES: dict[str, dict[str, Any]] = {
 
 # Small categories fold into a bigger tab to avoid one-field orphan tabs. Several sources
 # (models_dev, onboarding, mcp, computer_use, telemetry, plugins, doctor, runtime, session,
-# nous, telegram) currently surface a single schema field each.
+# thor, telegram) currently surface a single schema field each.
 _CATEGORY_MERGE: dict[str, str] = {
     "privacy": "security",
     "context": "agent",
@@ -222,7 +222,7 @@ _CATEGORY_MERGE: dict[str, str] = {
     # agent tab rather than spawning a one-field orphan category.
     "runtime": "agent",
     "session": "general",
-    "nous": "agent",
+    "thor": "agent",
     "connections": "agent",
     "auth": "security",
     # `fallback.min_switch_reset_seconds` is the only schema-surfaced fallback field.
@@ -705,18 +705,18 @@ def _resolve_assignment_credentials(model_cfg: dict, provider: str, provider_ent
         model_cfg["api_key"] = raw_key if raw_key.startswith("${") and raw_key.endswith("}") else provider_entry["api_key"]
 
 
-def _apply_nous_gateway_defaults(cfg: dict) -> list:
-    """Mirror the CLI's post-model-selection behaviour when switching main to Nous: route
-    *unconfigured* tools through the Nous Tool Gateway. Purely additive — tools with a direct
+def _apply_thor_gateway_defaults(cfg: dict) -> list:
+    """Mirror the CLI's post-model-selection behaviour when switching main to Thor: route
+    *unconfigured* tools through the Thor Tool Gateway. Purely additive — tools with a direct
     key or explicit backend are skipped. Failures never block saving the assignment."""
     try:
-        from thor_cli.nous_subscription import apply_nous_managed_defaults
+        from thor_cli.thor_subscription import apply_thor_managed_defaults
         from thor_cli.tools_config import _get_platform_tools
 
         enabled = _get_platform_tools(cfg, "cli", include_default_mcp_servers=False)
-        return sorted(apply_nous_managed_defaults(cfg, enabled_toolsets=enabled, force_fresh=True))
+        return sorted(apply_thor_managed_defaults(cfg, enabled_toolsets=enabled, force_fresh=True))
     except Exception:
-        _log.debug("apply_nous_managed_defaults skipped", exc_info=True)
+        _log.debug("apply_thor_managed_defaults skipped", exc_info=True)
         return []
 
 
@@ -843,7 +843,7 @@ def _apply_main_assignment_sync(cfg: dict, provider: str, model: str, base_url: 
     cfg["model"] = model_cfg
 
     new_provider = provider.strip().lower()
-    gateway_tools = _apply_nous_gateway_defaults(cfg) if new_provider == "nous" else []
+    gateway_tools = _apply_thor_gateway_defaults(cfg) if new_provider == "thor" else []
     # One route: a model.* key locked by the time the save runs (even after the preflight guard
     # above, or on its CAS retry) refuses the whole save instead of being omitted from it.
     with refusing_locked_omissions("model"):
@@ -967,7 +967,7 @@ def _apply_model_assignment_sync(
     scope: str, provider: str, model: str, task: str, base_url: str, api_key: str = "",
     reasoning_effort: Optional[str] = _UNSET, prepared: "Optional[tuple[str, ModelSwitchResult]]" = None,
 ):
-    """Synchronous body of POST /api/model/set.
+    """Synchrothor body of POST /api/model/set.
 
     Runs inside ``_profile_scope`` (worker thread) so every load_config/save_config lands in
     the requested profile. Raises HTTPException for validation errors. ``prepared`` is a

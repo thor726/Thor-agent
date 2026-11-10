@@ -146,7 +146,7 @@ class TestGmiDoctor:
         try:
             from thor_cli import auth as _auth_mod
 
-            monkeypatch.setattr(_auth_mod, "get_nous_auth_status", dict)
+            monkeypatch.setattr(_auth_mod, "get_thor_auth_status", dict)
             monkeypatch.setattr(_auth_mod, "get_codex_auth_status", dict)
         except Exception:
             pass

@@ -23,7 +23,7 @@ Headers: `svix-id`, `svix-timestamp`, `svix-signature`.
 1. Verify the raw request body with the webhook secret.
 2. Dedupe by `svix-id` or `event_id`.
 3. Return `200` quickly.
-4. Process asynchronously.
+4. Process asynchrothorly.
 5. For `message.received`, load the thread with the CLI and reply if needed.
 
 Act on `message.received` only. Treating `message.sent` or delivery events as

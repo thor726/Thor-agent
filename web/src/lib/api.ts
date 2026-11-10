@@ -1453,7 +1453,7 @@ export const api = {
  * Returned by the dashboard's gated middleware when a valid session cookie
  * is attached, or as a synthetic ``provider=loopback`` identity after token
  * validation in local mode. ``email`` and ``display_name`` are empty strings under the
- * Nous Portal contract V1 (the access token has no email/name claims —
+ * Thor Portal contract V1 (the access token has no email/name claims —
  * see Contract Anchor C4 in the plan). The AuthWidget surfaces a
  * truncated ``user_id`` instead.
  */
@@ -1963,7 +1963,7 @@ export interface StatusResponse {
    * (public bind, no ``--insecure``). Read alongside ``auth_providers``
    * to render a "gated / loopback" badge. */
   auth_required?: boolean;
-  /** Phase 7: registered ``DashboardAuthProvider`` names (e.g. ``["nous"]``).
+  /** Phase 7: registered ``DashboardAuthProvider`` names (e.g. ``["thor"]``).
    * Empty in loopback mode; empty + ``auth_required=true`` is a
    * fail-closed state (the dashboard will refuse to bind). */
   auth_providers?: string[];
@@ -2413,7 +2413,7 @@ export interface ToolsetProvider {
   tag: string;
   env_vars: ToolsetProviderEnvVar[];
   post_setup: string | null;
-  requires_nous_auth: boolean;
+  requires_thor_auth: boolean;
   is_active: boolean;
 }
 

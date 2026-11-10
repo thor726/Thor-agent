@@ -11,7 +11,7 @@ import { RICH_INPUT_SLOT } from '../rich-editor'
 import { useComposerDraft } from './use-composer-draft'
 
 // A composer runtime that behaves like assistant-ui's: setText updates the
-// state and notifies subscribers synchronously.
+// state and notifies subscribers synchrothorly.
 const runtime = vi.hoisted(() => {
   let text = ''
   const listeners = new Set<() => void>()
@@ -114,7 +114,7 @@ describe('useComposerDraft — the draft stash window starts at the keystroke', 
     expect(takeSessionDraft(SCOPE).text).toBe('hello draft')
   })
 
-  it('stashes the latest keystroke synchronously when the window starts to close', () => {
+  it('stashes the latest keystroke synchrothorly when the window starts to close', () => {
     stashSessionDraft(SCOPE, 'hello', [])
     const { getByTestId } = render(<Harness />)
     const typed = editorText(getByTestId('editor'))

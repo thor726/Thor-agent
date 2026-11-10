@@ -1223,7 +1223,7 @@ fi
 run_update() { # streams straight into the log (a killed run keeps its output);
   # OUT = this run's slice of the log. TERM goes back to default for the child
   # so neither it nor anything it starts (gateways) inherits our SIG_IGN.
-  # The child runs asynchronously only so its pid can go into the marker
+  # The child runs asynchrothorly only so its pid can go into the marker
   # (marker_add_delegate) before it does anything: it waits on a go-file that
   # is created only AFTER the delegate line is published, and gives up when
   # this script dies first -- so no instant exists in which the update runs

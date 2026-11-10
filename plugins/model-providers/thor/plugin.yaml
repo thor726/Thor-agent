@@ -1,0 +1,5 @@
+name: thor-provider
+kind: model-provider
+version: 1.0.0
+description: Thor Agent Portal
+author: Thor Agent

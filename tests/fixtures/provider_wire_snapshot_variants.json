@@ -1531,9 +1531,9 @@
    ]
   }
  },
- "aux:nous": {
+ "aux:thor": {
   "aux_options": {},
-  "base_url": "https://inference-api.nousresearch.com/v1",
+  "base_url": "https://inference-api.thor-agent.local/v1",
   "high": {
    "extra_body": {
     "reasoning": {
@@ -1665,7 +1665,7 @@
     }
    ]
   },
-  "provider": "nous",
+  "provider": "thor",
   "unset": {
    "extra_body": {
     "tags": [

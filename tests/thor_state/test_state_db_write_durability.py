@@ -11,8 +11,8 @@ integrity_check` on the file reported the torn-b-tree signature:
     Page 50549..52587: never used
 
 The defect: thor_state already knows macOS `fsync()` does not guarantee
-write ordering, and mitigates it with `synchronous=FULL` +
-`checkpoint_fullfsync=1` (see `_enforce_macos_synchronous_full`, whose
+write ordering, and mitigates it with `synchrothor=FULL` +
+`checkpoint_fullfsync=1` (see `_enforce_macos_synchrothor_full`, whose
 docstring names this exact failure: "a WAL checkpoint race with process
 termination ... can leave the main DB with half-written btree pages").
 Those pragmas are per-connection and were applied only via
@@ -59,7 +59,7 @@ def test_connect_repair_durable_sets_macos_barriers(tmp_path: Path) -> None:
     db = _make_db(tmp_path)
     conn = _connect_repair_durable(db)
     try:
-        synchronous = conn.execute("PRAGMA synchronous").fetchone()[0]
+        synchrothor = conn.execute("PRAGMA synchrothor").fetchone()[0]
         checkpoint_fullfsync = conn.execute(
             "PRAGMA checkpoint_fullfsync"
         ).fetchone()[0]
@@ -67,9 +67,9 @@ def test_connect_repair_durable_sets_macos_barriers(tmp_path: Path) -> None:
         conn.close()
 
     # SQLite: 0=OFF, 1=NORMAL, 2=FULL, 3=EXTRA. NORMAL is what tore the
-    # b-tree pages; FULL is what _enforce_macos_synchronous_full sets.
-    assert synchronous == 2, (
-        f"repair connection opened with synchronous={synchronous}; on "
+    # b-tree pages; FULL is what _enforce_macos_synchrothor_full sets.
+    assert synchrothor == 2, (
+        f"repair connection opened with synchrothor={synchrothor}; on "
         "Darwin this lets REINDEX/VACUUM leave half-written b-tree pages"
     )
     assert checkpoint_fullfsync == 1, (

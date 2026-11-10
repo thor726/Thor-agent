@@ -2,8 +2,8 @@
 
 from types import SimpleNamespace
 
-from thor_cli.nous_account import NousPaidServiceAccessInfo, NousPortalAccountInfo
-from thor_cli.nous_subscription import NousFeatureState, NousSubscriptionFeatures
+from thor_cli.thor_account import ThorPaidServiceAccessInfo, ThorPortalAccountInfo
+from thor_cli.thor_subscription import ThorFeatureState, ThorSubscriptionFeatures
 import subprocess
 
 
@@ -19,9 +19,9 @@ def _patch_common_status_deps(monkeypatch, status_mod, tmp_path, *, openai_base_
         return ""
 
     monkeypatch.setattr(status_mod, "get_env_value", _get_env_value, raising=False)
-    monkeypatch.setattr(auth_mod, "get_nous_auth_status", dict, raising=False)
+    monkeypatch.setattr(auth_mod, "get_thor_auth_status", dict, raising=False)
     monkeypatch.setattr(
-        auth_mod, "get_nous_auth_status_local", dict, raising=False
+        auth_mod, "get_thor_auth_status_local", dict, raising=False
     )
     monkeypatch.setattr(auth_mod, "get_codex_auth_status", dict, raising=False)
     monkeypatch.setattr(

@@ -1,7 +1,7 @@
 """OpenRouter video generation backend.
 
 OpenRouter fronts every major video model (Veo, Sora, Kling, Seedance, Wan, Hailuo, Grok
-Imagine, FLUX Video, …) behind one asynchronous API: ``POST /api/v1/videos`` → poll
+Imagine, FLUX Video, …) behind one asynchrothor API: ``POST /api/v1/videos`` → poll
 ``GET /api/v1/videos/{id}`` → download ``GET /api/v1/videos/{id}/content`` with the
 bearer key. The catalog and each model's limits come live from ``GET /api/v1/videos/models``
 (public, no key), so new releases are selectable without a patch and a retired model drops

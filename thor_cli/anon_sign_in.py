@@ -1,4 +1,4 @@
-"""The one Nous sign-in: the plain device-code login every surface renders, plus its states and copy."""
+"""The one Thor sign-in: the plain device-code login every surface renders, plus its states and copy."""
 
 from __future__ import annotations
 
@@ -11,16 +11,16 @@ from typing import Any, Callable, ClassVar, ContextManager, Iterator, Optional
 from thor_cli.auth_constants import httpx
 
 
-UPGRADE_START = "Sign in with a Nous account to unlock more models and tools."
+UPGRADE_START = "Sign in with a Thor account to unlock more models and tools."
 UPGRADE_ALREADY_SIGNED_IN = "Already signed in."
 UPGRADE_DO_NOT_SHARE = "Do not share this code."
 UPGRADE_TIMED_OUT = "That sign-in link has expired. Start again whenever you're ready."
 UPGRADE_NOT_COMPLETED = "Sign-in didn't finish. Try again whenever you're ready."
 # The account service was busy or unreachable mid sign-in (an ``anon_*`` code from
 # ``anon_auth.classify_mint_exception``): nothing was saved, so the copy reassures before the way forward.
-UPGRADE_SERVICE_BUSY = ("Signing in couldn't finish because the Nous service is busy. "
+UPGRADE_SERVICE_BUSY = ("Signing in couldn't finish because the Thor service is busy. "
                         "Try again in {wait}. Your session is still here in the meantime.")
-UPGRADE_SERVICE_UNREACHABLE = ("The Nous service couldn't be reached to finish signing you in. "
+UPGRADE_SERVICE_UNREACHABLE = ("The Thor service couldn't be reached to finish signing you in. "
                                "Check your internet connection and try again. Your session is still here.")
 
 UPGRADE_NO_DEFAULT_TERMINAL = "No default model is set yet; run `thor model` to pick one."
@@ -258,7 +258,7 @@ def run_sign_in(
     scope: Optional[Callable[[], ContextManager[Any]]] = None,
     client_factory: Optional[Callable[[float, Any], ContextManager[httpx.Client]]] = None,
 ) -> Iterator[SignInState]:
-    """Sign in with a Nous account: the plain device-code login. Yields :class:`SignInState`s.
+    """Sign in with a Thor account: the plain device-code login. Yields :class:`SignInState`s.
 
     One composition behind every surface: device code, then a cancel-aware token poll on one
     deadline, then the save. The save is where the guest handoff hooks in (``guest_handoff``): a free
@@ -282,7 +282,7 @@ def run_sign_in(
     from thor_cli.auth import PROVIDER_REGISTRY, _resolve_verify
     from thor_cli.auth_device_flow import DeviceFlowCancelled, _request_device_code
     from thor_cli.auth_error_copy import is_device_code_expired
-    from thor_cli.auth_nous import _nous_http_client, _nous_portal_base_url
+    from thor_cli.auth_thor import _thor_http_client, _thor_portal_base_url
     from thor_cli.guest_handoff import drain
 
     is_cancelled = cancelled or (lambda: False)
@@ -292,10 +292,10 @@ def run_sign_in(
     state: Optional[dict[str, Any]] = None
     try:
         with open_scope():
-            state = _core.current_nous_state()
+            state = _core.current_thor_state()
             # Inside the scope: the operator's Portal override is a profile setting, and it wins over
-            # a saved URL the same way it does for every other Nous call.
-            portal = _nous_portal_base_url(state or {})
+            # a saved URL the same way it does for every other Thor call.
+            portal = _thor_portal_base_url(state or {})
     except Exception as exc:  # health: allow BLE001 -- the generator's contract is one terminal state, never a raise
         yield Failed(reason="", detail=str(exc))
         return
@@ -304,11 +304,11 @@ def run_sign_in(
         return
 
     try:
-        pconfig = PROVIDER_REGISTRY["nous"]
+        pconfig = PROVIDER_REGISTRY["thor"]
         client_id, scope_str = pconfig.client_id, pconfig.scope
         # A malformed CA bundle raises here, before the wire: inside the try, so it lands on Failed.
         verify = _resolve_verify(insecure=None, ca_bundle=None, auth_state=None)
-        open_client = client_factory or _nous_http_client
+        open_client = client_factory or _thor_http_client
         with open_client(timeout_seconds, verify) as client:
             device = _request_device_code(client, portal, client_id, scope_str)
             expires_in = int(device["expires_in"])
@@ -346,14 +346,14 @@ def run_sign_in(
         with open_scope():
             with guard() as may_persist:
                 if may_persist:
-                    _core.persist_nous_credentials(account_state)
+                    _core.persist_thor_credentials(account_state)
             if may_persist:
                 # The handoff runs once the surface's lock is released, never inside it.
                 handoff = drain()
                 settled = _core.settle_after_upgrade(account_state)
                 handoff_status = _handoff_status(handoff, state)
     except Exception as exc:
-        # persist_nous_credentials takes the auth-store lock, writes auth.json, takes the shared
+        # persist_thor_credentials takes the auth-store lock, writes auth.json, takes the shared
         # store's file lock and reseeds the credential pool: a lock timeout or a read-only home
         # must not escape next(gen).
         yield Failed(reason="", detail=str(exc))

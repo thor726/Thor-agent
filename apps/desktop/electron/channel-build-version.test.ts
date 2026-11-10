@@ -29,12 +29,12 @@ function request(sequence: number = 65536, token: string = 'ab12cd34ef56ab78'): 
     identity: {
       token,
       displayName: 'Thor no-registry-needed',
-      appId: `com.nousresearch.thor-channel-${token}`,
+      appId: `com.thorresearch.thor-channel-${token}`,
       appNamePascal: `ThorChannel${token}`,
       artifactNamePascal: `ThorChannel${token}`,
       cliName: 'thor-no-registry-needed',
       windowsExecutableName: 'thor-no-registry-needed',
-      msixAppIdWithOrg: `NousResearch.ThorChannel${token}`
+      msixAppIdWithOrg: `dwisetyabudi15581.ThorChannel${token}`
     },
     bundleEnv: { THOR_PREVIEW_FULL_CONNECTORS: '1' },
     publicBase: 'https://builds.example.test'

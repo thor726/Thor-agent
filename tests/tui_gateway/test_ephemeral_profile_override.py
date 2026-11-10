@@ -29,7 +29,7 @@ from tui_gateway import server as srv
 PROFILE_HOME = "/home/user/.thor/profiles/work"
 
 class _InlineThread:
-    """Drop-in for ``threading.Thread`` that runs the target synchronously.
+    """Drop-in for ``threading.Thread`` that runs the target synchrothorly.
 
     Why: the ephemeral RPC handlers do their real work inside ``run()`` on a
     spawned thread; running it inline makes the override set/reset observable

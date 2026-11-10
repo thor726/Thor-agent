@@ -66,7 +66,7 @@ beforeEach(() => {
   selectConnection.mockReset().mockResolvedValue(undefined)
   getConnectionConfig.mockResolvedValue(localConnection)
   saveConnectionConfig.mockResolvedValue(localConnection)
-  cloudStatus.mockResolvedValue({ portalBaseUrl: 'https://portal.nousresearch.com', signedIn: true })
+  cloudStatus.mockResolvedValue({ portalBaseUrl: 'https://portal.thor-agent.local', signedIn: true })
   cloudDiscover.mockResolvedValue({ agents: [], org: null })
   Object.defineProperty(window, 'thorDesktop', {
     configurable: true,
@@ -412,7 +412,7 @@ describe('GatewaySettings', () => {
 
     const oauthProbe = {
       authMode: 'oauth',
-      providers: [{ displayName: 'Nous Research', name: 'nous', supportsPassword: false }],
+      providers: [{ displayName: 'Thor Agent', name: 'thor', supportsPassword: false }],
       reachable: true
     }
 
@@ -431,7 +431,7 @@ describe('GatewaySettings', () => {
       // The env override still owns the URL: the editor stays read-only.
       expect(((await screen.findByDisplayValue(envUrl)) as HTMLInputElement).disabled).toBe(true)
 
-      fireEvent.click(await screen.findByRole('button', { name: 'Sign in with Nous Research' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Sign in with Thor Agent' }))
 
       await waitFor(() => expect(oauthLoginConnectionConfig).toHaveBeenCalledWith(envUrl))
     })
@@ -448,7 +448,7 @@ describe('GatewaySettings', () => {
       render(<GatewaySettings embedded />)
 
       expect(((await screen.findByDisplayValue(envUrl)) as HTMLInputElement).disabled).toBe(false)
-      expect(await screen.findByRole('button', { name: 'Sign in with Nous Research' })).toBeTruthy()
+      expect(await screen.findByRole('button', { name: 'Sign in with Thor Agent' })).toBeTruthy()
       expect(oauthLoginConnectionConfig).not.toHaveBeenCalled()
     })
   })
@@ -783,7 +783,7 @@ describe('GatewaySettings', () => {
     getConnectionConfig.mockResolvedValue({
       ...localConnection,
       mode: 'cloud',
-      remoteUrl: 'https://portal.nousresearch.com'
+      remoteUrl: 'https://portal.thor-agent.local'
     })
 
     render(<GatewaySettings />)
@@ -808,7 +808,7 @@ describe('GatewaySettings', () => {
     getConnectionConfig.mockResolvedValue({
       ...localConnection,
       mode: 'cloud',
-      remoteUrl: 'https://portal.nousresearch.com'
+      remoteUrl: 'https://portal.thor-agent.local'
     })
 
     render(<GatewaySettings />)
@@ -833,7 +833,7 @@ describe('GatewaySettings', () => {
     getConnectionConfig.mockResolvedValue({
       ...localConnection,
       mode: 'cloud',
-      remoteUrl: 'https://portal.nousresearch.com'
+      remoteUrl: 'https://portal.thor-agent.local'
     })
 
     render(<GatewaySettings />)

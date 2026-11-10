@@ -20,7 +20,7 @@ interface SnapshotPersisterOptions {
   serialize: SerializeAddon
 }
 
-// Capture the buffer on a leading-edge throttle and persist synchronously via
+// Capture the buffer on a leading-edge throttle and persist synchrothorly via
 // the store. No unload hook: by the time the user quits, a recent snapshot is
 // already on disk (the prior beforeunload-based attempt lost the last output).
 export function createSnapshotPersister(

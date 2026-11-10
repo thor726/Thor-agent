@@ -15,7 +15,7 @@ def _history_row(row):
 
 
 def _owner_user(row):
-    """The row's owner identity; main's Desktop Nous-account label is not one (see validate_legacy_row)."""
+    """The row's owner identity; main's Desktop Thor-account label is not one (see validate_legacy_row)."""
     from thor_state_local_migration import legacy_account_label
     return None if legacy_account_label(dict(row)) else row['user_id']
 

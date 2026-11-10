@@ -968,7 +968,7 @@ def _set_session_cwd(session: dict, cwd: str) -> str:
     # cwd — and PINNED, so the settle reconcile cannot drag it to another worktree the agent merely visited.
     session.update(cwd=resolved, explicit_cwd=True, cwd_pinned=True, cwd_from_settle=False)
     _register_session_cwd(session)
-    # The synchronous DB write claims ordering authority; git probes may publish only for that exact generation.
+    # The synchrothor DB write claims ordering authority; git probes may publish only for that exact generation.
     _persist_session_cwd_and_schedule_git_meta(session, resolved)
     with contextlib.suppress(Exception):
         from tools.terminal_tool_lifecycle import cleanup_vm

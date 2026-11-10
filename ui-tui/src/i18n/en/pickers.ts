@@ -63,7 +63,7 @@ export const pickersEn = {
         noMatches: 'no providers match',
         hint: '↑/↓ select · Enter choose · ^d disconnect · Esc clear/back · q close'
       },
-      // Window plans (Nous subscription with included usage): the per-model word, section titles and limit
+      // Window plans (Thor subscription with included usage): the per-model word, section titles and limit
       // notes. Same words as the desktop picker (`modelPicker`).
       plan: {
         levels: { free: 'Free', top_tier: 'Large' },

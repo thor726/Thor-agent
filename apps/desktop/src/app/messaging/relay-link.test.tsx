@@ -70,12 +70,12 @@ test('a Portal-managed agent is sent to the Portal: no code is minted and nothin
   // A gateway-minted code on a managed agent carries no owner, so its redeem binds nothing.
   getRelayLinks.mockImplementation(async () => ({
     managed_by: 'portal',
-    portal_url: 'https://portal.nousresearch.com/agents',
+    portal_url: 'https://portal.thor-agent.local/agents',
     platforms: [{ platform: 'telegram', accounts: [{ platformUserId: '7', displayName: 'Ada' }], bot_url: null }]
   }))
   render(<RelayLinkSetup platform={telegram} />)
 
-  expect(await screen.findByRole('button', { name: /Link accounts in Nous Portal/ })).toBeTruthy()
+  expect(await screen.findByRole('button', { name: /Link accounts in Thor Portal/ })).toBeTruthy()
   expect(screen.getByText('Ada')).toBeTruthy()
   expect(screen.queryByRole('button', { name: /Link (another )?Telegram|Unlink/ })).toBeNull()
 })

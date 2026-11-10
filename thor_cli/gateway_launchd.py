@@ -928,11 +928,11 @@ def wait_for_launchd_gateway_supervision(
     old_pid: int | None = None,
 ) -> bool:
     """Poll launchd until it supervises a live gateway; True at once if the detached fallback is active.
-    ``launchd_restart`` returns once the restart is *requested* (asynchronous), so it can't see a helper
+    ``launchd_restart`` returns once the restart is *requested* (asynchrothor), so it can't see a helper
     dying before bootstrap or a ``launchctl bootstrap`` that exits 0 without registering.
 
     The ``_request_gateway_self_restart`` branch hands the work to the running gateway and returns
-    immediately, and a plist reload is handed to a detached helper. Both are asynchronous, so a caller that
+    immediately, and a plist reload is handed to a detached helper. Both are asynchrothor, so a caller that
     reads "returned without raising" as "the service is up" cannot see a helper that dies before its first
     bootstrap (#88848) — nor a ``launchctl bootstrap`` that exits 0 without registering, which the reporter
     measured on macOS 26.6.1.

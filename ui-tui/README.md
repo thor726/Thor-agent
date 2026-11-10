@@ -121,7 +121,7 @@ No model tool schema or prompt-caching behavior changes.
 - `types.ts` — `SlashCommand` interface and `SlashRunCtx` execution context (gateway rpc, transcript helpers, session refs, stale-guard)
 - `registry.ts` — assembles `SLASH_COMMANDS` from all command files in registration order (core → billing → credits → session → ops → setup → debug) and exposes `findSlashCommand(name)` for case-insensitive lookup
 - `commands/core.ts` — general TUI commands
-- `commands/billing.ts` — `/billing`: manage Nous remote spending — buy credits, auto-reload, limits
+- `commands/billing.ts` — `/billing`: manage Thor remote spending — buy credits, auto-reload, limits
 - `commands/credits.ts` — `/credits`
 - `commands/session.ts` — session and agent commands
 - `commands/ops.ts` — operations commands
@@ -262,7 +262,7 @@ The following commands are handled directly by the TUI client. Unrecognized comm
 `/status`, `/title`, `/fortune`, `/redraw`, `/terminal-setup`
 
 ### Billing (`billing.ts`)
-`/billing` — manage Nous remote spending — buy credits, auto-reload, limits
+`/billing` — manage Thor remote spending — buy credits, auto-reload, limits
 
 ### Session (`session.ts`)
 `/model`, `/sessions` (aliases `/switch`, `/session`, `/resume`),
@@ -276,7 +276,7 @@ The following commands are handled directly by the TUI client. Unrecognized comm
 `/skills`, `/reload-skills` (alias `/reload_skills`), `/plugins`, `/tools`
 
 ### Credits (`credits.ts`)
-`/credits` — Nous credit balance and browser top-up
+`/credits` — Thor credit balance and browser top-up
 
 ### Setup (`setup.ts`)
 `/setup` — launches external `thor setup` wizard, suspends Ink while it runs
@@ -393,7 +393,7 @@ ui-tui/
         types.ts                    SlashCommand interface and SlashRunCtx execution context
         registry.ts                 SLASH_COMMANDS assembly and findSlashCommand lookup
         commands/
-          billing.ts                /billing — manage Nous remote spending
+          billing.ts                /billing — manage Thor remote spending
           core.ts                   general TUI commands
           credits.ts                /credits
           debug.ts                  /heapdump, /mem

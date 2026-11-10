@@ -1,4 +1,4 @@
-"""Nous free-tier JSON-RPC handlers. ``free_tier.status`` answers from the
+"""Thor free-tier JSON-RPC handlers. ``free_tier.status`` answers from the
 auth store with zero network and zero side effects; ``free_tier.provision`` retries a welcome-trial claim
 that failed (desktop-only entry); ``free_tier.ack_notice``
 persists the one-time notice flag on the free-tier identity itself, so it dies with that identity.

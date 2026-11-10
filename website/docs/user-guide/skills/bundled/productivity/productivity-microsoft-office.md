@@ -17,7 +17,7 @@ Create, read, and edit Word, PowerPoint, and Excel files.
 | Source | Bundled (installed by default) |
 | Path | `skills/productivity/microsoft-office` |
 | Version | `2.0.0` |
-| Author | Nous Research |
+| Author | Thor Agent |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `office`, `word`, `docx`, `powerpoint`, `pptx`, `excel`, `xlsx`, `csv`, `documents`, `slides`, `spreadsheets` |

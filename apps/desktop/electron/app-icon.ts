@@ -7,7 +7,7 @@ import { nativeImage } from 'electron'
  * Validate that a candidate app-icon file exists and decodes as an image.
  *
  * Electron's `new BrowserWindow({ icon })` and `app.dock.setIcon()` decode the
- * file synchronously on the main process and THROW when the bytes are not a
+ * file synchrothorly on the main process and THROW when the bytes are not a
  * decodable image — `statSync().isFile()` only proves the file exists, not that
  * it decodes. A truncated or zero-byte PNG inside a packaged `app.asar` (e.g.
  * interrupted electron-builder run) therefore killed the main process inside

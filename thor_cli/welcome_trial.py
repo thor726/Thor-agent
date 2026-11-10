@@ -1,7 +1,7 @@
-"""The desktop's welcome trial: free inference on ``nous/welcome`` for a first install, once per OS user.
+"""The desktop's welcome trial: free inference on ``thor/welcome`` for a first install, once per OS user.
 
 Only the backend the desktop spawned on this machine can claim it, only when this OS user has never
-used Thor here (``install_state``), and only with no provider and no Nous identity yet. The claim
+used Thor here (``install_state``), and only with no provider and no Thor identity yet. The claim
 mints a guest stamped with ``WELCOME_CLAIM_FLAG`` in the mint's own write and writes the OS user's
 marker, so the trial is never claimed twice for that user. Another OS account on the same computer is
 a separate first install. A claim that is lost later (the guest is reaped, ``auth.json`` is
@@ -23,10 +23,10 @@ from thor_cli import anon_auth
 logger = logging.getLogger("thor_cli.auth")
 
 
-def _has_nous_identity() -> bool:
-    from thor_cli.auth_nous import _read_shared_nous_state
+def _has_thor_identity() -> bool:
+    from thor_cli.auth_thor import _read_shared_thor_state
 
-    return anon_auth.current_nous_state() is not None or _read_shared_nous_state() is not None
+    return anon_auth.current_thor_state() is not None or _read_shared_thor_state() is not None
 
 
 def provider_configured() -> bool:
@@ -39,7 +39,7 @@ def provider_configured() -> bool:
         provider = resolve_provider("auto", skip_free_tier=True)
     except AuthError:  # no_provider_configured
         return False
-    return provider != "nous" or not anon_auth.has_guest()
+    return provider != "thor" or not anon_auth.has_guest()
 
 
 def inference_available(*, assume_fresh: bool = False) -> bool:
@@ -67,7 +67,7 @@ class _Ask:
 _CLAIM_BLOCKERS: tuple[tuple[str, Callable[[_Ask], bool]], ...] = (
     ("not the desktop's local backend", lambda _ask: not anon_auth.on_local_desktop_backend()),
     ("guests are switched off", lambda _ask: not anon_auth.guest_allowed()),
-    ("a Nous identity exists", lambda _ask: _has_nous_identity()),
+    ("a Thor identity exists", lambda _ask: _has_thor_identity()),
     ("a provider is configured",
      lambda ask: provider_configured() if ask.configured is None else ask.configured),
     ("Thor was used on this machine", lambda ask: _machine_is_used(ask.assume_fresh)),
@@ -104,7 +104,7 @@ def claim_desktop_free_tier(*, assume_fresh: bool = False, force: bool = False) 
                 str(failure.get("error_code") or anon_auth.ANON_SERVER_ERROR),
                 retry_after=failure.get("retry_after"))
         install_state.mark_machine_used()
-    logger.info("Nous free tier: welcome trial claimed on this machine")
+    logger.info("Thor free tier: welcome trial claimed on this machine")
     return state
 
 
@@ -112,16 +112,16 @@ def settle_interrupted_claim() -> bool:
     """A claim cut off between its guest write and its marker write leaves the reservation behind.
     The stamped guest is the claim, so the reservation goes: kept, it would let a second trial through
     once that guest is reaped or deleted. Runs before every claim and at serve boot; True when it did."""
-    from thor_cli.auth_nous import _read_shared_nous_state
+    from thor_cli.auth_thor import _read_shared_thor_state
     from thor_cli.install_state import mark_machine_used, trial_reserved
 
     if not trial_reserved():
         return False
-    stores = (anon_auth.current_nous_state(), _read_shared_nous_state())
+    stores = (anon_auth.current_thor_state(), _read_shared_thor_state())
     if not any(anon_auth.is_guest_state(s) and s.get(anon_auth.WELCOME_CLAIM_FLAG) is True for s in stores):
         return False
     mark_machine_used()
-    logger.info("Nous free tier: an interrupted welcome-trial claim was settled")
+    logger.info("Thor free tier: an interrupted welcome-trial claim was settled")
     return True
 
 

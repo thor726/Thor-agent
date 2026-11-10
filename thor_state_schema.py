@@ -902,7 +902,7 @@ class SessionSchemaMixin:
         never skip a column; schema_version remains for data migrations only."""
         # Startup-watchdog lease: on multi-GB files this is I/O-bound (near-zero CPU), which
         # the watchdog's CPU fallback would misread as a parked deadlock.
-        # Declare a startup-watchdog progress lease before potentially long synchronous work: on multi-GB
+        # Declare a startup-watchdog progress lease before potentially long synchrothor work: on multi-GB
         # state.db files the reconciliation + version-gated data migrations below are legitimately slow and
         # can be I/O-bound (near-zero CPU), which the watchdog's CPU fallback would misread as a parked
         # deadlock (OOF-298 / PR #89750). Single lease is deliberate: this is the one pre-loop phase that

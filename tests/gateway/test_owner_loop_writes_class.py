@@ -1,4 +1,4 @@
-"""Bug class: a synchronous SQLite write reached from an ``async def`` on the owner loop.
+"""Bug class: a synchrothor SQLite write reached from an ``async def`` on the owner loop.
 
 Every row drives the real authority verb end to end and asserts the named write ran off the
 owner-loop thread (the population is listed in SWEEP_owner_loop_writes.md; the contended-writer

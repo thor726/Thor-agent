@@ -71,7 +71,7 @@ export const prepareSlashSubmission = (display: string, tokens: ComposerToken[])
 export const shouldInterpolateSubmission = (display: string) => hasInterpolation(display)
 
 /**
- * Where and how a busy-time input is admitted. Captured synchronously at the
+ * Where and how a busy-time input is admitted. Captured synchrothorly at the
  * moment the user commits the input: a continuation that runs after an await
  * (an edited row waiting for its original to retire) must not re-read the
  * live focus, which may have moved to another session in the meantime.

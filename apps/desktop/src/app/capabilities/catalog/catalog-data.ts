@@ -53,7 +53,7 @@ export interface CatalogEntry {
 
 // The public domain redirects here without CORS headers on the redirect.
 // Use the docs' actual static host, not GitHub's API or repository endpoints.
-const CATALOG_BASE = 'https://nousresearch.github.io/thor-agent/docs/api'
+const CATALOG_BASE = 'https://thorresearch.github.io/thor-agent/docs/api'
 /** A download with no new bytes for this long is aborted (inactivity, not total time). */
 const CATALOG_STALL_MS = 60_000
 const text = (value: unknown): string => (typeof value === 'string' ? value : '')

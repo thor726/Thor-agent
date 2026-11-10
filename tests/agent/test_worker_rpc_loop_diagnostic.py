@@ -29,10 +29,10 @@ def test_on_loop_rpc_logs_caller_frames_without_argument_values(tmp_path, monkey
         persist_from_callback()
 
     caplog.set_level(logging.WARNING, logger='agent.runtime_session_store')
-    with pytest.raises(WorkerPersistenceError, match='synchronous_rpc_on_event_loop'):
+    with pytest.raises(WorkerPersistenceError, match='synchrothor_rpc_on_event_loop'):
         asyncio.run(on_loop())
     [message] = _guard_warnings(caplog)
-    assert 'synchronous_rpc_on_event_loop' in message and 'worker.persist' in message
+    assert 'synchrothor_rpc_on_event_loop' in message and 'worker.persist' in message
     assert f'{__name__}:persist_from_callback:' in message
     assert f'{__name__}:on_loop:' in message
     assert SECRET not in message
@@ -61,6 +61,6 @@ def test_on_loop_store_write_names_the_caller_not_the_store(tmp_path, monkeypatc
         assert message.split('caller: ', 1)[1].startswith(f'{__name__}:best_effort_usage:')
         assert 'agent.runtime_session_store' not in message.split('caller: ', 1)[1]
         assert SECRET not in message
-        assert store.failure == 'synchronous_rpc_on_event_loop'
+        assert store.failure == 'synchrothor_rpc_on_event_loop'
     finally:
         store._outbox_owner.close()

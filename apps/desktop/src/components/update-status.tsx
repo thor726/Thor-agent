@@ -26,7 +26,7 @@ import {
 } from '@/store/updates'
 
 const RELEASE_NOTES_URL = 'https://github.com/dwisetyabudi15581/Thor-agent/releases'
-const INSTALLER_URL = 'https://thor-agent.nousresearch.com/'
+const INSTALLER_URL = 'https://thor-agent.thor-agent.local/'
 
 export type UpdateStatusTone = 'idle' | 'available' | 'error' | 'unsupported'
 

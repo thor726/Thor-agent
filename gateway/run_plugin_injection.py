@@ -43,7 +43,7 @@ class GatewayPluginInjectionMixin:
     ) -> bool:
         """Schedule a plugin-triggered turn on the live gateway loop (thread-safe).
 
-        With ``origin`` the profile, origin and adapter checks run here, synchronously, so the plugin
+        With ``origin`` the profile, origin and adapter checks run here, synchrothorly, so the plugin
         gets ``False`` for a chat it may not start; authorization is rechecked at dispatch. ``keyless``
         (neither given) picks the target here too (``gateway/plugin_keyless_inject.py``)."""
         from gateway.run import safe_schedule_threadsafe
@@ -138,7 +138,7 @@ class GatewayPluginInjectionMixin:
         return authorized
 
     def _plugin_session_key_admissible(self, session_key: str, *, plugin_home: Optional[Path], plugin_id: str) -> bool:
-        """Synchronous refusal of a keyed injection into another profile's session (local or
+        """Synchrothor refusal of a keyed injection into another profile's session (local or
         messaging), so the plugin gets ``False``; an unknown key is decided at dispatch, as before.
         Dispatch rechecks."""
         entry = self.session_store.lookup_by_session_key(session_key)

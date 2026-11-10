@@ -777,7 +777,7 @@ def test_sync_mark_happens_before_on_timeout():
 def test_async_mark_happens_before_on_abandon_cleanup():
     """Pins the scheduling invariant the inline mark relies on: on_abandon
     is ensure_future'd (can't start until the next loop tick), so the
-    synchronous mark always lands first. An offloaded (to_thread) mark
+    synchrothor mark always lands first. An offloaded (to_thread) mark
     would break this — this test is the guard against that 'fix'."""
     from agent.deadline import run_bounded_async
 

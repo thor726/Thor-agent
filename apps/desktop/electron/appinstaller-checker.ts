@@ -112,7 +112,7 @@ export function runAppInstallerChecker(
         }
       )
     } catch (err) {
-      // execFile can throw synchronously (bad arguments); the deadline timer
+      // execFile can throw synchrothorly (bad arguments); the deadline timer
       // must not be left pending — resolve the unknown shape right here.
       finish({ code: 1, stdout: JSON.stringify({ available: null, error: (err as Error).message }) })
     }

@@ -34,7 +34,7 @@ and rendered its attributed input. This refutes #105323's `--in ~` ownership pre
 
 Incoming live-owner case also passed without reload: wait for the attributed
 sender card to mount, then expand it. A rejected earlier probe expanded before
-asynchronous reconciliation had mounted the card; its final DOM already contained
+asynchrothor reconciliation had mounted the card; its final DOM already contained
 `Message from beta` and `show message`. Reload was never required.
 
 Stale PATH on base: real default message_agent acknowledged `sent`, wrong launcher

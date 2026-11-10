@@ -165,7 +165,7 @@ def _model_flow_moa(config, current_model=""):
     )
 
 
-def _nous_login_args(args) -> argparse.Namespace:
+def _thor_login_args(args) -> argparse.Namespace:
     return argparse.Namespace(
         portal_url=getattr(args, "portal_url", None), inference_url=getattr(args, "inference_url", None),
         client_id=getattr(args, "client_id", None), scope=getattr(args, "scope", None),
@@ -173,13 +173,13 @@ def _nous_login_args(args) -> argparse.Namespace:
         ca_bundle=getattr(args, "ca_bundle", None), insecure=bool(getattr(args, "insecure", False)))
 
 
-def _nous_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pricing: dict):
-    """Free/paid-tier catalog for the Nous picker: ``(model_ids, pricing, unavailable_models,
+def _thor_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pricing: dict):
+    """Free/paid-tier catalog for the Thor picker: ``(model_ids, pricing, unavailable_models,
     unavailable_message, policy_narrowed)`` or None (message already printed) when nothing is selectable."""
-    from thor_cli.models_pricing import nous_policy_allowed_ids, restrict_to_nous_policy
+    from thor_cli.models_pricing import thor_policy_allowed_ids, restrict_to_thor_policy
     from thor_cli.models import (
-        partition_nous_models_by_tier,
-        union_with_nous_on_sale_models,
+        partition_thor_models_by_tier,
+        union_with_thor_on_sale_models,
         union_with_portal_free_recommendations,
         union_with_portal_paid_recommendations,
     )
@@ -190,53 +190,53 @@ def _nous_model_catalog(free_tier: bool, portal_url: str, model_ids: list, prici
     # narrows BEFORE the tier split so a rescued id still has to pass the free/paid predicate.
     unavailable_models: list[str] = []
     unavailable_message = ""
-    _policy_allowed = nous_policy_allowed_ids()
+    _policy_allowed = thor_policy_allowed_ids()
     if free_tier:
         try:
-            from thor_cli.nous_account import format_nous_portal_entitlement_message, get_nous_portal_account_info
-            _account_info = get_nous_portal_account_info(force_fresh=True)
-            unavailable_message = format_nous_portal_entitlement_message(_account_info, capability="paid Nous models") or ""
+            from thor_cli.thor_account import format_thor_portal_entitlement_message, get_thor_portal_account_info
+            _account_info = get_thor_portal_account_info(force_fresh=True)
+            unavailable_message = format_thor_portal_entitlement_message(_account_info, capability="paid Thor models") or ""
         except Exception:
             unavailable_message = ""
         model_ids, pricing = union_with_portal_free_recommendations(model_ids, pricing, portal_url)
     else:
         model_ids, pricing = union_with_portal_paid_recommendations(model_ids, pricing, portal_url)
-        model_ids = union_with_nous_on_sale_models(model_ids, pricing)
+        model_ids = union_with_thor_on_sale_models(model_ids, pricing)
     _before_policy = model_ids
-    model_ids = restrict_to_nous_policy(model_ids, _policy_allowed, rescue_empty=True)
+    model_ids = restrict_to_thor_policy(model_ids, _policy_allowed, rescue_empty=True)
     _policy_narrowed = model_ids != _before_policy
     if free_tier:
-        model_ids, unavailable_models = partition_nous_models_by_tier(model_ids, pricing, free_tier=True)
+        model_ids, unavailable_models = partition_thor_models_by_tier(model_ids, pricing, free_tier=True)
 
     if not model_ids and not unavailable_models:
-        print("No models available for Nous Portal after filtering.")
+        print("No models available for Thor Portal after filtering.")
         _note_setup_failure("no_models")
         return None
     if free_tier and not model_ids:
         print("No free models currently available.")
         if unavailable_models:
-            from thor_cli.auth import DEFAULT_NOUS_PORTAL_URL
-            _url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+            from thor_cli.auth import DEFAULT_THOR_PORTAL_URL
+            _url = (portal_url or DEFAULT_THOR_PORTAL_URL).rstrip("/")
             print(unavailable_message or f"Upgrade at {_url} to access paid models.")
         return None
     return model_ids, pricing, unavailable_models, unavailable_message, _policy_narrowed
 
 
-def _nous_verified_credentials(creds_or_none=None):
-    """Resolve Nous runtime credentials; on failure print the diagnosis (re-login when the
+def _thor_verified_credentials(creds_or_none=None):
+    """Resolve Thor runtime credentials; on failure print the diagnosis (re-login when the
     session expired) and return None."""
     from thor_cli.auth import (
-        AuthError, PROVIDER_REGISTRY, _login_nous, format_auth_error, resolve_nous_runtime_credentials)
+        AuthError, PROVIDER_REGISTRY, _login_thor, format_auth_error, resolve_thor_runtime_credentials)
 
     try:
-        return resolve_nous_runtime_credentials()
+        return resolve_thor_runtime_credentials()
     except Exception as exc:
         relogin = isinstance(exc, AuthError) and exc.relogin_required
         msg = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
         if relogin:
-            _say(f"Session expired: {msg}", "Re-authenticating with Nous Portal...\n")
+            _say(f"Session expired: {msg}", "Re-authenticating with Thor Portal...\n")
             try:
-                _login_nous(_nous_login_args(None), PROVIDER_REGISTRY["nous"])
+                _login_thor(_thor_login_args(None), PROVIDER_REGISTRY["thor"])
             except Exception as login_exc:
                 print(f"Re-login failed: {login_exc}")
             _note_setup_failure("auth")
@@ -246,15 +246,15 @@ def _nous_verified_credentials(creds_or_none=None):
         return None
 
 
-def _nous_persist_selection(selected: str, creds: dict) -> dict:
-    """Nous persist step: model choice + provider state, then rewrite ``model`` on a fresh
+def _thor_persist_selection(selected: str, creds: dict) -> dict:
+    """Thor persist step: model choice + provider state, then rewrite ``model`` on a fresh
     config (the caller's may carry stale custom-provider fields) and clear a conflicting
     OPENAI_BASE_URL / OPENAI_API_KEY. Returns the saved config."""
     from thor_cli.auth import _save_model_choice, _update_config_for_provider
     from thor_cli.config import get_env_value, load_config, save_config, save_env_value
     _save_model_choice(selected)
     inference_url = creds.get("base_url", "")
-    _update_config_for_provider("nous", inference_url)
+    _update_config_for_provider("thor", inference_url)
     config = load_config()
     current_model_cfg = config.get("model")
     if isinstance(current_model_cfg, dict):
@@ -263,7 +263,7 @@ def _nous_persist_selection(selected: str, creds: dict) -> dict:
         model_cfg = {"default": current_model_cfg.strip()}
     else:
         model_cfg = {}
-    model_cfg["provider"] = "nous"
+    model_cfg["provider"] = "thor"
     model_cfg["default"] = selected
     if inference_url and inference_url.strip():
         model_cfg["base_url"] = inference_url.rstrip("/")
@@ -278,68 +278,68 @@ def _nous_persist_selection(selected: str, creds: dict) -> dict:
     return config
 
 
-def _model_flow_nous(config, current_model="", args=None):
-    """Nous Portal provider: ensure logged in, then pick model."""
-    from thor_cli.auth import get_provider_auth_state, _prompt_model_selection, _login_nous, PROVIDER_REGISTRY
+def _model_flow_thor(config, current_model="", args=None):
+    """Thor Portal provider: ensure logged in, then pick model."""
+    from thor_cli.auth import get_provider_auth_state, _prompt_model_selection, _login_thor, PROVIDER_REGISTRY
     from thor_cli.config import load_config
-    from thor_cli.nous_subscription import prompt_enable_tool_gateway
-    state = get_provider_auth_state("nous")
+    from thor_cli.thor_subscription import prompt_enable_tool_gateway
+    state = get_provider_auth_state("thor")
     from thor_cli import anon_auth
     # A free tier with no inference here signs in like no account; its apps move to the account after.
     if not state or not state.get("access_token") or anon_auth.guest_without_free_tier(state):
-        _say("Not logged into Nous Portal. Starting login...", "")
+        _say("Not logged into Thor Portal. Starting login...", "")
 
         def _login_then_offer_gateway(login_args, pconfig):
-            _login_nous(login_args, pconfig)
+            _login_thor(login_args, pconfig)
             # Offer Tool Gateway enablement for paid subscribers
             with contextlib.suppress(Exception):
                 prompt_enable_tool_gateway(load_config() or {})
 
-        # login_nous already handles model selection + config update
-        _run_login(_login_then_offer_gateway, _nous_login_args(args), PROVIDER_REGISTRY["nous"])
+        # login_thor already handles model selection + config update
+        _run_login(_login_then_offer_gateway, _thor_login_args(args), PROVIDER_REGISTRY["thor"])
         return
 
     # Already logged in — the curated list (agentic models users know from OpenRouter)
     # instead of the hundreds returned by the live /models endpoint.
-    from thor_cli.models import check_nous_free_tier, get_curated_nous_model_ids
+    from thor_cli.models import check_thor_free_tier, get_curated_thor_model_ids
     from thor_cli.models_pricing import get_pricing_for_provider
-    model_ids = get_curated_nous_model_ids()
+    model_ids = get_curated_thor_model_ids()
     if not model_ids:
-        print("No curated models available for Nous Portal.")
+        print("No curated models available for Thor Portal.")
         return
 
     # Verify credentials are still valid (catches expired sessions early)
-    creds = _nous_verified_credentials()
+    creds = _thor_verified_credentials()
     if creds is None:
         return
 
-    pricing = get_pricing_for_provider("nous")
+    pricing = get_pricing_for_provider("thor")
     # Force fresh account data so recent credit purchases are reflected immediately.
-    free_tier = check_nous_free_tier(force_fresh=True)
+    free_tier = check_thor_free_tier(force_fresh=True)
     if not free_tier:
-        from thor_cli.auth import resolve_nous_runtime_credentials
+        from thor_cli.auth import resolve_thor_runtime_credentials
         try:
-            creds = resolve_nous_runtime_credentials(force_refresh=True) or creds
+            creds = resolve_thor_runtime_credentials(force_refresh=True) or creds
         except Exception:
             # Runtime inference has its own paid-entitlement recovery; don't block.
             pass
 
     # Portal URL is needed for upgrade links and the recommendations endpoints.
-    _nous_portal_url = ""
+    _thor_portal_url = ""
     with contextlib.suppress(Exception):
-        _nous_portal_url = (get_provider_auth_state("nous") or {}).get("portal_base_url", "")
+        _thor_portal_url = (get_provider_auth_state("thor") or {}).get("portal_base_url", "")
 
-    catalog = _nous_model_catalog(free_tier, _nous_portal_url, model_ids, pricing)
+    catalog = _thor_model_catalog(free_tier, _thor_portal_url, model_ids, pricing)
     if catalog is None:
         return
     model_ids, pricing, unavailable_models, unavailable_message, _policy_narrowed = catalog
 
-    from thor_cli.nous_account import nous_policy_notice
-    _policy_notice = nous_policy_notice(removed=_policy_narrowed)
+    from thor_cli.thor_account import thor_policy_notice
+    _policy_notice = thor_policy_notice(removed=_policy_narrowed)
     if _policy_notice:
         print(_policy_notice)
-    from thor_cli.model_picker_usage import featured_first, nous_picker_usage
-    _usage = nous_picker_usage(warm=True)
+    from thor_cli.model_picker_usage import featured_first, thor_picker_usage
+    _usage = thor_picker_usage(warm=True)
     # Window plans: every model is usable; the plan's featured picks lead the list.
     if _usage is not None:
         model_ids = featured_first(model_ids, _usage.featured_model_ids)
@@ -347,17 +347,17 @@ def _model_flow_nous(config, current_model="", args=None):
 
     selected = _prompt_model_selection(
         model_ids, current_model=current_model, pricing=pricing, unavailable_models=unavailable_models,
-        portal_url=_nous_portal_url, unavailable_message=unavailable_message, confirm_provider="nous",
+        portal_url=_thor_portal_url, unavailable_message=unavailable_message, confirm_provider="thor",
         confirm_base_url=creds.get("base_url", ""), confirm_api_key=creds.get("api_key", ""),
         usage=_usage)
     if not selected:
         print("No change.")
         return
-    config = _nous_persist_selection(selected, creds)
-    print(f"Default model set to: {selected} (via Nous Portal)")
+    config = _thor_persist_selection(selected, creds)
+    print(f"Default model set to: {selected} (via Thor Portal)")
     if _usage is not None:
         from thor_cli.model_picker_usage import large_model_notice
-        if _notice := large_model_notice(selected, "nous"):
+        if _notice := large_model_notice(selected, "thor"):
             print(f"⚠ {_notice}")
     # Offer Tool Gateway enablement for paid subscribers
     prompt_enable_tool_gateway(config)
@@ -657,7 +657,7 @@ _GEMINI_FREE_TIER_NOTICE = (
     "   an agent session.", "",
     "   To use Gemini with Thor, enable billing on your Google Cloud project and regenerate",
     "   the key in a billing-enabled project: https://aistudio.google.com/apikey", "",
-    "   Alternatives with workable free usage: DeepSeek, OpenRouter (free models), Groq, Nous.", "",
+    "   Alternatives with workable free usage: DeepSeek, OpenRouter (free models), Groq, Thor.", "",
     "Not saving Gemini as the default provider.")
 
 

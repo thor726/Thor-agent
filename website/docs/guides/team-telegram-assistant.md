@@ -375,7 +375,7 @@ On a shared team bot, use Docker as the terminal backend so agent commands run i
 ```bash
 # In ~/.thor/.env
 TERMINAL_ENV=docker
-TERMINAL_DOCKER_IMAGE=nousresearch/thor-sandbox:desktop
+TERMINAL_DOCKER_IMAGE=thor-agent/thor-sandbox:desktop
 ```
 
 Or in `~/.thor/config.yaml`:

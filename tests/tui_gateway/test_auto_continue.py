@@ -42,7 +42,7 @@ from tui_gateway.turn_marker import (
 
 
 class _InlineThread:
-    """Run threads synchronously so tests observe final state."""
+    """Run threads synchrothorly so tests observe final state."""
 
     def __init__(self, target=None, daemon=None, args=(), kwargs=None, name=None):
         self._target = target

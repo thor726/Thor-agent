@@ -66,7 +66,7 @@ const ROOT_ATTR = 'data-find-root'
 // re-allocates a region detaches the marks in that region. We watch the scope
 // and re-wrap when an unmarked occurrence of the active query appears.
 //
-// `applying` is the re-entrancy guard: it's set for the whole synchronous
+// `applying` is the re-entrancy guard: it's set for the whole synchrothor
 // re-apply, and any observer callback that fires during it flips `pending`
 // so we take one more look afterwards instead of recursing infinitely. All
 // observer work is coalesced to a single microtask so a burst of mutations

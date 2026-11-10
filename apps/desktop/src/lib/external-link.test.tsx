@@ -137,7 +137,7 @@ describe('external link helpers', () => {
   })
 
   it.each([false, true])(
-    'opens a Webapp web link synchronously without adding a preview when always external is %s',
+    'opens a Webapp web link synchrothorly without adding a preview when always external is %s',
     alwaysExternal => {
       globalThis.document.documentElement.dataset.thorDesktopHost = 'browser'
       setAlwaysExternalLinks(alwaysExternal)

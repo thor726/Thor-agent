@@ -8,8 +8,8 @@
  * Desktop connects to. A plain `thor serve` Homelab (no lender) must make the dialog say
  * what is missing instead of creating anything.
  *
- * Model turns are REAL when NOUS_API_KEY is in the runner's environment (each probe home gets
- * only that one line in its .env; the model is CROSS_GATEWAY_MODEL, default a cheap Nous
+ * Model turns are REAL when THOR_PORTAL_API_KEY is in the runner's environment (each probe home gets
+ * only that one line in its .env; the model is CROSS_GATEWAY_MODEL, default a cheap Thor
  * model) and fall back to the mock inference server otherwise. Real models do not follow
  * scripts, so replies are asserted by author and count. CROSS_GATEWAY_SHOTS=<dir> saves
  * screenshots; PROBE_RESULT lines carry the evidence. Needs `pnpm run build` (dist/) first.
@@ -34,14 +34,14 @@ const REMOTE_TOKEN = 'e2e-cross-gateway-homelab-token'
 const LEG = process.env.CROSS_GATEWAY_LEG || 'head'
 const NL = String.fromCharCode(10)
 const MULTIPLEX = ['gateway:', '  multiplex_profiles: true', ''].join(NL)
-const REAL_KEY = process.env.NOUS_API_KEY || ''
+const REAL_KEY = process.env.THOR_PORTAL_API_KEY || ''
 const REAL_MODEL = process.env.CROSS_GATEWAY_MODEL || 'anthropic/claude-haiku-5.5'
 const LENT_PROFILE = 'coder'
 
-/** The model block every probe home uses: the Nous inference API (key from NOUS_API_KEY) or nothing (mock). */
+/** The model block every probe home uses: the Thor inference API (key from THOR_PORTAL_API_KEY) or nothing (mock). */
 const MODEL = REAL_KEY
-  ? ['model:', `  default: ${REAL_MODEL}`, '  provider: custom', '  base_url: https://inference-api.nousresearch.com/v1',
-    '  key_env: NOUS_API_KEY', '  context_length: 200000', ''].join(NL)
+  ? ['model:', `  default: ${REAL_MODEL}`, '  provider: custom', '  base_url: https://inference-api.thor-agent.local/v1',
+    '  key_env: THOR_PORTAL_API_KEY', '  context_length: 200000', ''].join(NL)
   : ''
 
 /** Point a probe home at the turn's model: its config, and an .env holding only what it needs. */
@@ -49,7 +49,7 @@ function provision(home: string, mockUrl: string, extra = ''): void {
   writeMockProviderConfig(home, mockUrl, undefined, extra + MODEL)
 
   if (REAL_KEY) {
-    fs.writeFileSync(path.join(home, '.env'), `NOUS_API_KEY=${REAL_KEY}${NL}`, { mode: 0o600 })
+    fs.writeFileSync(path.join(home, '.env'), `THOR_PORTAL_API_KEY=${REAL_KEY}${NL}`, { mode: 0o600 })
   } else {
     writeEnvFile(home, undefined, mockUrl)
   }
@@ -318,7 +318,7 @@ test.describe('cross-gateway group chat without a lender', () => {
 
 test.describe('every new group chat runs on a gateway (real model turns)', () => {
   test.describe.configure({ mode: 'serial' })
-  test.skip(!REAL_KEY, 'NOUS_API_KEY not set: the mock legs below cover what they can')
+  test.skip(!REAL_KEY, 'THOR_PORTAL_API_KEY not set: the mock legs below cover what they can')
 
   let mock: Awaited<ReturnType<typeof startMockServer>>
   let sandbox: Sandbox
@@ -383,7 +383,7 @@ test.describe('every new group chat runs on a gateway (real model turns)', () =>
     lender = await startPeerGateway(sandbox.root, mock.url, LENT_PROFILE)
     writeConnectionsRegistry(sandbox, lender.url)
     env = buildAppEnv(sandbox)
-    console.log(`PROBE_RESULT model ${REAL_MODEL} via Nous inference (real turns); owner home=${sandbox.thorHome} lender home=${lender.home}`)
+    console.log(`PROBE_RESULT model ${REAL_MODEL} via Thor inference (real turns); owner home=${sandbox.thorHome} lender home=${lender.home}`)
     await launch(true)
   })
 

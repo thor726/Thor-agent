@@ -171,7 +171,7 @@ class TestAncestorExclusion:
             encoding="utf-8",
         )
         # The parent's argv carries `gateway run` so it IS a gateway to any
-        # cmdline classifier; it runs the child synchronously.
+        # cmdline classifier; it runs the child synchrothorly.
         result = subprocess.run(
             [
                 sys.executable,

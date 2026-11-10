@@ -11,7 +11,7 @@ import {
   parseChallengeRequest
 } from './challenge-window'
 
-const PORTAL = 'https://portal.nousresearch.com'
+const PORTAL = 'https://portal.thor-agent.local'
 const URL_OK = `${PORTAL}/challenge?code=abc`
 
 function makeSession() {
@@ -89,7 +89,7 @@ test('only <portal>/challenge URLs are ever loadable', () => {
     `${PORTAL}.evil.example/challenge`,
     `${PORTAL}/login`,
     `${PORTAL}/challenges`,
-    'http://portal.nousresearch.com/challenge',
+    'http://portal.thor-agent.local/challenge',
     'javascript:alert(1)',
     'file:///etc/passwd',
     ''

@@ -129,7 +129,7 @@ def test_any_external_process_plugin_counts_as_signed_in_when_its_binary_resolve
                            process_command="example-acp-bin", fallback_models=("acp-a",)))
 
     class _Ctx:
-        current_provider = "nous"
+        current_provider = "thor"
 
     rows = [{"slug": "example-acp", "models": ["acp-a"]}]
     monkeypatch.setenv("PATH", str(tmp_path / "nowhere"))

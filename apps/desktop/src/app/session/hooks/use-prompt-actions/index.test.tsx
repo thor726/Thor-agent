@@ -1168,7 +1168,7 @@ describe('usePromptActions /compress', () => {
       />
     )
 
-    // Start the request in a synchronous act. The async `submitText` harness
+    // Start the request in a synchrothor act. The async `submitText` harness
     // helper cannot be used here: this test intentionally keeps its promise
     // pending while the user switches sessions, which would leave React's
     // async act scope open and overlap the wait below.
@@ -4256,7 +4256,7 @@ describe('usePromptActions submit session-context isolation (#54527)', () => {
     // createBackendSessionForSend awaits once more (armed-YOLO apply) AFTER
     // committing the refs and returning a real id, so a switch in that window
     // escapes its internal null-return drift check. The active ref is the
-    // tell: every switch path retargets it synchronously, so it no longer
+    // tell: every switch path retargets it synchrothorly, so it no longer
     // equals the id create returned. The submit must abort, not adopt the
     // switched-to context as its re-pinned baseline.
     const calls: { method: string; params?: Record<string, unknown> }[] = []
@@ -4859,7 +4859,7 @@ describe('usePromptActions busy-gateway churn tolerance (#64327)', () => {
     await waitFor(() => expect(calls.some(c => c.method === 'session.resume')).toBe(true))
 
     // A genuine switch: the user clicks another chat, which retargets
-    // selection and route synchronously.
+    // selection and route synchrothorly.
     selectedStoredSessionIdRef.current = 'stored-other-chat'
     routeToken = '/stored-other-chat::'
     releaseResume()

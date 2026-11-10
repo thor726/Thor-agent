@@ -7,15 +7,15 @@ import pytest
 
 
 @pytest.mark.parametrize('provider,host,expected', [
-    ('nous', 'https://welcome-api.nousresearch.com/v1', True),
-    ('nous', 'https://inference-api.nousresearch.com/v1', False),
-    ('custom', 'https://welcome-api.nousresearch.com/v1', False),
+    ('thor', 'https://welcome-api.thor-agent.local/v1', True),
+    ('thor', 'https://inference-api.thor-agent.local/v1', False),
+    ('custom', 'https://welcome-api.thor-agent.local/v1', False),
 ])
 def test_readiness_reports_selected_free_route(monkeypatch, provider, host, expected):
     from thor_cli.runtime_readiness import check_runtime_readiness
     monkeypatch.setattr('thor_cli.main._has_any_provider_configured', lambda **kw: True)
     monkeypatch.setattr('thor_cli.runtime_provider.resolve_runtime_provider', lambda **kw: {
-        'provider': provider, 'base_url': host, 'api_key': 'no-key-required', 'model': 'nous/welcome'})
+        'provider': provider, 'base_url': host, 'api_key': 'no-key-required', 'model': 'thor/welcome'})
     # Same field the legacy setup.runtime_check answers and Desktop reads.
     assert check_runtime_readiness()['free_tier_route'] is expected
 

@@ -86,7 +86,7 @@ class TestFinalizeSessionCancelsBackgroundReview:
         # cancel_background_review_for_live_turn dispatches the actual
         # interrupt() call on a short-lived daemon thread (#84423) so a
         # wedged abort hook cannot stall the caller — wait for it instead
-        # of asserting synchronously.
+        # of asserting synchrothorly.
         for _ in range(50):
             if review_fork.hard_interrupt.called:
                 break

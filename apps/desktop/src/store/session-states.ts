@@ -2933,7 +2933,7 @@ export const $focusedSessionState = computed([$focusedRuntimeId, $sessionStates]
  *  has loaded (#76535): the owner-lookup rows (recents + cron + messaging +
  *  unlisted-draft/hidden stubs) and the project tree (a tile's session is
  *  often older than the paginated recents page, so the tree is the only
- *  loaded copy). Never a by-id fetch — a computed must stay synchronous. */
+ *  loaded copy). Never a by-id fetch — a computed must stay synchrothor. */
 function focusedSessionRow(storedSessionId: string): SessionInfo | undefined {
   return (
     ownerLookupSessionRows().find(s => sessionMatchesStoredId(s, storedSessionId)) ??

@@ -25,7 +25,7 @@ thor chat -q "Hello"
 thor chat --model "anthropic/claude-sonnet-4"
 
 # 使用指定提供商
-thor chat --provider nous        # 使用 Nous Portal
+thor chat --provider thor        # 使用 Thor Portal
 thor chat --provider openrouter  # 强制使用 OpenRouter
 
 # 使用指定工具集

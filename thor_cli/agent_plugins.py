@@ -15,7 +15,7 @@ from urllib.parse import urlsplit
 from agent.skill_utils import yaml_load
 from thor_platform.declaration import Declaration, parse_declaration
 
-_THOR_EXTENSION = "com.nousresearch.thor"
+_THOR_EXTENSION = "com.thorresearch.thor"
 _LIVENESS: dict[str, dict] = {}
 
 
@@ -144,7 +144,7 @@ def _server_declarations(
 
 
 def _server_trust(manifest: Mapping[str, Any], mcp_servers: Mapping[str, dict[str, Any]]) -> dict[str, str]:
-    """Servers the package asks Thor to gate: ``extensions.com.nousresearch.thor.servers.<name>.trust``.
+    """Servers the package asks Thor to gate: ``extensions.com.thorresearch.thor.servers.<name>.trust``.
 
     The package may only narrow access. ``untrusted`` makes every write-capable call to that server
     ask the user first (the native ``trust: untrusted`` gate); ``full`` is the default and so changes
@@ -521,7 +521,7 @@ def load_agent_plugin(plugin_root: Path, data_root: Path) -> AgentPluginPackage:
 
 
 def manifest_thor_extension(manifest: Any) -> dict:
-    """``extensions.com.nousresearch.thor`` of a parsed ``plugin.json`` (Agent Plugins v1 forbids
+    """``extensions.com.thorresearch.thor`` of a parsed ``plugin.json`` (Agent Plugins v1 forbids
     unknown top-level fields, so Thor-specific fields such as ``config_keys`` live here), else ``{}``."""
     extensions = manifest.get("extensions") if isinstance(manifest, dict) else None
     thor = extensions.get(_THOR_EXTENSION) if isinstance(extensions, dict) else None
@@ -529,7 +529,7 @@ def manifest_thor_extension(manifest: Any) -> dict:
 
 
 def manifest_config_schema(manifest: Any) -> Any:
-    """Raw ``extensions.com.nousresearch.thor.config_schema`` of a parsed ``plugin.json``, else
+    """Raw ``extensions.com.thorresearch.thor.config_schema`` of a parsed ``plugin.json``, else
     ``None``. Unvalidated: the settings form filters it, the loader and ``plugins validate`` report
     what is malformed."""
     return manifest_thor_extension(manifest).get("config_schema")

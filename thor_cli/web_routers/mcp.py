@@ -438,7 +438,7 @@ def _catalog_entry_json(entry: Any, installed: bool, enabled: bool) -> dict[str,
 
 @router.get("/api/mcp/catalog")
 async def list_mcp_catalog(profile: Optional[str] = None):
-    """Browse the Nous-approved MCP catalog (optional-mcps/ manifests), each
+    """Browse the Thor-approved MCP catalog (optional-mcps/ manifests), each
     entry annotated with installed/enabled state for ``profile``."""
     with http_failure("mcp_catalog import failed", 500, "Catalog unavailable"):
         from thor_cli import mcp_catalog
@@ -523,7 +523,7 @@ async def install_mcp_catalog_entry(body: MCPCatalogInstall, profile: Optional[s
             raise HTTPException(status_code=500, detail=f"Install failed: {exc}")
         return {"ok": True, "name": name, "background": True, "action": action}
 
-    # No git step — install synchronously; install_entry goes through the
+    # No git step — install synchrothorly; install_entry goes through the
     # call-time config/env resolvers so the profile scope covers it.
     try:
         await scoped_to_thread(

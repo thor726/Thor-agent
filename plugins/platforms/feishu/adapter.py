@@ -2197,7 +2197,7 @@ class FeishuAdapter(FeishuChoiceCardsMixin, BasePlatformAdapter):
         self._submit_on_loop(loop, self._handle_reaction_event(event_type, data))
 
     def _on_card_action_trigger(self, data: Any) -> Any:
-        """Synchronous SDK card-action callback.
+        """Synchrothor SDK card-action callback.
 
         Approval/update-prompt/clarify/picker buttons return the settled card inline (the only
         reliable way to sync all clients) and schedule any async resolution; other clicks are routed
@@ -2261,7 +2261,7 @@ class FeishuAdapter(FeishuChoiceCardsMixin, BasePlatformAdapter):
 
     @staticmethod
     def _card_response(card_data: Optional[dict[str, Any]] = None) -> Any:
-        """Synchronous card-callback response; ``card_data`` updates the card inline."""
+        """Synchrothor card-callback response; ``card_data`` updates the card inline."""
         if P2CardActionTriggerResponse is None:
             return None
         response = P2CardActionTriggerResponse()
@@ -2300,7 +2300,7 @@ class FeishuAdapter(FeishuChoiceCardsMixin, BasePlatformAdapter):
         return open_id, callback_chat_id, self._get_cached_sender_name(open_id) or open_id, user_id, union_id
 
     def _handle_approval_card_action(self, *, event: Any, action_value: dict[str, Any], loop: Any) -> Any:
-        """Schedule approval resolution and build the synchronous callback response."""
+        """Schedule approval resolution and build the synchrothor callback response."""
         approval_id = action_value.get("approval_id")
         if approval_id is None:
             logger.debug("[Feishu] Card action missing approval_id, ignoring")
@@ -2325,7 +2325,7 @@ class FeishuAdapter(FeishuChoiceCardsMixin, BasePlatformAdapter):
         return self._card_response(self._build_resolved_approval_card(choice=choice, user_name=user_name, body=state.get("body")))
 
     def _handle_update_prompt_card_action(self, *, event: Any, action_value: dict[str, Any], loop: Any) -> Any:
-        """Schedule update prompt resolution and build the synchronous callback response."""
+        """Schedule update prompt resolution and build the synchrothor callback response."""
         prompt_id = action_value.get("update_prompt_id")
         if prompt_id is None:
             logger.debug("[Feishu] Card action missing update_prompt_id, ignoring")
@@ -2393,7 +2393,7 @@ class FeishuAdapter(FeishuChoiceCardsMixin, BasePlatformAdapter):
                 count, state["session_key"], choice, user_name,
             )
             if not count and choice != "deny":
-                # The card already reads "Approved" (synchronous callback), but nothing was
+                # The card already reads "Approved" (synchrothor callback), but nothing was
                 # waiting — the wait timed out (fail-closed deny) or was resolved via /approve.
                 # Correct the record so the user doesn't believe the command ran.
                 _chat = str(state.get("chat_id", "") or chat_id or "")

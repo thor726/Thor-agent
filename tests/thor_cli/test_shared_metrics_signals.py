@@ -194,7 +194,7 @@ def test_dead_or_stale_marker_is_abandoned_at_the_next_start_and_live_waits(mark
     parent = os.getppid()
     live = directory / f"tui-{parent}-2.json"
     live.write_text(json.dumps({"pid": parent, "start_time": get_process_start_time(parent), "started_at": now,
-                                "surface": "tui", "provider": "nous"}))
+                                "surface": "tui", "provider": "thor"}))
     (directory / f"dashboard-{parent}-3.json").write_text(json.dumps(
         {"pid": parent, "start_time": get_process_start_time(parent), "started_at": now - 2 * setup_metrics.STALE_AFTER_S,
          "surface": "dashboard", "provider": "xai"}))
@@ -220,7 +220,7 @@ def test_cli_flow_classifies_landed_backed_out_failed_and_raised(marks, monkeypa
             setup_metrics.note_provider_setup_saved()
         with setup_metrics.cli_provider_setup("anthropic"):
             pass  # returned without saving: backed out
-        with setup_metrics.cli_provider_setup("nous"):
+        with setup_metrics.cli_provider_setup("thor"):
             setup_metrics.note_provider_setup_failure("no_models")
         with setup_metrics.cli_provider_setup("gemini"):
             route["v"] = ("gemini", "g", None)  # route changed without the save helper
@@ -235,7 +235,7 @@ def test_cli_flow_classifies_landed_backed_out_failed_and_raised(marks, monkeypa
     ends = [r for r in _setup_rows(marks.rows) if r[2] != "started"]
     assert ends == [
         ("cli_setup", "anthropic", "completed", "none"), ("cli_setup", "anthropic", "abandoned", "none"),
-        ("cli_setup", "nous", "failed", "no_models"), ("cli_setup", "gemini", "completed", "none"),
+        ("cli_setup", "thor", "failed", "no_models"), ("cli_setup", "gemini", "completed", "none"),
         ("cli_setup", "xai", "abandoned", "none"), ("cli_setup", "xai", "failed", "network"),
     ]
     setup_metrics.note_provider_setup_saved()  # outside a flow: inert
@@ -259,7 +259,7 @@ def test_cli_setup_navigation_esc_cancels_and_back_resumes_one_flow(marks, monke
             attempt("anthropic", _SetupGoBack(1))  # Back to the provider menu, then the same provider
         attempt("anthropic")
         with pytest.raises(_SetupGoBack):
-            attempt("nous", _SetupGoBack(1))  # Back, then another provider
+            attempt("thor", _SetupGoBack(1))  # Back, then another provider
         attempt("gemini")
     with pytest.raises(_SetupGoBack):  # a wizard section replay keeps the flow open across the surface
         with setup_metrics.provider_setup_surface("cli_setup"):
@@ -269,7 +269,7 @@ def test_cli_setup_navigation_esc_cancels_and_back_resumes_one_flow(marks, monke
     assert _setup_rows(marks.rows) == [
         ("cli_model", "xai", "started", "none"), ("cli_model", "xai", "abandoned", "none"),
         ("cli_model", "anthropic", "started", "none"), ("cli_model", "anthropic", "completed", "none"),
-        ("cli_model", "nous", "started", "none"), ("cli_model", "nous", "abandoned", "none"),
+        ("cli_model", "thor", "started", "none"), ("cli_model", "thor", "abandoned", "none"),
         ("cli_model", "gemini", "started", "none"), ("cli_model", "gemini", "completed", "none"),
         ("cli_setup", "xai", "started", "none"), ("cli_setup", "xai", "abandoned", "none"),
     ]
@@ -286,7 +286,7 @@ def test_cli_setup_navigation_esc_cancels_and_back_resumes_one_flow(marks, monke
 ])
 def test_oauth_session_endings(marks, monkeypatch, sess, ending):
     monkeypatch.setattr(setup_metrics, "web_setup_surface", lambda: "desktop")
-    flow = setup_metrics.begin_oauth_setup("nous", None)
+    flow = setup_metrics.begin_oauth_setup("thor", None)
     setup_metrics.attach_oauth_setup(sess, flow)
     setup_metrics.settle_oauth_setup(sess)
     setup_metrics.settle_oauth_setup(sess)
@@ -305,12 +305,12 @@ def test_cancel_or_lapsed_code_is_never_a_failure_and_poller_errors_keep_their_c
 
     monkeypatch.setattr(setup_metrics, "web_setup_surface", lambda: "desktop")
     with setup_metrics.provider_setup_surface("cli_model"):  # CLI: Ctrl-C mid sign-in
-        with pytest.raises(KeyboardInterrupt), setup_metrics.cli_provider_setup("nous"):
+        with pytest.raises(KeyboardInterrupt), setup_metrics.cli_provider_setup("thor"):
             raise KeyboardInterrupt
     flow = setup_metrics.begin_oauth_setup("openai-codex", None)  # web start route: cancelled pre-response
     setup_metrics.finish_provider_setup(flow, "failed", setup_metrics.setup_failure_class(KeyboardInterrupt()))
 
-    class Pending:  # the real Nous poll loop running out of time on authorization_pending
+    class Pending:  # the real Thor poll loop running out of time on authorization_pending
         status_code = 400
 
         def json(self):
@@ -321,10 +321,10 @@ def test_cancel_or_lapsed_code_is_never_a_failure_and_poller_errors_keep_their_c
     dropped = _xai_err("xAI OIDC discovery failed", "xai_discovery_failed")
     dropped.__cause__ = httpx.ConnectError("down")
     for provider, exc in [
-        ("nous", lapsed.value), ("xai-oauth", _xai_err("Timed out", "device_code_timeout")),
+        ("thor", lapsed.value), ("xai-oauth", _xai_err("Timed out", "device_code_timeout")),
         ("openai-codex", _codex_err("Login timed out after 15 minutes.", "device_code_timeout")),
-        ("nous", device_flow_error("access_denied", "declined")), ("xai-oauth", dropped),
-        ("nous", device_flow_error("invalid_client", "nope")),
+        ("thor", device_flow_error("access_denied", "declined")), ("xai-oauth", dropped),
+        ("thor", device_flow_error("invalid_client", "nope")),
     ]:
         sess = {"status": "pending", "profile": None}
         _oauth_sessions["probe"] = sess
@@ -338,10 +338,10 @@ def test_cancel_or_lapsed_code_is_never_a_failure_and_poller_errors_keep_their_c
         setup_metrics.settle_oauth_setup(sess)
     _oauth_sessions.pop("probe", None)
     assert [r for r in _setup_rows(marks.rows) if r[2] != "started"] == [
-        ("cli_model", "nous", "abandoned", "none"), ("desktop", "openai-codex", "abandoned", "none"),
-        ("desktop", "nous", "abandoned", "none"), ("desktop", "xai-oauth", "abandoned", "none"),
-        ("desktop", "openai-codex", "abandoned", "none"), ("desktop", "nous", "abandoned", "none"),
-        ("desktop", "xai-oauth", "failed", "network"), ("desktop", "nous", "failed", "auth"),
+        ("cli_model", "thor", "abandoned", "none"), ("desktop", "openai-codex", "abandoned", "none"),
+        ("desktop", "thor", "abandoned", "none"), ("desktop", "xai-oauth", "abandoned", "none"),
+        ("desktop", "openai-codex", "abandoned", "none"), ("desktop", "thor", "abandoned", "none"),
+        ("desktop", "xai-oauth", "failed", "network"), ("desktop", "thor", "failed", "auth"),
     ]
 
 
@@ -366,7 +366,7 @@ def _poll(provider, status, body):
         clock = [0.0]
         fake_time = SimpleNamespace(monotonic=lambda: clock[0], sleep=lambda s: clock.__setitem__(0, clock[0] + max(s, 1)))
         monkeypatch.setattr(auth_device_flow, "time", fake_time)
-        if provider == "nous":
+        if provider == "thor":
             return auth_device_flow._poll_for_token(_wire(status, body), "https://p", "c", "d", 30, 1)
         return _xai_oauth_poll_device_token(
             _wire(status, body), token_endpoint="https://x/token", device_code="d", expires_in=30, poll_interval=1)
@@ -385,7 +385,7 @@ def _guest_sign_in(token_status, token_body):
         clock = [0.0]
         fake_time = SimpleNamespace(monotonic=lambda: clock[0], sleep=lambda s: clock.__setitem__(0, clock[0] + max(s, 1)))
         monkeypatch.setattr(auth_device_flow, "time", fake_time)
-        monkeypatch.setattr(anon_auth, "current_nous_state", lambda: {
+        monkeypatch.setattr(anon_auth, "current_thor_state", lambda: {
             "auth_method": anon_auth.ANON_AUTH_METHOD, "anon_token": "t", "portal_base_url": "https://p"})
         monkeypatch.setattr(anon_auth, "_anon_headers", dict)
         replies = {
@@ -417,8 +417,8 @@ def _codex_start(status, body):
 
 
 @pytest.mark.parametrize("producer, ending", [
-    (_poll("nous", 400, {"error": "authorization_pending"}), ("abandoned", "none")),  # code left unapproved
-    (_poll("nous", 503, "<html>503 unavailable</html>"), ("failed", "network")),  # outage until it ran out
+    (_poll("thor", 400, {"error": "authorization_pending"}), ("abandoned", "none")),  # code left unapproved
+    (_poll("thor", 503, "<html>503 unavailable</html>"), ("failed", "network")),  # outage until it ran out
     (_poll("xai", 400, {"error": "access_denied"}), ("abandoned", "none")),  # consent declined
     (_poll("xai", 400, {"error": "expired_token"}), ("abandoned", "none")),  # the server let the code lapse
     (_poll("xai", 400, {"error": "invalid_client"}), ("failed", "auth")),
@@ -427,7 +427,7 @@ def _codex_start(status, body):
     (_codex_start(503, "<html>503</html>"), ("failed", "network")),
     (_guest_sign_in(400, {"error": "authorization_pending"}), ("abandoned", "none")),
     (_guest_sign_in(503, "<html>503 unavailable</html>"), ("failed", "network")),
-], ids=["nous-pending", "nous-503", "xai-denied", "xai-expired", "xai-refused", "codex-401", "codex-down",
+], ids=["thor-pending", "thor-503", "xai-denied", "xai-expired", "xai-refused", "codex-401", "codex-down",
         "codex-503", "guest-pending", "guest-503"])
 def test_wire_failures_keep_the_producers_class_to_the_recorded_end(marks, monkeypatch, producer, ending):
     """Real poll loops / start route / free-tier sign-in against wire responses: a lapse or a decline
@@ -438,7 +438,7 @@ def test_wire_failures_keep_the_producers_class_to_the_recorded_end(marks, monke
     import thor_cli.web_routers.oauth as routes
 
     monkeypatch.setattr(setup_metrics, "web_setup_surface", lambda: "desktop")
-    flow = setup_metrics.begin_oauth_setup("nous", None)
+    flow = setup_metrics.begin_oauth_setup("thor", None)
     try:
         sess = producer(monkeypatch)
     except Exception as exc:

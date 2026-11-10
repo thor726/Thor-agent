@@ -16,7 +16,7 @@ from typing import Any, Dict, Mapping
 _PERSISTABLE_PROVIDER_SOURCES = frozenset({
     ("anthropic", "thor_pkce"),
     ("minimax-oauth", "oauth"),
-    ("nous", "device_code"),
+    ("thor", "device_code"),
     ("openai-codex", "device_code"),
     ("xai-oauth", "device_code"),
 })

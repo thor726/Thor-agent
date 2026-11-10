@@ -264,7 +264,7 @@ def retrying_reads():
 
     Only an explicit ``thor update`` opts in. Passive checks (``thor --version``, the
     banner, the Desktop/dashboard update check) make one attempt: offline also reads as
-    transient (DNS EAI_AGAIN, ENETUNREACH), so retrying there adds backoff to a synchronous
+    transient (DNS EAI_AGAIN, ENETUNREACH), so retrying there adds backoff to a synchrothor
     status line, stretches a hung CDN from 30 s to ~2 min and logs a WARNING per retry.
     """
     token = _RETRY_READS.set(True)

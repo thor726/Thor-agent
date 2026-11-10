@@ -115,7 +115,7 @@ def hermetic_env(home: Path, thor_home: Path, tag: str) -> dict[str, str]:
         k: v for k, v in os.environ.items()
         if not (
             k.endswith(("_API_KEY", "_TOKEN", "_SECRET"))
-            or k.startswith(("THOR_", "OPENROUTER", "ANTHROPIC", "OPENAI", "NOUS_"))
+            or k.startswith(("THOR_", "OPENROUTER", "ANTHROPIC", "OPENAI", "THOR_PORTAL_"))
             or k in {"PYTEST_CURRENT_TEST"}
         )
     }

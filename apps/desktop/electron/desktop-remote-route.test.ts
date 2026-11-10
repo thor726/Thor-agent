@@ -381,7 +381,7 @@ test('falls back to a CLOUD registry primary when the v1 mode is local', () => {
         label: 'Thor Cloud',
         url: 'https://agent.thor.cloud',
         authMode: 'oauth',
-        org: 'nous'
+        org: 'thor'
       }
     ])
   })
@@ -389,7 +389,7 @@ test('falls back to a CLOUD registry primary when the v1 mode is local', () => {
   assert.equal(route?.kind, 'cloud')
   assert.equal(route?.source, 'registry')
   assert.equal((route as any)?.authMode, 'oauth')
-  assert.equal((route as any)?.org, 'nous')
+  assert.equal((route as any)?.org, 'thor')
 })
 
 test('falls back to an SSH registry primary when the v1 mode is local', () => {

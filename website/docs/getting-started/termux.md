@@ -14,7 +14,7 @@ does not run.
 
 The Termux package runs Thor on **aarch64 (arm64-v8a)** Android devices.
 Two APT channels are published under
-`https://thor-assets.nousresearch.com/releases/termux/<channel>`:
+`https://thor-assets.thor-agent.local/releases/termux/<channel>`:
 
 | Channel | APT suite | Contents |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ Do not use the desktop/server `install.sh` or a glibc Linux archive on this targ
    ```bash
    mkdir -p "$PREFIX/etc/apt/keyrings"
    curl -fsSL \
-     https://thor-assets.nousresearch.com/releases/termux/stable/key.asc \
+     https://thor-assets.thor-agent.local/releases/termux/stable/key.asc \
      -o "$PREFIX/etc/apt/keyrings/thor-agent.asc"
    ```
 
@@ -74,7 +74,7 @@ Do not use the desktop/server `install.sh` or a glibc Linux archive on this targ
 
    ```bash
    printf '%s\n' \
-     "deb [signed-by=$PREFIX/etc/apt/keyrings/thor-agent.asc] https://thor-assets.nousresearch.com/releases/termux/stable thor-stable main" \
+     "deb [signed-by=$PREFIX/etc/apt/keyrings/thor-agent.asc] https://thor-assets.thor-agent.local/releases/termux/stable thor-stable main" \
      > "$PREFIX/etc/apt/sources.list.d/thor-agent.list"
    ```
 

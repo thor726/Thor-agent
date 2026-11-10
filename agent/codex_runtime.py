@@ -1322,7 +1322,7 @@ def run_codex_stream(agent, api_kwargs: dict, client: Any = None, on_first_delta
         except Exception:
             sock = None
         if sock is None:
-            # Without a shutdown-capable socket a synchronous drain could become unbounded. The drain
+            # Without a shutdown-capable socket a synchrothor drain could become unbounded. The drain
             # is only for Relay's finalizer, so skip it and let the owner-thread finally close below.
             logger.debug("Codex post-terminal drain skipped: no interruptible stream socket found. %s",
                          agent._client_log_context())

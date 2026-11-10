@@ -248,7 +248,7 @@ async def test_an_unattached_connection_cannot_settle_the_batch_with_a_raw_respo
         await _wait_for(lambda: any(f.get('method') == 'clarify' for f in peer.frames))
         rid = next(f['id'] for f in peer.frames if f.get('method') == 'clarify')
         from gateway.session_server_requests import _open
-        # ``dispatch`` settles a response frame synchronously: still open afterwards means refused.
+        # ``dispatch`` settles a response frame synchrothorly: still open afterwards means refused.
         await outsider.dispatch({'jsonrpc': '2.0', 'id': rid, 'result': {'answers': {'q0': 'X', 'q1': 'X'}}})
         assert rid in _open and not _open[rid].event.is_set() and out == {}, out
         await owner.dispatch({'jsonrpc': '2.0', 'id': rid, 'result': {'answers': {'q0': 'red', 'q1': 'big'}}})

@@ -14,7 +14,7 @@ sidebar_position: 1
 
 | 提供商 | 配置方式 |
 |----------|-------|
-| **Nous Portal** | `thor model`（OAuth，订阅制） |
+| **Thor Portal** | `thor model`（OAuth，订阅制） |
 | **OpenAI Codex** | `thor model` → **ChatGPT or Codex Subscription**（ChatGPT OAuth，使用 Codex 模型） |
 | **Anthropic** | `thor model`（Claude Max + 额外用量积分，通过 OAuth；也支持 Anthropic API key 或手动 setup-token——见下方说明） |
 | **OpenRouter** | `~/.thor/.env` 中的 `OPENROUTER_API_KEY` |
@@ -49,19 +49,19 @@ sidebar_position: 1
 :::
 
 
-### Nous Portal
+### Thor Portal
 
-[Nous Portal](https://portal.nousresearch.com) 是 Nous Research 的统一订阅网关，也是**运行 Thor Agent 的推荐方式**。一次 OAuth 登录即可访问 300+ 前沿智能体模型（Claude、GPT、Gemini、DeepSeek、Qwen、Kimi、GLM、MiniMax、Grok 等）以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网页搜索、图像生成、TTS、浏览器自动化）——费用从你的 Nous 订阅中扣除，无需单独管理各提供商账户。
+[Thor Portal](https://portal.thor-agent.local) 是 Thor Agent 的统一订阅网关，也是**运行 Thor Agent 的推荐方式**。一次 OAuth 登录即可访问 300+ 前沿智能体模型（Claude、GPT、Gemini、DeepSeek、Qwen、Kimi、GLM、MiniMax、Grok 等）以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网页搜索、图像生成、TTS、浏览器自动化）——费用从你的 Thor 订阅中扣除，无需单独管理各提供商账户。
 
 ```bash
 thor setup --portal     # 全新安装——一条命令完成 OAuth + 提供商 + 网关配置
-thor model              # 已有安装——从列表中选择"Nous Portal"
+thor model              # 已有安装——从列表中选择"Thor Portal"
 thor portal info        # 随时查看登录状态和路由信息
 ```
 
-还没有订阅？前往 [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription) 购买。
+还没有订阅？前往 [portal.thor-agent.local/manage-subscription](https://portal.thor-agent.local/manage-subscription) 购买。
 
-**完整详情：** 参见专属的 [Nous Portal 集成页面](./nous-portal.md)（订阅内容、模型目录、故障排查）以及分步指南[使用 Nous Portal 运行 Thor Agent](../guides/run-thor-with-nous-portal.md)。
+**完整详情：** 参见专属的 [Thor Portal 集成页面](./thor-portal.md)（订阅内容、模型目录、故障排查）以及分步指南[使用 Thor Portal 运行 Thor Agent](../guides/run-thor-with-thor-portal.md)。
 
 
 :::info Codex 说明
@@ -86,11 +86,11 @@ Groups = x25519:secp256r1:secp384r1:x448
 :::
 
 :::warning
-即使使用 Nous Portal、Codex 或自定义端点，某些功能（视觉、压缩、MoA）仍会使用单独的"辅助"模型。默认情况下（`auxiliary.*.provider: "auto"`），Thor 将这些任务路由到你的**主聊天模型**——即你在 `thor model` 中选择的同一模型。你可以单独覆盖每个任务，将其路由到更便宜/更快的模型（例如 OpenRouter 上的 Gemini Flash）——参见[辅助模型](../user-guide/configuration.md#auxiliary-models)。
+即使使用 Thor Portal、Codex 或自定义端点，某些功能（视觉、压缩、MoA）仍会使用单独的"辅助"模型。默认情况下（`auxiliary.*.provider: "auto"`），Thor 将这些任务路由到你的**主聊天模型**——即你在 `thor model` 中选择的同一模型。你可以单独覆盖每个任务，将其路由到更便宜/更快的模型（例如 OpenRouter 上的 Gemini Flash）——参见[辅助模型](../user-guide/configuration.md#auxiliary-models)。
 :::
 
-:::tip Nous Tool Gateway
-付费 Nous Portal 订阅者还可访问 **[Tool Gateway](../user-guide/features/tool-gateway.md)**——网页搜索、图像生成、TTS 和浏览器自动化，均通过你的订阅路由。无需额外 API key。全新安装时，`thor setup --portal` 一条命令即可完成登录、设置 Nous 为提供商并开启网关。现有用户可通过 `thor model` 或 `thor tools` 按工具启用。随时使用 `thor portal info` 查看路由状态。
+:::tip Thor Tool Gateway
+付费 Thor Portal 订阅者还可访问 **[Tool Gateway](../user-guide/features/tool-gateway.md)**——网页搜索、图像生成、TTS 和浏览器自动化，均通过你的订阅路由。无需额外 API key。全新安装时，`thor setup --portal` 一条命令即可完成登录、设置 Thor 为提供商并开启网关。现有用户可通过 `thor model` 或 `thor tools` 按工具启用。随时使用 `thor portal info` 查看路由状态。
 :::
 
 ### 模型管理的两个命令
@@ -147,7 +147,7 @@ model:
 
 ### GitHub Copilot（labs 插件）
 
-GitHub Copilot 提供商（`copilot` 对应 Copilot API，`copilot-acp` 对应通过 ACP 驱动的 Copilot CLI）已不再内置于 Thor，而是以 `github-copilot` **labs 插件**的形式发布——由 Nous Research 构建，但不提供支持：
+GitHub Copilot 提供商（`copilot` 对应 Copilot API，`copilot-acp` 对应通过 ACP 驱动的 Copilot CLI）已不再内置于 Thor，而是以 `github-copilot` **labs 插件**的形式发布——由 Thor Agent 构建，但不提供支持：
 
 ```bash
 thor plugins install github-copilot
@@ -157,7 +157,7 @@ thor plugins install github-copilot
 
 使用 `thor auth add copilot`（设备码登录）登录，或设置 `COPILOT_GITHUB_TOKEN`、`GH_TOKEN` 或 `GITHUB_TOKEN`。插件不再读取 `gh` CLI 或 Copilot CLI 的登录信息：如果你此前依赖它们，请运行 `thor auth add copilot`。
 
-安装、模型和环境变量说明：[github-copilot 插件文档](https://github.com/NousResearch/thor-labs-plugins/tree/main/github-copilot)。
+安装、模型和环境变量说明：[github-copilot 插件文档](https://github.com/dwisetyabudi15581/thor-labs-plugins/tree/main/github-copilot)。
 
 ### 一等 API Key 提供商
 
@@ -646,7 +646,7 @@ thor model
 | `--enable-auto-tool-choice` | `tool_choice: "auto"` 所必需（Thor 的默认值） |
 | `--tool-call-parser <name>` | 模型工具调用格式的解析器 |
 
-支持的解析器：`thor`（Qwen 2.5、Hermes 2/3）、`llama3_json`（Llama 3.x）、`mistral`、`deepseek_v3`、`deepseek_v31`、`xlam`、`pythonic`。没有这些标志，工具调用将无法工作——模型会将工具调用以文本形式输出。
+支持的解析器：`thor`（Qwen 2.5、Thor 2/3）、`llama3_json`（Llama 3.x）、`mistral`、`deepseek_v3`、`deepseek_v31`、`xlam`、`pythonic`。没有这些标志，工具调用将无法工作——模型会将工具调用以文本形式输出。
 
 :::tip
 vLLM 支持人类可读的大小：`--max-model-len 64k`（小写 k = 1000，大写 K = 1024）。
@@ -719,7 +719,7 @@ thor model
 :::caution `--jinja` 是工具调用的必要条件
 没有 `--jinja`，llama-server 会完全忽略 `tools` 参数。模型会尝试在响应文本中写入 JSON 来调用工具，但 Thor 不会将其识别为工具调用——你会看到原始 JSON（如 `{"name": "web_search", ...}`）作为消息打印出来，而不是实际执行搜索。
 
-原生工具调用支持（最佳性能）：Llama 3.x、Qwen 2.5（包括 Coder）、Hermes 2/3、Mistral、DeepSeek、Functionary。其他所有模型使用通用处理器，可以工作但效率可能较低。完整列表参见 [llama.cpp 函数调用文档](https://github.com/ggml-org/llama.cpp/blob/master/docs/function-calling.md)。
+原生工具调用支持（最佳性能）：Llama 3.x、Qwen 2.5（包括 Coder）、Thor 2/3、Mistral、DeepSeek、Functionary。其他所有模型使用通用处理器，可以工作但效率可能较低。完整列表参见 [llama.cpp 函数调用文档](https://github.com/ggml-org/llama.cpp/blob/master/docs/function-calling.md)。
 
 可通过检查 `http://localhost:8080/props` 验证工具支持是否已激活——`chat_template` 字段应存在。
 :::
@@ -1051,7 +1051,7 @@ Thor 使用多源解析链来检测模型和提供商的正确上下文窗口：
 4. **端点 `/models`** — 查询服务器 API（本地/自定义端点）
 5. **Anthropic `/v1/models`** — 查询 Anthropic API 获取 `max_input_tokens`（仅 API key 用户）
 6. **OpenRouter API** — 来自 OpenRouter 的实时模型元数据
-7. **Nous Portal** — 将 Nous 模型 ID 后缀匹配到 OpenRouter 元数据
+7. **Thor Portal** — 将 Thor 模型 ID 后缀匹配到 OpenRouter 元数据
 8. **[models.dev](https://models.dev)** — 社区维护的注册表，包含 100+ 提供商 3800+ 模型的提供商特定上下文长度
 9. **回退默认值** — 广泛的模型系列模式（默认 128K）
 
@@ -1253,7 +1253,7 @@ model:
 
 | 使用场景 | 推荐方案 |
 |----------|-------------|
-| **只想让它工作** | OpenRouter（默认）或 Nous Portal |
+| **只想让它工作** | OpenRouter（默认）或 Thor Portal |
 | **本地模型，简单配置** | Ollama |
 | **生产 GPU 服务** | vLLM 或 SGLang |
 | **Mac / 无 GPU** | Ollama 或 llama.cpp |
@@ -1366,7 +1366,7 @@ fallback_model:
 
 激活时，故障转移在不丢失对话的情况下中途切换模型和提供商。链按条目逐一尝试；每个会话激活一次。
 
-支持的提供商：`openrouter`、`nous`、`openai-codex`、`anthropic`、`gemini`、`qwen-oauth`、`huggingface`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`deepseek`、`nvidia`、`xai`、`xai-oauth`、`ollama-cloud`、`bedrock`、`azure-foundry`、`opencode-zen`、`opencode-go`、`kilocode`、`xiaomi`、`arcee`、`gmi`、`stepfun`、`lmstudio`、`alibaba`、`alibaba-coding-plan`、`tencent-tokenhub`、`custom`。
+支持的提供商：`openrouter`、`thor`、`openai-codex`、`anthropic`、`gemini`、`qwen-oauth`、`huggingface`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`deepseek`、`nvidia`、`xai`、`xai-oauth`、`ollama-cloud`、`bedrock`、`azure-foundry`、`opencode-zen`、`opencode-go`、`kilocode`、`xiaomi`、`arcee`、`gmi`、`stepfun`、`lmstudio`、`alibaba`、`alibaba-coding-plan`、`tencent-tokenhub`、`custom`。
 
 :::tip
 故障转移仅通过 `config.yaml` 配置——或通过 `thor fallback` 交互式配置。有关触发时机、链推进方式以及与辅助任务和委托的交互，参见[故障转移提供商](../user-guide/features/fallback-providers.md)。

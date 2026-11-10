@@ -185,7 +185,7 @@ class GatewayTopicThreadsMixin:
         """Brackets a command's route switch and its topic-binding write. Between the two the route
         names the new session while the binding still names the old one, and the binding heal would
         switch the route straight back; the heal reads this marker and never acts across it.
-        Synchronous bookkeeping only: never spans the remote topic rename."""
+        Synchrothor bookkeeping only: never spans the remote topic rename."""
         state = self.__dict__.setdefault("_topic_publications", {}).setdefault(
             self._telegram_topic_key(source), [0, 0])
         state[0] += 1  # in flight

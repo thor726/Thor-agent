@@ -123,14 +123,14 @@ export const frOverrides = {
       showAllMatches: 'Afficher tous les résultats',
       segmentNoMatch: (segment: string) => `Aucun résultat dans ${segment} : tous les résultats sont affichés.`,
       freeTierNote: 'Les connexions restent sur cet ordinateur jusqu’à ce que vous vous connectiez.',
-      signInLine: 'Connectez-vous à Nous pour utiliser les applications gérées.',
+      signInLine: 'Connectez-vous à Thor pour utiliser les applications gérées.',
       signIn: 'Se connecter',
       managedUnavailable: 'Les applications gérées ne sont pas encore disponibles pour ce compte.',
       writeFailed: 'Cette modification n’a pas été enregistrée.',
       refreshFailed: 'La liste des outils n’a pas été actualisée.',
       disconnectNoAccount: 'Thor n’a aucun compte à déconnecter ici. Actualisez la page et réessayez.',
       disconnectRefused:
-        'Nous ne peut pas supprimer cette connexion pour le moment. Désactivez plutôt l’application avec l’interrupteur, ou réessayez plus tard.'
+        'Thor ne peut pas supprimer cette connexion pour le moment. Désactivez plutôt l’application avec l’interrupteur, ou réessayez plus tard.'
     },
     add: {
       action: 'Ajouter le vôtre',
@@ -181,7 +181,7 @@ export const frOverrides = {
       turnOffLocal: 'Désactiver le serveur local',
       providedByPlugin: (plugin: string) => `Fourni par le plugin ${plugin}`,
       openPlugins: "Ouvrir l'onglet Plugins",
-      nousLine: 'Les applications Nous suivent votre compte, pas le profil.',
+      thorLine: 'Les applications Thor suivent votre compte, pas le profil.',
       rulesReadOnly: 'Les règles ne peuvent pas être modifiées pour le moment.',
       rulesAppOff: (name: string) => `Activez ${name} pour modifier ses outils.`,
       rulesSignIn: 'Connectez-vous pour modifier ce que Thor peut faire ici.',
@@ -238,7 +238,7 @@ export const frOverrides = {
       remove: 'Supprimer',
       offTitle: (name: string) => `${name} est désactivé.`,
       offBody: "Activez-le avec l'interrupteur ci-dessus pour lire les outils qu'il apporte.",
-      signedOutTitle: 'Connectez-vous à Nous pour lire la liste des outils.',
+      signedOutTitle: 'Connectez-vous à Thor pour lire la liste des outils.',
       signedOutBody: 'Vos serveurs sur cet ordinateur ne sont pas affectés.',
       conflictTitle: "Quelqu'un a modifié cette règle pendant que vous l'éditiez.",
       conflictBody: (theyOff: number, theyOn: number) => {
@@ -512,9 +512,9 @@ export const frOverrides = {
   },
   ...frNotices,
   sendDiagnostics: {
-    title: 'Envoyer les diagnostics à Nous',
+    title: 'Envoyer les diagnostics à Thor',
     privacyNotice:
-      "Cela téléverse un paquet de débogage vers un stockage interne de Nous, et non vers un service de partage public. Il contient des informations système (système d'exploitation, versions, fournisseur et clés API configurées — jamais les clés elles-mêmes) ainsi que les journaux complets de l'agent, du gateway et du Desktop (jusqu'à 512 Ko chacun), susceptibles de contenir des conversations, des résultats d'outils et des chemins de fichiers. Les secrets sont expurgés avant l'envoi. Seuls le personnel de Nous et les modérateurs Discord autorisés peuvent consulter le paquet, qui est automatiquement supprimé après 14 jours.",
+      "Cela téléverse un paquet de débogage vers un stockage interne de Thor, et non vers un service de partage public. Il contient des informations système (système d'exploitation, versions, fournisseur et clés API configurées — jamais les clés elles-mêmes) ainsi que les journaux complets de l'agent, du gateway et du Desktop (jusqu'à 512 Ko chacun), susceptibles de contenir des conversations, des résultats d'outils et des chemins de fichiers. Les secrets sont expurgés avant l'envoi. Seuls le personnel de Thor et les modérateurs Discord autorisés peuvent consulter le paquet, qui est automatiquement supprimé après 14 jours.",
     upload: 'Envoyer',
     uploading: 'Envoi en cours…',
     cancel: 'Annuler',
@@ -526,11 +526,11 @@ export const frOverrides = {
       "Votre paquet a été téléversé de manière privée. Partagez le lien ci-dessous dans votre fil d'assistance afin que l'équipe puisse consulter vos journaux.",
     failedTitle: "Échec de l'envoi",
     failedHint:
-      'Vous pouvez également exécuter `thor debug share --nous` dans un terminal, ou `thor debug share --local` pour afficher le rapport sans le téléverser.',
+      'Vous pouvez également exécuter `thor debug share --thor` dans un terminal, ou `thor debug share --local` pour afficher le rapport sans le téléverser.',
     handoffLead: 'Poursuivez la discussion sur :',
     links: {
       github: 'Issues GitHub',
-      portal: 'Assistance du portail Nous',
+      portal: 'Assistance du portail Thor',
       discord: 'Discord'
     }
   },
@@ -845,7 +845,7 @@ export const frOverrides = {
           `${name} est installé, mais a besoin d'une clé pour fonctionner : ${vars}. Ajoutez-la maintenant, sinon les outils du plugin échoueront.`,
         verified: 'Vérifié',
         unverified: 'Non vérifié',
-        reviewedByNous: 'Examiné par Nous.',
+        reviewedByThor: 'Examiné par Thor.',
         installsAndEnables: profile => `S’installe pour ${profile} et s’active tout de suite.`,
         installsOnly: profile => `S’installe pour ${profile}.`,
         advanced: 'Avancé',
@@ -1741,7 +1741,7 @@ export const frOverrides = {
       cloudLoadingAgents: 'Chargement de vos agents…',
       cloudNoAgents: {
         before: 'Aucun agent trouvé sur ce compte… Créez-en un dans le ',
-        linkText: 'portail Nous',
+        linkText: 'portail Thor',
         after: ', puis actualisez.'
       },
       cloudRefresh: 'Actualiser',
@@ -1856,7 +1856,7 @@ export const frOverrides = {
       sshErrHostKey:
         "La clé de l'hôte a changé depuis votre dernière connexion. Vérifiez que ce changement est attendu, puis exécutez ssh-keygen -R <host> et reconnectez-vous.",
       sshErrNotInstalled:
-        "Thor n'est pas installé sur l'hôte distant. Installez-le là-bas (curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh) ou définissez le chemin Thor.",
+        "Thor n'est pas installé sur l'hôte distant. Installez-le là-bas (curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh) ou définissez le chemin Thor.",
       sshErrPlatform:
         'Plateforme distante non prise en charge. Le mode SSH de Thor Desktop supporte les hôtes distants Linux, macOS et Windows.',
       sshErrTimeout: "Expiration de la connexion SSH. L'hôte peut être inaccessible ou en veille.",
@@ -1930,13 +1930,13 @@ export const frOverrides = {
       usageLabel: (label: string) => `Utilisation ${label}`,
       freeTier: {
         signIn: 'Se connecter',
-        title: 'Vous utilisez l’offre gratuite Nous',
-        message: 'Connectez-vous avec un compte Nous pour débloquer davantage de modèles et d’outils.',
+        title: 'Vous utilisez l’offre gratuite Thor',
+        message: 'Connectez-vous avec un compte Thor pour débloquer davantage de modèles et d’outils.',
         caption:
-          'Fonctionne avec nous/welcome, connecteurs inclus. La connexion conserve vos connecteurs et ajoute les outils qui nécessitent un compte ainsi que tous les autres modèles.',
-        name: 'Nous · offre gratuite',
+          'Fonctionne avec thor/welcome, connecteurs inclus. La connexion conserve vos connecteurs et ajoute les outils qui nécessitent un compte ainsi que tous les autres modèles.',
+        name: 'Thor · offre gratuite',
         footnote:
-          'L’offre gratuite n’a ni solde ni rien à payer. Le paiement et l’utilisation apparaissent une fois connecté avec un compte Nous.',
+          'L’offre gratuite n’a ni solde ni rien à payer. Le paiement et l’utilisation apparaissent une fois connecté avec un compte Thor.',
         plan: 'Offre gratuite',
         model: 'Modèle',
         connectors: 'Connecteurs',
@@ -2054,9 +2054,9 @@ export const frOverrides = {
       state: {
         notice: {
           loggedOut: {
-            title: 'Connectez votre compte Nous',
+            title: 'Connectez votre compte Thor',
             message:
-              'Connectez-vous avec votre compte Nous pour voir ici votre solde, votre offre et votre utilisation.',
+              'Connectez-vous avec votre compte Thor pour voir ici votre solde, votre offre et votre utilisation.',
             action: 'Se connecter'
           },
           openPortal: 'Ouvrir le portail ↗',
@@ -2321,16 +2321,16 @@ export const frOverrides = {
       activeBackend: 'Actif',
       activeBackendHint: "Il s'agit de votre backend actif",
       useBackend: 'Utiliser ce backend',
-      nousIncluded: 'Inclus avec un abonnement Nous — connectez-vous au portail Nous pour activer.',
-      nousAuthNeededTitle: 'Se connecter au portail Nous',
-      nousAuthNeededMessage: provider =>
-        `${provider} est enregistré mais ne s'activera pas tant que vous ne vous serez pas connecté au portail Nous.`,
-      nousAuthSignIn: 'Se connecter',
-      nousAuthDoneTitle: 'Portail Nous connecté',
-      nousAuthDoneMessage: "Vos backends d'abonnement sont maintenant actifs.",
-      nousAuthFailed: "La connexion au portail Nous n'a pas été terminée",
-      nousAuthFailedMessage: 'Réessayez.',
-      nousAuthTryAgain: 'Réessayer',
+      thorIncluded: 'Inclus avec un abonnement Thor — connectez-vous au portail Thor pour activer.',
+      thorAuthNeededTitle: 'Se connecter au portail Thor',
+      thorAuthNeededMessage: provider =>
+        `${provider} est enregistré mais ne s'activera pas tant que vous ne vous serez pas connecté au portail Thor.`,
+      thorAuthSignIn: 'Se connecter',
+      thorAuthDoneTitle: 'Portail Thor connecté',
+      thorAuthDoneMessage: "Vos backends d'abonnement sont maintenant actifs.",
+      thorAuthFailed: "La connexion au portail Thor n'a pas été terminée",
+      thorAuthFailedMessage: 'Réessayez.',
+      thorAuthTryAgain: 'Réessayer',
       noApiKeyRequired: 'Aucune clé API requise.',
       postSetupHint: step =>
         `Ce backend nécessite une installation unique (${step}). S'exécute sur cette machine — peut prendre quelques minutes.`,
@@ -3026,8 +3026,8 @@ export const frOverrides = {
       qrAlt: (platform: string) => `Code QR du bot ${platform} partagé`,
       managed: 'Géré par Team Gateway',
       managedNote: (platform: string) => `Team Gateway assure la messagerie sur cette instance : le gateway désactive donc la connexion directe ${platform} à chaque démarrage. Pour l’utiliser en plus du relais, définissez GATEWAY_RELAY_ALLOW_DIRECT_PLATFORMS=true dans l’environnement du gateway (une connexion directe empêche l’instance de descendre à zéro et peut livrer les messages deux fois).`,
-      managedIntro: 'Les comptes de cet agent se lient depuis Nous Portal.',
-      openPortal: 'Lier des comptes dans Nous Portal',
+      managedIntro: 'Les comptes de cet agent se lient depuis Thor Portal.',
+      openPortal: 'Lier des comptes dans Thor Portal',
       noNewAccount: (platform: string) => `Le code n’est plus actif et aucun nouveau compte n’est apparu. Si votre compte ${platform} n’est pas listé, obtenez un nouveau code et réessayez.`
     },
     telegramQr: {
@@ -3771,7 +3771,7 @@ export const frOverrides = {
     placeholderReconnecting: 'Reconnexion à Thor…',
     placeholderFollowUp: 'Envoyer un suivi',
     newSessionPlaceholders: [
-      'Sur quoi travaillons-nous ?',
+      'Sur quoi travaillons-thor ?',
       'Donnez une tâche à Thor',
       "Qu'avez-vous en tête ?",
       'Décrivez ce dont vous avez besoin',
@@ -3902,8 +3902,8 @@ export const frOverrides = {
       '/palette': 'Ouvrir la palette de commandes floue (aussi Ctrl+P)',
       '/usage':
         'Afficher l’utilisation des jetons et les limites de débit ; `reset` utilise une réinitialisation de limite Codex en réserve',
-      '/subscription': 'Voir votre forfait Nous et le modifier dans le navigateur',
-      '/topup': 'Afficher votre solde Nous et gérer la facturation sur le portail',
+      '/subscription': 'Voir votre forfait Thor et le modifier dans le navigateur',
+      '/topup': 'Afficher votre solde Thor et gérer la facturation sur le portail',
       '/platform': 'Suspendre, reprendre ou lister une plateforme de gateway en échec',
       '/version': 'Afficher la version de Thor Agent',
       '/debug': 'Téléverser un rapport de débogage (infos système + journaux) et obtenir des liens partageables',
@@ -4397,21 +4397,21 @@ export const frOverrides = {
   },
   onboarding: frOnboarding,
   freeTier: {
-    providerRowTitle: 'Nous · offre gratuite',
-    providerRowPitch: 'Connectez-vous avec un compte Nous pour débloquer davantage de modèles et outils.',
+    providerRowTitle: 'Thor · offre gratuite',
+    providerRowPitch: 'Connectez-vous avec un compte Thor pour débloquer davantage de modèles et outils.',
     readyTitle: 'Thor est prêt.',
     readyCaption: 'Gratuit · connecteurs inclus',
     begin: 'Commencer',
-    signInInstead: 'Se connecter plutôt avec un compte Nous',
+    signInInstead: 'Se connecter plutôt avec un compte Thor',
     otherProviders: 'Autres fournisseurs',
-    stripTitle: "L'inférence Nous gratuite et les connecteurs sont maintenant disponibles.",
-    stripBody: 'Ouvrez le sélecteur de modèle pour les essayer ou connectez-vous avec un compte Nous.',
+    stripTitle: "L'inférence Thor gratuite et les connecteurs sont maintenant disponibles.",
+    stripBody: 'Ouvrez le sélecteur de modèle pour les essayer ou connectez-vous avec un compte Thor.',
     openModelPicker: 'Ouvrir le sélecteur de modèle',
     dismiss: 'Fermer',
-    providerName: 'Nous',
-    statusLabel: model => `Nous · ${model}`,
+    providerName: 'Thor',
+    statusLabel: model => `Thor · ${model}`,
     signIn: 'Se connecter',
-    signInHeading: 'Connectez-vous avec un compte Nous pour débloquer davantage de modèles et outils.',
+    signInHeading: 'Connectez-vous avec un compte Thor pour débloquer davantage de modèles et outils.',
     settingUp: "Configuration de l'inférence gratuite…",
     finishInBrowser: 'Terminez dans votre navigateur',
     doNotShare: 'Ne partagez pas ce code.',
@@ -4435,35 +4435,35 @@ export const frOverrides = {
     errorBody: "La connexion n'a pas abouti ; relancez-la.",
     busyHeading: 'Presque terminé',
     busyBody: wait =>
-      `Thor n'a pas pu terminer votre connexion car le service Nous est occupé. Réessayez dans ${wait}. Votre session reste disponible entre-temps.`,
+      `Thor n'a pas pu terminer votre connexion car le service Thor est occupé. Réessayez dans ${wait}. Votre session reste disponible entre-temps.`,
     unreachableBody:
-      "Thor n'a pas pu joindre le service Nous pour terminer votre connexion. Vérifiez votre connexion Internet et réessayez. Votre session reste disponible.",
+      "Thor n'a pas pu joindre le service Thor pour terminer votre connexion. Vérifiez votre connexion Internet et réessayez. Votre session reste disponible.",
     alreadySignedInHeading: 'Déjà connecté.',
-    alreadySignedInBody: 'Cette installation Thor est déjà connectée à un compte Nous.',
+    alreadySignedInBody: 'Cette installation Thor est déjà connectée à un compte Thor.',
     offer: {
       heading: 'Continuez avec Thor',
-      body: 'Vous utilisez le quota gratuit. Si vous continuez à utiliser Thor, vous allez commencer à atteindre des limites. Connectez-vous avec un compte Nous gratuit pour obtenir un quota plus important.',
+      body: 'Vous utilisez le quota gratuit. Si vous continuez à utiliser Thor, vous allez commencer à atteindre des limites. Connectez-vous avec un compte Thor gratuit pour obtenir un quota plus important.',
       signIn: 'Se connecter',
       notNow: 'Pas maintenant'
     },
     setupFailed: {
       gateClosed:
-        'Cette version de Thor ne peut pas démarrer sans compte Nous. Connectez-vous ou créez-en un gratuitement en une minute.',
+        'Cette version de Thor ne peut pas démarrer sans compte Thor. Connectez-vous ou créez-en un gratuitement en une minute.',
       paused:
         "L'utilisation de Thor sans connexion est momentanément suspendue. Thor continuera à vérifier. La connexion est gratuite et vous permet de continuer immédiatement.",
       rateLimited: wait =>
         `Beaucoup de personnes démarrent en ce moment ; Thor réessaiera dans ${wait}. La connexion est gratuite et évite l'attente.`,
       unreachable:
-        "Thor n'a pas pu joindre le service Nous. Vérifiez votre connexion Internet, puis appuyez sur Réessayer. Vous pouvez aussi connecter un autre fournisseur.",
+        "Thor n'a pas pu joindre le service Thor. Vérifiez votre connexion Internet, puis appuyez sur Réessayer. Vous pouvez aussi connecter un autre fournisseur.",
       serverError:
-        'Le service Nous a rencontré un problème. Réessayez dans un instant ou connectez un autre fournisseur.',
+        'Le service Thor a rencontré un problème. Réessayez dans un instant ou connectez un autre fournisseur.',
       powRequired:
-        "Le serveur Nous a demandé une preuve de travail qui n'est pas encore gérée par votre Agent. Connectez-vous ou créez un compte Nous gratuit pour continuer.",
+        "Le serveur Thor a demandé une preuve de travail qui n'est pas encore gérée par votre Agent. Connectez-vous ou créez un compte Thor gratuit pour continuer.",
       locked:
-        'Cette session ne peut pas continuer sans connexion. Connectez-vous ou créez un compte Nous gratuit pour poursuivre.',
+        'Cette session ne peut pas continuer sans connexion. Connectez-vous ou créez un compte Thor gratuit pour poursuivre.',
       generic:
         "Thor n'a pas pu configurer l'accès gratuit sans connexion. Connectez-vous gratuitement ou choisissez un autre fournisseur.",
-      signInBelow: 'La connexion est gratuite. Choisissez Nous ci-dessous.',
+      signInBelow: 'La connexion est gratuite. Choisissez Thor ci-dessous.',
       tryAgain: 'Réessayer',
       retrying: 'Nouvelle tentative…'
     }
@@ -4481,7 +4481,7 @@ export const frOverrides = {
     localDownloadsHeading: 'Local',
     noAuthenticatedProviders: 'Aucun fournisseur authentifié.',
     pro: 'Pro',
-    proNeedsSubscription: 'Les modèles Pro nécessitent un abonnement payant Nous.',
+    proNeedsSubscription: 'Les modèles Pro nécessitent un abonnement payant Thor.',
     free: 'Gratuit',
     freeTier: 'Gratuit',
     priceTitle: 'Prix entrant / sortant par million de jetons',
@@ -5039,11 +5039,11 @@ export const frOverrides = {
         },
         free_tier_disabled: {
           title: 'Connectez-vous pour continuer',
-          body: 'Connectez-vous avec un compte Nous gratuit pour continuer.'
+          body: 'Connectez-vous avec un compte Thor gratuit pour continuer.'
         },
         free_tier_rate_limited: {
           title: 'Quota gratuit épuisé',
-          body: 'Il sera bientôt renouvelé. Connectez-vous avec un compte Nous gratuit pour obtenir un quota plus élevé.'
+          body: 'Il sera bientôt renouvelé. Connectez-vous avec un compte Thor gratuit pour obtenir un quota plus élevé.'
         },
         free_tier_at_capacity: {
           title: 'Offre gratuite très sollicitée',
@@ -5051,11 +5051,11 @@ export const frOverrides = {
         },
         free_tier_model_not_free: {
           title: 'Ce modèle nécessite une connexion',
-          body: 'Thor utilise le modèle gratuit pour le moment. Connectez-vous avec un compte Nous gratuit pour accéder à plus de modèles.'
+          body: 'Thor utilise le modèle gratuit pour le moment. Connectez-vous avec un compte Thor gratuit pour accéder à plus de modèles.'
         },
         free_tier_route: {
           title: 'Modèle gratuit injoignable',
-          body: 'Connectez-vous avec un compte Nous gratuit ou vérifiez le paramètre NOUS_INFERENCE_BASE_URL.'
+          body: 'Connectez-vous avec un compte Thor gratuit ou vérifiez le paramètre THOR_PORTAL_INFERENCE_BASE_URL.'
         },
         free_tier_outage: {
           title: 'Modèle gratuit en difficulté',
@@ -5063,7 +5063,7 @@ export const frOverrides = {
         },
         free_tier_refused: {
           title: 'Connectez-vous pour continuer',
-          body: 'La connexion avec un compte Nous est gratuite.'
+          body: 'La connexion avec un compte Thor est gratuite.'
         },
         usage_window: {
           title: 'Usage inclus épuisé',
@@ -5114,7 +5114,7 @@ export const frOverrides = {
       errorOpenThorFolderFailed: "Impossible d'ouvrir le dossier Thor",
       errorUpdateApiKey: 'Mettre à jour la clé API',
       errorSignInAgain: provider => `Se reconnecter à ${provider}`,
-      errorSignInFreeTier: 'Se connecter avec un compte Nous',
+      errorSignInFreeTier: 'Se connecter avec un compte Thor',
       errorOauthExpired: provider =>
         `Votre connexion à ${provider} a expiré ou a été révoquée. Reconnectez-vous pour continuer la conversation.`,
       errorOpenLogs: 'Ouvrir les journaux',

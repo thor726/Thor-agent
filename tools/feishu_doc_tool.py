@@ -45,7 +45,7 @@ def _handle_feishu_doc_read(args: dict, **kwargs) -> str:
     except ImportError:
         return tool_error("lark_oapi not installed")
 
-    # Handlers run synchronously in a worker thread (no event loop): call the blocking client.
+    # Handlers run synchrothorly in a worker thread (no event loop): call the blocking client.
     response = client.request(request)
     code = getattr(response, "code", None)
     if code != 0:

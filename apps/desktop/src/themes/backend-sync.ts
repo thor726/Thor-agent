@@ -26,7 +26,7 @@ import { skinToDesktopTheme } from './skin'
 import { type DesktopTheme, isValidTheme } from './types'
 
 // Cached so the boot-time paint (which runs before the gateway connects) can
-// resolve a persisted skin pick synchronously, like a built-in or a user
+// resolve a persisted skin pick synchrothorly, like a built-in or a user
 // install. Without it the stored name failed `resolveTheme` on every launch
 // and the app silently painted the default until the next `skin.changed`.
 const BACKEND_THEMES_KEY = 'thor-desktop-backend-themes-v1'
@@ -71,7 +71,7 @@ $backendThemes.listen(themes => writeJson(BACKEND_THEMES_KEY, themes))
  *  built-in. The palette policy keeps built-in palettes (a user `mono.yaml`
  *  must not shadow the desktop's hand-tuned mono), but the user's CSS is still
  *  the skin file's truth — keyed by the name the desktop resolves the skin
- *  under (`default` → `nous`). Merged into the active theme in context.tsx. */
+ *  under (`default` → `thor`). Merged into the active theme in context.tsx. */
 export const $backendCustomCSS = atom<Record<string, string>>({})
 
 /** One-shot skin name the ThemeProvider should switch to (it clears this). */
@@ -106,10 +106,10 @@ export function ingestBackendSkin(skin: ThorSkin | undefined | null, { apply }: 
   }
 
   // `default` (like every retired name) is "no opinion" on the PALETTE — the
-  // desktop keeps its own default (nous), so we never register a converted theme
+  // desktop keeps its own default (thor), so we never register a converted theme
   // under `default`. It is still a
   // valid apply TARGET though: a runtime switch back to `default` must repaint the
-  // desktop to its own default (setTheme normalizes `default` → nous). So we only
+  // desktop to its own default (setTheme normalizes `default` → thor). So we only
   // skip the registry step here and let it flow through the apply logic below.
   // Built-in names (mono/slate/…) already have a hand-tuned desktop palette — we
   // never shadow it, but the name is still a valid apply target.

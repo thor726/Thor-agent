@@ -63,7 +63,7 @@ export function isExpectedTransition(reason: unknown): reason is Error {
 }
 
 /**
- * Record main-process faults to desktop.log and flush synchronously, since a
+ * Record main-process faults to desktop.log and flush synchrothorly, since a
  * fault that does prove fatal leaves no chance for the batched async flush.
  */
 export function installCrashForensics({ flush, log, target = process }: CrashForensicsOptions): void {

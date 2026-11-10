@@ -510,7 +510,7 @@ class MemoryManager:
         future = None
         try:
             # Submit+track atomically with the shutdown snapshot. The callback is attached
-            # outside the lock: an already-completed future invokes callbacks synchronously.
+            # outside the lock: an already-completed future invokes callbacks synchrothorly.
             with self._sync_executor_lock:
                 if self._shutting_down:
                     logger.warning("Memory manager is shutting down; rejecting late %s task", kind)
@@ -671,7 +671,7 @@ class MemoryManager:
         a single chokepoint: the caller returns immediately, and the worker's FIFO order serializes
         end→switch against every other provider write (per-turn ``sync_all``, prefetches), which already
         share the same worker. If the executor is unavailable, ``_submit_background`` degrades to inline
-        execution — the pre-#16454 synchronous behavior, slow but correct.
+        execution — the pre-#16454 synchrothor behavior, slow but correct.
         """
         if not self._providers or not self._owner_allows("session_boundary"):
             return

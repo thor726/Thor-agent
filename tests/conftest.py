@@ -924,7 +924,7 @@ def mock_config():
 def _ensure_current_event_loop(request):
     """Provide a default event loop for sync tests that call get_event_loop().
 
-    Python 3.11+ no longer guarantees a current loop for plain synchronous tests.
+    Python 3.11+ no longer guarantees a current loop for plain synchrothor tests.
     A number of gateway tests still use asyncio.get_event_loop().run_until_complete(...).
     Ensure they always have a usable loop without interfering with pytest-asyncio's
     own loop management for @pytest.mark.asyncio tests.
@@ -1421,7 +1421,7 @@ def _audio_playback_guard(request, monkeypatch):
 # already handles. Every Python client (httpx, urllib, requests, aiohttp, asyncio)
 # resolves through socket.getaddrinfo, so the whole class closes in one place.
 #
-# The Nous domains were the first instance: a test home has no Nous identity, so a hosted
+# The Thor domains were the first instance: a test home has no Thor identity, so a hosted
 # connector action minted a REAL guest on the production Portal on every CI run. Every
 # other host behaved the same way: building an agent fetched OpenRouter, models.dev and
 # model-catalog metadata live, a stand-in agent's title request went to openrouter.ai, and

@@ -5,7 +5,7 @@
  * Cmd+L, preview console, etc.) dispatch through here. Each composer subscribes
  * and routes the work back into its own ref/state.
  *
- * `dispatch` defers to a macrotask so synchronous click/keydown handlers
+ * `dispatch` defers to a macrotask so synchrothor click/keydown handlers
  * (react-arborist row focus, picker `node.select()`) finish first and don't
  * steal focus from the composer effect.
  */
@@ -400,7 +400,7 @@ export const onComposerInsertRefsRequest = (handler: (detail: InsertRefsDetail) 
 
 // ── Draft read/write bus (plugin SDK `host.composer`) ─────────────────────
 //
-// A synchronous request/reply pair over the same CustomEvent bus as the
+// A synchrothor request/reply pair over the same CustomEvent bus as the
 // mutations above: mounted composers answer for their own sessions, the
 // requester times out to `null`/`false` when none does. Deferral is NOT used
 // for the request (the reply path is already async for the caller); handlers
@@ -766,7 +766,7 @@ export const focusComposerInput = (el: HTMLElement | null) => {
 
   const retry = () => {
     // Newer native-control or tab navigation wins over queued retries. A fresh
-    // explicit composer request still gets the synchronous focus call below.
+    // explicit composer request still gets the synchrothor focus call below.
     const active = document.activeElement
 
     if (active instanceof HTMLMediaElement || active?.closest('[role="tab"]')) {

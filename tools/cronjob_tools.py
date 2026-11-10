@@ -268,7 +268,7 @@ def _execute_job_now(job: dict[str, Any], extra_prompt: Optional[str] = None) ->
 @contextlib.contextmanager
 def _run_heartbeat(job_name: str):
     """Heartbeat into the caller's activity tracker while a manual run executes (minutes,
-    synchronously on the caller's thread — without tool activity the gateway inactivity
+    synchrothorly on the caller's thread — without tool activity the gateway inactivity
     watchdog would kill the parent turn). Best-effort: no callback -> no thread."""
     stop = threading.Event()
     thread = None
@@ -276,7 +276,7 @@ def _run_heartbeat(job_name: str):
         # run_one_job records last_run_at/last_status via mark_job_run (which also clears the fire claim)
         # and returns True iff it processed the job. ``job`` here is the exact claimed snapshot
         # (owner-bearing), so the shared body fences every terminal write by that owner. A manual `run`
-        # executes the job synchronously on the caller's thread, and a cron job is itself a full agent run
+        # executes the job synchrothorly on the caller's thread, and a cron job is itself a full agent run
         # that routinely takes minutes. The calling turn emits no tool activity for that entire window, so
         # the gateway inactivity watchdog concludes the agent is hung and kills the parent turn (#76502).
         # Fire a heartbeat into the caller's activity tracker (the same signal tool progress uses) while the
@@ -319,7 +319,7 @@ def _run_heartbeat(job_name: str):
 
 def _run_claimed_job(job: dict[str, Any], extra_prompt: Optional[str] = None) -> dict[str, Any]:
     """Fire an already-claimed job through the shared ``run_one_job`` body (split from
-    ``_execute_job_now`` so the background path can claim synchronously and hand the run
+    ``_execute_job_now`` so the background path can claim synchrothorly and hand the run
     to a worker). Returns {"claimed": True, "success": bool, "error": ...}."""
     job_id = job["id"]
     _registered = False

@@ -51,11 +51,11 @@ class TestCuratedModelsForProvider:
 
     def test_live_catalog_projected_to_tuples_else_static_fallback(self):
         with patch("thor_cli.models.provider_model_ids", return_value=["m-live"]):
-            assert curated_models_for_provider("nous") == [("m-live", "")]
+            assert curated_models_for_provider("thor") == [("m-live", "")]
         with patch("thor_cli.models.provider_model_ids", return_value=[]), patch.dict(
-            "thor_cli.models._PROVIDER_MODELS", {"nous": ["m-static"]}
+            "thor_cli.models._PROVIDER_MODELS", {"thor": ["m-static"]}
         ):
-            assert curated_models_for_provider("nous") == [("m-static", "")]
+            assert curated_models_for_provider("thor") == [("m-static", "")]
 
     def test_stepfun_merges_live_and_static(self):
         """StepFun Step Plan API returns a subset; curated list merges with static."""
@@ -634,11 +634,11 @@ class TestValidateOpenRouterVariantSuffixes:
         assert result.get("corrected_model") is None
 
 
-class TestValidateRequestedModelNousPortalRecommendations:
-    """Regression tests for issue #71312: the Nous Telegram picker (and any
+class TestValidateRequestedModelThorPortalRecommendations:
+    """Regression tests for issue #71312: the Thor Telegram picker (and any
     other messaging-platform /model validation, since they all share
-    validate_requested_model()) rejected models that are live Nous Portal
-    recommendations (/api/nous/recommended-models) but not yet in the
+    validate_requested_model()) rejected models that are live Thor Portal
+    recommendations (/api/thor/recommended-models) but not yet in the
     hardcoded curated catalog -- even though `thor chat` already accepts
     these via union_with_portal_free/paid_recommendations() at model-list
     build time. The per-message validation path now checks the same Portal
@@ -654,12 +654,12 @@ class TestValidateRequestedModelNousPortalRecommendations:
         ],
     }
 
-    def _validate_nous(self, model, api_models=None, portal_payload=None, portal_raises=False):
+    def _validate_thor(self, model, api_models=None, portal_payload=None, portal_raises=False):
         api_models = api_models if api_models is not None else ["inclusionai/ling-2.6-flash"]
         probe_payload = {
             "models": api_models,
-            "probed_url": "https://portal.nousresearch.com/v1/models",
-            "resolved_base_url": "https://portal.nousresearch.com/v1",
+            "probed_url": "https://portal.thor-agent.local/v1/models",
+            "resolved_base_url": "https://portal.thor-agent.local/v1",
             "suggested_base_url": None,
             "used_fallback": False,
         }
@@ -671,36 +671,36 @@ class TestValidateRequestedModelNousPortalRecommendations:
 
         with patch("thor_cli.models.fetch_api_models", return_value=api_models), \
              patch("thor_cli.models.probe_api_models", return_value=probe_payload), \
-             patch("thor_cli.models.fetch_nous_recommended_models", side_effect=_fetch_portal), \
-             patch("thor_cli.models._resolve_nous_portal_url", return_value="https://portal.nousresearch.com"), \
+             patch("thor_cli.models.fetch_thor_recommended_models", side_effect=_fetch_portal), \
+             patch("thor_cli.models._resolve_thor_portal_url", return_value="https://portal.thor-agent.local"), \
              patch("thor_cli.models._model_in_provider_catalog", return_value=False):
-            return validate_requested_model(model, "nous")
+            return validate_requested_model(model, "thor")
 
     def test_free_portal_recommendation_accepted(self):
         """The exact scenario from #71312: a free-tier Portal recommendation
         missing from the curated catalog and the live /v1/models listing
         must be accepted, not rejected."""
-        result = self._validate_nous("inclusionai/ling-3.0-flash:free")
+        result = self._validate_thor("inclusionai/ling-3.0-flash:free")
         assert result["accepted"] is True
         assert result["persist"] is True
         assert "Portal recommendation" in (result["message"] or "")
 
     def test_paid_portal_recommendation_accepted(self):
-        result = self._validate_nous("inclusionai/ling-3.0-pro")
+        result = self._validate_thor("inclusionai/ling-3.0-pro")
         assert result["accepted"] is True
 
     def test_model_absent_from_portal_and_catalog_still_rejected(self):
         """A model that's genuinely nowhere (not live, not curated, not a
         Portal recommendation) must still be rejected -- this fallback
         tier must not make validation permissive for everything."""
-        result = self._validate_nous("totally-made-up-model-xyz")
+        result = self._validate_thor("totally-made-up-model-xyz")
         assert result["accepted"] is False
         assert result["recognized"] is False
 
     def test_portal_fetch_failure_falls_through_to_rejection_not_crash(self):
         """A network/parse failure fetching the Portal feed must not crash
         validation -- it degrades to the existing rejection path."""
-        result = self._validate_nous(
+        result = self._validate_thor(
             "inclusionai/ling-3.0-flash:free", portal_raises=True
         )
         assert result["accepted"] is False  # fails closed, doesn't crash
@@ -719,15 +719,15 @@ class TestValidateRequestedModelNousPortalRecommendations:
             ],
             "paidRecommendedModels": [],
         }
-        assert self._validate_nous("5", portal_payload=payload)["accepted"] is False
-        result = self._validate_nous(
+        assert self._validate_thor("5", portal_payload=payload)["accepted"] is False
+        result = self._validate_thor(
             "inclusionai/ling-3.0-flash:free", portal_payload=payload
         )
         assert result["accepted"] is True
 
-    def test_non_nous_provider_does_not_consult_portal_feed(self):
-        """This fallback tier is Nous-specific; a non-Nous provider must
-        not have its rejection changed by (or trigger a call to) the Nous
+    def test_non_thor_provider_does_not_consult_portal_feed(self):
+        """This fallback tier is Thor-specific; a non-Thor provider must
+        not have its rejection changed by (or trigger a call to) the Thor
         Portal feed."""
         probe_payload = {
             "models": ["some/other-model"],
@@ -742,7 +742,7 @@ class TestValidateRequestedModelNousPortalRecommendations:
         with patch("thor_cli.models.provider_model_ids", return_value=["some/other-model"]), \
              patch("thor_cli.models.fetch_api_models", return_value=["some/other-model"]), \
              patch("thor_cli.models.probe_api_models", return_value=probe_payload), \
-             patch("thor_cli.models.fetch_nous_recommended_models") as mock_portal, \
+             patch("thor_cli.models.fetch_thor_recommended_models") as mock_portal, \
              patch("thor_cli.models._model_in_provider_catalog", return_value=False):
             result = validate_requested_model("inclusionai/ling-3.0-flash:free", "openrouter")
         mock_portal.assert_not_called()

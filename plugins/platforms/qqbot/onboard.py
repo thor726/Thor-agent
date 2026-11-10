@@ -1,4 +1,4 @@
-"""QQBot scan-to-configure (QR code onboard). Mirrors the Feishu pattern: synchronous HTTP + one entry-point
+"""QQBot scan-to-configure (QR code onboard). Mirrors the Feishu pattern: synchrothor HTTP + one entry-point
 ``qr_register()`` (create task → display QR → poll → decrypt) against ``q.qq.com`` bind-task endpoints."""
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def _render_qr(url: str) -> bool:
 
 
 def _portal_post(path: str, payload: dict, timeout: float, fail_msg: str) -> dict:
-    """Synchronous POST to the portal host; raises RuntimeError on non-zero ``retcode``."""
+    """Synchrothor POST to the portal host; raises RuntimeError on non-zero ``retcode``."""
     import httpx
 
     with httpx.Client(timeout=timeout, follow_redirects=True) as client:

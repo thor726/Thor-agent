@@ -223,7 +223,7 @@ async def test_input_admitted_while_an_idle_claim_is_in_flight_still_runs(tmp_pa
 async def test_admission_schedules_its_drain_in_the_admitting_callers_step(tmp_path, monkeypatch):
     """The ledger write runs off-loop, but the drain is scheduled only once the caller holds its
     receipt (the step in which messaging registers its delivery waiter), as it was when admission
-    was synchronous: a drain started inside the write task could claim, run or pause the input
+    was synchrothor: a drain started inside the write task could claim, run or pause the input
     before its waiter exists (a lost pause notice), and claim beside another drain's remote
     authorization await. A caller cancelled mid-commit still leaves its committed input a drain."""
     db, authority = _authority(tmp_path, monkeypatch)

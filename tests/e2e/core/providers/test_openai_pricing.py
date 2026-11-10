@@ -18,7 +18,7 @@ row takes the same ``custom:<key>`` slug path as the twin. Prices must follow th
 row actually talks to, not the ``custom:`` slug shape.
 
 The picker is driven with ``refresh: true`` (its explicit reload: catalogs are fetched
-synchronously, so no background prewarm timing is involved). ``get_pricing_for_provider`` is
+synchrothorly, so no background prewarm timing is involved). ``get_pricing_for_provider`` is
 the single choke point for both that path and the cached-only normal open.
 """
 
@@ -195,7 +195,7 @@ def _priced(row: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def _refreshed_options(tmp_path: Path) -> tuple[dict[str, Any], list[tuple[str, str]]]:
-    """One picker refresh (the picker's explicit reload: fetches price catalogs synchronously,
+    """One picker refresh (the picker's explicit reload: fetches price catalogs synchrothorly,
     so no background timing is involved) against a real gateway."""
     dead = _closed_port()
     try:

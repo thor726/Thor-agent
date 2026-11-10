@@ -36,10 +36,10 @@ def test_native_carriers_follow_only_their_owner_on_each_request():
     assert "reasoning_details" not in transport.convert_messages(only_native, base_url=OPENROUTER)[0]
 
 
-NOUS_PORTAL = "https://inference-api.nousresearch.com/v1"
+THOR_PORTAL_PORTAL = "https://inference-api.thor-agent.local/v1"
 
 
-def test_nous_portal_replays_reasoning_details_on_wire():
+def test_thor_portal_replays_reasoning_details_on_wire():
     """The Portal forwards assistant carriers to its upstream lanes and the "cumulative replay
     budget" blamed for #118182 does not exist (no 400 across ~440 live replay requests), so the
     Portal reads reasoning_details again. Lookalike hosts never match and still strip."""
@@ -48,13 +48,13 @@ def test_nous_portal_replays_reasoning_details_on_wire():
     original = deepcopy(history)
     transport = ChatCompletionsTransport()
 
-    for base_url in (NOUS_PORTAL, "https://stg-inference-api.nousresearch.com/v1"):
+    for base_url in (THOR_PORTAL_PORTAL, "https://stg-inference-api.thor-agent.local/v1"):
         wire = transport.convert_messages(deepcopy(history), base_url=base_url)
         assert wire[0]["reasoning_details"] == [standard]
         assert history == original
 
     assert "reasoning_details" not in transport.convert_messages(
-        deepcopy(history), base_url="https://nousresearch.com.evil.io/v1")[0]
+        deepcopy(history), base_url="https://github.com/dwisetyabudi15581/Thor-agent.evil.io/v1")[0]
 
 
 def test_openrouter_replay_unchanged_by_portal_strip():
@@ -78,6 +78,6 @@ def test_profile_native_carrier_still_replayed_on_portal_route():
     original = deepcopy(history)
     transport = ChatCompletionsTransport()
 
-    wire = transport.build_kwargs("test", history, provider_profile=owner, base_url=NOUS_PORTAL)["messages"]
+    wire = transport.build_kwargs("test", history, provider_profile=owner, base_url=THOR_PORTAL_PORTAL)["messages"]
     assert wire[0]["reasoning_details"] == [carrier, standard]
     assert history == original

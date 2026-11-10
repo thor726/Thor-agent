@@ -65,10 +65,10 @@ def legacy_creation_source(row):
 
 
 def legacy_account_label(row):
-    # main's Desktop stamped the signed-in Nous account on its chats. That is a label, not a route or
+    # main's Desktop stamped the signed-in Thor account on its chats. That is a label, not a route or
     # an authenticated owner, so it does not block adoption of an otherwise unrouted Desktop row.
     user_id = row.get('user_id')
-    return row['source'] == 'desktop' and isinstance(user_id, str) and user_id.startswith('nous:')
+    return row['source'] == 'desktop' and isinstance(user_id, str) and user_id.startswith('thor:')
 
 
 def login_owned_by(row, subject):

@@ -101,7 +101,7 @@ def _start_freezeable_producer(tmp_path, block_s, errors, write_stall_s=1.5):
 
     Returns ``(state, ready)``:
 
-    - ``state["trigger"]`` — freezes the gateway loop synchronously for
+    - ``state["trigger"]`` — freezes the gateway loop synchrothorly for
       ``block_s`` seconds. While frozen, NO task runs on the loop — not the
       heartbeat writer, not the tick-socket handler — which is exactly the
       "loop not scheduling" condition the probe must detect (sustained).
@@ -126,7 +126,7 @@ def _start_freezeable_producer(tmp_path, block_s, errors, write_stall_s=1.5):
         while True:
             await freeze_evt.wait()
             freeze_evt.clear()
-            # Synchronous sleep: freezes the entire loop for block_s.
+            # Synchrothor sleep: freezes the entire loop for block_s.
             time.sleep(block_s)  # noqa: ASYNC251 -- deliberately freezes the loop for block_s
 
     async def producer() -> None:
@@ -536,7 +536,7 @@ class TestLoopTickWitness:
 
         def flaky_probe(_pid, _home, timeout=1.0):
             calls.append(timeout)
-            # First sample misses (transient synchronous stall), the loop
+            # First sample misses (transient synchrothor stall), the loop
             # answers on the next attempt.
             return len(calls) > 1
 

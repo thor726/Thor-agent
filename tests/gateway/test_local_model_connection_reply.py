@@ -276,7 +276,7 @@ def test_turn_runner_host_side_resolution_failure_does_not_send_user_to_login(mo
         try:
             raise ConnectionError("refresh endpoint unreachable")
         except ConnectionError as net:
-            raise AuthError("Nous refresh failed; sign in again.") from net
+            raise AuthError("Thor refresh failed; sign in again.") from net
 
     def _mixed_cause():
         try:
@@ -285,7 +285,7 @@ def test_turn_runner_host_side_resolution_failure_does_not_send_user_to_login(mo
             return exc
 
     for label, cause in (("oserror", FileNotFoundError(2, "No such file or directory")),
-                         ("auth", AuthError("No usable credentials found for provider 'nous'.")),
+                         ("auth", AuthError("No usable credentials found for provider 'thor'.")),
                          ("mixed", _mixed_cause())):
         runner = SimpleNamespace(_resolve_session_agent_runtime=_raising(cause),
                                  _get_system_prompt_for_channel=lambda *a, **k: "",

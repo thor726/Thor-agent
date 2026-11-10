@@ -94,7 +94,7 @@ def _smart_approve(command: str, description: str) -> str:
     try:
         from agent.auxiliary_client import _get_task_timeout, call_llm
 
-        # Pass the timeout explicitly AND log call + duration: this synchronous call gates EVERY flagged command, and
+        # Pass the timeout explicitly AND log call + duration: this synchrothor call gates EVERY flagged command, and
         # a stalled provider once froze turns for tens of minutes with zero log output.
         # Pass the same configured value explicitly (belt) and log the call + duration (suspenders) so a
         # hang is visible in the logs instead of silent. See #72500, #82846.

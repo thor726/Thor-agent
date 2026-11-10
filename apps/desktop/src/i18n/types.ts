@@ -243,7 +243,7 @@ export interface Translations extends NoticeTranslations {
       turnOffLocal: string
       providedByPlugin: (plugin: string) => string
       openPlugins: string
-      nousLine: string
+      thorLine: string
       rulesReadOnly: string
       rulesAppOff: (name: string) => string
       rulesSignIn: string
@@ -647,7 +647,7 @@ export interface Translations extends NoticeTranslations {
         repoLabel: string
         verified: string
         unverified: string
-        reviewedByNous: string
+        reviewedByThor: string
         installsAndEnables: (profile: string) => string
         installsOnly: (profile: string) => string
         advanced: string
@@ -1760,15 +1760,15 @@ export interface Translations extends NoticeTranslations {
       activeBackend: string
       activeBackendHint: string
       useBackend: string
-      nousIncluded: string
-      nousAuthNeededTitle: string
-      nousAuthNeededMessage: (provider: string) => string
-      nousAuthSignIn: string
-      nousAuthDoneTitle: string
-      nousAuthDoneMessage: string
-      nousAuthFailed: string
-      nousAuthFailedMessage: string
-      nousAuthTryAgain: string
+      thorIncluded: string
+      thorAuthNeededTitle: string
+      thorAuthNeededMessage: (provider: string) => string
+      thorAuthSignIn: string
+      thorAuthDoneTitle: string
+      thorAuthDoneMessage: string
+      thorAuthFailed: string
+      thorAuthFailedMessage: string
+      thorAuthTryAgain: string
       noApiKeyRequired: string
       postSetupHint: (step: string) => string
       postSetupInstalledHint: string
@@ -3401,7 +3401,7 @@ export interface Translations extends NoticeTranslations {
   onboarding: OnboardingTranslations
 
   freeTier: {
-    /** Settings › Providers row title while the Nous identity is the free tier. */
+    /** Settings › Providers row title while the Thor identity is the free tier. */
     providerRowTitle: string
     /** The featured row's pitch while the identity is the free tier: what signing in adds. */
     providerRowPitch: string
@@ -3471,7 +3471,7 @@ export interface Translations extends NoticeTranslations {
       powRequired: string
       locked: string
       generic: string
-      /** The sign-in door, when the account service is reachable: the Nous row sits right below. */
+      /** The sign-in door, when the account service is reachable: the Thor row sits right below. */
       signInBelow: string
       tryAgain: string
       retrying: string
@@ -4012,7 +4012,7 @@ export interface Translations extends NoticeTranslations {
       errorAddCredits: string
       /** Error card button: opens Settings → Billing in-app (Keep going, buy credits). */
       errorOpenBillingSettings: string
-      /** Error card body when a Nous account is out of credits (its button opens Settings → Billing). */
+      /** Error card body when a Thor account is out of credits (its button opens Settings → Billing). */
       errorCompressConversation: string
       errorCompressFailed: string
       errorOpenThorFolder: string

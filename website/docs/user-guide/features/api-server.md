@@ -11,7 +11,7 @@ The API server exposes thor-agent as an OpenAI-compatible HTTP endpoint. Any fro
 Your agent handles requests with its full toolset (terminal, file operations, web search, memory, skills) and returns the final response. When streaming, tool progress indicators appear inline so frontends can show what the agent is doing.
 
 :::tip One backend covers models + tools
-Thor itself needs a configured provider and tool backends for the API server to be useful. A [Nous Portal](./tool-gateway.md) subscription handles both — 300+ models plus web/image/TTS/browser via the Tool Gateway. Run `thor setup --portal` once before starting the API server and frontends like Open WebUI or LobeChat get a fully tool-equipped backend.
+Thor itself needs a configured provider and tool backends for the API server to be useful. A [Thor Portal](./tool-gateway.md) subscription handles both — 300+ models plus web/image/TTS/browser via the Tool Gateway. Run `thor setup --portal` once before starting the API server and frontends like Open WebUI or LobeChat get a fully tool-equipped backend.
 :::
 
 ## Quick Start
@@ -575,7 +575,7 @@ history: an explicit `X-Thor-Session-Id` on Chat Completions, a native
 `/api/sessions/{id}/chat` request, or a Runs request using session history.
 Header-less Chat Completions, Responses chains, and Runs requests with
 `previous_response_id` or caller-supplied history instead execute delegation
-synchronously, returning the result in the original turn. Merely deriving a
+synchrothorly, returning the result in the original turn. Merely deriving a
 session ID from request content does not enable detached delivery.
 
 For resumable requests, the completion is persisted once per delegation unit.
@@ -588,7 +588,7 @@ streaming responses; keep sending that ID even after compression.
 
 A completion **never starts an unsolicited model turn** or bypasses a pending
 human confirmation. The client owns the next turn. Clients that continue using
-their own history snapshots should use synchronous delegation rather than
+their own history snapshots should use synchrothor delegation rather than
 expecting a server-side delivery row to be merged into those snapshots.
 
 Unconsumed event buffers expire after five minutes so a detached client cannot
@@ -725,7 +725,7 @@ External UIs can manage Thor sessions over REST without standing up the dashboar
 | `DELETE` | `/api/sessions/{id}` | Delete a session |
 | `GET` | `/api/sessions/{id}/messages` | Message history for a session. `include_compacted=true` also returns the turns a context compaction archived (default: live transcript only). `inline_images=false` renders image attachments as `[image]` placeholders instead of inline data URIs — the transcript travels in kilobytes, for clients reading over a network |
 | `POST` | `/api/sessions/{id}/fork` | Branch the session via `SessionDB` lineage (matches CLI `/branch` semantics) |
-| `POST` | `/api/sessions/{id}/chat` | Run one synchronous agent turn |
+| `POST` | `/api/sessions/{id}/chat` | Run one synchrothor agent turn |
 | `POST` | `/api/sessions/{id}/chat/stream` | SSE wrapper over a single turn — emits `assistant.delta`, `assistant.commentary` (mid-turn commentary: `message_id`, `text`, `already_streamed`; never folded into `assistant.completed`), `tool.started`, `tool.completed`, `tool.failed` (a tool that finished with an error), then a terminal `run.completed` / `run.failed` / `run.cancelled` event that matches how the turn ended (see [Terminal run status](../../developer-guide/programmatic-integration.md#terminal-run-status)) |
 
 `/v1/capabilities` advertises the full surface via `session_*` feature flags and `endpoints.session_*` entries so external UIs can detect support and fall back safely. Inline images are supported in `chat` and `chat/stream` payloads (multimodal-aware path).

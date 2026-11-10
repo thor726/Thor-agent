@@ -7,7 +7,7 @@ pnpm exec vitest run --config ../../evals/desktop-pane-fixture/vitest.config.mts
 pnpm exec vitest run --project ui src/store/session-pane-focus.test.ts --sequence.shuffle.tests --sequence.seed=12345 --reporter verbose
 ```
 
-The Vite plugin appends an 11-second asynchronous wait to the real pane-tree
+The Vite plugin appends an 11-second asynchrothor wait to the real pane-tree
 store's evaluation. It does not mock pane functions, inspect source text in an
 assertion, lower a deadline, or alter the two test bodies. The UI test deadline
 remains 15 seconds and the default hook deadline remains 10 seconds. This is a

@@ -329,18 +329,18 @@ class TestDelegateTask(unittest.TestCase):
                     child_db.close()
                 parent_db.close()
 
-    def test_nous_child_rederives_api_mode_from_model(self):
+    def test_thor_child_rederives_api_mode_from_model(self):
         """Portal is dual-wire — same provider + different model prefix must
         not inherit the parent's Messages/chat_completions mode verbatim.
-        Native wire selected (opt-in since 2026-09-06, ``nous.anthropic_wire``)."""
-        with patch("thor_cli.providers._nous_anthropic_wire", return_value="native"):
-            self._nous_child_rederives_api_mode_from_model()
+        Native wire selected (opt-in since 2026-09-06, ``thor.anthropic_wire``)."""
+        with patch("thor_cli.providers._thor_anthropic_wire", return_value="native"):
+            self._thor_child_rederives_api_mode_from_model()
 
-    def _nous_child_rederives_api_mode_from_model(self):
+    def _thor_child_rederives_api_mode_from_model(self):
         parent = _make_mock_parent(depth=0)
-        parent.base_url = "https://inference-api.nousresearch.com/v1"
+        parent.base_url = "https://inference-api.thor-agent.local/v1"
         parent.api_key = "portal-jwt"
-        parent.provider = "nous"
+        parent.provider = "thor"
         parent.api_mode = "anthropic_messages"
         parent.model = "anthropic/claude-opus-4.8"
 
@@ -353,22 +353,22 @@ class TestDelegateTask(unittest.TestCase):
                 goal="Stay on chat completions",
                 context=None,
                 toolsets=None,
-                model="hermes-4-405b",
+                model="thor-4-405b",
                 max_iterations=10,
                 parent_agent=parent,
                 task_count=1,
             )
 
             _, kwargs = MockAgent.call_args
-            self.assertEqual(kwargs["provider"], "nous")
-            self.assertEqual(kwargs["model"], "hermes-4-405b")
+            self.assertEqual(kwargs["provider"], "thor")
+            self.assertEqual(kwargs["model"], "thor-4-405b")
             self.assertEqual(kwargs["api_mode"], "chat_completions")
 
         with patch("run_agent.AIAgent") as MockAgent:
             mock_child = MagicMock()
             MockAgent.return_value = mock_child
             parent.api_mode = "chat_completions"
-            parent.model = "hermes-4-405b"
+            parent.model = "thor-4-405b"
 
             _build_child_agent(
                 task_index=0,
@@ -986,7 +986,7 @@ class TestDelegationProviderIntegration(unittest.TestCase):
     @patch("tools.delegate_tool._load_config")
     @patch("tools.delegate_tool._resolve_delegation_credentials")
     def test_cross_provider_delegation(self, mock_creds, mock_cfg):
-        """Parent on Nous, subagent on OpenRouter — full credential switch."""
+        """Parent on Thor, subagent on OpenRouter — full credential switch."""
         mock_cfg.return_value = {
             "max_iterations": 45,
             "model": "google/gemini-3-flash-preview",
@@ -1000,9 +1000,9 @@ class TestDelegationProviderIntegration(unittest.TestCase):
             "api_mode": "chat_completions",
         }
         parent = _make_mock_parent(depth=0)
-        parent.provider = "nous"
-        parent.base_url = "https://inference-api.nousresearch.com/v1"
-        parent.api_key = "nous-key-abc"
+        parent.provider = "thor"
+        parent.base_url = "https://inference-api.thor-agent.local/v1"
+        parent.api_key = "thor-key-abc"
 
         with patch("run_agent.AIAgent") as MockAgent:
             mock_child = MagicMock()
@@ -1014,7 +1014,7 @@ class TestDelegationProviderIntegration(unittest.TestCase):
             delegate_task(goal="Cross-provider test", parent_agent=parent)
 
             _, kwargs = MockAgent.call_args
-            # Child should use OpenRouter, NOT Nous
+            # Child should use OpenRouter, NOT Thor
             self.assertEqual(kwargs["provider"], "openrouter")
             self.assertEqual(kwargs["base_url"], "https://openrouter.ai/api/v1")
             self.assertEqual(kwargs["api_key"], "sk-or-key")

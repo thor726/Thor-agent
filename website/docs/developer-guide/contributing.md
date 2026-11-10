@@ -84,7 +84,7 @@ edges, conservative at the waist.
   SaaS connectors, analytics dashboards, and other "someone else's product" plugins do NOT
   land under `plugins/` — every one becomes our burden against a fast-moving core for a
   backend we don't own. Ship as a **standalone plugin repo** (`~/.thor/plugins/` or pip
-  entry point), promoted in the Nous Research Discord `#plugins-skills-and-skins`. This is a
+  entry point), promoted in the Thor Agent Discord `#plugins-skills-and-skins`. This is a
   coupling decision, not a quality bar; such PRs are closed with a pointer to publish.
 
 ### Before you call it a bug — verify the premise (and when NOT to close)
@@ -285,7 +285,7 @@ or npm does not satisfy, where it would only warn outside the checkout.
 Use a Node version accepted by the corresponding `package.json` engines.
 Native desktop dependencies can also require the platform build toolchain.
 
-Logos and icons are generated from `assets/nous-girl-*.svg` and
+Logos and icons are generated from `assets/thor-mark-*.svg` and
 `assets/backgrounds/`. `node scripts/generate-icons.mjs` (`just icons`) renders them with the
 Thor runtime Python (`THOR_PYTHON`, else `python` on PATH): Pillow and
 resvg-py are core dependencies. Do not commit generated PNG/ICO/ICNS outputs.
@@ -475,7 +475,7 @@ When you ask Thor to review a PR in a repository that has `.agents/checks/`, tel
 
 ## Community
 
-- **Discord**: [discord.gg/NousResearch](https://discord.gg/NousResearch)
+- **Discord**: [github.com/dwisetyabudi15581/Thor-agent](https://github.com/dwisetyabudi15581/Thor-agent)
 - **GitHub Discussions**: For design proposals and architecture discussions
 - **Skills Hub**: Upload specialized skills and share with the community
 

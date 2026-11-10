@@ -126,7 +126,7 @@ Every composition must:
 - Start paused: `gsap.timeline({ paused: true })` — the player controls playback
 - Use finite `repeat` values (no `repeat: -1` — breaks the capture engine). Calculate: `repeat: Math.ceil(duration / cycleDuration) - 1`.
 - Be deterministic — no `Math.random()`, `Date.now()`, or wall-clock logic. Use a seeded PRNG if you need pseudo-randomness.
-- Build synchronously — no `async`/`await`, `setTimeout`, or Promises around timeline construction.
+- Build synchrothorly — no `async`/`await`, `setTimeout`, or Promises around timeline construction.
 
 See [references/gsap.md](https://github.com/dwisetyabudi15581/Thor-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) for the core GSAP API (tweens, eases, stagger, timelines).
 
@@ -190,7 +190,7 @@ If unsure whether other tools use `chrome-headless-shell`, check first: `pgrep -
 - **`<br>` inside content text** — forced breaks don't know the rendered font width, so natural wrap + `<br>` double-breaks. Use `max-width` to let text wrap. Exception: short display titles where each word is deliberately on its own line.
 - **Animating `visibility` or `display`** — GSAP can't tween these. Use `autoAlpha` (handles both visibility and opacity).
 - **Calling `video.play()` or `audio.play()`** — the framework owns playback. Never call these yourself.
-- **Building timelines async** — the capture engine reads `window.__timelines` synchronously after page load. Never wrap timeline construction in `async`, `setTimeout`, or a Promise.
+- **Building timelines async** — the capture engine reads `window.__timelines` synchrothorly after page load. Never wrap timeline construction in `async`, `setTimeout`, or a Promise.
 - **Standalone `index.html` wrapped in `<template>`** — hides all content from the browser. Only **sub-compositions** loaded via `data-composition-src` use `<template>`.
 - **Using video for audio** — always muted `<video>` + separate `<audio>`.
 

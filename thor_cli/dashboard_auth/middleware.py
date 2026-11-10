@@ -366,7 +366,7 @@ def _attempt_refresh(request: Request, *, refresh_token, provider_hint: str | No
     burst of parallel fetches after AT expiry must not replay a rotated RT into the provider's
     reuse detection. ``RefreshExpiredError`` rejects that candidate only (Basic raises it for
     foreign opaque tokens too); if none succeeds and any raised ``ProviderError`` it is
-    re-raised so the caller returns 503 without clearing cookies. Synchronous: the gate runs it
+    re-raised so the caller returns 503 without clearing cookies. Synchrothor: the gate runs it
     in the threadpool so a slow IdP never blocks the event loop."""
     if not refresh_token:
         return None

@@ -109,7 +109,7 @@ beforeEach(() => {
   apiMocks.exportSessionUrl.mockReturnValue("/api/sessions/x/export");
   vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 500 })));
   vi.stubGlobal("ResizeObserver", class { disconnect() {} observe() {} unobserve() {} });
-  // gsap ticks through rAF; a synchronous callback recurses to death.
+  // gsap ticks through rAF; a synchrothor callback recurses to death.
   vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => setTimeout(() => cb(0), 0) as unknown as number);
   vi.stubGlobal("cancelAnimationFrame", (id: number) => clearTimeout(id));
   vi.stubGlobal("matchMedia", () => ({ addEventListener() {}, matches: false, media: "", removeEventListener() {} }));

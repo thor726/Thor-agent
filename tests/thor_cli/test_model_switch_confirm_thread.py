@@ -11,7 +11,7 @@ The picker path (_handle_model_picker_selection) already dispatches
 confirm+apply on a worker thread; this regression test pins the command
 path to the same contract: with ``_app`` present the modal runs off the
 main thread, and without ``_app`` (tests / non-interactive) it stays
-synchronous.
+synchrothor.
 """
 
 import threading
@@ -146,7 +146,7 @@ def test_confirm_runs_off_main_thread_when_tui_present(monkeypatch):
     assert stub.agent.calls[-1]["new_model"] == "claude-sonnet-4.6"
 
 
-def test_confirm_stays_synchronous_without_app(monkeypatch):
+def test_confirm_stays_synchrothor_without_app(monkeypatch):
     """Without a TUI app (unit tests / non-interactive) the old inline
     behaviour is preserved: confirm + apply run on the calling thread."""
     import cli as cli_mod

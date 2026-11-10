@@ -75,9 +75,9 @@ def managed_tools_rolled_out() -> bool:
     says nothing about that, so entitlement is the wrong predicate here: the portal mints its
     answer onto the token as ``managed_tools`` and this reads only that. A token minted before
     the claim existed carries none and reads as not enabled."""
-    from thor_cli.nous_account import get_nous_portal_account_info
+    from thor_cli.thor_account import get_thor_portal_account_info
 
-    account_info = get_nous_portal_account_info()
+    account_info = get_thor_portal_account_info()
     return bool(account_info.logged_in) and account_info.managed_tools_rolled_out
 
 
@@ -97,10 +97,10 @@ def connectors_available(
             return False
         if entitlement_check is None:
             from thor_cli.anon_auth import is_guest_state
-            from tools.managed_tool_gateway import _read_nous_provider_state
+            from tools.managed_tool_gateway import _read_thor_provider_state
 
             # Availability must not mint or refresh an identity.
-            if is_guest_state(_read_nous_provider_state()) or guest_identity_pending():
+            if is_guest_state(_read_thor_provider_state()) or guest_identity_pending():
                 return True
 
             entitlement_check = managed_tools_rolled_out
@@ -111,12 +111,12 @@ def connectors_available(
 
 
 def guest_identity_pending() -> bool:
-    """No Nous identity or bearer yet, and a guest one may be created (``nous.guest`` is not false
+    """No Thor identity or bearer yet, and a guest one may be created (``thor.guest`` is not false
     and no earlier mint was refused for good). No network: this feeds the ``check_fn``."""
     from thor_cli.anon_auth import guest_allowed, last_mint_failure
-    from tools.managed_tool_gateway import _read_nous_provider_state, peek_nous_access_token
+    from tools.managed_tool_gateway import _read_thor_provider_state, peek_thor_access_token
 
-    if not guest_allowed() or _read_nous_provider_state() is not None or peek_nous_access_token():
+    if not guest_allowed() or _read_thor_provider_state() is not None or peek_thor_access_token():
         return False
     failure = last_mint_failure()
     return not failure or bool(failure["retryable"])
@@ -135,7 +135,7 @@ def guest_setup_failure() -> Optional[str]:
 
 
 def ensure_guest_identity() -> Optional[str]:
-    """Create the guest identity on the first hosted connector action, synchronously.
+    """Create the guest identity on the first hosted connector action, synchrothorly.
 
     Returns None when an identity exists or was just created, else the failure copy for the model:
     a refusal, a rate limit or an unreachable portal, with the wait when there is one."""

@@ -13,7 +13,7 @@ def _state(window, full=()):
 
 
 def _snap(gauges=None, source="network"):
-    # The portal snapshot carries parsed gauges (agent.usage_gauges.WindowGauge), as nous_account stores them.
+    # The portal snapshot carries parsed gauges (agent.usage_gauges.WindowGauge), as thor_account stores them.
     window = None if gauges is None else NS(gauges=tuple(WindowGauge(g, SCOPE_ALL, g, BP_FULL if f else 0)
                                                          for g, f in gauges))
     return NS(usage_window=window, source=source)
@@ -40,11 +40,11 @@ def test_staleness(state, snapshot, stale):
 @pytest.fixture
 def wired(monkeypatch):
     import thor_cli.models_pricing as mp
-    import thor_cli.nous_account as na
+    import thor_cli.thor_account as na
     calls = []
     box = {"snap": _snap(None)}
-    monkeypatch.setattr(na, "cached_nous_portal_account_info", lambda any_age=False: box["snap"])
-    monkeypatch.setattr(na, "get_nous_portal_account_info", lambda force_fresh=False: calls.append("account"))
+    monkeypatch.setattr(na, "cached_thor_portal_account_info", lambda any_age=False: box["snap"])
+    monkeypatch.setattr(na, "get_thor_portal_account_info", lambda force_fresh=False: calls.append("account"))
     monkeypatch.setattr(mp, "get_pricing_for_provider",
                         lambda provider, force_refresh=False: calls.append(("catalog", provider, force_refresh)))
     monkeypatch.setattr(sync, "_last_attempt", {})
@@ -64,7 +64,7 @@ def wired(monkeypatch):
 def test_a_plan_change_refreshes_account_and_catalog_once(wired):
     calls, _box = wired
     assert sync.sync_plan_snapshot(_state(True)) is True
-    assert calls == ["account", ("catalog", "nous", True)]
+    assert calls == ["account", ("catalog", "thor", True)]
     # The portal can trail the gateway: the same mismatch on the next reply is not refetched.
     assert sync.sync_plan_snapshot(_state(True)) is False
     assert len(calls) == 2
@@ -81,16 +81,16 @@ def test_a_mismatch_the_refresh_did_not_fix_retries(wired, monkeypatch):
     """A refresh that read a lagging portal (same stale gauges back) or a failed fetch reported as
     ``source="error"`` must not end re-syncing for that mismatch: an error rearms at once, a lag after the
     retry interval."""
-    import thor_cli.nous_account as na
+    import thor_cli.thor_account as na
     calls, box = wired
     box["snap"] = ON_PLAN
-    monkeypatch.setattr(na, "get_nous_portal_account_info",
+    monkeypatch.setattr(na, "get_thor_portal_account_info",
                         lambda force_fresh=False: calls.append("account") or _snap(None, "error"))
     assert sync.sync_plan_snapshot(_state(True, ["day"])) is True
     assert sync.sync_plan_snapshot(_state(True, ["day"])) is True  # the fetch failed: try again
     clock = {"now": 1_000.0}
     monkeypatch.setattr(sync.time, "monotonic", lambda: clock["now"])
-    monkeypatch.setattr(na, "get_nous_portal_account_info", lambda force_fresh=False: calls.append("account") or ON_PLAN)
+    monkeypatch.setattr(na, "get_thor_portal_account_info", lambda force_fresh=False: calls.append("account") or ON_PLAN)
     assert sync.sync_plan_snapshot(_state(True, ["day"])) is True
     assert sync.sync_plan_snapshot(_state(True, ["day"])) is False  # the portal lags: not on every reply
     clock["now"] += sync._RETRY_AFTER_S
@@ -111,9 +111,9 @@ def test_each_profile_refreshes_its_own_account_under_its_own_home(wired, tmp_pa
     """One process, two profiles: the refresh runs with the asking profile's Thor home, and one
     profile's pending mismatch never blocks another's."""
     from thor_constants import get_thor_home, reset_thor_home_override, set_thor_home_override
-    import thor_cli.nous_account as na
+    import thor_cli.thor_account as na
     homes = []
-    monkeypatch.setattr(na, "get_nous_portal_account_info", lambda force_fresh=False: homes.append(str(get_thor_home())))
+    monkeypatch.setattr(na, "get_thor_portal_account_info", lambda force_fresh=False: homes.append(str(get_thor_home())))
     for name in ("a", "b"):
         token = set_thor_home_override(tmp_path / name)
         try:
@@ -132,16 +132,16 @@ def test_an_ordinary_reply_costs_nothing(wired):
 
 
 def test_never_raises(monkeypatch):
-    import thor_cli.nous_account as na
-    monkeypatch.setattr(na, "cached_nous_portal_account_info", lambda any_age=False: 1 / 0)
+    import thor_cli.thor_account as na
+    monkeypatch.setattr(na, "cached_thor_portal_account_info", lambda any_age=False: 1 / 0)
     assert sync.sync_plan_snapshot(_state(True)) is False
 
 
 def test_a_non_window_reply_without_a_window_snapshot_reads_nothing(monkeypatch):
     """Every other account: no snapshot read (no auth-state lookup) on any reply."""
-    import thor_cli.nous_account as na
+    import thor_cli.thor_account as na
     monkeypatch.setattr(na, "_account_info_cache", None)
-    monkeypatch.setattr(na, "cached_nous_portal_account_info", lambda any_age=False: 1 / 0)
+    monkeypatch.setattr(na, "cached_thor_portal_account_info", lambda any_age=False: 1 / 0)
     assert sync.sync_plan_snapshot(_state(False)) is False
     monkeypatch.setattr(na, "_account_info_cache", ("k", 0.0, _snap(None)))
     assert sync.sync_plan_snapshot(_state(False)) is False

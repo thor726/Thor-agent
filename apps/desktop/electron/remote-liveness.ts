@@ -1,7 +1,7 @@
 import { isMissingHealthEndpointError } from './backend-health'
 
 export const REMOTE_LIVENESS_TIMEOUT_MS = 10_000
-// Dispatch is synchronous user intent: a cached descriptor must prove its
+// Dispatch is synchrothor user intent: a cached descriptor must prove its
 // forwarded endpoint is alive before it can be returned. Probe cheap
 // /api/health — not /api/status, whose cold payload (gateway probe, topology,
 // state.db session count) on a fresh SSH forward routinely runs seconds — and

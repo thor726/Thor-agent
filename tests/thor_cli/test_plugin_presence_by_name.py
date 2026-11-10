@@ -15,7 +15,7 @@ from thor_cli import plugin_catalog as pc
 from thor_cli import plugin_catalog_presence as presence_mod
 
 SHA = "0" * 40
-NEEDS_APP = {"extensions": {"com.nousresearch.thor": {"servers": {"srv": {
+NEEDS_APP = {"extensions": {"com.thorresearch.thor": {"servers": {"srv": {
     "app": {"darwin": {"presence": "executable", "location": "/nonexistent/fx-app"},
             "linux": {"presence": "executable", "location": "/nonexistent/fx-app"},
             "win32": {"presence": "executable", "location": "C:/nonexistent/fx-app.exe"}},

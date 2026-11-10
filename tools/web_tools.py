@@ -18,7 +18,7 @@ _firecrawl_client = _firecrawl_client_config = _parallel_client = _async_paralle
 
 from plugins.web.firecrawl.provider import _is_tool_gateway_ready, check_firecrawl_api_key
 from tools.debug_helpers import DebugSession
-from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_selection, selection_exists
+from tools.tool_backend_helpers import THOR_PORTAL_MANAGED_PROVIDER, read_selection, selection_exists
 from tools.url_safety import async_is_safe_url
 from tools.web_tools_rescue import _managed_search_fallback, _rescue_eligible, _rescue_search
 from tools.web_tools_truncate import _effective_char_limit, _trim_results, _truncate_results, convert_base64_images_to_links
@@ -105,8 +105,8 @@ def _get_backend() -> str:
     ``web.extract_backend``) name only their own capability and never reroute the other (#113017)."""
     configured = _configured_backend()
     if configured:
-        # "nous" (managed subscription) is serviced by firecrawl, routed through the managed Tool Gateway.
-        return "firecrawl" if configured == NOUS_MANAGED_PROVIDER else configured
+        # "thor" (managed subscription) is serviced by firecrawl, routed through the managed Tool Gateway.
+        return "firecrawl" if configured == THOR_PORTAL_MANAGED_PROVIDER else configured
     if read_selection("web") is not None:
         # Shared selection exists (use_gateway) but no shared name: firecrawl, no ladder.
         return "firecrawl"
@@ -117,7 +117,7 @@ def _get_backend() -> str:
 
 def _autodetect_backend() -> Optional[str]:
     """Autodetect rungs above the keyless tier, or None. Explicit user credentials beat the managed-gateway
-    probe (a Nous OAuth token's tier may not grant web access; the gateway then fails at runtime with no
+    probe (a Thor OAuth token's tier may not grant web access; the gateway then fails at runtime with no
     fallback). Free tiers trail paid."""
     backend_candidates = (
         ("tavily", _has_env("TAVILY_API_KEY")), ("perplexity", _has_env("PERPLEXITY_API_KEY")),
@@ -156,39 +156,39 @@ def _keyless_backend() -> Optional[str]:
 
 
 def _managed_web_search() -> bool:
-    """True when web_search is on the managed Nous route: the stored ``nous`` selection (a
-    ``web.search_backend: nous`` pin, else the shared one), or a never-configured install whose
+    """True when web_search is on the managed Thor route: the stored ``thor`` selection (a
+    ``web.search_backend: thor`` pin, else the shared one), or a never-configured install whose
     autodetect lands on the gateway — the entitled Firecrawl gateway, or free Perplexity fast search
-    for any Nous identity when nothing else is configured (search-only: the extract ladder is
+    for any Thor identity when nothing else is configured (search-only: the extract ladder is
     untouched). A stored vendor selection never is."""
     search_pin = _configured_backend("search_backend")
     if search_pin:
-        return search_pin == NOUS_MANAGED_PROVIDER
+        return search_pin == THOR_PORTAL_MANAGED_PROVIDER
     selected = read_selection("web")
     if selected is not None:
-        return selected == NOUS_MANAGED_PROVIDER
+        return selected == THOR_PORTAL_MANAGED_PROVIDER
     backend = _autodetect_backend()
     if backend == "firecrawl":
         return not (_has_env("FIRECRAWL_API_KEY") or _has_env("FIRECRAWL_API_URL")) and _is_tool_gateway_ready()
-    from tools.managed_tool_gateway import peek_nous_access_token, resolve_free_search_gateway
-    return backend is None and resolve_free_search_gateway(token_reader=peek_nous_access_token) is not None
+    from tools.managed_tool_gateway import peek_thor_access_token, resolve_free_search_gateway
+    return backend is None and resolve_free_search_gateway(token_reader=peek_thor_access_token) is not None
 
 
 def _get_search_backend() -> str:
     """Backend for web_search: ``web.search_backend`` (strict, no probe) > ``web.backend`` > autodetect.
-    The managed Nous route (a ``nous`` pin or shared selection) serves search from Perplexity (extract
+    The managed Thor route (a ``thor`` pin or shared selection) serves search from Perplexity (extract
     stays on Firecrawl); managed Firecrawl is the per-call fallback, see ``_memoized_search``."""
     pin = _configured_backend("search_backend")
-    if pin and pin != NOUS_MANAGED_PROVIDER:
+    if pin and pin != THOR_PORTAL_MANAGED_PROVIDER:
         return pin
     return "perplexity" if _managed_web_search() else _get_backend()
 
 
 def _get_extract_backend() -> str:
     """Backend for web_extract: ``web.extract_backend`` (strict, no probe) > ``web.backend`` > autodetect.
-    A ``nous`` pin is managed Firecrawl; the client picks the gateway route for that capability."""
+    A ``thor`` pin is managed Firecrawl; the client picks the gateway route for that capability."""
     pin = _configured_backend("extract_backend")
-    return "firecrawl" if pin == NOUS_MANAGED_PROVIDER else pin or _get_backend()
+    return "firecrawl" if pin == THOR_PORTAL_MANAGED_PROVIDER else pin or _get_backend()
 
 
 def _ddgs_package_importable() -> bool:
@@ -252,7 +252,7 @@ def _is_backend_available(backend: str) -> bool:
 # check_firecrawl_api_key() all live in plugins.web.firecrawl.provider.
 def _web_requires_env() -> list[str]:
     """Tool-registry metadata env vars for the web backends. Gateway vars are always listed: gating them
-    on ``managed_nous_tools_enabled()`` cost a synchronous portal HTTP refresh at every CLI startup.
+    on ``managed_thor_tools_enabled()`` cost a synchrothor portal HTTP refresh at every CLI startup.
     Contract: set var -> tool sees it; extras are harmless for the not-logged-in."""
     return [
         "EXA_API_KEY", "PARALLEL_API_KEY", "TAVILY_API_KEY", "PERPLEXITY_API_KEY", "KEENABLE_API_KEY", "FIRECRAWL_API_KEY",

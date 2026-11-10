@@ -189,7 +189,7 @@ the gallery. There is no separate listing to maintain.
    (`thor plugins validate --install-deps` is what CI runs).
 15. **No skins or forks of bundled plugins.** A change to a bundled plugin is a
    PR against `thor-agent`, not a competing listing, and vendor-lookalike skins
-   are not listed under Nous branding.
+   are not listed under Thor branding.
 16. **One listing per plugin lineage.** A fork of a listed community plugin is
    listed only when it is materially different from the original: a different
    transport or architecture, or capability the original lacks and its author
@@ -219,7 +219,7 @@ the gallery. There is no separate listing to maintain.
 18. **Password managers come from their vendor.** A plugin that registers a
    `browser_vault` login backend (`ctx.register_login_backend`) is listed only at
    `tier: verified`, submitted from the password-manager vendor's own repository
-   by that vendor, or at `tier: official` when Nous maintains it. Community-tier,
+   by that vendor, or at `tier: official` when Thor maintains it. Community-tier,
    fork and third-party listings of a login backend are declined. Thor enforces
    the same rule when the plugin loads: a login backend is accepted only from a
    plugin bundled with Thor or installed from this catalog at `verified` or

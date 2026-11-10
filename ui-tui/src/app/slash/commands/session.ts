@@ -820,7 +820,7 @@ export const sessionCommands: SlashCommand[] = [
   },
 
   {
-    help: 'session usage + Nous credits',
+    help: 'session usage + Thor credits',
     name: 'usage',
     run: (_arg, ctx) => {
       if (ctx.sid && ctx.gateway.gw?.isCanonical) {
@@ -843,7 +843,7 @@ export const sessionCommands: SlashCommand[] = [
           })
         }
 
-        // Nous balance block is agent-independent (a portal fetch), so it shows
+        // Thor balance block is agent-independent (a portal fetch), so it shows
         // even with zero API calls or on a resumed session. Prefer the shared
         // dollar usage model (two-bar view, dollars-only); fall back to the
         // legacy text lines only when the model is unavailable.
@@ -897,7 +897,7 @@ export const sessionCommands: SlashCommand[] = [
 
             showedBalance = windowLines.length > 0
           } else if (creditsLines.length) {
-            ctx.transcript.panel(t('slashCmd.session.usage.nousBalanceTitle'), [{ text: creditsLines.join('\n') }])
+            ctx.transcript.panel(t('slashCmd.session.usage.thorBalanceTitle'), [{ text: creditsLines.join('\n') }])
             showedBalance = true
           }
         }

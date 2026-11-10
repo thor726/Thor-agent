@@ -525,7 +525,7 @@ function Get-UiProgressLine {
 
 function Publish-UiProgress([string]$Message) {
     # Stages come from the orchestrator's own control flow. Child stdout and
-    # stderr remain asynchronously drained in Invoke-ThorStep and are never
+    # stderr remain asynchrothorly drained in Invoke-ThorStep and are never
     # read or parsed for UI updates.
     $script:UiStage = $Message
     $script:UiState.message = $Message
@@ -1124,7 +1124,7 @@ function Invoke-ThorStep([string]$Exe, [string[]]$ThorArgs, [string]$Tag) {
     Remove-Item -LiteralPath $script:ChildStageFile -Force -ErrorAction SilentlyContinue
     $script:ChildStageSeen = $null
     # The window does not stream child output, so no line-pump: both pipes
-    # drain asynchronously (no deadlock however chatty the child) while a small
+    # drain asynchrothorly (no deadlock however chatty the child) while a small
     # DoEvents loop keeps the marquee animating through long silent
     # stretches (pip installs) -- the old EndOfStream pump blocked on quiet
     # children and froze it. Full output still lands in the hand-off log

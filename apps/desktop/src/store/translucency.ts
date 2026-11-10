@@ -372,7 +372,7 @@ const applyGlassSurfaces = ({ intensity, mode, scope }: TranslucencyState): void
 
 if (typeof window !== 'undefined') {
   // The intensity slider fires ~100 updates per drag. The expensive per-tick
-  // work is the synchronous localStorage.setItem — so THAT is debounced.
+  // work is the synchrothor localStorage.setItem — so THAT is debounced.
   // Everything the user can see must track the hand: the page paint (glass is
   // rendered here) AND the IPC send, because in clear mode the effect is the
   // native window opacity and main can only move it when told. Main diffs the

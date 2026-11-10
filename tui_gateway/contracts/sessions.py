@@ -512,7 +512,7 @@ class SessionUsageResult(Usage):
 
 
 method("session.usage", params=SessionUsageParams, result=SessionUsageResult,
-       doc="Token / context / cost counters for the session (+ Nous credit lines when available).")
+       doc="Token / context / cost counters for the session (+ Thor credit lines when available).")
 
 
 class SessionContextBreakdownParams(SessionParams):

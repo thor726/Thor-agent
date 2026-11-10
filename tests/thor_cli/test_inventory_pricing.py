@@ -1,7 +1,7 @@
 """Tests for inventory._apply_pricing — the pricing/tier enrichment that
 
 feeds the desktop GUI model picker (and onboarding) so it can show $/Mtok
-columns + Free/Pro badges and gate paid models on free Nous accounts, the
+columns + Free/Pro badges and gate paid models on free Thor accounts, the
 same way the `thor model` CLI picker does.
 """
 
@@ -18,9 +18,9 @@ from thor_cli import models_pricing
 
 def _patch_pricing(monkeypatch, *, free_tier, pricing, unavailable=None):
     monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda slug, **kw: pricing.get(slug, {}))
-    monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda *, force_fresh=False: free_tier)
+    monkeypatch.setattr(models_mod, "check_thor_free_tier", lambda *, force_fresh=False: free_tier)
     monkeypatch.setattr(
-        models_mod, "partition_nous_models_by_tier",
+        models_mod, "partition_thor_models_by_tier",
         lambda ids, pr, free_tier: (
             [m for m in ids if m not in (unavailable or [])],
             list(unavailable or []),
@@ -55,7 +55,7 @@ def test_apply_pricing_free_models_get_flat_100_percent_sale(monkeypatch):
         monkeypatch,
         free_tier=False,
         pricing={
-            "nous": {
+            "thor": {
                 "a/free": {
                     "prompt": "0",
                     "completion": "0",
@@ -71,7 +71,7 @@ def test_apply_pricing_free_models_get_flat_100_percent_sale(monkeypatch):
             }
         },
     )
-    rows = [{"slug": "nous", "models": ["a/free", "b/natively-free"]}]
+    rows = [{"slug": "thor", "models": ["a/free", "b/natively-free"]}]
     inv._apply_pricing(rows)
     free = rows[0]["pricing"]["a/free"]
     assert free["free"] is True
@@ -91,7 +91,7 @@ def test_apply_pricing_omits_sale_when_original_not_cheaper(monkeypatch):
         monkeypatch,
         free_tier=False,
         pricing={
-            "nous": {
+            "thor": {
                 "a/eq": {
                     "prompt": "0.000002",
                     "completion": "0.00001",
@@ -103,7 +103,7 @@ def test_apply_pricing_omits_sale_when_original_not_cheaper(monkeypatch):
             }
         },
     )
-    rows = [{"slug": "nous", "models": ["a/eq"]}]
+    rows = [{"slug": "thor", "models": ["a/eq"]}]
     inv._apply_pricing(rows)
     assert "discount_percent" not in rows[0]["pricing"]["a/eq"]
 
@@ -111,17 +111,17 @@ def test_apply_pricing_omits_sale_when_original_not_cheaper(monkeypatch):
 def test_apply_pricing_window_plan_drops_prices_and_stamps_plan_usage(monkeypatch):
     _patch_pricing(
         monkeypatch, free_tier=False,
-        pricing={"nous": {"a/m": {"prompt": "0.000001", "completion": "0.000005", "usage_level": "medium"}}},
+        pricing={"thor": {"a/m": {"prompt": "0.000001", "completion": "0.000005", "usage_level": "medium"}}},
     )
     monkeypatch.setattr(
-        "thor_cli.model_picker_usage.nous_picker_usage",
+        "thor_cli.model_picker_usage.thor_picker_usage",
         lambda **_kw: __import__("thor_cli.model_picker_usage", fromlist=["picker_usage_from_account"]).picker_usage_from_account(
             {"logged_in": True, "subscription": {"plan": "Window Plan"},
              "usage_window": usage_window(day_used_bp=1000, week_used_bp=500, top_tier_used_bp=0,
                                           day_resets_at_ms=1, week_resets_at_ms=2)}
         ),
     )
-    rows = [{"slug": "nous", "models": ["a/m"]}]
+    rows = [{"slug": "thor", "models": ["a/m"]}]
     inv._apply_pricing(rows)
     assert "pricing" not in rows[0]
     assert rows[0]["plan_usage"]["kind"] == "usage_window"
@@ -134,17 +134,17 @@ def test_apply_pricing_window_plan_drops_prices_and_stamps_plan_usage(monkeypatc
 def test_apply_pricing_credit_grant_keeps_prices_and_stamps_plan_usage(monkeypatch):
     _patch_pricing(
         monkeypatch, free_tier=False,
-        pricing={"nous": {"a/m": {"prompt": "0.000001", "completion": "0.000005"}}},
+        pricing={"thor": {"a/m": {"prompt": "0.000001", "completion": "0.000005"}}},
     )
     monkeypatch.setattr(
-        "thor_cli.model_picker_usage.nous_picker_usage",
+        "thor_cli.model_picker_usage.thor_picker_usage",
         lambda **_kw: __import__("thor_cli.model_picker_usage", fromlist=["picker_usage_from_account"]).picker_usage_from_account(
             {"logged_in": True,
              "subscription": {"plan": "Credit Plan", "monthly_credits": 20, "credits_remaining": 8},
              "paid_service_access_info": {"subscription_credits_remaining": 8}}
         ),
     )
-    rows = [{"slug": "nous", "models": ["a/m"]}]
+    rows = [{"slug": "thor", "models": ["a/m"]}]
     inv._apply_pricing(rows)
     assert rows[0]["pricing"]["a/m"]["input"] == "$1.00"
     # A credit-grant row is exactly main's: prices, no plan_usage.
@@ -208,12 +208,12 @@ def test_model_options_cold_pricing_fetch_runs_off_the_request_path(monkeypatch)
             thread.join(timeout=2)
 
 
-def test_cold_nous_entitlement_keeps_models_unselectable(monkeypatch):
+def test_cold_thor_entitlement_keeps_models_unselectable(monkeypatch):
     """A cold nonblocking response must not expose paid models fail-open."""
     monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda *_args, **_kwargs: {}
     )
-    monkeypatch.setattr(models_mod, "get_cached_nous_free_tier", lambda: None)
-    rows = [{"slug": "nous", "models": ["free/model", "paid/model"]}]
+    monkeypatch.setattr(models_mod, "get_cached_thor_free_tier", lambda: None)
+    rows = [{"slug": "thor", "models": ["free/model", "paid/model"]}]
 
     inv._apply_pricing(rows, cached_only=True)
 
@@ -223,9 +223,9 @@ def test_cold_nous_entitlement_keeps_models_unselectable(monkeypatch):
     # surface must say why, without clobbering an existing auth warning.
     assert "entitlement" in rows[0]["warning"]
 
-    rows = [{"slug": "nous", "models": ["m"], "warning": "paste NOUS_API_KEY to activate"}]
+    rows = [{"slug": "thor", "models": ["m"], "warning": "paste THOR_PORTAL_API_KEY to activate"}]
     inv._apply_pricing(rows, cached_only=True)
-    assert rows[0]["warning"] == "paste NOUS_API_KEY to activate"
+    assert rows[0]["warning"] == "paste THOR_PORTAL_API_KEY to activate"
 
 
 def test_prewarm_preserves_context_and_runs_once_per_profile(tmp_path, monkeypatch):
@@ -340,7 +340,7 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
     monkeypatch.setattr(models_pricing, "_pricing_cache", {})
     monkeypatch.setattr(models_pricing, "_pricing_cache_retry_after", {})
     monkeypatch.setattr(models_pricing, "_pricing_provider_cache_keys", {})
-    monkeypatch.setattr(models_pricing, "_resolve_nous_pricing_credentials",
+    monkeypatch.setattr(models_pricing, "_resolve_thor_pricing_credentials",
         lambda: ("", active_endpoint["value"]),
     )
 
@@ -354,7 +354,7 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
     monkeypatch.setattr(
         inv,
         "_apply_pricing",
-        lambda _rows: models_pricing.get_pricing_for_provider("nous"),
+        lambda _rows: models_pricing.get_pricing_for_provider("thor"),
     )
 
     token = set_thor_home_override(str(tmp_path / "profile"))
@@ -362,8 +362,8 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
     try:
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["a/model"]}],
-                current_provider="nous",
+                [{"slug": "thor", "models": ["a/model"]}],
+                current_provider="thor",
                 current_base_url=endpoint_a,
             )
         )
@@ -372,8 +372,8 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
         active_endpoint["value"] = endpoint_b
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["b/model"]}],
-                current_provider="nous",
+                [{"slug": "thor", "models": ["b/model"]}],
+                current_provider="thor",
                 current_base_url=endpoint_b,
             )
         )
@@ -383,7 +383,7 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
         threads[1].join(timeout=2)
         assert not threads[1].is_alive()
         assert models_pricing.get_pricing_for_provider(
-            "nous", cached_only=True
+            "thor", cached_only=True
         ) == expected[endpoint_b]
     finally:
         release_a.set()
@@ -393,8 +393,8 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
         reset_thor_home_override(token)
 
 
-def test_prewarm_nous_rotation_when_another_provider_is_current(tmp_path, monkeypatch):
-    """Nous endpoint identity must not depend on Nous being selected."""
+def test_prewarm_thor_rotation_when_another_provider_is_current(tmp_path, monkeypatch):
+    """Thor endpoint identity must not depend on Thor being selected."""
     from thor_constants import (
         reset_thor_home_override,
         set_thor_home_override,
@@ -413,10 +413,10 @@ def test_prewarm_nous_rotation_when_another_provider_is_current(tmp_path, monkey
     monkeypatch.setattr(models_pricing, "_pricing_cache", {})
     monkeypatch.setattr(models_pricing, "_pricing_cache_retry_after", {})
     monkeypatch.setattr(models_pricing, "_pricing_provider_cache_keys", {})
-    monkeypatch.setattr(models_pricing, "get_cached_nous_inference_base_url",
+    monkeypatch.setattr(models_pricing, "get_cached_thor_inference_base_url",
         lambda: active_endpoint["value"],
     )
-    monkeypatch.setattr(models_pricing, "_resolve_nous_pricing_credentials",
+    monkeypatch.setattr(models_pricing, "_resolve_thor_pricing_credentials",
         lambda: ("", active_endpoint["value"]),
     )
 
@@ -430,7 +430,7 @@ def test_prewarm_nous_rotation_when_another_provider_is_current(tmp_path, monkey
     monkeypatch.setattr(
         inv,
         "_apply_pricing",
-        lambda _rows: models_pricing.get_pricing_for_provider("nous"),
+        lambda _rows: models_pricing.get_pricing_for_provider("thor"),
     )
 
     token = set_thor_home_override(str(tmp_path / "profile"))
@@ -438,7 +438,7 @@ def test_prewarm_nous_rotation_when_another_provider_is_current(tmp_path, monkey
     try:
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["a/model"]}],
+                [{"slug": "thor", "models": ["a/model"]}],
                 current_provider="openrouter",
                 current_base_url="https://openrouter.ai/api/v1",
             )
@@ -448,7 +448,7 @@ def test_prewarm_nous_rotation_when_another_provider_is_current(tmp_path, monkey
         active_endpoint["value"] = endpoint_b
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["b/model"]}],
+                [{"slug": "thor", "models": ["b/model"]}],
                 current_provider="openrouter",
                 current_base_url="https://openrouter.ai/api/v1",
             )
@@ -459,7 +459,7 @@ def test_prewarm_nous_rotation_when_another_provider_is_current(tmp_path, monkey
         threads[1].join(timeout=2)
         assert not threads[1].is_alive()
         assert models_pricing.get_pricing_for_provider(
-            "nous", cached_only=True
+            "thor", cached_only=True
         ) == expected[endpoint_b]
     finally:
         release_a.set()
@@ -632,7 +632,7 @@ def test_cached_only_dynamic_pricing_is_profile_scoped(tmp_path, monkeypatch):
     monkeypatch.setattr(models_pricing, "_pricing_cache_retry_after", {})
     monkeypatch.setattr(models_pricing, "_pricing_provider_cache_keys", {})
     active_endpoint = {"value": endpoint_a}
-    monkeypatch.setattr(models_pricing, "_resolve_nous_pricing_credentials",
+    monkeypatch.setattr(models_pricing, "_resolve_thor_pricing_credentials",
         lambda: ("", active_endpoint["value"]),
     )
     monkeypatch.setattr(models_pricing, "fetch_models_with_pricing",
@@ -644,7 +644,7 @@ def test_cached_only_dynamic_pricing_is_profile_scoped(tmp_path, monkeypatch):
         active_endpoint["value"] = endpoint
         try:
             return models_pricing.get_pricing_for_provider(
-                "nous", cached_only=cached_only
+                "thor", cached_only=cached_only
             )
         finally:
             reset_thor_home_override(token)

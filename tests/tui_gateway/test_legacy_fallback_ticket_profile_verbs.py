@@ -2,7 +2,7 @@
 
 Only ``@_profile_scoped`` handlers and two hand-fixed ones read the connection's profile; the
 account connector path (``_profile_home(request.profile)`` with no ``profile``) and billing (which
-ignores ``profile`` and resolves the Nous token through the runtime scope) ran in the launch
+ignores ``profile`` and resolves the Thor token through the runtime scope) ran in the launch
 profile, so bee's Ink connected accounts and charged top-ups on default's portal account.
 """
 import threading
@@ -34,7 +34,7 @@ def _call(server, profile_id, method, params):
 
 
 def test_secondary_ticket_runs_connectors_and_billing_in_its_own_profile(homes, monkeypatch):
-    import thor_cli.nous_billing
+    import thor_cli.thor_billing
     import tools.connectors
     import tools.connectors.managed
     import tools.managed_tool_gateway
@@ -46,10 +46,10 @@ def test_secondary_ticket_runs_connectors_and_billing_in_its_own_profile(homes, 
         seen.append((label, Path(str(get_thor_home())).resolve()))
 
     monkeypatch.setattr(tools.connectors, 'connectors_available', lambda *a, **k: True)
-    monkeypatch.setattr(tools.managed_tool_gateway, 'read_nous_access_token', lambda: 'token')
+    monkeypatch.setattr(tools.managed_tool_gateway, 'read_thor_access_token', lambda: 'token')
     monkeypatch.setattr(tools.connectors.managed, 'managed_client',
                         lambda **_: types.SimpleNamespace(list_connectors=lambda: rec('list') or []))
-    monkeypatch.setattr(thor_cli.nous_billing, 'post_charge', lambda **k: rec('charge') or {'chargeId': 'c'})
+    monkeypatch.setattr(thor_cli.thor_billing, 'post_charge', lambda **k: rec('charge') or {'chargeId': 'c'})
     for method, params in (('connectors.list', {'owner': {'type': 'account'}}), ('billing.charge', {'amount_usd': 5})):
         _call(server, bee, method, params)
     assert {label for label, _ in seen} == {'list', 'charge'}, seen

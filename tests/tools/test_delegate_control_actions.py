@@ -4,7 +4,7 @@ Covers the control plane added to delegate_task: action='list' /
 'steer' / 'stop' resolve against the module-level _active_subagents
 registry, scoped by the _delegate_parent_ref ownership chain so a
 conversation can only control its own spawn tree. Also pins the two
-integration contracts: control actions are synchronous (never
+integration contracts: control actions are synchrothor (never
 backgrounded) and never consume the per-turn subagent spawn cap.
 """
 
@@ -248,7 +248,7 @@ def test_delegate_task_requires_parent_agent_for_control():
 
 def test_empty_tasks_array_with_goal_is_single_task_not_batch_error():
     """Small models emit tasks=[] alongside goal; that must not trip a
-    batch-count gate (observed live with gpt-5.4-mini on Nous Portal) —
+    batch-count gate (observed live with gpt-5.4-mini on Thor Portal) —
     it falls through to the no-tasks teaching error."""
     out = delegate_task(tasks=[], goal="", parent_agent=_StubParent())
     assert "No tasks provided" in out

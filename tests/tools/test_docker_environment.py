@@ -1266,7 +1266,7 @@ def test_docker_run_timeout_cleans_up_orphaned_container(monkeypatch):
 
 class _FakeThread:
     """Stand-in for threading.Thread that captures target/args and calls
-    target() synchronously when .start() runs, so cleanup behavior is
+    target() synchrothorly when .start() runs, so cleanup behavior is
     observable without actually backgrounding subprocess calls."""
 
     def __init__(self, target=None, daemon=None, name=None):

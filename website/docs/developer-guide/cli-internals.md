@@ -112,11 +112,11 @@ weeks, months and years. The combined timeout is capped below the native signed
 unit limits cannot overflow subprocess polling. Zero/unknown/infinite phase
 limits use the bounded fallback. This does not change active-turn drain settings.
 
-## Nous sign-in
+## Thor sign-in
 
-Every Nous sign-in is the plain device-code login. Sign-in completion is one function,
+Every Thor sign-in is the plain device-code login. Sign-in completion is one function,
 `settle_after_upgrade`, called once per completion: it moves a config on the welcome route to the
-account's host and the tier's recommended default (`models.recommended_nous_default_model`, shared
+account's host and the tier's recommended default (`models.recommended_thor_default_model`, shared
 with `GET /api/model/recommended-default`).
 
 The shared flow, states, and copy live in `anon_sign_in.py`; CLI rendering lives in
@@ -143,26 +143,26 @@ again (the desktop's "connect another account"); otherwise a signed-in install g
 `AlreadySignedIn` before any network. `upgrade_guest` (`thor auth upgrade`), the CLI and TUI
 `/login`, the gateway `/login` and the desktop start route are renderers over it; a surface that
 needs the cancel check and the save to be atomic passes `persist_guard`. `thor model` and
-`thor auth add nous` keep `_login_nous` (it carries `--portal-url`, `--ca-bundle`, `--insecure`
+`thor auth add thor` keep `_login_thor` (it carries `--portal-url`, `--ca-bundle`, `--insecure`
 and the shared-store import); that is the same plain device login, and it prints the handoff result
-the same way. Every sign-in that saves an account (`run_sign_in`, `_login_nous`, `thor auth add
-nous`, the billing step-up, the tool-setup login) calls `settle_after_upgrade` itself once its locks
+the same way. Every sign-in that saves an account (`run_sign_in`, `_login_thor`, `thor auth add
+thor`, the billing step-up, the tool-setup login) calls `settle_after_upgrade` itself once its locks
 are released; the handoff runner never settles.
 
 ### Guest handoff after a sign-in
 
-When any writer saves a Nous account over a free-tier identity, `thor_cli/guest_handoff.py` hands
+When any writer saves a Thor account over a free-tier identity, `thor_cli/guest_handoff.py` hands
 that identity's connected apps to the account: `POST /api/anonymous/claim {"token": "<anon_...>"}`
 with the account's own Bearer token. Nothing asks the user first; the result is shown afterwards
-(`thor auth status nous`; the desktop reads it from the sign-in poll's `handoff_status` and, while a
-move is still retrying, from the `GET /api/providers/oauth/nous/handoff?since=&wait=` long-poll, which
+(`thor auth status thor`; the desktop reads it from the sign-in poll's `handoff_status` and, while a
+move is still retrying, from the `GET /api/providers/oauth/thor/handoff?since=&wait=` long-poll, which
 answers once the record's `updated_at` changes). Two halves:
 
 - `note_replacement` runs at the two lowest write seams (`auth._store_provider_state` and
-  `auth_nous._write_shared_nous_state`) under the caller's auth-store locks and only writes a pending
-  record. Records live in `guest_handoff.json` beside the shared Nous store, keyed by a hash of the
+  `auth_thor._write_shared_thor_state`) under the caller's auth-store locks and only writes a pending
+  record. Records live in `guest_handoff.json` beside the shared Thor store, keyed by a hash of the
   `anon_` credential, so profiles sharing one free-tier identity share one record and one claim.
-- Only a sign-in changes which identity the shared store holds. Every `_write_shared_nous_state`
+- Only a sign-in changes which identity the shared store holds. Every `_write_shared_thor_state`
   caller declares `renewal`: a token refresh (`renewal=True`) never replaces another identity there
   (identity = the guest's `anon_` credential, or the account's JWT `sub`), so a refresh of one
   profile's account never replaces a guest another profile minted. That refresh is kept beside the
@@ -173,8 +173,8 @@ answers once the record's `updated_at` changes). Two halves:
   its save (`run_sign_in` after its `persist_guard` is released), and so do a free-tier reconcile,
   `thor auth status` and `thor auth upgrade`. It only moves apps; config completion
   (`settle_after_upgrade`) stays with the sign-in that saved the account.
-- A move a transient error left retrying is finished by a retry worker that every long-lived Nous
-  process starts (`start_nous_auth_keepalive` starts it, guest or not); each tick drains the
+- A move a transient error left retrying is finished by a retry worker that every long-lived Thor
+  process starts (`start_thor_auth_keepalive` starts it, guest or not); each tick drains the
   process's own profile.
 - Each attempt is counted and the record leased (not due for about 30 s) in one locked write before
   the request leaves, so a lost answer still counts and two runs never send the same record.

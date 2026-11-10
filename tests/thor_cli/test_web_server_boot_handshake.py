@@ -35,7 +35,7 @@ def _make_slow_drain(seconds: float):
     return _slow
 
 
-def test_lifespan_warmup_is_synchronous(monkeypatch):
+def test_lifespan_warmup_is_synchrothor(monkeypatch):
     """_warm_gateway_module must finish on the event-loop thread before the
     lifespan yields (#73083/#73291). On Windows + Python 3.11 the heavy import
     holds the GIL, so moving it to run_in_executor / a background task froze

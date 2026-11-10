@@ -13,7 +13,7 @@ import { resetBackgroundPollingGuardAfterRebind } from './session-gone-latch'
  * (store/profile resolveNewChatOwnerRoute) and carried through session.create,
  * the owner hint, the optimistic row, the runtime binding, the foreground hold
  * and every later session-scoped RPC. Never re-derived from ambient state after
- * an asynchronous activation: connection/profile EQUALITY is not enough — the
+ * an asynchrothor activation: connection/profile EQUALITY is not enough — the
  * runtime lives on one concrete WebSocket, and only this route names the
  * registry entry that holds it.
  */

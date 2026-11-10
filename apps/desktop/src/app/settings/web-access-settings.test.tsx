@@ -41,7 +41,7 @@ const OFF: WebAccessStatus = {
   gateway: { reason: null, state: 'off', url: null },
   lan_address: '192.168.1.50',
   mode: null,
-  nous_signed_in: true,
+  thor_signed_in: true,
   port: 9120,
   public_url: ''
 }
@@ -80,8 +80,8 @@ afterEach(() => {
 })
 
 describe('WebAccessSettings', () => {
-  it('offers Start only with a Nous account to sign in with', async () => {
-    const signedOut = renderPane({ ...OFF, nous_signed_in: false })
+  it('offers Start only with a Thor account to sign in with', async () => {
+    const signedOut = renderPane({ ...OFF, thor_signed_in: false })
 
     expect((await screen.findByRole('button', { name: 'Start' })).hasAttribute('disabled')).toBe(true)
     signedOut.unmount()
@@ -416,7 +416,7 @@ describe('WebAccessSettings while Start runs', () => {
     })
     vi.advanceTimersByTime(1000)
 
-    expect(await screen.findByText('Setting up Nous sign-in for this address.')).toBeTruthy()
+    expect(await screen.findByText('Setting up Thor sign-in for this address.')).toBeTruthy()
   })
 
   it('shows a Start already running when the pane opens during it, and its result when it ends', async () => {

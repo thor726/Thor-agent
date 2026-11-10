@@ -34,7 +34,7 @@ class SetupRecord:
     provider_configured: bool      # some provider can carry inference (free tier included)
     inference_provider: str        # ``resolve_provider("auto")``'s answer, "" when nothing resolves
     free_tier_account: bool        # the identity that exists is a guest that carries inference here
-    has_identity: bool             # a Nous identity (free tier or account) is on disk
+    has_identity: bool             # a Thor identity (free tier or account) is on disk
     other_providers: bool          # the inventory found something usable BESIDES the free tier
     error: str = ""                # why the last trial claim failed, when it did; "" otherwise
     # The mint memo's verdict, verbatim (``anon_auth.MintFailure.as_payload``):
@@ -45,7 +45,7 @@ class SetupRecord:
 
     @property
     def free_tier_route(self) -> bool:
-        return self.free_tier_account and self.inference_provider == "nous"
+        return self.free_tier_account and self.inference_provider == "thor"
 
     def as_payload(self) -> dict[str, Any]:
         # The broadcast carries the failure block flat, the same shape ``setup.status`` spreads,
@@ -156,7 +156,7 @@ def _inventory_other_providers() -> bool:
     from thor_cli.auth import resolve_provider
     _inventory_stamp = _config_stamp()
     try:
-        return resolve_provider("auto", skip_free_tier=True) != "nous"
+        return resolve_provider("auto", skip_free_tier=True) != "thor"
     except Exception as exc:
         logger.debug("free tier bootstrap: nothing else carries inference (%s)", exc)
         return False
@@ -174,7 +174,7 @@ def _build_record(*, other: bool) -> SetupRecord:
     """One inventory pass into a record. Reads only: no identity is created here."""
     from thor_cli import anon_auth
 
-    state: Optional[dict[str, Any]] = anon_auth.current_nous_state()
+    state: Optional[dict[str, Any]] = anon_auth.current_thor_state()
     failure: dict[str, Any] = {} if state else (anon_auth.last_mint_failure() or {})
     free_tier_account = anon_auth.free_inference_active(state) if state else False
     return SetupRecord(

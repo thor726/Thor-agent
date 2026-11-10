@@ -15,7 +15,7 @@ const readFileText = vi.fn<(path: string) => Promise<{ text: string }>>()
 
 const ORIGIN = {
   catalogName: 'accent-picker',
-  repo: 'https://github.com/NousResearch/thor-official-plugins',
+  repo: 'https://github.com/dwisetyabudi15581/thor-official-plugins',
   sha: 'a'.repeat(40)
 }
 

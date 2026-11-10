@@ -910,9 +910,9 @@ def test_write_credential_pool_preserves_known_provider_owned_oauth_state(tmp_pa
 
     from thor_cli.auth import write_credential_pool
 
-    write_credential_pool("nous", [
+    write_credential_pool("thor", [
         {
-            "id": "nous-device",
+            "id": "thor-device",
             "label": "device-code",
             "auth_type": "oauth",
             "priority": 0,
@@ -923,7 +923,7 @@ def test_write_credential_pool_preserves_known_provider_owned_oauth_state(tmp_pa
         }
     ])
 
-    persisted = json.loads((tmp_path / "thor" / "auth.json").read_text())["credential_pool"]["nous"][0]
+    persisted = json.loads((tmp_path / "thor" / "auth.json").read_text())["credential_pool"]["thor"][0]
     assert persisted["access_token"] == sentinel
     assert persisted["refresh_token"] == f"refresh-{sentinel}"
     assert persisted["agent_key"] == f"agent-{sentinel}"
@@ -993,7 +993,7 @@ def test_load_pool_falls_back_to_os_environ_when_dotenv_empty(tmp_path, monkeypa
 
 
 
-def test_load_pool_mirrors_nous_invoke_jwt_agent_key_runtime_api_key(tmp_path, monkeypatch):
+def test_load_pool_mirrors_thor_invoke_jwt_agent_key_runtime_api_key(tmp_path, monkeypatch):
     monkeypatch.setenv("THOR_HOME", str(tmp_path / "thor"))
     expires_at = datetime.fromtimestamp(time.time() + 3600, tz=UTC).isoformat()
     token = _jwt_with_claims({
@@ -1005,9 +1005,9 @@ def test_load_pool_mirrors_nous_invoke_jwt_agent_key_runtime_api_key(tmp_path, m
         tmp_path,
         {
             "version": 1,
-            "active_provider": "nous",
+            "active_provider": "thor",
             "providers": {
-                "nous": {
+                "thor": {
                     "portal_base_url": "https://portal.example.com",
                     "inference_base_url": "https://inference.example.com/v1",
                     "client_id": "thor-cli",
@@ -1025,7 +1025,7 @@ def test_load_pool_mirrors_nous_invoke_jwt_agent_key_runtime_api_key(tmp_path, m
 
     from agent.credential_pool import load_pool
 
-    pool = load_pool("nous")
+    pool = load_pool("thor")
     entry = pool.select()
 
     assert entry is not None
@@ -1034,17 +1034,17 @@ def test_load_pool_mirrors_nous_invoke_jwt_agent_key_runtime_api_key(tmp_path, m
     assert entry.runtime_api_key == token
 
     auth_payload = json.loads((tmp_path / "thor" / "auth.json").read_text())
-    pool_entry = auth_payload["credential_pool"]["nous"][0]
+    pool_entry = auth_payload["credential_pool"]["thor"][0]
     assert pool_entry["agent_key"] == token
     assert pool_entry["agent_key_expires_at"] == expires_at
 
 
-def test_nous_runtime_api_key_rejects_opaque_agent_key():
+def test_thor_runtime_api_key_rejects_opaque_agent_key():
     from agent.credential_pool import PooledCredential
 
     entry = PooledCredential(
-        provider="nous",
-        id="nous-opaque",
+        provider="thor",
+        id="thor-opaque",
         label="opaque",
         auth_type="oauth",
         priority=0,
@@ -1434,11 +1434,11 @@ def test_load_pool_does_not_seed_qwen_oauth_when_no_token(tmp_path, monkeypatch)
     assert pool.entries() == []
 
 
-def test_nous_seed_from_singletons_preserves_obtained_at_timestamps(tmp_path, monkeypatch):
+def test_thor_seed_from_singletons_preserves_obtained_at_timestamps(tmp_path, monkeypatch):
     """Regression test for #15099 secondary issue.
 
     When ``_seed_from_singletons`` materialises a device_code pool entry from
-    the ``providers.nous`` singleton, it must carry the mint/refresh
+    the ``providers.thor`` singleton, it must carry the mint/refresh
     timestamps (``obtained_at``, ``agent_key_obtained_at``, ``expires_in``,
     etc.) into the pool entry.  Without them, freshness-sensitive consumers
     (self-heal hooks, pool pruning by age) treat just-minted credentials as
@@ -1450,18 +1450,18 @@ def test_nous_seed_from_singletons_preserves_obtained_at_timestamps(tmp_path, mo
         {
             "version": 1,
             "providers": {
-                "nous": {
+                "thor": {
                     "access_token": "at_XXXXXXXX",
                     "refresh_token": "rt_YYYYYYYY",
                     "client_id": "thor-cli",
-                    "portal_base_url": "https://portal.nousresearch.com",
-                    "inference_base_url": "https://inference.nousresearch.com/v1",
+                    "portal_base_url": "https://portal.thor-agent.local",
+                    "inference_base_url": "https://inference.thor-agent.local/v1",
                     "token_type": "Bearer",
                     "scope": "openid profile",
                     "obtained_at": "2026-04-24T10:00:00+00:00",
                     "expires_at": "2026-04-24T11:00:00+00:00",
                     "expires_in": 3600,
-                    "agent_key": "sk-nous-AAAA",
+                    "agent_key": "sk-thor-AAAA",
                     "agent_key_id": "ak_123",
                     "agent_key_expires_at": "2026-04-25T10:00:00+00:00",
                     "agent_key_expires_in": 86400,
@@ -1475,7 +1475,7 @@ def test_nous_seed_from_singletons_preserves_obtained_at_timestamps(tmp_path, mo
 
     from agent.credential_pool import load_pool
 
-    pool = load_pool("nous")
+    pool = load_pool("thor")
     entries = pool.entries()
 
     device_entries = [e for e in entries if e.source == "device_code"]
@@ -1486,7 +1486,7 @@ def test_nous_seed_from_singletons_preserves_obtained_at_timestamps(tmp_path, mo
     assert e.access_token == "at_XXXXXXXX"
     assert e.refresh_token == "rt_YYYYYYYY"
     assert e.expires_at == "2026-04-24T11:00:00+00:00"
-    assert e.agent_key == "sk-nous-AAAA"
+    assert e.agent_key == "sk-thor-AAAA"
     assert e.agent_key_expires_at == "2026-04-25T10:00:00+00:00"
 
     # Extra fields — this is what regressed.  These must be carried through
@@ -1504,7 +1504,7 @@ def test_nous_seed_from_singletons_preserves_obtained_at_timestamps(tmp_path, mo
 
 
 
-# ── PR #10160 salvage: Nous OAuth cross-process sync tests ─────────────────
+# ── PR #10160 salvage: Thor OAuth cross-process sync tests ─────────────────
 
 
 

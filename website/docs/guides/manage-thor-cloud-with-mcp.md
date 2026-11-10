@@ -1,7 +1,7 @@
 ---
 sidebar_position: 16
 title: "Manage Thor Cloud with MCP"
-description: "Connect Thor Agent to the Nous Portal MCP server so your local agent can list, start, stop, and manage your Thor Cloud instances conversationally"
+description: "Connect Thor Agent to the Thor Portal MCP server so your local agent can list, start, stop, and manage your Thor Cloud instances conversationally"
 ---
 
 # Manage Thor Cloud with MCP
@@ -10,9 +10,9 @@ Python dependency commands on this page use a
 [PM-prepared source checkout](../reference/package-management.md#developer-workflow).
 After a dependency change, reactivate the checkout and restart Thor.
 
-[Thor Cloud](https://portal.nousresearch.com/cloud) runs hosted Thor Agent instances for you. Normally you manage them from the `/agents` page in the [Nous Portal](../integrations/nous-portal.md). This guide connects your **local** Thor Agent to the Portal's MCP server so you can manage those cloud instances by just asking — "list my cloud agents", "restart the stopped one", "what's it costing me" — without leaving your terminal.
+[Thor Cloud](https://portal.thor-agent.local/cloud) runs hosted Thor Agent instances for you. Normally you manage them from the `/agents` page in the [Thor Portal](../integrations/thor-portal.md). This guide connects your **local** Thor Agent to the Portal's MCP server so you can manage those cloud instances by just asking — "list my cloud agents", "restart the stopped one", "what's it costing me" — without leaving your terminal.
 
-It's a standard [MCP](../user-guide/features/mcp.md) server hosted by Nous Research, gated by the same OAuth login you already use for the Portal. Once connected, Thor gets two tools it can call on your behalf.
+It's a standard [MCP](../user-guide/features/mcp.md) server hosted by Thor Agent, gated by the same OAuth login you already use for the Portal. Once connected, Thor gets two tools it can call on your behalf.
 
 ## What you can do with it
 
@@ -32,7 +32,7 @@ Every call runs against **your** org with your Portal identity, and membership i
 
 ## Prerequisites
 
-- A [Nous Portal](../integrations/nous-portal.md) account with [Thor Cloud](https://portal.nousresearch.com/cloud) access (at least one instance, or the ability to create one).
+- A [Thor Portal](../integrations/thor-portal.md) account with [Thor Cloud](https://portal.thor-agent.local/cloud) access (at least one instance, or the ability to create one).
 - MCP support installed. If you used the standard install script it's already there; otherwise:
 
   ```bash
@@ -45,7 +45,7 @@ You do **not** need a separate API key or client secret — the server uses OAut
 ## Step 1: add the server
 
 ```bash
-thor mcp add --url https://portal.nousresearch.com/mcp --auth oauth thor-cloud
+thor mcp add --url https://portal.thor-agent.local/mcp --auth oauth thor-cloud
 ```
 
 `--auth oauth` tells Thor this is an OAuth-protected HTTP server. On first connect Thor:
@@ -112,7 +112,7 @@ After `thor mcp add`, the server lives in `~/.thor/config.yaml`:
 ```yaml
 mcp_servers:
   thor-cloud:
-    url: "https://portal.nousresearch.com/mcp"
+    url: "https://portal.thor-agent.local/mcp"
     auth: oauth
 ```
 
@@ -125,7 +125,7 @@ The server exposes both read (`agents`) and mutating (`agent`) tools. If you wan
 ```yaml
 mcp_servers:
   thor-cloud:
-    url: "https://portal.nousresearch.com/mcp"
+    url: "https://portal.thor-agent.local/mcp"
     auth: oauth
     tools:
       include: [agents]
@@ -146,7 +146,7 @@ The stored client registration no longer matches the server (for example, you co
 ```bash
 thor mcp remove thor-cloud
 rm -f ~/.thor/mcp-tokens/thor-cloud.*
-thor mcp add --url https://portal.nousresearch.com/mcp --auth oauth thor-cloud
+thor mcp add --url https://portal.thor-agent.local/mcp --auth oauth thor-cloud
 ```
 
 ### The tools aren't showing up after adding the server
@@ -173,7 +173,7 @@ The OAuth browser callback runs on the machine where Thor is running. On a remot
 
 ## See also
 
-- **[Nous Portal](../integrations/nous-portal.md)** — the subscription, models, and Tool Gateway behind the same login
+- **[Thor Portal](../integrations/thor-portal.md)** — the subscription, models, and Tool Gateway behind the same login
 - **[Use MCP with Thor](./use-mcp-with-thor.md)** — connecting and filtering MCP servers in general
 - **[MCP feature overview](../user-guide/features/mcp.md)** — what MCP is and how Thor uses it
 - **[MCP configuration reference](../reference/mcp-config-reference.md)** — every `mcp_servers` field, including `auth: oauth`

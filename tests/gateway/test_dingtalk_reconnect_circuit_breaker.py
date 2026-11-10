@@ -57,7 +57,7 @@ async def test_real_sdk_start_with_issue_type_error_is_bounded_and_fatal(caplog)
     adapter._stream_client = client
 
     def bad_connect(uri):
-        raise TypeError("'coroutine' object does not support the asynchronous context manager protocol")
+        raise TypeError("'coroutine' object does not support the asynchrothor context manager protocol")
 
     real_sleep = asyncio.sleep
 

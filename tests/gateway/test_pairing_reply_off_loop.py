@@ -102,7 +102,7 @@ async def test_a_pairing_lock_timeout_stays_silent(monkeypatch, handler, method)
 def test_an_approval_check_does_not_wait_behind_an_edit_blocked_on_the_file_lock(monkeypatch):
     """Message admission calls ``is_approved`` on the event loop. A pairing edit offloaded to a worker
     that is still waiting for another process's file lock must not hold the store's thread lock
-    meanwhile, or that synchronous check stalls the loop for the whole wait."""
+    meanwhile, or that synchrothor check stalls the loop for the whole wait."""
     contended = watch_file_lock_contention(monkeypatch)
     store = PairingStore()
     checked = threading.Event()

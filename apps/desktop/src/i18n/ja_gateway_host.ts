@@ -16,7 +16,7 @@ export const jaGatewayHost: GatewayHostTranslations = {
   },
   webAccess: {
     title: 'Web アクセス',
-    intro: 'スマートフォンや別のコンピューターから、Nous アカウントでサインインしてこのコンピューターの Thor を開きます。サインインした人はこのコンピューターでコマンドを実行できます。',
+    intro: 'スマートフォンや別のコンピューターから、Thor アカウントでサインインしてこのコンピューターの Thor を開きます。サインインした人はこのコンピューターでコマンドを実行できます。',
     failed: 'Web アクセスを変更できませんでした',
     running: '実行中',
     stopped: '停止中',
@@ -25,7 +25,7 @@ export const jaGatewayHost: GatewayHostTranslations = {
     restartNeeded: '再起動が必要',
     unavailable: '利用できません',
     notRunningDetail: '起動すると、別のデバイスから Thor を開けます。',
-    needsNous: '先に「プロバイダー」で Nous アカウントにサインインしてください。',
+    needsThor: '先に「プロバイダー」で Thor アカウントにサインインしてください。',
     runningLan: '同じネットワーク上のデバイスでこのアドレスを開いてください。',
     runningPublic: 'あなたの URL 経由で提供中です。',
     runningLocal: 'このコンピューターからのみ開けます。他のデバイスから開くには、停止してからもう一度起動してください。',
@@ -40,7 +40,7 @@ export const jaGatewayHost: GatewayHostTranslations = {
     startStages: {
       preparing: 'Web アプリを準備しています。ビルドには数分かかることがあります。',
       building: 'Web アプリをビルドしています。数分かかることがあります。',
-      registering: 'このアドレスの Nous サインインを設定しています。',
+      registering: 'このアドレスの Thor サインインを設定しています。',
       restarting: 'Web アプリを提供するためにゲートウェイを再起動しています。'
     },
     startElapsed: time => `経過時間 ${time}`,

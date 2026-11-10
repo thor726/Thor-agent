@@ -3,7 +3,7 @@
 Owns one Codex thread per Thor session: drives ``turn/start``, consumes
 streaming notifications via CodexEventProjector, bridges server-initiated
 approval requests, translates cancellation, and returns a TurnResult that
-AIAgent.run_conversation() splices into ``messages``. Synchronous: the client's
+AIAgent.run_conversation() splices into ``messages``. Synchrothor: the client's
 reader threads feed queues that this adapter polls, like the chat_completions loop.
 """
 

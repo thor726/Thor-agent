@@ -475,8 +475,8 @@ def test_max_iterations_summary_keeps_the_data_use_requirement_on_every_moa_slot
     home.mkdir()
     (home / "config.yaml").write_text(
         "moa:\n  default_preset: review\n  presets:\n    review:\n"
-        "      reference_models:\n        - provider: nous\n          model: ref-model\n"
-        "      aggregator:\n        provider: nous\n        model: agg-model\n",
+        "      reference_models:\n        - provider: thor\n          model: ref-model\n"
+        "      aggregator:\n        provider: thor\n        model: agg-model\n",
         encoding="utf-8",
     )
     monkeypatch.setenv("THOR_HOME", str(home))

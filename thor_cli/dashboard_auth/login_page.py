@@ -3,7 +3,7 @@
 Providers come from the registry; an OAuth provider renders an anchor to
 ``/auth/login?provider=<name>``, a ``supports_password`` provider renders a
 credential form wired by :data:`_PASSWORD_FORM_SCRIPT`. Styling mirrors the
-``@nous-research/ui`` design system; fonts load from the SPA's ``/fonts/``
+``@thor-research/ui`` design system; fonts load from the SPA's ``/fonts/``
 mount, which the gate allowlists pre-auth.
 
 The ``class="provider-btn"`` anchor is test-stable: the suite extracts its
@@ -25,7 +25,7 @@ _LOGIN_HTML_TEMPLATE = """\
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in — Thor Agent</title>
 <style>
-  /* Brand fonts shipped by @nous-research/ui — same files the SPA loads. */
+  /* Brand fonts shipped by @thor-research/ui — same files the SPA loads. */
   @font-face {{
     font-family: 'Collapse';
     font-style: normal;
@@ -287,7 +287,7 @@ _LOGIN_HTML_TEMPLATE = """\
 </head>
 <body>
 <main>
-  <div class="brand">Nous<span class="dot"></span>Research</div>
+  <div class="brand">Thor<span class="dot"></span>Research</div>
   <div class="card">
     <h1>Sign in</h1>
     <p class="subtitle">Choose a sign-in method to continue to the Thor Agent dashboard.</p>
@@ -379,7 +379,7 @@ _EMPTY_HTML = """\
 <p>This dashboard is bound to a non-loopback host but no authentication
 providers are available.</p>
 <p>Configure the bundled username/password provider or an OAuth provider.
-See the <a href="https://thor-agent.nousresearch.com/docs/user-guide/features/web-dashboard#authentication-gated-mode">dashboard
+See the <a href="https://thor-agent.thor-agent.local/docs/user-guide/features/web-dashboard#authentication-gated-mode">dashboard
 authentication documentation</a> for setup instructions.</p>
 <p>For auth-free local use, bind to <code>127.0.0.1</code> and connect through
 an SSH tunnel or Tailscale.</p>

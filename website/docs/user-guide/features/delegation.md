@@ -212,9 +212,9 @@ The dispatch handle lists each unit (`units[].delegation_id`, `group`, `task_ind
 - **Thread pool:** Uses `ThreadPoolExecutor` with the configured concurrency limit as max workers
 - **Progress display:** In CLI mode, a tree-view shows tool calls from each subagent in real-time with per-task completion lines. In gateway mode, progress is batched and relayed to the parent's progress callback. CLI and TUI completion notices use task-first titles such as `Subagent Task Completed: Review changes`; multi-task groups use the group name and task count. Unsuccessful or incomplete work gets a corresponding status label. These compact notices do not replace the full results delivered to the parent agent.
 - **Result ordering:** Within a unit, results are sorted by task index to match input order regardless of completion order; `TASK i/N` labels index the whole call
-- **Cancellation:** Follow-up messages and stopping the current turn (Ctrl+C, Esc, the Desktop/TUI Stop button, an ACP cancel) do not cancel a top-level background batch. The `/stop` command (gateway or CLI) or closing/resetting the owning session ends its background children and every synchronous descendant beneath them; each stopped child still returns as a completion with `status="interrupted"` and its partial output
+- **Cancellation:** Follow-up messages and stopping the current turn (Ctrl+C, Esc, the Desktop/TUI Stop button, an ACP cancel) do not cancel a top-level background batch. The `/stop` command (gateway or CLI) or closing/resetting the owning session ends its background children and every synchrothor descendant beneath them; each stopped child still returns as a completion with `status="interrupted"` and its partial output
 
-Synchronous single-task delegation from an orchestrator runs directly without thread pool overhead.
+Synchrothor single-task delegation from an orchestrator runs directly without thread pool overhead.
 
 ### Durable background completions
 
@@ -364,7 +364,7 @@ By default the reviewer runs on your main model. To pin a dedicated review model
 ```yaml
 auxiliary:
   review:
-    provider: openrouter               # or nous, anthropic, a direct base_url, ...
+    provider: openrouter               # or thor, anthropic, a direct base_url, ...
     model: anthropic/claude-opus-4.6   # a strong reviewer model
 ```
 
@@ -539,7 +539,7 @@ The parent agent orchestrates its own running children with the same `delegate_t
 - **`steer`** queues a course correction into a running child without stopping it (delivery semantics below).
 - **`stop`** ends a child early at its next iteration boundary; the partial result still re-enters the conversation as a normal completion message.
 
-Control actions run synchronously in-turn (never backgrounded), are scoped to the caller's own spawn tree — a conversation can never see or control another session's children — and never consume the per-turn subagent spawn cap, so `stop` keeps working even after the cap is hit.
+Control actions run synchrothorly in-turn (never backgrounded), are scoped to the caller's own spawn tree — a conversation can never see or control another session's children — and never consume the per-turn subagent spawn cap, so `stop` keeps working even after the cap is hit.
 
 ### From the TUI / gateway (session-facing)
 
@@ -682,14 +682,14 @@ and delegation follows the schema the model sees.
 ## Lifetime and Durability
 
 :::warning Background completion durability is not durable execution
-Top-level model-facing `delegate_task` calls run in the background automatically where the session supports later delivery. Thor returns a handle immediately, and the result re-enters the conversation after the child or batch finishes. Orchestrator subagents wait for their workers in the current turn because they must synthesize those results before returning. Stateless request/response endpoints fall back to synchronous execution when they cannot deliver a detached result later.
+Top-level model-facing `delegate_task` calls run in the background automatically where the session supports later delivery. Thor returns a handle immediately, and the result re-enters the conversation after the child or batch finishes. Orchestrator subagents wait for their workers in the current turn because they must synthesize those results before returning. Stateless request/response endpoints fall back to synchrothor execution when they cannot deliver a detached result later.
 
 - Normal follow-up messages do not cancel background children, and neither does stopping the current turn: Ctrl+C, Esc, the Desktop/TUI Stop button and an ACP cancel end only the turn. The `/stop` command (gateway `/stop` — also when the session is idle after the dispatching turn ended — or CLI `/stop`) ends the session's running background delegations, and closing or resetting the owning session does the same.
 - Explicit session close/reset interrupts that session's background children. In the CLI and TUI, the gateway owns the session and the client only views it: when the last viewer exits or runs `/new` (a TUI resume switch counts too), the gateway interrupts that session's background children at once and refuses new ones for it until a viewer opens the session again. A plain detach cancels nothing: closing Desktop, a dropped connection, or exiting while another viewer is still attached leaves the work running. Background processes (`terminal(background=True)`) keep running either way.
 - A completion for a CLI or TUI session — a background child's result (including an interrupted one), or a `notify_on_complete` process exit or watch-pattern notice — that reaches the head of the session's queue while no viewer is attached does not start a turn. It is written into the session as a note, and the next turn reads it (for example after `thor chat --resume`). If a viewer is attached by then, including one that came back after the completion arrived, the completion runs as a turn as before. Messaging chats have no viewers and are unchanged: their completions still start a turn.
 - A Thor process restart does **not** resume a running child. Its attempt becomes `unknown` because Thor cannot prove which side effects happened.
 - A child that completed before restart but whose result was not delivered is restored and routed back through the owning session's normal checks.
-- Stopped children return a structured result (`status="interrupted"`, `exit_reason="interrupted"`) whose `summary` is the last text the child produced before the stop (the interrupt placeholder moves to `error`). The stop recurses down the spawn tree — an orchestrator child's synchronous workers are interrupted first and their partial results roll up into the child's own interrupted result — and each background unit's result re-enters the conversation right away as its normal completion notice (`Subagent Task Interrupted: …`), so nothing waits for the child to exhaust its budget.
+- Stopped children return a structured result (`status="interrupted"`, `exit_reason="interrupted"`) whose `summary` is the last text the child produced before the stop (the interrupt placeholder moves to `error`). The stop recurses down the spawn tree — an orchestrator child's synchrothor workers are interrupted first and their partial results roll up into the child's own interrupted result — and each background unit's result re-enters the conversation right away as its normal completion notice (`Subagent Task Interrupted: …`), so nothing waits for the child to exhaust its budget.
 
 For **durable execution** that must survive session closure or process restart, use:
 
@@ -703,7 +703,7 @@ For **durable execution** that must survive session closure or process restart, 
 - Subagents inherit the parent's enabled toolsets; the model cannot select or widen them per call
 - **Nested delegation is opt-in** — only `role="orchestrator"` children can delegate further, and only when `max_spawn_depth` is raised from its default of 1 (flat). Disable globally with `orchestrator_enabled: false`.
 - Leaf subagents **cannot** call: `delegate_task`, `clarify`, `memory`, `send_message`, `cronjob`. Orchestrator subagents retain `delegate_task` but keep the other blocks. Both roles retain `execute_code` (programmatic tool calling) so children can batch mechanical work instead of burning reasoning iterations.
-- **Cancellation follows ownership** — `/stop` or closing/resetting the owning session ends its background children and the synchronous descendants beneath them; each returns an interrupted completion carrying its partial output
+- **Cancellation follows ownership** — `/stop` or closing/resetting the owning session ends its background children and the synchrothor descendants beneath them; each returns an interrupted completion carrying its partial output
 - Only the final summary enters the parent's context, keeping token usage efficient
 - Subagents inherit the parent's **API key, provider configuration, and credential pool** (enabling key rotation on rate limits)
 

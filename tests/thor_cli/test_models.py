@@ -7,11 +7,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from unittest.mock import patch, MagicMock
 
-from thor_cli.nous_account import NousPortalAccountInfo
+from thor_cli.thor_account import ThorPortalAccountInfo
 from thor_cli.models import (
     OPENROUTER_MODELS, fetch_openrouter_models, detect_provider_for_model,
-    partition_nous_models_by_tier,
-    check_nous_free_tier, union_with_portal_free_recommendations,
+    partition_thor_models_by_tier,
+    check_thor_free_tier, union_with_portal_free_recommendations,
     union_with_portal_paid_recommendations,
 )
 import thor_cli.models as _models_mod
@@ -123,8 +123,8 @@ class TestDetectProviderForModel:
         assert detect_provider_for_model("gpt-5.4", "custom:foo") is None
 
 
-class TestPartitionNousModelsByTier:
-    """Tests for partition_nous_models_by_tier — free vs paid tier model split."""
+class TestPartitionThorModelsByTier:
+    """Tests for partition_thor_models_by_tier — free vs paid tier model split."""
 
     _PAID = {"prompt": "0.000003", "completion": "0.000015"}
     _FREE = {"prompt": "0", "completion": "0"}
@@ -133,7 +133,7 @@ class TestPartitionNousModelsByTier:
         """Paid users get all models as selectable, none unavailable."""
         models = ["anthropic/claude-opus-4.6", "xiaomi/mimo-v2-pro"]
         pricing = {"anthropic/claude-opus-4.6": self._PAID, "xiaomi/mimo-v2-pro": self._FREE}
-        sel, unav = partition_nous_models_by_tier(models, pricing, free_tier=False)
+        sel, unav = partition_thor_models_by_tier(models, pricing, free_tier=False)
         assert sel == models
         assert unav == []
 
@@ -142,51 +142,51 @@ class TestPartitionNousModelsByTier:
         """A row the gateway bills to a subscription costs no credits, whatever price it lists."""
         models = ["anthropic/claude-opus-4.6", "openai/gpt-5.4"]
         pricing = {"anthropic/claude-opus-4.6": self._PAID, "openai/gpt-5.4": {**self._PAID, "billing_mode": "subscription"}}
-        sel, unav = partition_nous_models_by_tier(models, pricing, free_tier=True)
+        sel, unav = partition_thor_models_by_tier(models, pricing, free_tier=True)
         assert (sel, unav) == (["openai/gpt-5.4"], ["anthropic/claude-opus-4.6"])
 
     def test_free_tier_default_prefers_a_free_model_over_a_subscription_billed_one(self, monkeypatch):
         import thor_cli.models as m
         from thor_cli import models_pricing as mp
         pricing = {"openai/gpt-5.4": {**self._PAID, "billing_mode": "subscription"}, "free/model": self._FREE}
-        monkeypatch.setattr(m, "get_curated_nous_model_ids", lambda: list(pricing))
-        monkeypatch.setattr(m, "check_nous_free_tier", lambda **kw: True)
+        monkeypatch.setattr(m, "get_curated_thor_model_ids", lambda: list(pricing))
+        monkeypatch.setattr(m, "check_thor_free_tier", lambda **kw: True)
         monkeypatch.setattr(m, "union_with_portal_free_recommendations", lambda ids, pr, url="", **kw: (ids, pr))
         monkeypatch.setattr(m, "get_preferred_silent_default_model", lambda provider="": "not/listed")
         monkeypatch.setattr(mp, "get_pricing_for_provider", lambda slug, **kw: pricing)
-        monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: None)
-        assert m.recommended_nous_default_model()["model"] == "free/model"
+        monkeypatch.setattr(mp, "thor_policy_allowed_ids", lambda **kw: None)
+        assert m.recommended_thor_default_model()["model"] == "free/model"
         del pricing["free/model"]
-        assert m.recommended_nous_default_model()["model"] == "openai/gpt-5.4"
+        assert m.recommended_thor_default_model()["model"] == "openai/gpt-5.4"
 
     def test_window_plan_default_is_the_plans_first_listed_recommendation(self, monkeypatch):
         import thor_cli.models as m
         from thor_cli import model_picker_usage as mpu
         from thor_cli import models_pricing as mp
         ids = ["example/model-c", "example/model-b", "example/model-a"]
-        monkeypatch.setattr(m, "get_curated_nous_model_ids", lambda: list(ids))
-        monkeypatch.setattr(m, "check_nous_free_tier", lambda **kw: False)
+        monkeypatch.setattr(m, "get_curated_thor_model_ids", lambda: list(ids))
+        monkeypatch.setattr(m, "check_thor_free_tier", lambda **kw: False)
         monkeypatch.setattr(m, "union_with_portal_paid_recommendations", lambda i, pr, url="", **kw: (i, pr))
         monkeypatch.setattr(m, "get_preferred_silent_default_model", lambda provider="": "example/model-b")
         monkeypatch.setattr(mp, "get_pricing_for_provider", lambda slug, **kw: {})
-        monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: None)
+        monkeypatch.setattr(mp, "thor_policy_allowed_ids", lambda **kw: None)
         usage = mpu.PickerUsage(plan="Window Plan", gauges=(), featured_model_ids=("not/listed", "example/model-a"))
-        monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: usage)
-        assert m.recommended_nous_default_model()["model"] == "example/model-a"
+        monkeypatch.setattr(mpu, "thor_picker_usage", lambda **kw: usage)
+        assert m.recommended_thor_default_model()["model"] == "example/model-a"
         # A Large featured pick is never the default: the next listed recommendation is.
         usage_c = mpu.PickerUsage(plan="Window Plan", gauges=(), featured_model_ids=("example/model-c", "example/model-a"))
-        monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: usage_c)
+        monkeypatch.setattr(mpu, "thor_picker_usage", lambda **kw: usage_c)
         monkeypatch.setattr(mp, "get_pricing_for_provider", lambda slug, **kw: {"example/model-c": {"usage_level": "top_tier"}})
-        assert m.recommended_nous_default_model()["model"] == "example/model-a"
+        assert m.recommended_thor_default_model()["model"] == "example/model-a"
         # Every other account (no window plan) keeps the silent default.
-        monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
-        assert m.recommended_nous_default_model()["model"] == "example/model-b"
+        monkeypatch.setattr(mpu, "thor_picker_usage", lambda **kw: None)
+        assert m.recommended_thor_default_model()["model"] == "example/model-b"
 
     def test_all_paid_models(self):
         """When all models are paid, free-tier users have none selectable."""
         models = ["anthropic/claude-opus-4.6", "openai/gpt-5.4"]
         pricing = {m: self._PAID for m in models}
-        sel, unav = partition_nous_models_by_tier(models, pricing, free_tier=True)
+        sel, unav = partition_thor_models_by_tier(models, pricing, free_tier=True)
         assert sel == []
         assert unav == models
 
@@ -215,7 +215,7 @@ class TestUnionWithPortalFreeRecommendations:
         curated = ["anthropic/claude-opus-4.6"]
         pricing = {"anthropic/claude-opus-4.6": self._PAID}
         with patch(
-            "thor_cli.models.fetch_nous_recommended_models",
+            "thor_cli.models.fetch_thor_recommended_models",
             return_value=self._payload(["qwen/qwen3.6-plus"]),
         ):
             ids, p = union_with_portal_free_recommendations(curated, pricing, "")
@@ -234,7 +234,7 @@ class TestUnionWithPortalFreeRecommendations:
         curated = ["a"]
         pricing = {"a": self._PAID}
         with patch(
-            "thor_cli.models.fetch_nous_recommended_models",
+            "thor_cli.models.fetch_thor_recommended_models",
             side_effect=RuntimeError("network down"),
         ):
             ids, p = union_with_portal_free_recommendations(curated, pricing, "")
@@ -269,7 +269,7 @@ class TestUnionWithPortalPaidRecommendations:
         curated = ["anthropic/claude-opus-4.6"]
         pricing = {"anthropic/claude-opus-4.6": self._PAID}
         with patch(
-            "thor_cli.models.fetch_nous_recommended_models",
+            "thor_cli.models.fetch_thor_recommended_models",
             return_value=self._payload(["openai/gpt-5.4", "openai/gpt-5.5"]),
         ):
             ids, _ = union_with_portal_paid_recommendations(curated, pricing, "")
@@ -280,8 +280,8 @@ class TestUnionWithPortalPaidRecommendations:
         ]
 
 
-class TestCheckNousFreeTierCache:
-    """Tests for the TTL cache on check_nous_free_tier()."""
+class TestCheckThorFreeTierCache:
+    """Tests for the TTL cache on check_thor_free_tier()."""
 
     def setup_method(self):
         _models_mod._free_tier_cache.clear()
@@ -289,28 +289,28 @@ class TestCheckNousFreeTierCache:
     def teardown_method(self):
         _models_mod._free_tier_cache.clear()
 
-    @patch("thor_cli.nous_account.get_nous_portal_account_info")
+    @patch("thor_cli.thor_account.get_thor_portal_account_info")
     def test_result_is_cached(self, mock_account):
         """Second call within TTL returns cached result without account lookup."""
-        mock_account.return_value = NousPortalAccountInfo(
+        mock_account.return_value = ThorPortalAccountInfo(
             logged_in=True,
             source="jwt",
             fresh=False,
             paid_service_access=False,
         )
-        result1 = check_nous_free_tier()
-        result2 = check_nous_free_tier()
+        result1 = check_thor_free_tier()
+        result2 = check_thor_free_tier()
 
         assert result1 is True
         assert result2 is True
         assert mock_account.call_count == 1
 
-    @patch("thor_cli.nous_account.get_nous_portal_account_info")
+    @patch("thor_cli.thor_account.get_thor_portal_account_info")
     def test_cache_only_cold_lookup_does_not_call_portal(self, mock_account):
-        assert check_nous_free_tier(cached_only=True) is False
+        assert check_thor_free_tier(cached_only=True) is False
         mock_account.assert_not_called()
 
-    @patch("thor_cli.nous_account.get_nous_portal_account_info")
+    @patch("thor_cli.thor_account.get_thor_portal_account_info")
     def test_entitlement_cache_is_profile_scoped(self, mock_account, tmp_path):
         from thor_constants import (
             thor_home_key,
@@ -320,7 +320,7 @@ class TestCheckNousFreeTierCache:
 
         def account_for_active_profile(*, force_fresh=False):
             is_free = thor_home_key() == thor_home_key(tmp_path / "free")
-            return NousPortalAccountInfo(
+            return ThorPortalAccountInfo(
                 logged_in=True,
                 source="jwt",
                 fresh=force_fresh,
@@ -332,7 +332,7 @@ class TestCheckNousFreeTierCache:
         def check_in(home):
             token = set_thor_home_override(str(home))
             try:
-                return check_nous_free_tier()
+                return check_thor_free_tier()
             finally:
                 reset_thor_home_override(token)
 
@@ -342,24 +342,24 @@ class TestCheckNousFreeTierCache:
         assert mock_account.call_count == 2
 
 
-    @patch("thor_cli.nous_account.get_nous_portal_account_info")
+    @patch("thor_cli.thor_account.get_thor_portal_account_info")
     def test_force_fresh_bypasses_cache(self, mock_account):
-        mock_account.return_value = NousPortalAccountInfo(
+        mock_account.return_value = ThorPortalAccountInfo(
             logged_in=True,
             source="account_api",
             fresh=True,
             paid_service_access=True,
         )
 
-        assert check_nous_free_tier() is False
-        assert check_nous_free_tier(force_fresh=True) is False
+        assert check_thor_free_tier() is False
+        assert check_thor_free_tier(force_fresh=True) is False
 
         assert mock_account.call_count == 2
         mock_account.assert_called_with(force_fresh=True)
 
 
-class TestNousRecommendedModels:
-    """Tests for fetch_nous_recommended_models + get_nous_recommended_aux_model."""
+class TestThorRecommendedModels:
+    """Tests for fetch_thor_recommended_models + get_thor_recommended_aux_model."""
 
     _SAMPLE_PAYLOAD = {
         "paidRecommendedModels": [],
@@ -377,10 +377,10 @@ class TestNousRecommendedModels:
     }
 
     def setup_method(self):
-        _models_mod._nous_recommended_cache.clear()
+        _models_mod._thor_recommended_cache.clear()
 
     def teardown_method(self):
-        _models_mod._nous_recommended_cache.clear()
+        _models_mod._thor_recommended_cache.clear()
 
     def _mock_urlopen(self, payload):
         """Return a context-manager mock mimicking urllib.request.urlopen()."""
@@ -393,11 +393,11 @@ class TestNousRecommendedModels:
         return cm
 
     def test_fetch_caches_per_portal_url(self):
-        from thor_cli.models import fetch_nous_recommended_models
+        from thor_cli.models import fetch_thor_recommended_models
         mock_cm = self._mock_urlopen(self._SAMPLE_PAYLOAD)
         with patch("thor_cli.models._urlopen_model_catalog_request", return_value=mock_cm) as mock_urlopen:
-            a = fetch_nous_recommended_models("https://portal.example.com")
-            b = fetch_nous_recommended_models("https://portal.example.com")
+            a = fetch_thor_recommended_models("https://portal.example.com")
+            b = fetch_thor_recommended_models("https://portal.example.com")
         assert a == self._SAMPLE_PAYLOAD
         assert b == self._SAMPLE_PAYLOAD
         assert mock_urlopen.call_count == 1  # second call served from cache
@@ -405,32 +405,32 @@ class TestNousRecommendedModels:
 
     def test_paid_tier_prefers_paid_recommendation(self):
         """Paid-tier users should get the paid model when it's populated."""
-        from thor_cli.models import get_nous_recommended_aux_model
+        from thor_cli.models import get_thor_recommended_aux_model
         payload = {
             "paidRecommendedCompactionModel": {"modelName": "anthropic/claude-opus-4.7"},
             "freeRecommendedCompactionModel": {"modelName": "google/gemini-3-flash-preview"},
             "paidRecommendedVisionModel": {"modelName": "openai/gpt-5.4"},
             "freeRecommendedVisionModel": {"modelName": "google/gemini-3-flash-preview"},
         }
-        with patch("thor_cli.models.fetch_nous_recommended_models", return_value=payload):
-            text = get_nous_recommended_aux_model(vision=False, free_tier=False)
-            vision = get_nous_recommended_aux_model(vision=True, free_tier=False)
+        with patch("thor_cli.models.fetch_thor_recommended_models", return_value=payload):
+            text = get_thor_recommended_aux_model(vision=False, free_tier=False)
+            vision = get_thor_recommended_aux_model(vision=True, free_tier=False)
         assert text == "anthropic/claude-opus-4.7"
         assert vision == "openai/gpt-5.4"
 
 
     def test_tier_detection_error_defaults_to_paid(self):
         """If tier detection raises, assume paid so we don't downgrade silently."""
-        from thor_cli.models import get_nous_recommended_aux_model
+        from thor_cli.models import get_thor_recommended_aux_model
         payload = {
             "paidRecommendedCompactionModel": {"modelName": "paid-model"},
             "freeRecommendedCompactionModel": {"modelName": "free-model"},
         }
         with (
-            patch("thor_cli.models.fetch_nous_recommended_models", return_value=payload),
-            patch("thor_cli.models.check_nous_free_tier", side_effect=RuntimeError("boom")),
+            patch("thor_cli.models.fetch_thor_recommended_models", return_value=payload),
+            patch("thor_cli.models.check_thor_free_tier", side_effect=RuntimeError("boom")),
         ):
-            assert get_nous_recommended_aux_model(vision=False) == "paid-model"
+            assert get_thor_recommended_aux_model(vision=False) == "paid-model"
 
 
 class TestCodexSoftAcceptPlausibilityGate:

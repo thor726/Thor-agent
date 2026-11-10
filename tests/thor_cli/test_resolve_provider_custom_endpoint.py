@@ -19,7 +19,7 @@ def isolated_home(tmp_path, monkeypatch):
     (home / ".env").write_text("", encoding="utf-8")
     monkeypatch.setenv("THOR_HOME", str(home))
     for var in ("OPENAI_API_KEY", "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_BASE_URL",
-                "OPENROUTER_BASE_URL", "THOR_INFERENCE_PROVIDER", "NOUS_API_KEY"):
+                "OPENROUTER_BASE_URL", "THOR_INFERENCE_PROVIDER", "THOR_PORTAL_API_KEY"):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: False)
     from thor_cli import free_tier_bootstrap as fb

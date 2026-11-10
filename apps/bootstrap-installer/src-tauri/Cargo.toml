@@ -2,7 +2,7 @@
 name = "thor-bootstrap"
 version = "0.0.0"
 description = "Thor Setup — signed installer that drives scripts/install.ps1"
-authors = ["Nous Research <info@nousresearch.com>"]
+authors = ["Thor Agent <info@thor-agent.local>"]
 edition = "2021"
 rust-version = "1.77"
 

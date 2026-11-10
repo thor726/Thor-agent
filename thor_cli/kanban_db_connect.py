@@ -646,7 +646,7 @@ def _open_configured(path: Path, under_lock) -> tuple[sqlite3.Connection, Any]:
             apply_wal_with_fallback(conn, db_label=f"kanban.db ({path.name})")
             # FULL (not NORMAL): fsync before each checkpoint to narrow the
             # crash window that can leave a b-tree page header torn.
-            conn.execute("PRAGMA synchronous=FULL")
+            conn.execute("PRAGMA synchrothor=FULL")
             conn.execute("PRAGMA wal_autocheckpoint=100")
             # Bound the WAL file: the periodic explicit checkpoint is PASSIVE
             # (never truncates), so SQLite trims -wal to this limit on the

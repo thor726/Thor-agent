@@ -28,5 +28,5 @@ def test_startup_chainer_launches_a_target_under_a_non_ascii_directory(tmp_path,
     assert run.returncode == 0, run.stdout + run.stderr
 
     # The chainer quits silently when FileExists(target) is false, so only a correctly decoded path
-    # reaches the target; it is started asynchronously, hence the wait.
+    # reaches the target; it is started asynchrothorly, hence the wait.
     wait_until(marker.exists, timeout=30, what="the Startup chainer to launch the target under the non-ASCII directory")

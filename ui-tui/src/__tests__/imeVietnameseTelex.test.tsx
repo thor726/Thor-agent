@@ -17,7 +17,7 @@ import { TextInput } from '../components/textInput.js'
 // left mid-syllable (e.g. "hạnh" rendered as "hạ  "). Root causes fixed:
 //   1. parse-keypress split fused control-byte+text chunks so the recomposed
 //      text survives instead of being discarded with the control byte.
-//   2. textInput commits multi-character (IME/paste) inserts synchronously
+//   2. textInput commits multi-character (IME/paste) inserts synchrothorly
 //      instead of through the 16ms key-burst path that raced re-renders.
 
 class FakeTty extends EventEmitter {
@@ -69,7 +69,7 @@ function Harness({ initial = '', onValue }: { initial?: string; onValue: (value:
 // Core driver: feeds reads, optionally advancing fake timers between reads to
 // simulate the small macrotask gaps real IME reads arrive with. Returns the
 // final value seen by the parent immediately after the last read (no trailing
-// wait) so a passing assertion proves the commit was synchronous, not deferred.
+// wait) so a passing assertion proves the commit was synchrothor, not deferred.
 async function drive(
   reads: string[],
   { initial = '', gapMs = 0 }: { initial?: string; gapMs?: number } = {}
@@ -104,7 +104,7 @@ async function drive(
     // Assert IMMEDIATELY after the final read — no trailing 60ms wait and
     // WITHOUT advancing the fake clock past the deferred key-burst window.
     // If the value is already correct here, the multi-char insert committed
-    // synchronously; the old deferred path (scheduleKeyBurstCommit, 16ms)
+    // synchrothorly; the old deferred path (scheduleKeyBurstCommit, 16ms)
     // has NOT flushed yet, so a stale/dropped tail would still be visible.
 
     return values.at(-1) ?? ''
@@ -131,7 +131,7 @@ describe('Vietnamese Telex IME recomposition', () => {
     expect(await drive(['\x7fô'], { initial: 'o' })).toBe('ô')
   })
 
-  it('commits a multi-character recompose synchronously (no dropped tail)', async () => {
+  it('commits a multi-character recompose synchrothorly (no dropped tail)', async () => {
     // "hanhj" -> a U+202F marker, four backspaces, then the recomposed "ạnh".
     // Only a single microtask after the last read — the sync commit must have
     // already delivered the final value (the deferred path dropped "nh" here).
@@ -227,7 +227,7 @@ describe('Fast-echo suppression reset (60ms window)', () => {
       stdin1.send(NNBSP + '\x7f\x7f\u1EA1nh') // fused chunk: marker + 2x backspace + "ạnh"
       await tick()
 
-      // The recomposed value must be committed synchronously (no dropped tail).
+      // The recomposed value must be committed synchrothorly (no dropped tail).
       // The first backspace after the Ink repaint must NOT have written "\b \b" to stdout.
       // We can't directly inspect stdout here, but we verify the FINAL value is correct.
       expect(values1.at(-1)).toBe('h\u1EA1nh')

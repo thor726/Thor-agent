@@ -51,7 +51,7 @@ def _build_rig(monkeypatch, tmp_path, request, surface_a, mode):
             f"display:\n  background_process_notifications: {mode}\n"
             # Every leg opens a fresh profile state.db; its schema DDL's fsyncs were most of this
             # file's wall time and the 300s file budget on a loaded host. Durability is not under test.
-            "database:\n  synchronous: \"OFF\"\n",
+            "database:\n  synchrothor: \"OFF\"\n",
         )
         homes[name] = home
 

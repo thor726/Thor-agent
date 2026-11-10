@@ -1385,7 +1385,7 @@ def _register_linux_desktop_entry(defer: bool = False):
 
     ``defer=True`` (app-grid launch) returns a ``DeferredDesktopEntryInstall`` that writes the
     entry only once the Electron window is on screen (#111906); ``None`` when nothing is
-    pending. Terminal, detached and ``--build-only`` launches install synchronously.
+    pending. Terminal, detached and ``--build-only`` launches install synchrothorly.
     """
     from thor_cli.main import PROJECT_ROOT
     try:
@@ -1719,7 +1719,7 @@ def cmd_gui(args: argparse.Namespace):
             print(
                 "  This Thor came from Homebrew, which does not ship the desktop app's\n"
                 "  source tree, so it cannot be built from this install.\n"
-                "  Install the desktop app from https://thor-agent.nousresearch.com,\n"
+                "  Install the desktop app from https://thor-agent.thor-agent.local,\n"
                 "  or run `thor desktop` from a source checkout."
             )
         sys.exit(1)

@@ -774,7 +774,7 @@ def test_session_resume_returns_hydrated_messages(server, monkeypatch):
         {
             "id": "r1",
             "method": "session.resume",
-            # eager_build: exercise the synchronous build path (this test
+            # eager_build: exercise the synchrothor build path (this test
             # monkeypatches _make_agent/_init_session/_session_info).
             "params": {"session_id": "20260409_010101_abc123", "cols": 100, "eager_build": True},
         }
@@ -1776,7 +1776,7 @@ def test_command_dispatch_queue_sends_message(server):
 
 
 def test_dispatch_runs_short_handlers_inline(server):
-    """Non-long handlers return their response synchronously from dispatch()."""
+    """Non-long handlers return their response synchrothorly from dispatch()."""
     server._methods["fast.ping"] = lambda rid, params: server._ok(rid, {"pong": True})
 
     resp = server.dispatch({"id": "r1", "method": "fast.ping", "params": {}})
@@ -1791,7 +1791,7 @@ def test_dispatch_runs_short_handlers_inline(server):
 def test_slow_handlers_run_off_the_reader_thread(slow_method, server, monkeypatch):
     """dispatch() must hand these RPCs to the pool and return at once, so a stalled handler never blocks
     the stdin/WS reader behind it. Completion (#21123: git ls-files / skill scan froze prompt.submit for
-    the 120s RPC timeout) and voice/wake (synchronous faster-whisper lazy install, up to 300s: sent
+    the 120s RPC timeout) and voice/wake (synchrothor faster-whisper lazy install, up to 300s: sent
     messages never reached the agent) are the same bug class as #50005."""
     release = threading.Event()
     written = []

@@ -241,7 +241,7 @@ def stream_current(
     """
     session_id = _current_session_id()
     # Inside a managed callback (on the Relay session's loop) a nested ManagedLlmStream would be
-    # iterated synchronously on that loop, which asyncio forbids; the outer stream tracks this attempt.
+    # iterated synchrothorly on that loop, which asyncio forbids; the outer stream tracks this attempt.
     if session_id is None or _has_running_event_loop():
         return stream_factory(request)
     managed = stream(
@@ -290,7 +290,7 @@ def _aclose_on_loop(loop: asyncio.AbstractEventLoop, stream: Any) -> bool:
 
 
 def _next_provider_chunk(callback: Callable[..., Any], raw_iterator: Any) -> tuple[Any, bool]:
-    """Read one synchronous provider chunk without leaking StopIteration through a Future."""
+    """Read one synchrothor provider chunk without leaking StopIteration through a Future."""
     try:
         return callback(next, raw_iterator), False
     except StopIteration:
@@ -298,7 +298,7 @@ def _next_provider_chunk(callback: Callable[..., Any], raw_iterator: Any) -> tup
 
 
 class ManagedLlmStream(Iterator[Any]):
-    """Synchronous view of one Relay-managed provider stream, driven from the worker thread."""
+    """Synchrothor view of one Relay-managed provider stream, driven from the worker thread."""
 
     final_response: Any = None
     output_modified = _closed = _provider_completed = _delivered_unmatched = False
@@ -955,7 +955,7 @@ def _json_equal(left: Any, right: Any) -> bool:
 
 
 def _run_awaitable(
-    value: Any, *, loop_error: str = "Synchronous Relay LLM execution cannot run on an event-loop thread",
+    value: Any, *, loop_error: str = "Synchrothor Relay LLM execution cannot run on an event-loop thread",
 ) -> Any:
     if not inspect.isawaitable(value):
         return value

@@ -61,11 +61,11 @@ export const deBoot = {
       signOutAndSignIn: 'Abmelden & anmelden',
       remoteFailureHint:
         'Überprüfen Sie die Gateway-URL und die Anmeldung in den Gateway-Einstellungen, oder wechseln Sie zum lokalen Gateway.',
-      cloudDownTitle: 'Nous Cloud Agent ist down',
+      cloudDownTitle: 'Thor Cloud Agent ist down',
       cloudDownDescription:
-        'Der von Nous verwaltete Cloud-Agent, mit dem sich dieses Gateway verbindet, meldet einen Serverfehler. Er kann von hier aus nicht neu gestartet werden – prüfen Sie seinen Status, wechseln Sie zum lokalen Gateway oder wenden Sie sich an den Support.',
+        'Der von Thor verwaltete Cloud-Agent, mit dem sich dieses Gateway verbindet, meldet einen Serverfehler. Er kann von hier aus nicht neu gestartet werden – prüfen Sie seinen Status, wechseln Sie zum lokalen Gateway oder wenden Sie sich an den Support.',
       cloudDownHint:
-        'Die Schaltflächen unten öffnen das Nous Portal (Instanzstatus und Steuerung) und unseren Discord für Support.',
+        'Die Schaltflächen unten öffnen das Thor Portal (Instanzstatus und Steuerung) und unseren Discord für Support.',
       cloudDownCheckPortal: 'Portal-Status prüfen',
       cloudDownDiscord: 'Hilfe auf Discord holen',
       hideRecentLogs: 'Neueste Logs ausblenden',

@@ -16,7 +16,7 @@ export const deGatewayHost: GatewayHostTranslations = {
   },
   webAccess: {
     title: 'Webzugriff',
-    intro: 'Öffne Thor auf diesem Computer vom Handy oder einem anderen Computer aus, angemeldet mit deinem Nous-Konto. Wer sich anmeldet, kann Befehle auf diesem Computer ausführen.',
+    intro: 'Öffne Thor auf diesem Computer vom Handy oder einem anderen Computer aus, angemeldet mit deinem Thor-Konto. Wer sich anmeldet, kann Befehle auf diesem Computer ausführen.',
     failed: 'Der Webzugriff konnte nicht geändert werden',
     running: 'Läuft',
     stopped: 'Gestoppt',
@@ -25,7 +25,7 @@ export const deGatewayHost: GatewayHostTranslations = {
     restartNeeded: 'Neustart nötig',
     unavailable: 'Nicht verfügbar',
     notRunningDetail: 'Starte ihn, um Thor von einem anderen Gerät aus zu öffnen.',
-    needsNous: 'Melde dich zuerst unter Anbieter bei deinem Nous-Konto an.',
+    needsThor: 'Melde dich zuerst unter Anbieter bei deinem Thor-Konto an.',
     runningLan: 'Öffne diese Adresse auf einem Gerät im selben Netzwerk.',
     runningPublic: 'Über deine URL bereitgestellt.',
     runningLocal: 'Nur dieser Computer kann die Web-App öffnen. Stoppe sie und starte sie erneut, um sie von anderen Geräten aus zu öffnen.',
@@ -40,7 +40,7 @@ export const deGatewayHost: GatewayHostTranslations = {
     startStages: {
       preparing: 'Die Web-App wird vorbereitet. Das Erstellen kann einige Minuten dauern.',
       building: 'Die Web-App wird erstellt. Das kann einige Minuten dauern.',
-      registering: 'Die Nous-Anmeldung wird für diese Adresse eingerichtet.',
+      registering: 'Die Thor-Anmeldung wird für diese Adresse eingerichtet.',
       restarting: 'Das Gateway wird neu gestartet, um die Web-App bereitzustellen.'
     },
     startElapsed: time => `Verstrichene Zeit: ${time}`,

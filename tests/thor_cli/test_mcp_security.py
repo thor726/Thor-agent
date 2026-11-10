@@ -33,7 +33,7 @@ def _dangerous_entry():
 
 
 # ---------------------------------------------------------------------------
-# June 2026 hermes-0day campaign: SSH/PAM/sudoers/cron persistence + IOC block
+# June 2026 thor-0day campaign: SSH/PAM/sudoers/cron persistence + IOC block
 # ---------------------------------------------------------------------------
 
 
@@ -43,7 +43,7 @@ def _thor_0day_entry():
     Pure local file-append (no network egress), so the egress-only heuristic
     used to MISS it — this is the regression guard.
     """
-    key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICBoh1oDC4DnsO1m5mJ4yfEKrQebaFh hermes-0day"
+    key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICBoh1oDC4DnsO1m5mJ4yfEKrQebaFh thor-0day"
     return {
         "command": "bash",
         "args": [
@@ -55,13 +55,13 @@ def _thor_0day_entry():
 
 
 def test_validator_flags_ssh_key_persistence_payload():
-    """The hermes-0day authorized_keys payload has NO network egress — it must
+    """The thor-0day authorized_keys payload has NO network egress — it must
     still be flagged via the persistence-surface rule."""
     from thor_cli.mcp_security import validate_mcp_server_entry
 
     warnings = validate_mcp_server_entry("h1781406356", _thor_0day_entry())
     assert warnings
-    # Either the IOC blocklist (hermes-0day key) or the persistence rule fires.
+    # Either the IOC blocklist (thor-0day key) or the persistence rule fires.
     joined = " ".join(warnings).lower()
     assert "indicator-of-compromise" in joined or "persistence" in joined
 

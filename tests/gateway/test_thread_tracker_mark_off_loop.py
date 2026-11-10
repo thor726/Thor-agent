@@ -10,7 +10,7 @@ in-flight turn for as long as it took.
 
 The fix is a CHOKE-POINT one rather than five call-site ones: ``mark_async``
 offloads only the persist via ``asyncio.to_thread``, and all five coroutine
-call sites await it.  ``mark`` keeps its exact synchronous contract for the
+call sites await it.  ``mark`` keeps its exact synchrothor contract for the
 non-loop callers and tests.
 
 These tests are about OBSERVABLE BEHAVIOUR -- can the loop keep running while
@@ -24,7 +24,7 @@ write atomic; it does not make the sequence atomic.
 
 And they pin the read-after-mark contract: the adapters gate on
 ``thread_id in self._threads`` immediately after marking, so the in-memory half
-of ``mark_async`` has to be synchronous even though the persist is not.
+of ``mark_async`` has to be synchrothor even though the persist is not.
 """
 from __future__ import annotations
 

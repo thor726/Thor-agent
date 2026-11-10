@@ -39,7 +39,7 @@ export const UPDATE_HOSTS = [
   'codeload.github.com',
   'objects.githubusercontent.com',
   'release-assets.githubusercontent.com',
-  'thor-assets.nousresearch.com',
+  'thor-assets.thor-agent.local',
   'registry.npmjs.org',
   'pypi.org',
   'files.pythonhosted.org',

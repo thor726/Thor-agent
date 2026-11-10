@@ -21,10 +21,10 @@ def channel_request(commit: str, sequence: int = 65536) -> dict:
         "windowsVersion": f"0.{sequence // 65536}.{sequence % 65536}.0",
         "identity": {
             "token": token, "displayName": "Thor unregistered-preview",
-            "appId": f"com.nousresearch.thor-channel-{token}",
+            "appId": f"com.thorresearch.thor-channel-{token}",
             "appNamePascal": f"ThorChannel{token}", "artifactNamePascal": "ThorBundled",
             "cliName": "thor-unregistered-preview", "windowsExecutableName": "thor-unregistered-preview",
-            "msixAppIdWithOrg": f"NousResearch.ThorChannel{token}",
+            "msixAppIdWithOrg": f"dwisetyabudi15581.ThorChannel{token}",
         },
         "bundleEnv": {"THOR_PREVIEW_FULL_CONNECTORS": "1", "THOR_HOME": None},
         "publicBase": "https://builds.example.test",

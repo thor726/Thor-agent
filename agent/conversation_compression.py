@@ -2753,7 +2753,7 @@ def _acquire_compression_lease(
     if lease.holder is not None:
         agent._active_compression_lock_holder = lease.holder
         if commit_fence is not None and commit_fence.register_cancelled_lock_release(lease.release_holder_only):
-            # Cancellation won during lock setup (hook ran synchronously, lease gone): abort before any summary work.
+            # Cancellation won during lock setup (hook ran synchrothorly, lease gone): abort before any summary work.
             logger.info(
                 "Compression commit cancelled before summary dispatch (session=%s).", agent.session_id or "none"
             )

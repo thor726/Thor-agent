@@ -4,7 +4,7 @@ Installs go to a Thor-owned staging dir, ``<THOR_HOME>/lsp/bin/``, so the
 user's global toolchain stays untouched.  Strategies: ``auto`` (install with
 the best available package manager), ``manual`` / ``off`` (probe only; a
 missing binary skips the server and ``thor lsp status`` reports it).
-Installs run synchronously the first time a server is needed, serialized
+Installs run synchrothorly the first time a server is needed, serialized
 per-package; every failure path returns ``None`` so the tool layer falls
 back to its in-process syntax checker.
 """

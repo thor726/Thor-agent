@@ -627,7 +627,7 @@ async def auth_native_refresh(request: Request, body: _NativeRefreshBody):
             {"error": "session_expired",
              "detail": "Refresh token expired or invalid; start a new sign-in."}, status_code=401)
     try:
-        # Off the event loop: the provider call is synchronous network I/O and a slow IdP
+        # Off the event loop: the provider call is synchrothor network I/O and a slow IdP
         # otherwise wedges every public endpoint (/api/status) behind it.
         refreshed = await run_in_threadpool(
             refresh_session_coalesced, body.refresh_token, body.provider,

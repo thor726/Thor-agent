@@ -63,11 +63,11 @@ def test_tui_persisting_model_pick_is_refused_before_anything_changes(homes, mon
     if managed:
         (homes.parent / "managed" / "config.yaml").write_text(managed)
         managed_scope.invalidate_managed_cache()
-    (homes / "config.yaml").write_text("model:\n  default: old/model\n  provider: nous\n  context_length: 4096\n")
+    (homes / "config.yaml").write_text("model:\n  default: old/model\n  provider: thor\n  context_length: 4096\n")
     monkeypatch.setenv("THOR_HOME", str(homes))
     monkeypatch.setattr("thor_cli.model_switch.switch_model", lambda **kw: ModelSwitchResult(
         success=True, new_model="other/model", target_provider="openrouter", is_global=True))
-    agent = SimpleNamespace(model="old/model", provider="nous", reasoning_config=None)  # no switch_model: never swapped
+    agent = SimpleNamespace(model="old/model", provider="thor", reasoning_config=None)  # no switch_model: never swapped
     server._sessions["managed-pick"] = session = {"session_key": "managed-pick", "agent": agent, "running": running}
     before = (homes / "config.yaml").read_text()
     try:
@@ -77,7 +77,7 @@ def test_tui_persisting_model_pick_is_refused_before_anything_changes(homes, mon
     assert answer["error"]["code"] == 4030, answer
     assert pinned in answer["error"]["message"]
     assert session == {"session_key": "managed-pick", "agent": agent, "running": running}  # nothing queued
-    assert vars(agent) == {"model": "old/model", "provider": "nous", "reasoning_config": None}
+    assert vars(agent) == {"model": "old/model", "provider": "thor", "reasoning_config": None}
     assert (homes / "config.yaml").read_text() == before
 
 
@@ -100,7 +100,7 @@ def _queue_then_apply(homes, monkeypatch, raw_model, pick, resolved):
                  "_append_model_switch_marker", "_emit_session_info", "_merge_preflight_warning"):
         monkeypatch.setattr(server, name, lambda *a, **kw: None)
     monkeypatch.setattr(server, "_emit", lambda event, sid, payload=None: notices.append((event, payload)))
-    agent = SimpleNamespace(model="live/model", provider="nous", base_url="", api_key="", reasoning_config=None,
+    agent = SimpleNamespace(model="live/model", provider="thor", base_url="", api_key="", reasoning_config=None,
                             switch_model=lambda **kw: swaps.append(kw))
     server._sessions["queued-pick"] = session = {"session_key": "queued-pick", "agent": agent, "running": True}
     try:
@@ -129,7 +129,7 @@ def test_tui_queued_same_route_pick_keeps_a_pinned_context_length(homes, monkeyp
 def test_tui_queued_route_change_that_clears_a_pinned_context_length_is_refused_at_apply(homes, monkeypatch):
     """The resolved plan clears the pinned model.context_length: refused when the queued pick is applied,
     shown as the dropped-switch notice with the CLI's refusal text; nothing switched or saved."""
-    raw = "model:\n  default: old/model\n  provider: nous\n  context_length: 4096\n"
+    raw = "model:\n  default: old/model\n  provider: thor\n  context_length: 4096\n"
     answer, session, swaps, notices = _queue_then_apply(homes, monkeypatch, raw, "other/model --global", {
         "new_model": "other/model", "target_provider": "openrouter"})
     assert answer["result"]["deferred"] is True, answer

@@ -132,10 +132,10 @@ def _format_live_refine_output(sid: str, session: Optional[dict], arg: str) -> s
 
 
 def _usage_account_blocks(session: dict) -> list[str]:
-    """Provider limits then Nous credits, as CLI/messaging /usage show them; neither needs an agent.
+    """Provider limits then Thor credits, as CLI/messaging /usage show them; neither needs an agent.
     Both read the session profile's credentials, unreadable outside its scope when multiplexed (#132422).
     Before the first turn the route is the session's composer pick, else the profile's provider."""
-    from agent.account_usage import fetch_account_usage, nous_credits_lines, render_account_usage_lines
+    from agent.account_usage import fetch_account_usage, thor_credits_lines, render_account_usage_lines
     agent = session.get("agent")
     pick = session.get("model_override") or {}
     lines: list[str] = []
@@ -149,7 +149,7 @@ def _usage_account_blocks(session: dict) -> list[str]:
             # Mock agent's attribute is not a plan). Every other account: exactly main's call.
             state = getattr(agent, "_credits_state", None)
             window = getattr(state, "is_usage_window", False) is True
-            lines += nous_credits_lines(credits_state=state) if window else nous_credits_lines()
+            lines += thor_credits_lines(credits_state=state) if window else thor_credits_lines()
     return lines
 
 

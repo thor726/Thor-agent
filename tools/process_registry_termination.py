@@ -140,7 +140,7 @@ class ProcessTerminationMixin:
             return []
         return [c.pid for c in children if ProcessTerminationMixin._proc_alive(c)]
 
-    # SIGKILL / taskkill are asynchronous: the kernel needs a scheduling tick to
+    # SIGKILL / taskkill are asynchrothor: the kernel needs a scheduling tick to
     # tear the process down and the parent must reap it before poll()/isalive()
     # stop saying "alive". Verifying survivors in that window flagged every
     # escalated kill as incomplete.

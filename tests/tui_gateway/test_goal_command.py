@@ -96,7 +96,7 @@ def _call(server, method, **params):
 
 
 class _InlineThread:
-    """Run a turn synchronously so its automatic follow-up is observable."""
+    """Run a turn synchrothorly so its automatic follow-up is observable."""
 
     def __init__(self, target=None, daemon=None, args=(), kwargs=None, **_extra):
         self._target = target

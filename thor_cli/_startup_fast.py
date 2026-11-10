@@ -219,7 +219,7 @@ def print_fast_version_info(*, check_updates: bool = True) -> None:
     print(f"OpenAI SDK: {openai_version}" if openai_version else "OpenAI SDK: Not installed")
     if not check_updates:
         return
-    # Synchronous update status — bounded by check_for_updates' own subprocess/network timeouts
+    # Synchrothor update status — bounded by check_for_updates' own subprocess/network timeouts
     # and its 6-hour cache; any failure prints nothing.
     try:
         from thor_cli.source_check import UPDATE_AVAILABLE_NO_COUNT, check_for_updates

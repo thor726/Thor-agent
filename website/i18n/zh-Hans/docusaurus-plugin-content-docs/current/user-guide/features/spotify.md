@@ -1,6 +1,6 @@
 # Spotify
 
-Thor 通过[插件目录](./plugins.md)中的官方 **`spotify` 插件**控制 Spotify——播放、队列、搜索、播放列表、已保存的曲目/专辑以及收听历史——基于 Spotify 官方 Web API 配合 PKCE OAuth 实现。该插件由 Nous Research 在 [NousResearch/thor-official-plugins](https://github.com/NousResearch/thor-official-plugins/tree/main/spotify) 维护，不属于 Thor 核心。Token（令牌）存储在 `~/.thor/auth.json` 中，遇到 401 时自动刷新；每台机器只需登录一次。
+Thor 通过[插件目录](./plugins.md)中的官方 **`spotify` 插件**控制 Spotify——播放、队列、搜索、播放列表、已保存的曲目/专辑以及收听历史——基于 Spotify 官方 Web API 配合 PKCE OAuth 实现。该插件由 Thor Agent 在 [dwisetyabudi15581/thor-official-plugins](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/spotify) 维护，不属于 Thor 核心。Token（令牌）存储在 `~/.thor/auth.json` 中，遇到 401 时自动刷新；每台机器只需登录一次。
 
 与 Thor 内置的 OAuth 集成不同，Spotify 要求每位用户自行注册一个轻量级开发者应用。Spotify 不允许第三方发布可供所有人使用的公共 OAuth 应用。整个过程大约需要两分钟，`thor spotify login` 会全程引导你完成。
 

@@ -15,7 +15,7 @@ import assert from 'node:assert/strict'
 import { test } from 'vitest'
 
 import { httpStatusError } from './api-transport'
-import { makeNousCloudBackendDownError } from './backend-health'
+import { makeThorCloudBackendDownError } from './backend-health'
 import {
   apiRequestRegistryConnectionId,
   authModeFromStatus,
@@ -219,12 +219,12 @@ test('profileRemoteOverride treats a cloud entry as a remote override', () => {
   // entry would (Q6) — the override must be returned, not dropped.
   const config = {
     profiles: {
-      coder: { mode: 'cloud', url: 'https://agent-1.agents.nousresearch.com', authMode: 'oauth' }
+      coder: { mode: 'cloud', url: 'https://agent-1.agents.thor-agent.local', authMode: 'oauth' }
     }
   }
 
   assert.deepEqual(profileRemoteOverride(config, 'coder'), {
-    url: 'https://agent-1.agents.nousresearch.com',
+    url: 'https://agent-1.agents.thor-agent.local',
     authMode: 'oauth',
     token: undefined
   })
@@ -1028,12 +1028,12 @@ test('resolveProfileApiRequest uses exact method and path eligibility for mixed 
     { backendProfile: null, requestPath: '/api/config/defaults?profile=iris' }
   )
   assert.deepEqual(
-    resolveProfileApiRequest('iris', '/api/model/recommended-default?provider=nous', {
+    resolveProfileApiRequest('iris', '/api/model/recommended-default?provider=thor', {
       requestMethod: 'GET'
     }),
     {
       backendProfile: null,
-      requestPath: '/api/model/recommended-default?provider=nous&profile=iris'
+      requestPath: '/api/model/recommended-default?provider=thor&profile=iris'
     }
   )
 })
@@ -1221,7 +1221,7 @@ test('buildGatewayWsUrlWithTicket url-encodes the ticket', () => {
 // --- authModeFromStatus ---
 
 test('authModeFromStatus returns oauth when auth_required is true', () => {
-  assert.equal(authModeFromStatus({ auth_required: true, auth_providers: ['nous'] }), 'oauth')
+  assert.equal(authModeFromStatus({ auth_required: true, auth_providers: ['thor'] }), 'oauth')
 })
 
 test('authModeFromStatus returns token when auth_required is false/missing', () => {
@@ -1564,7 +1564,7 @@ test('gatewayTicketFailure preserves a structured 503 statusCode as a transport 
 
 test('gatewayTicketFailure only copies an integer statusCode, not a message prefix', () => {
   // A legacy "503: ..." message carries no structured statusCode; the Cloud
-  // classifier (makeNousCloudBackendDownError) handles the prefix at the mint
+  // classifier (makeThorCloudBackendDownError) handles the prefix at the mint
   // boundary. The wrapper must not invent an integer from the message.
   const source = new Error('503: Service Unavailable') as any
 
@@ -1576,17 +1576,17 @@ test('gatewayTicketFailure only copies an integer statusCode, not a message pref
 
 // OAuth integration regression (#85373): the WS-ticket mint boundary runs
 // BEFORE waitForThorReady. This mirrors main.ts buildRemoteConnection's
-// catch — classify a Nous Cloud server fault via the shared factory, else
+// catch — classify a Thor Cloud server fault via the shared factory, else
 // fall through to gatewayTicketFailure. Proves the production composition:
 //   1. Cloud + OAuth ticket mint + 503  -> actionable Cloud-down error
 //   2. Cloud + OAuth ticket mint + 401  -> reauth (never Cloud-down)
 test('OAuth ticket-mint 503 surfaces the Cloud-down error (startup boundary)', () => {
-  const baseUrl = 'https://ares-3009.agents.nousresearch.com'
+  const baseUrl = 'https://ares-3009.agents.thor-agent.local'
   const ticketErr = new Error('upstream unavailable') as any
   ticketErr.statusCode = 503
 
   // The exact production sequence from main.ts.
-  const cloudError = makeNousCloudBackendDownError(baseUrl, ticketErr)
+  const cloudError = makeThorCloudBackendDownError(baseUrl, ticketErr)
 
   if (cloudError !== null) {
     assert.equal((cloudError as any).isCloudBackendDown, true)
@@ -1601,11 +1601,11 @@ test('OAuth ticket-mint 503 surfaces the Cloud-down error (startup boundary)', (
 })
 
 test('OAuth ticket-mint 401 stays on the reauth path (never Cloud-down)', () => {
-  const baseUrl = 'https://ares-3009.agents.nousresearch.com'
+  const baseUrl = 'https://ares-3009.agents.thor-agent.local'
   const ticketErr = new Error('Unauthorized') as any
   ticketErr.statusCode = 401
 
-  const cloudError = makeNousCloudBackendDownError(baseUrl, ticketErr)
+  const cloudError = makeThorCloudBackendDownError(baseUrl, ticketErr)
   assert.equal(cloudError, null, 'a 401 must not become a Cloud-down error')
 
   const wrapped = gatewayTicketFailure(ticketErr, 'auth message', 'transport message')

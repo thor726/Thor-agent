@@ -1,11 +1,11 @@
-"""Nous free-tier identity: the ``anonymous`` auth method of the ``nous`` provider.
+"""Thor free-tier identity: the ``anonymous`` auth method of the ``thor`` provider.
 
 The identity is created in two places: by the desktop's first install, which claims the welcome
 trial (``thor_cli.welcome_trial``), and on the first hosted connector action for anyone without a
-Nous identity (``tools.connectors.gateway.config.ensure_guest_identity``, gated by ``guest_allowed``).
-Either mints an anonymous Nous account (``POST /api/anonymous/create``); its ``anon_`` credential is
+Thor identity (``tools.connectors.gateway.config.ensure_guest_identity``, gated by ``guest_allowed``).
+Either mints an anonymous Thor account (``POST /api/anonymous/create``); its ``anon_`` credential is
 later exchanged for short-lived JWTs (``POST /api/anonymous/token``). The result is persisted as the
-singleton ``providers.nous``. Only a guest stamped with the trial claim carries inference
+singleton ``providers.thor``. Only a guest stamped with the trial claim carries inference
 (:func:`free_inference_active`), on every surface of the install once the desktop claimed it: chats,
 cron, side agents, workers, the CLI. Every other guest serves connectors and managed tools. In the resolver ladder (``resolve_provider``) a guest that
 carries inference sits directly above the implicit AWS Bedrock chain (NS-829): any explicit provider
@@ -14,10 +14,10 @@ ladder never creates one.
 
 Only two mechanics differ from an OAuth login and both are isolated behind ``is_guest_state``:
 token acquisition (re-exchange the ``anon_`` credential; there is no refresh token) and routing
-(the welcome inference host, single model ``nous/welcome``).
+(the welcome inference host, single model ``thor/welcome``).
 
 Users are never shown the words guest / anonymous / account for this state: surfaces say
-"Nous · free tier". Two user-facing verbs reach the same flow, both keeping the identity's
+"Thor · free tier". Two user-facing verbs reach the same flow, both keeping the identity's
 connectors: ``thor auth upgrade`` in a terminal and ``/login`` inside a chat.
 
 Lifecycle lives in ONE primitive, :func:`_reconcile_and_provision`: adopt what the shared store already
@@ -38,7 +38,7 @@ from typing import Any, Callable, Dict, Optional
 
 from agent.retry_utils import parse_retry_after_seconds
 from thor_cli.auth_constants import (
-    AuthError, DEFAULT_NOUS_PORTAL_URL, DEFAULT_NOUS_WELCOME_URL, NOUS_INFERENCE_INVOKE_SCOPE, WELCOME_CLAIM_FLAG,
+    AuthError, DEFAULT_THOR_PORTAL_URL, DEFAULT_THOR_PORTAL_WELCOME_URL, THOR_PORTAL_INFERENCE_INVOKE_SCOPE, WELCOME_CLAIM_FLAG,
     _decode_jwt_claims, httpx)
 
 logger = logging.getLogger("thor_cli.auth")
@@ -46,7 +46,7 @@ logger = logging.getLogger("thor_cli.auth")
 ANON_AUTH_METHOD = "anonymous"
 ANON_CLIENT_ID = "nas-anonymous"
 ANON_ACCOUNT_TIER = "anonymous"
-GUEST_MODEL = "nous/welcome"
+GUEST_MODEL = "thor/welcome"
 ANON_SECRET_HEADER = "x-anonymous-api-secret"
 # The shared secret gates the anonymous surface during its integration phase. It is a deployment
 # secret (Sid's), read from the environment only.
@@ -58,11 +58,11 @@ ANON_SECRET_ENV = "THOR_ANON_API_SECRET"
 PREVIEW_FULL_CONNECTORS_ENV = "THOR_PREVIEW_FULL_CONNECTORS"
 GUEST_MINT_TIMEOUT_SECONDS = 5.0
 # Copy shared by every surface that names the free tier (R-USR-1): never guest / anonymous / account.
-FREE_TIER_LABEL = "Nous · free tier"
-UPGRADE_HINT = "Run `thor auth upgrade` to sign in with a Nous account, or /login inside a chat."
+FREE_TIER_LABEL = "Thor · free tier"
+UPGRADE_HINT = "Run `thor auth upgrade` to sign in with a Thor account, or /login inside a chat."
 FREE_TIER_NOT_SIGNED_IN = (
     "You're not signed in. Free inference and connectors are always on. "
-    "Run `thor auth` to sign in with a Nous account.")
+    "Run `thor auth` to sign in with a Thor account.")
 
 
 class AnonCredentialDead(AuthError):
@@ -84,7 +84,7 @@ def _anon_err(message: str, code: str, *, retry_after: Optional[float] = None) -
 # fallback (no ``/login``, no ``thor`` verb, no guest / anonymous / credential). ``retryable``
 # says whether a later attempt can succeed at all; ``retry_after`` is the wait the server named.
 #
-# What NAS actually sends (nous-account-service ``api/anonymous/gate.ts`` and the routes behind it):
+# What NAS actually sends (thor-account-service ``api/anonymous/gate.ts`` and the routes behind it):
 #   404 ``not_found``             the surface is not enabled on this deployment (terminal)
 #   503 ``temporarily_disabled``  the ops breaker is tripped (transient, no hint)
 #   429 ``temporarily_unavailable`` + Retry-After   per-address / per-credential limits
@@ -115,18 +115,18 @@ ANON_UNREACHABLE_CODES = frozenset({ANON_UNREACHABLE, ANON_SERVER_ERROR})
 # what is unavailable is using Thor without signing in, and signing in is free.
 _SIGNIN_IS_FREE = "Signing in is free."
 ANON_FAILURE_COPY = {
-    ANON_GATE_CLOSED: f"This version can't be used without a Nous account. {_SIGNIN_IS_FREE}",
+    ANON_GATE_CLOSED: f"This version can't be used without a Thor account. {_SIGNIN_IS_FREE}",
     ANON_GATE_PAUSED: f"Using Thor without signing in is paused for a moment. {_SIGNIN_IS_FREE}",
     ANON_RATE_LIMITED: "Lots of people are getting started right now. Try again in {wait}. "
                        "Signing in is free and skips the wait.",
-    ANON_POW_REQUIRED: "The Nous server asked for a proof of work, but that isn't implemented in your "
-                       "Agent yet. Sign in with a Nous account to continue.",
+    ANON_POW_REQUIRED: "The Thor server asked for a proof of work, but that isn't implemented in your "
+                       "Agent yet. Sign in with a Thor account to continue.",
     ANON_CHALLENGE_REQUIRED: "Finish the quick check in your browser, then try again.",
-    ANON_SIGNIN_REQUIRED: "Free guest access isn't available here. Sign in with a Nous account to continue.",
+    ANON_SIGNIN_REQUIRED: "Free guest access isn't available here. Sign in with a Thor account to continue.",
     ANON_ACCOUNT_LOCKED: f"This session can't continue without signing in. {_SIGNIN_IS_FREE}",
     ANON_CREDENTIAL_DEAD: "Your session ended. A new one starts on its own.",
-    ANON_UNREACHABLE: "The Nous service couldn't be reached. Check your internet connection and try again.",
-    ANON_SERVER_ERROR: "The Nous service had a hiccup. Try again in a moment.",
+    ANON_UNREACHABLE: "The Thor service couldn't be reached. Check your internet connection and try again.",
+    ANON_SERVER_ERROR: "The Thor service had a hiccup. Try again in a moment.",
 }
 
 
@@ -154,16 +154,16 @@ def anon_failure_copy(code: str, *, retry_after: Any = None) -> str:
 
 
 def guest_allowed() -> bool:
-    """``nous.guest`` (default True) has not switched guests off: no connector guest, no trial."""
+    """``thor.guest`` (default True) has not switched guests off: no connector guest, no trial."""
     try:
         from thor_cli.config import load_config_readonly
-        nous_cfg = load_config_readonly().get("nous")
+        thor_cfg = load_config_readonly().get("thor")
     except Exception:  # config unreadable: keep today's behaviour (no guest) rather than mint
-        logger.debug("guest: config unreadable, treating nous.guest as false", exc_info=True)
+        logger.debug("guest: config unreadable, treating thor.guest as false", exc_info=True)
         return False
-    if not isinstance(nous_cfg, dict):
+    if not isinstance(thor_cfg, dict):
         return True
-    return bool(nous_cfg.get("guest", True))
+    return bool(thor_cfg.get("guest", True))
 
 
 def is_guest_state(state: Any) -> bool:
@@ -177,7 +177,7 @@ def is_anonymous_request(provider: Any, api_key: Any) -> bool:
     Named free accounts and opaque API keys must retain normal provider errors.
     """
     from thor_cli.auth_constants import _decode_jwt_claims
-    return provider == "nous" and _decode_jwt_claims(api_key).get("account_tier") == ANON_ACCOUNT_TIER
+    return provider == "thor" and _decode_jwt_claims(api_key).get("account_tier") == ANON_ACCOUNT_TIER
 
 
 def is_anonymous_agent(agent: Any) -> bool:
@@ -185,18 +185,18 @@ def is_anonymous_agent(agent: Any) -> bool:
     return is_anonymous_request(getattr(agent, "provider", ""), getattr(agent, "api_key", None))
 
 
-def current_nous_state() -> Optional[dict[str, Any]]:
-    """The profile's ``providers.nous`` state without locking or network (status/picker reads)."""
+def current_thor_state() -> Optional[dict[str, Any]]:
+    """The profile's ``providers.thor`` state without locking or network (status/picker reads)."""
     from thor_cli.auth import _load_auth_store, _load_provider_state
     try:
-        return _load_provider_state(_load_auth_store(), "nous")
+        return _load_provider_state(_load_auth_store(), "thor")
     except Exception as exc:
         logger.debug("guest: auth store unreadable: %s", exc)
         return None
 
 
 def has_guest() -> bool:
-    return is_guest_state(current_nous_state())
+    return is_guest_state(current_thor_state())
 
 
 def on_local_desktop_backend() -> bool:
@@ -211,23 +211,23 @@ def free_inference_active(state: Any = None) -> bool:
     """The welcome trial carries inference: a guest that claimed it and guests
     still allowed. Only the claim is the local Desktop's (``welcome_trial``); once claimed, every
     surface of the install runs on it. *state* defaults to the profile's."""
-    state = current_nous_state() if state is None else state
+    state = current_thor_state() if state is None else state
     return is_guest_state(state) and state.get(WELCOME_CLAIM_FLAG) is True and guest_allowed()
 
 
 def trial_model() -> str:
     """The last rung of model resolution, below every model the user named (``model.default``, a cron
-    or task pin): ``nous/welcome`` while the welcome trial carries inference, else ''. Never written to
+    or task pin): ``thor/welcome`` while the welcome trial carries inference, else ''. Never written to
     config.yaml, so it stops applying the moment the user configures a real model."""
     return GUEST_MODEL if free_inference_active() else ""
 
 
 def has_free_tier_account() -> bool:
-    """True when the profile's Nous identity is a guest that carries inference here.
+    """True when the profile's Thor identity is a guest that carries inference here.
 
     Profile-level: use for status, picker and notice surfaces. Routing decisions (which model a
     request may carry) must use :func:`route_is_welcome_host` on the SELECTED runtime instead: a
-    credential-pool entry can pick a paid Nous key while the profile singleton is still a guest.
+    credential-pool entry can pick a paid Thor key while the profile singleton is still a guest.
     """
     return free_inference_active()
 
@@ -240,14 +240,14 @@ def guest_without_free_tier(state: Any) -> bool:
 
 def free_tier_route() -> bool:
     from thor_cli.auth import resolve_provider
-    return has_free_tier_account() and resolve_provider("auto") == "nous"
+    return has_free_tier_account() and resolve_provider("auto") == "thor"
 
 
-WELCOME_HOSTS = frozenset({"welcome-api.nousresearch.com"})
+WELCOME_HOSTS = frozenset({"welcome-api.thor-agent.local"})
 # Dev-only: extra hostnames that count as the welcome host, comma-separated (for example
-# ``127.0.0.1`` while ``NOUS_INFERENCE_BASE_URL`` points at a local stand-in). Read from the
+# ``127.0.0.1`` while ``THOR_PORTAL_INFERENCE_BASE_URL`` points at a local stand-in). Read from the
 # environment, which the user controls, so it sits at the same trust level as the URL override
-# itself; it never widens the NETWORK-side allowlist in ``auth_nous``.
+# itself; it never widens the NETWORK-side allowlist in ``auth_thor``.
 EXTRA_WELCOME_HOSTS_ENV = "THOR_EXTRA_WELCOME_HOSTS"
 
 
@@ -259,29 +259,29 @@ def welcome_hosts() -> frozenset[str]:
 
 
 def pin_model_for_route(provider: Any, base_url: Any, model: Any) -> Any:
-    """Model policy at agent START: on the Nous welcome host the model is ``nous/welcome``; anywhere
+    """Model policy at agent START: on the Thor welcome host the model is ``thor/welcome``; anywhere
     else the caller's model stands. Used once, when the route is first finalized. Mid-conversation
     route changes go through :func:`route_can_serve_model` instead: a conversation's model is never
     silently rewritten by a credential rotation.
     """
-    if provider == "nous" and route_is_welcome_host(base_url):
+    if provider == "thor" and route_is_welcome_host(base_url):
         if model and model != GUEST_MODEL:
-            logger.info("Nous free tier: using %s instead of configured model %s", GUEST_MODEL, model)
+            logger.info("Thor free tier: using %s instead of configured model %s", GUEST_MODEL, model)
         return GUEST_MODEL
     return model
 
 
 def route_can_serve_model(provider: Any, base_url: Any, model: Any) -> bool:
-    """Eligibility for a credential ROTATION: the welcome host serves only ``nous/welcome``, so a
-    conversation on any other model must not be rotated onto it (and a ``nous/welcome`` conversation
-    may move to the portal host, which serves it too). Non-Nous routes are always eligible."""
-    if provider != "nous" or not route_is_welcome_host(base_url):
+    """Eligibility for a credential ROTATION: the welcome host serves only ``thor/welcome``, so a
+    conversation on any other model must not be rotated onto it (and a ``thor/welcome`` conversation
+    may move to the portal host, which serves it too). Non-Thor routes are always eligible."""
+    if provider != "thor" or not route_is_welcome_host(base_url):
         return True
     return not model or model == GUEST_MODEL
 
 
 def route_is_welcome_host(base_url: Any) -> bool:
-    """The routing predicate for the free tier: the welcome host serves exactly ``nous/welcome``.
+    """The routing predicate for the free tier: the welcome host serves exactly ``thor/welcome``.
 
     Keyed on the resolved endpoint, never on profile state, so a paid pool credential routed to the
     portal host keeps its model even when a guest singleton exists beside it.
@@ -352,7 +352,7 @@ def _raise_for_anon_status(
     cls, code = (_NAS_REFUSALS.get((status, error)) or _NAS_REFUSALS.get((status, None))
                  or ((AuthError, ANON_POW_REQUIRED) if error == "pow_" else (AuthError, ANON_SERVER_ERROR)))
     if code == ANON_SERVER_ERROR:
-        logger.info("Nous free tier %s failed (%s%s)", action, status, f": {error}" if error else "")
+        logger.info("Thor free tier %s failed (%s%s)", action, status, f": {error}" if error else "")
     retry_after = parse_retry_after_seconds(response.headers)
     raise cls(anon_failure_copy(code, retry_after=retry_after), code=code, retry_after=retry_after,
               retryable=code not in ANON_TERMINAL_CODES)
@@ -372,7 +372,7 @@ def mint_guest(client: httpx.Client, portal_base_url: str) -> dict[str, Any]:
     payload = _raise_for_anon_status(response, action="sign-up")
     token = payload.get("token")
     if not isinstance(token, str) or not token.startswith("anon_"):
-        logger.info("Nous free tier sign-up returned no credential")
+        logger.info("Thor free tier sign-up returned no credential")
         raise _anon_err(ANON_FAILURE_COPY[ANON_SERVER_ERROR], ANON_SERVER_ERROR)
     return payload
 
@@ -384,10 +384,10 @@ def mint_guest(client: httpx.Client, portal_base_url: str) -> dict[str, Any]:
 # ``scope`` claim, never off the purpose that asked for it.
 def is_connectors_only(token: Any) -> bool:
     """*token* carries a scope claim and it lacks ``inference:invoke`` (a scopeless JWT reads as today's)."""
-    from thor_cli.auth_nous import _scope_values
+    from thor_cli.auth_thor import _scope_values
     claims = _decode_jwt_claims(token)
     scopes = _scope_values(claims.get("scope")) | _scope_values(claims.get("scp"))
-    return bool(scopes) and NOUS_INFERENCE_INVOKE_SCOPE not in scopes
+    return bool(scopes) and THOR_PORTAL_INFERENCE_INVOKE_SCOPE not in scopes
 
 
 def held_connectors_token(state: Any, *, skew_seconds: Optional[int] = None) -> Optional[str]:
@@ -437,7 +437,7 @@ def exchange_anon_jwt(
         (428, "challenge_required"): challenge, (428, "pow_"): proof_of_work, (428, None): signin,
         (403, "signin_required"): signin, (403, "access_denied"): signin})
     if not isinstance(payload.get("access_token"), str) or not payload["access_token"]:
-        logger.info("Nous free tier token exchange returned no token")
+        logger.info("Thor free tier token exchange returned no token")
         raise _anon_err(ANON_FAILURE_COPY[ANON_SERVER_ERROR], ANON_SERVER_ERROR)
     # A connectors-only grant must neither clear nor announce an inference challenge.
     if not is_connectors_only(payload["access_token"]):
@@ -448,7 +448,7 @@ def exchange_anon_jwt(
 def apply_exchange_to_state(state: dict[str, Any], exchanged: dict[str, Any]) -> None:
     """Write a fresh exchange result into a guest state in place: an inference token (token, expiry,
     routing) into the state itself, a connectors-only one into ``connectors_token`` beside it."""
-    from thor_cli.auth_nous import _validate_nous_inference_url_from_network
+    from thor_cli.auth_thor import _validate_thor_inference_url_from_network
     access_token = exchanged["access_token"]
     claims = _decode_jwt_claims(access_token)
     now = datetime.now(UTC)
@@ -461,10 +461,10 @@ def apply_exchange_to_state(state: dict[str, Any], exchanged: dict[str, Any]) ->
         state["connectors_token"] = {"access_token": access_token, "expires_at": expires_at.isoformat()}
         return
     # NAS names the welcome host on every exchange; absent (older NAS) or outside the allowlist
-    # (a staging host without NOUS_INFERENCE_BASE_URL set), the literal stands in. Never the paid
+    # (a staging host without THOR_PORTAL_INFERENCE_BASE_URL set), the literal stands in. Never the paid
     # host: the gateway cross-refuses an anonymous JWT there.
-    inference_url = (_validate_nous_inference_url_from_network(exchanged.get("inference_base_url"))
-                     or DEFAULT_NOUS_WELCOME_URL)
+    inference_url = (_validate_thor_inference_url_from_network(exchanged.get("inference_base_url"))
+                     or DEFAULT_THOR_PORTAL_WELCOME_URL)
     scope = claims.get("scope") or claims.get("scp") or state.get("scope")
     if isinstance(scope, (list, tuple)):
         scope = " ".join(str(s) for s in scope)
@@ -481,12 +481,12 @@ def apply_exchange_to_state(state: dict[str, Any], exchanged: dict[str, Any]) ->
 
 
 def _portal_base_url() -> str:
-    from thor_cli.auth_nous import _nous_portal_env_override
-    return (_nous_portal_env_override() or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+    from thor_cli.auth_thor import _thor_portal_env_override
+    return (_thor_portal_env_override() or DEFAULT_THOR_PORTAL_URL).rstrip("/")
 
 
 def _shared_identity_key(state: Any) -> Optional[str]:
-    """Stable identity of a Nous credential: the anon_ token for a guest, the refresh token for an
+    """Stable identity of a Thor credential: the anon_ token for a guest, the refresh token for an
     account. Used to decide whether two stores hold the SAME identity."""
     if not isinstance(state, dict):
         return None
@@ -500,7 +500,7 @@ def _mint_locked(client: httpx.Client, portal: str, auth_store: dict[str, Any], 
     next attempt exchanges the stored one instead of minting again). *welcome_claim* is written in
     that same save, so a claimed guest is never left unstamped."""
     from thor_cli.auth import _store_provider_state, _save_auth_store
-    from thor_cli.auth_nous import _write_shared_nous_state
+    from thor_cli.auth_thor import _write_shared_thor_state
     minted = mint_guest(client, portal)
     state: dict[str, Any] = {
         "auth_method": ANON_AUTH_METHOD, "account_tier": ANON_ACCOUNT_TIER,
@@ -510,10 +510,10 @@ def _mint_locked(client: httpx.Client, portal: str, auth_store: dict[str, Any], 
         "idle_ttl_days": minted.get("idle_ttl_days"),
         WELCOME_CLAIM_FLAG: welcome_claim,
     }
-    _store_provider_state(auth_store, "nous", state, set_active=False)
+    _store_provider_state(auth_store, "thor", state, set_active=False)
     _save_auth_store(auth_store)
-    _write_shared_nous_state(state, renewal=False)
-    logger.info("Nous free tier ready (identity minted)")
+    _write_shared_thor_state(state, renewal=False)
+    logger.info("Thor free tier ready (identity minted)")
     return state
 
 
@@ -628,24 +628,24 @@ def _reconcile_and_provision(*, timeout_seconds: float, force: bool = False,
     from thor_cli.auth import (
         _auth_store_lock, _load_auth_store, _load_provider_state, _save_auth_store,
         _store_provider_state, _resolve_verify)
-    from thor_cli.auth_nous import (
-        _SHARED_RENEWAL_KEY, _nous_http_client, _nous_shared_store_lock, _read_shared_nous_state,
-        _write_shared_nous_state)
+    from thor_cli.auth_thor import (
+        _SHARED_RENEWAL_KEY, _thor_http_client, _thor_shared_store_lock, _read_shared_thor_state,
+        _write_shared_thor_state)
     portal = _portal_base_url()
     with _auth_store_lock():
         auth_store = _load_auth_store()
-        profile_state = _load_provider_state(auth_store, "nous")
-        with _nous_shared_store_lock(timeout_seconds=max(timeout_seconds, 5.0)):
-            shared = _read_shared_nous_state()
+        profile_state = _load_provider_state(auth_store, "thor")
+        with _thor_shared_store_lock(timeout_seconds=max(timeout_seconds, 5.0)):
+            shared = _read_shared_thor_state()
             if shared and _shared_identity_key(shared) != _shared_identity_key(profile_state):
                 state = {k: v for k, v in shared.items() if k != _SHARED_RENEWAL_KEY}  # another account's tokens
-                _store_provider_state(auth_store, "nous", state, set_active=not is_guest_state(state))
+                _store_provider_state(auth_store, "thor", state, set_active=not is_guest_state(state))
                 _save_auth_store(auth_store)
-                logger.debug("Nous identity adopted from the shared store")
+                logger.debug("Thor identity adopted from the shared store")
                 return state
             if profile_state:
                 if not shared:
-                    _write_shared_nous_state(profile_state, renewal=False)
+                    _write_shared_thor_state(profile_state, renewal=False)
                 return profile_state
             # A caller queued on these locks behind a mint that just failed waits out its cooldown.
             failure = _mint_failure_for_profile()
@@ -653,7 +653,7 @@ def _reconcile_and_provision(*, timeout_seconds: float, force: bool = False,
                 return None
             verify = _resolve_verify(insecure=None, ca_bundle=None, auth_state=None)
             try:
-                with _nous_http_client(timeout_seconds, verify) as client:
+                with _thor_http_client(timeout_seconds, verify) as client:
                     return _mint_locked(client, portal, auth_store, welcome_claim=welcome_claim)
             except Exception as exc:
                 # Noted before the locks are released, so a caller queued on them sees the cooldown.
@@ -668,8 +668,8 @@ def ensure_portal_identity(
     *, explicit: bool, timeout_seconds: float = GUEST_MINT_TIMEOUT_SECONDS, force: bool = False,
     welcome_claim: bool = False,
 ) -> Optional[dict[str, Any]]:
-    """Make sure this profile has a Nous identity (guest or account); mint a guest only if the shared
-    store has none. Returns the ``providers.nous`` state, or None (disabled / failed once already).
+    """Make sure this profile has a Thor identity (guest or account); mint a guest only if the shared
+    store has none. Returns the ``providers.thor`` state, or None (disabled / failed once already).
 
     ``explicit`` is required and must be True: the only callers are the first hosted connector action
     (``tools.connectors.gateway.config.ensure_guest_identity``), the connectors dead-credential
@@ -681,7 +681,7 @@ def ensure_portal_identity(
     connector bearer (NS-845 Q1.2).
 
     Order: gate (``guest_allowed``) -> reconcile with the shared store -> mint. Locks are taken
-    profile first, then shared, matching every other Nous path. Blocking, bounded by ``timeout_seconds``.
+    profile first, then shared, matching every other Thor path. Blocking, bounded by ``timeout_seconds``.
 
     A failed mint is memoised with a cooldown (``MintFailure``): until it passes, and for a
     terminal code forever, this returns None without touching the portal. ``force=True`` is the
@@ -694,7 +694,7 @@ def ensure_portal_identity(
     if not guest_allowed():
         return None
     failure = _mint_failure_for_profile()
-    if failure and not force and not current_nous_state() and time.monotonic() < failure.not_before:
+    if failure and not force and not current_thor_state() and time.monotonic() < failure.not_before:
         return None  # in cooldown (or terminal) for this profile; do not hammer the portal
     try:
         state = _reconcile_and_provision(timeout_seconds=timeout_seconds, force=force,
@@ -702,7 +702,7 @@ def ensure_portal_identity(
     except Exception as exc:
         err = classify_mint_exception(exc)
         noted = getattr(err, "mint_failure", None) or _note_mint_failure(err)
-        logger.info("Nous free tier not set up (%s, attempt %d%s)", noted.code, noted.attempts,
+        logger.info("Thor free tier not set up (%s, attempt %d%s)", noted.code, noted.attempts,
                     f", next try in {noted.retry_after:.0f}s" if noted.retryable else ", not retried")
         if err is exc:
             raise
@@ -728,13 +728,13 @@ def refresh_guest_state(state: dict[str, Any], client: httpx.Client, *, purpose:
     if purpose == "inference" and not free_inference_active(state):
         # The one place a guest's inference token is minted: only the welcome trial on the desktop's
         # local backend carries one. Not terminal: the guest stays for connectors.
-        raise AuthError("Thor is not logged into Nous Portal.", provider="nous", code="nous_auth_missing")
+        raise AuthError("Thor is not logged into Thor Portal.", provider="thor", code="thor_auth_missing")
     anon_token = state.get("anon_token")
     if not isinstance(anon_token, str) or not anon_token:
         raise AnonCredentialDead(ANON_FAILURE_COPY[ANON_CREDENTIAL_DEAD], code=ANON_CREDENTIAL_DEAD)
-    from thor_cli.auth import _nous_portal_base_url
+    from thor_cli.auth import _thor_portal_base_url
     exchanged = exchange_anon_jwt(
-        client, _nous_portal_base_url(state), anon_token, auth_state=state, purpose=purpose)
+        client, _thor_portal_base_url(state), anon_token, auth_state=state, purpose=purpose)
     apply_exchange_to_state(state, exchanged)
     return exchanged["access_token"]
 
@@ -748,26 +748,26 @@ def clear_dead_guest(reason: str, *, dead_token: Optional[str] = None) -> None:
     """
     from thor_cli.auth import (
         _auth_store_lock, _load_auth_store, _load_provider_state, _save_auth_store, _store_section)
-    from thor_cli.auth_nous import _clear_shared_nous_state, _nous_shared_store_lock, _read_shared_nous_state
+    from thor_cli.auth_thor import _clear_shared_thor_state, _thor_shared_store_lock, _read_shared_thor_state
     with _auth_store_lock():
         auth_store = _load_auth_store()
-        state = _load_provider_state(auth_store, "nous")
+        state = _load_provider_state(auth_store, "thor")
         if is_guest_state(state):
             token = dead_token or state.get("anon_token")
             if state.get("anon_token") == token:
-                _store_section(auth_store, "providers").pop("nous", None)
-                _store_section(auth_store, "credential_pool").pop("nous", None)
-                if auth_store.get("active_provider") == "nous":
+                _store_section(auth_store, "providers").pop("thor", None)
+                _store_section(auth_store, "credential_pool").pop("thor", None)
+                if auth_store.get("active_provider") == "thor":
                     auth_store["active_provider"] = None
                 _save_auth_store(auth_store)
         else:
             token = dead_token
-        with _nous_shared_store_lock():
-            shared = _read_shared_nous_state()
+        with _thor_shared_store_lock():
+            shared = _read_shared_thor_state()
             if token and is_guest_state(shared) and shared.get("anon_token") == token:
-                _clear_shared_nous_state(reason)
+                _clear_shared_thor_state(reason)
     _clear_mint_failure()
-    logger.info("Nous free-tier identity retired (%s); a new one is set up on next use", reason)
+    logger.info("Thor free-tier identity retired (%s); a new one is set up on next use", reason)
 
 
 # --- Gateway welcome-tier contract: structured refusals and the model-switch header ------------------
@@ -775,11 +775,11 @@ def clear_dead_guest(reason: str, *, dead_token: Optional[str] = None) -> None:
 # The inference gateway answers a welcome-tier request it will not serve with a structured 429
 # (``{status, message, reason, retry_after, alternates?, upgrade_url?}``), and a request on the wrong
 # host with a 400 (or a 403 while the tier is dark) whose message names the right host. A NAMED
-# account that still asks for ``nous/welcome`` is served the id's backing model and told what to
-# switch to in the ``x-nous-model-switch`` response header. Every rule for reading those lives here;
+# account that still asks for ``thor/welcome`` is served the id's backing model and told what to
+# switch to in the ``x-thor-model-switch`` response header. Every rule for reading those lives here;
 # the error classifier and the turn loop only call in.
 
-MODEL_SWITCH_HEADER = "x-nous-model-switch"
+MODEL_SWITCH_HEADER = "x-thor-model-switch"
 # Fairshare refusal reasons the welcome tier can answer with (api ``FairshareRefusalReason``).
 WELCOME_REFUSAL_REASONS = frozenset(
     {"model_not_free", "feature_not_free", "at_capacity", "admission_closed", "rate_limited"})
@@ -796,10 +796,10 @@ _WELCOME_ROUTE_REFUSALS = (
 )
 _WELCOME_ROUTE_COPY = {
     # Only reachable when the route heal (``turn_recovery._recover_welcome_tier``) could not move
-    # the session: the one cause left is a user-set NOUS_INFERENCE_BASE_URL naming the paid host.
-    "anon_on_paid_host": "This install is set to use a different Nous server (NOUS_INFERENCE_BASE_URL). "
+    # the session: the one cause left is a user-set THOR_PORTAL_INFERENCE_BASE_URL naming the paid host.
+    "anon_on_paid_host": "This install is set to use a different Thor server (THOR_PORTAL_INFERENCE_BASE_URL). "
                          "Unset it to use the free model, or sign in. {signin}",
-    "named_on_welcome_host": "This Nous account needs to reconnect. {model_hint}",
+    "named_on_welcome_host": "This Thor account needs to reconnect. {model_hint}",
     "tier_disabled": "Using Thor without signing in is switched off right now. "
                      "Sign in to keep chatting, it's free. {signin}",
     # Only reachable when re-exchanging the free credential failed (``turn_recovery._recover_welcome_tier``).
@@ -809,8 +809,8 @@ _WELCOME_ROUTE_COPY = {
 # The sign-in door, phrased for a chat surface (slash command) and for a terminal.
 _SIGNIN_CHAT = "To sign in: /login."
 _SIGNIN_TERMINAL = "To sign in: `thor auth upgrade`."
-_MODEL_HINT_CHAT = "Run /model and pick the Nous row again."
-_MODEL_HINT_TERMINAL = "Run `thor model` and pick the Nous row again."
+_MODEL_HINT_CHAT = "Run /model and pick the Thor row again."
+_MODEL_HINT_TERMINAL = "Run `thor model` and pick the Thor row again."
 # Terminal copy for a free-model outage once the retries are spent (5xx, transport failure).
 FREE_TIER_OUTAGE_COPY = ("The free model is having trouble responding right now. "
                          "Try sending your message again in a minute.")
@@ -893,14 +893,14 @@ def welcome_route_refusal(status: Any, message: Any, base_url: Any = None) -> Op
 def welcome_route_refusal_copy(kind: str, *, in_chat: bool = True, door: bool = True) -> str:
     template = _WELCOME_ROUTE_COPY.get(kind) or "Thor couldn't reach the free model on this route."
     return template.format(
-        host=DEFAULT_NOUS_WELCOME_URL, signin=(_SIGNIN_CHAT if in_chat else _SIGNIN_TERMINAL) if door else "",
+        host=DEFAULT_THOR_PORTAL_WELCOME_URL, signin=(_SIGNIN_CHAT if in_chat else _SIGNIN_TERMINAL) if door else "",
         model_hint=_MODEL_HINT_CHAT if in_chat else _MODEL_HINT_TERMINAL).rstrip()
 
 
 def note_model_switch(agent: Any, headers: Any) -> Optional[str]:
-    """Record the gateway's ``x-nous-model-switch`` header on *agent* for the next call, if present.
+    """Record the gateway's ``x-thor-model-switch`` header on *agent* for the next call, if present.
 
-    The header arrives on a NAMED account's response that asked for ``nous/welcome`` (the gateway
+    The header arrives on a NAMED account's response that asked for ``thor/welcome`` (the gateway
     served the backing model and billed it normally): the free tier's model no longer belongs in
     this install's configuration. Recorded here, applied by :func:`apply_model_switch` between
     calls so a response still streaming is never re-labelled under itself. Returns the backing id.
@@ -921,7 +921,7 @@ def note_model_switch(agent: Any, headers: Any) -> Optional[str]:
     if backing == requested:
         return None
     try:
-        agent._nous_pending_model_switch = (requested, backing)
+        agent._thor_pending_model_switch = (requested, backing)
     except Exception:
         return None
     return backing
@@ -936,10 +936,10 @@ def apply_model_switch(agent: Any) -> Optional[str]:
     map. The config write is the same one a sign-in completion uses, so ``thor model`` and the
     gateway's config re-read agree with the live session.
     """
-    pending = getattr(agent, "_nous_pending_model_switch", None)
+    pending = getattr(agent, "_thor_pending_model_switch", None)
     if not pending:
         return None
-    agent._nous_pending_model_switch = None
+    agent._thor_pending_model_switch = None
     requested, backing = pending
     if str(getattr(agent, "model", "") or "") != requested:
         return None  # the session already moved (a /model, a sign-in sweep)
@@ -947,8 +947,8 @@ def apply_model_switch(agent: Any) -> Optional[str]:
     # The gateway's cache check compares agent.model with the config default and evicts on a
     # mismatch it did not cause; this pair names the move so the check can recognise exactly this
     # server-driven switch even when the config write below did not land.
-    agent._nous_model_switch = (requested, backing)
-    logger.info("Nous gateway asked to switch %s -> %s; applied for this session", requested, backing)
+    agent._thor_model_switch = (requested, backing)
+    logger.info("Thor gateway asked to switch %s -> %s; applied for this session", requested, backing)
     try:
         from thor_cli.config import load_config_readonly
         raw = load_config_readonly().get("model")
@@ -956,7 +956,7 @@ def apply_model_switch(agent: Any) -> Optional[str]:
         if str(model_cfg.get("default") or "").strip() == requested:
             from thor_cli.auth import _update_config_for_provider
             _update_config_for_provider(
-                "nous", str(getattr(agent, "base_url", "") or ""), default_model=backing)
+                "thor", str(getattr(agent, "base_url", "") or ""), default_model=backing)
             logger.info("Config default model moved %s -> %s", requested, backing)
     except Exception as exc:
         logger.debug("model switch: config default left as is: %s", exc)
@@ -977,22 +977,22 @@ GUEST_NOTICE_FLAG = "guest_notice_shown"
 
 def guest_notice_pending() -> bool:
     """True when a guest identity exists and the one-time availability notice has not been shown."""
-    state = current_nous_state()
+    state = current_thor_state()
     return free_inference_active(state) and not bool(state.get(GUEST_NOTICE_FLAG))
 
 
 def mark_guest_notice_shown() -> bool:
-    """Persist ``guest_notice_shown`` on the guest's ``providers.nous`` state (whichever store holds it).
+    """Persist ``guest_notice_shown`` on the guest's ``providers.thor`` state (whichever store holds it).
 
     Returns True when a flag was written; False when there is no guest to mark."""
     return set_guest_flag(GUEST_NOTICE_FLAG) is not None
 
 
 def set_guest_flag(flag: str) -> Optional[dict[str, Any]]:
-    """Set *flag* on the guest's ``providers.nous`` state in whichever store holds it, and return the
+    """Set *flag* on the guest's ``providers.thor`` state in whichever store holds it, and return the
     updated state; None when there is no guest."""
     from thor_cli.auth import _provider_state_transaction
-    with _provider_state_transaction("nous") as (auth_store, state, source_path):
+    with _provider_state_transaction("thor") as (auth_store, state, source_path):
         if not is_guest_state(state) or source_path is None:
             return None
         if state.get(flag):
@@ -1003,20 +1003,20 @@ def set_guest_flag(flag: str) -> Optional[dict[str, Any]]:
 
 
 def _save_guest_state(auth_store: dict[str, Any], state: dict[str, Any], source_path: Path) -> None:
-    """Write the guest's ``providers.nous`` back to the store it was read from (the caller holds its lock)."""
+    """Write the guest's ``providers.thor`` back to the store it was read from (the caller holds its lock)."""
     from thor_cli.auth import _auth_file_path, _load_auth_store, _same_path, _save_auth_store, _store_section
     if _same_path(source_path, _auth_file_path()):
-        _store_section(auth_store, "providers")["nous"] = state
+        _store_section(auth_store, "providers")["thor"] = state
         _save_auth_store(auth_store)
     else:
         source_store = _load_auth_store(source_path)
-        _store_section(source_store, "providers")["nous"] = state
+        _store_section(source_store, "providers")["thor"] = state
         _save_auth_store(source_store, target_path=source_path)
 
 
 # --- Sign-in completion: the account state from a token grant, and the config settle -------------
 #
-# Every Nous sign-in is the plain device-code login (``anon_sign_in.run_sign_in``). The free tier it
+# Every Thor sign-in is the plain device-code login (``anon_sign_in.run_sign_in``). The free tier it
 # replaces hands its apps over in ``guest_handoff`` after the save. User-facing copy never says
 # guest / anonymous / claim.
 
@@ -1027,22 +1027,22 @@ def _account_state_from_token(
     token_data: dict[str, Any], *, portal_base_url: str, client_id: str, scope: Optional[str], verify: Any,
     timeout_seconds: float,
 ) -> dict[str, Any]:
-    """The ``providers.nous`` shape for the signed-in account (same fields the device-code login writes)."""
+    """The ``providers.thor`` shape for the signed-in account (same fields the device-code login writes)."""
     from thor_cli.auth import PROVIDER_REGISTRY, _coerce_ttl_seconds, _optional_base_url, _tls_state_from_verify
-    from thor_cli.auth_nous import _NOUS_EMPTY_AGENT_KEY_FIELDS, _iso_after, refresh_nous_oauth_from_state
+    from thor_cli.auth_thor import _THOR_PORTAL_EMPTY_AGENT_KEY_FIELDS, _iso_after, refresh_thor_oauth_from_state
     now = datetime.now(UTC)
     ttl = _coerce_ttl_seconds(token_data.get("expires_in", 0))
     inference_url = (
         _optional_base_url(token_data.get("inference_base_url"))
-        or PROVIDER_REGISTRY["nous"].inference_base_url.rstrip("/"))
+        or PROVIDER_REGISTRY["thor"].inference_base_url.rstrip("/"))
     state = {
         "portal_base_url": portal_base_url, "inference_base_url": inference_url,
         "client_id": client_id, "scope": token_data.get("scope") or scope,
         "token_type": token_data.get("token_type", "Bearer"),
         "access_token": token_data["access_token"], "refresh_token": token_data.get("refresh_token"),
         "obtained_at": now.isoformat(), "expires_at": _iso_after(now, ttl), "expires_in": ttl,
-        "tls": _tls_state_from_verify(verify), **_NOUS_EMPTY_AGENT_KEY_FIELDS}
-    state = refresh_nous_oauth_from_state(state, timeout_seconds=timeout_seconds, force_refresh=False)
+        "tls": _tls_state_from_verify(verify), **_THOR_PORTAL_EMPTY_AGENT_KEY_FIELDS}
+    state = refresh_thor_oauth_from_state(state, timeout_seconds=timeout_seconds, force_refresh=False)
     state["auth_method"] = UPGRADED_AUTH_METHOD
     return state
 
@@ -1050,16 +1050,16 @@ def _account_state_from_token(
 def settle_after_upgrade(account_state: dict[str, Any]) -> dict[str, Any]:
     """After a sign-in from the free tier persisted the account: move the config off the free tier's route.
 
-    Picking the free-tier row may have written ``model.default: nous/welcome`` and ``model.base_url``
+    Picking the free-tier row may have written ``model.default: thor/welcome`` and ``model.base_url``
     = welcome host. An account cannot keep either: the welcome host refuses account tokens, and the
-    portal host serves ``nous/welcome`` as a paid model. When the config is on the free tier's route,
+    portal host serves ``thor/welcome`` as a paid model. When the config is on the free tier's route,
     ``model.base_url`` becomes the account's inference host and ``model.default`` the recommended
-    default for the account's tier (:func:`thor_cli.models.recommended_nous_default_model`, the
-    same pick as ``GET /api/model/recommended-default``), through the same config write a plain Nous
+    default for the account's tier (:func:`thor_cli.models.recommended_thor_default_model`, the
+    same pick as ``GET /api/model/recommended-default``), through the same config write a plain Thor
     login uses. A config on the user's own model and host is left alone.
 
     Every sign-in completion (CLI ``thor auth upgrade``, the desktop poller) calls this once, after
-    ``persist_nous_credentials``. Returns ``{"model": str, "changed": bool}``: ``model`` is the default
+    ``persist_thor_credentials``. Returns ``{"model": str, "changed": bool}``: ``model`` is the default
     the config now carries (``""`` when it carries none); ``changed`` says whether this call wrote it.
     Never raises: a failed pick or write is logged and reported as ``changed: False`` so the sign-in
     itself still counts.
@@ -1078,9 +1078,9 @@ def settle_after_upgrade(account_state: dict[str, Any]) -> dict[str, Any]:
         return {"model": current, "changed": False}
     model = current
     if on_welcome_model:
-        from thor_cli.models import recommended_nous_default_model
+        from thor_cli.models import recommended_thor_default_model
         try:
-            model = str(recommended_nous_default_model().get("model") or "")
+            model = str(recommended_thor_default_model().get("model") or "")
         except Exception as exc:
             logger.debug("sign-in completion: recommended default unavailable: %s", exc)
             model = ""
@@ -1091,7 +1091,7 @@ def settle_after_upgrade(account_state: dict[str, Any]) -> dict[str, Any]:
         # (Portal unreachable, or the plan and org policy admit nothing) clears the default in that
         # same write; the runtime's silent default applies until the user picks one with `thor model`.
         _update_config_for_provider(
-            "nous", str(account_state.get("inference_base_url") or ""),
+            "thor", str(account_state.get("inference_base_url") or ""),
             default_model=model if on_welcome_model else None,
             clear_default=on_welcome_model and not model)
     except Exception as exc:
@@ -1106,9 +1106,9 @@ def _poll_for_token(*args, **kwargs) -> dict[str, Any]:
     return poll(*args, **kwargs)
 
 
-def persist_nous_credentials(*args, **kwargs):
-    """Keep the existing auth_nous persistence seam behind the sign-in entry point."""
-    from thor_cli.auth_nous import persist_nous_credentials as persist
+def persist_thor_credentials(*args, **kwargs):
+    """Keep the existing auth_thor persistence seam behind the sign-in entry point."""
+    from thor_cli.auth_thor import persist_thor_credentials as persist
     return persist(*args, **kwargs)
 
 

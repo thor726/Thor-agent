@@ -186,7 +186,7 @@ def dispatch_goal_command(
 ) -> GoalCommandResult:
     """Apply one command. ``authorize_gate`` returns a denial or None (explicit approval).
 
-    Synchronous like GoalManager: async adapters run this off-loop with copied
+    Synchrothor like GoalManager: async adapters run this off-loop with copied
     ContextVars so draft credentials and persisted I/O stay in the caller's profile.
     """
     arg = arg.strip()

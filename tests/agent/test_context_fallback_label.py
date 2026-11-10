@@ -170,7 +170,7 @@ class TestFallbackIsLabelledOnSurfaces:
                                                compression_count=0, _config_context_length=None),
         )
         cli_obj._print_account_limits = lambda: False
-        cli_obj._print_nous_credits_block = lambda: False
+        cli_obj._print_thor_credits_block = lambda: False
         cli_obj.verbose = False
         return cli_obj
 

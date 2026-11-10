@@ -28,7 +28,7 @@ const NVIDIA_APP: ConnectionOperationTarget = {
   kind: 'plugin',
   name: 'nvidia-app',
   platforms: ['windows'],
-  repo: 'https://github.com/NousResearch/thor-nvidia',
+  repo: 'https://github.com/dwisetyabudi15581/thor-nvidia',
   sha: SHA,
   state: 'pending',
   subdir: 'nvidia-app',

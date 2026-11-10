@@ -142,7 +142,7 @@ def test_script_killed_before_publishing_the_delegate_runs_no_update(tmp_path: P
             subprocess.run(['taskkill', '/F', '/PID', str(script.pid)], capture_output=True, check=True)
             script.wait(timeout=30)
             # The script's death closes the child's job; kill-on-close then terminates the child
-            # asynchronously, so await its exit. Once it is gone it can never write `ran`.
+            # asynchrothorly, so await its exit. Once it is gone it can never write `ran`.
             assert watch.exited_within(60), 'the never-resumed update child outlived its script'
         finally:
             watch.close()

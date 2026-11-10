@@ -4,17 +4,17 @@ repo: https://github.com/phdigital01/imagegen-thor
 sha: f00dbf81e3b7c1a821086a508048a93eb5dc12b1
 description: >-
   Image studio for Thor Desktop: generate, compose from references, edit and
-  upscale across FAL, Nous Portal, Magnific, Vertex AI and the Thor image providers, with
+  upscale across FAL, Thor Portal, Magnific, Vertex AI and the Thor image providers, with
   a guided prompt builder, campaign grids, a gallery and a local monthly budget.
   It can also serve the agent's image_generate calls when picked under Tools →
   Image Generation.
   Disclosure — Each generation is billed by the provider you pick (FAL, Magnific,
-  Nous Portal, Vertex AI or a Thor image provider). On its screen each one starts from a
+  Thor Portal, Vertex AI or a Thor image provider). On its screen each one starts from a
   button you click; the agent spends only if you pick ImageGen under Tools →
   Image Generation or add the optional MCP server;
   prompts and reference images go to that provider (queue.fal.run, fal.run,
   api.magnific.com, aiplatform.googleapis.com, or a Thor image provider, including
-  Nous Portal and a linked ChatGPT subscription through Thor's own providers). Prompt writing and image reading use
+  Thor Portal and a linked ChatGPT subscription through Thor's own providers). Prompt writing and image reading use
   your Thor model through ctx.llm. Images, history and the spending ledger are
   stored in plugin-data/imagegen. Optional FAL_KEY, MAGNIFIC_API_KEY,
   VERTEX_API_KEY and VERTEX_PROJECT are plugin secrets. An optional command line runs single or batch

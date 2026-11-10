@@ -165,13 +165,13 @@ class TestCreateProfile:
         """
         default_home = profile_env / ".thor"
         (default_home / "config.yaml").write_text(
-            "model:\n  provider: nous\n  default: some/model\n", encoding="utf-8"
+            "model:\n  provider: thor\n  default: some/model\n", encoding="utf-8"
         )
 
         profile_dir = create_profile("coder", no_alias=True)
 
         cfg = yaml.safe_load((profile_dir / "config.yaml").read_text(encoding="utf-8-sig"))
-        assert cfg["model"]["provider"] == "nous"
+        assert cfg["model"]["provider"] == "thor"
         assert cfg["model"]["default"] == "some/model"
 
 
@@ -202,7 +202,7 @@ class TestCreateProfile:
         """
         default_home = profile_env / ".thor"
         (default_home / "config.yaml").write_text(
-            "model:\n  provider: nous\n  default: some/model\n", encoding="utf-8"
+            "model:\n  provider: thor\n  default: some/model\n", encoding="utf-8"
         )
         profile_dir = create_profile("coder", no_alias=True)
 
@@ -211,7 +211,7 @@ class TestCreateProfile:
         )
 
         cfg = yaml.safe_load((profile_dir / "config.yaml").read_text(encoding="utf-8-sig"))
-        assert cfg["model"]["provider"] == "nous"
+        assert cfg["model"]["provider"] == "thor"
         assert cfg["model"]["default"] == "some/model"
 
 
@@ -872,7 +872,7 @@ class TestListProfiles:
         """Polled surfaces (``profiles.list`` RPC, ``GET /api/profiles``) must render
         ``skill_count`` without any skill-tree walk on the request thread; the count arrives
         from one background refresh per profile per recheck window (#114041). Control: the
-        synchronous ``list_profiles()`` still walks and reports the fresh number."""
+        synchrothor ``list_profiles()`` still walks and reports the fresh number."""
         import threading
         import tui_gateway.server as srv
 
@@ -914,7 +914,7 @@ class TestListProfiles:
         from tui_gateway import methods_complete
         app = FastAPI()
         app.include_router(profiles_router.router)
-        # Cold cache: a synchronous list_profiles() in either caller would walk on the request thread.
+        # Cold cache: a synchrothor list_profiles() in either caller would walk on the request thread.
         profiles._SKILL_COUNT_CACHE.clear()
         resp = TestClient(app).get("/api/profiles")
         assert resp.status_code == 200
@@ -923,7 +923,7 @@ class TestListProfiles:
         assert any(i["text"] == "@default" for i in methods_complete._profile_mention_items("def"))
         assert walks == ["thor-skill-count"]
 
-        # Control: the detail/CLI path counts synchronously on the caller's thread.
+        # Control: the detail/CLI path counts synchrothorly on the caller's thread.
         profiles._SKILL_COUNT_CACHE.clear()
         assert list_profiles()[0].skill_count == 3
         assert walks[-1] == threading.current_thread().name

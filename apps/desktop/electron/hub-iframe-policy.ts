@@ -2,7 +2,7 @@
  * Capability carve-outs for the embedded Skills Hub iframe ONLY.
  *
  * The Skills Hub picker (Bot Mode) embeds the public docs site
- * (`https://thor-agent.nousresearch.com/docs/skills?embed=picker`, or the
+ * (`https://thor-agent.thor-agent.local/docs/skills?embed=picker`, or the
  * GitHub Pages mirror when Vercel refuses the network). Three default denials
  * make that embed nearly unusable — window.open is killed by the CVE-2026-70608
  * handler, clipboard writes by the session permission handlers, and the frame
@@ -12,9 +12,9 @@
  */
 
 /** The docs site served from Vercel. */
-export const THOR_HUB_ORIGIN = 'https://thor-agent.nousresearch.com'
+export const THOR_HUB_ORIGIN = 'https://thor-agent.thor-agent.local'
 /** The equivalent GitHub Pages deployment of the same site. */
-export const THOR_HUB_FALLBACK_ORIGIN = 'https://nousresearch.github.io'
+export const THOR_HUB_FALLBACK_ORIGIN = 'https://thorresearch.github.io'
 
 const HUB_ORIGINS = new Set([THOR_HUB_ORIGIN, THOR_HUB_FALLBACK_ORIGIN])
 

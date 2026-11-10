@@ -60,11 +60,11 @@ def _transaction(kind: str) -> Iterator[tuple[dict[str, Any], Any]]:
 
 def _eligible(kind: str) -> bool:
     """``trial``: the welcome trial carries inference. ``connector``: a guest that connected an app,
-    guests are still allowed (``nous.guest``), and no trial makes its own offer."""
+    guests are still allowed (``thor.guest``), and no trial makes its own offer."""
     from thor_cli import anon_auth
     if kind == TRIAL:
         return anon_auth.free_inference_active()
-    state = anon_auth.current_nous_state()
+    state = anon_auth.current_thor_state()
     return (anon_auth.is_guest_state(state) and state.get(CONNECTED_APP_FLAG) is True and anon_auth.guest_allowed()
             and not anon_auth.free_inference_active(state))
 
@@ -102,7 +102,7 @@ def note_app_connected() -> None:
     once the task is recorded. Never fails the connection."""
     from thor_cli import anon_auth
     try:
-        if anon_auth.is_guest_state(anon_auth.current_nous_state()):
+        if anon_auth.is_guest_state(anon_auth.current_thor_state()):
             record_task_done(CONNECTOR)
             anon_auth.set_guest_flag(CONNECTED_APP_FLAG)
     except Exception:
@@ -116,7 +116,7 @@ def note_connected_apps_seen(rows: list[Any]) -> None:
     from thor_cli import anon_auth
     if not any(isinstance(row, dict) and row.get("connected") for row in rows):
         return
-    state = anon_auth.current_nous_state()
+    state = anon_auth.current_thor_state()
     if anon_auth.is_guest_state(state) and not state.get(CONNECTED_APP_FLAG):
         note_app_connected()
 

@@ -209,7 +209,7 @@ def test_in_tree_sidecar_cannot_forge_catalog_provenance(world, tmp_path):
 
 
 def test_url_install_of_an_archived_handoff_repo_is_repinned_to_its_catalog_entry(world, tmp_path, monkeypatch):
-    """A provider that left core was first handed off through a Nous repo that is now archived; a URL install of
+    """A provider that left core was first handed off through a Thor repo that is now archived; a URL install of
     it has no catalog record, so `update` would keep pulling the archive. It is adopted as the catalog entry that
     superseded it, and `update` re-pins it to the maintained repo at the reviewed sha."""
     archived = tmp_path / "archived"

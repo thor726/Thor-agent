@@ -1240,7 +1240,7 @@ def _probe(path: Path, table: str, query: str, params: tuple[Any, ...], unavaila
 
 
 def probe_hosted_room(db_path: DbPath, *, room_id: Any) -> bool:
-    """Check room ownership without creating or migrating the shared store; runs on the synchronous
+    """Check room ownership without creating or migrating the shared store; runs on the synchrothor
     prompt-admission path for older Desktop clients, so it fails fast under contention instead of blocking
     the WebSocket reader for SQLite's ten-second timeout."""
     return _probe(

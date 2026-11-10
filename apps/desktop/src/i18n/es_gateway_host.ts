@@ -17,7 +17,7 @@ export const esGatewayHost: GatewayHostTranslations = {
   },
   webAccess: {
     title: 'Acceso web',
-    intro: 'Abre Thor de este ordenador desde tu teléfono u otro ordenador, con tu cuenta de Nous. Quien inicie sesión puede ejecutar comandos en este ordenador.',
+    intro: 'Abre Thor de este ordenador desde tu teléfono u otro ordenador, con tu cuenta de Thor. Quien inicie sesión puede ejecutar comandos en este ordenador.',
     failed: 'No se pudo cambiar el acceso web',
     running: 'En ejecución',
     stopped: 'Detenido',
@@ -26,7 +26,7 @@ export const esGatewayHost: GatewayHostTranslations = {
     restartNeeded: 'Reinicio necesario',
     unavailable: 'No disponible',
     notRunningDetail: 'Inícialo para abrir Thor desde otro dispositivo.',
-    needsNous: 'Primero inicia sesión en tu cuenta de Nous en Proveedores.',
+    needsThor: 'Primero inicia sesión en tu cuenta de Thor en Proveedores.',
     runningLan: 'Abre esta dirección en un dispositivo de la misma red.',
     runningPublic: 'Servido a través de tu URL.',
     runningLocal: 'Solo este ordenador puede abrirla. Detenla y vuelve a iniciarla para abrirla desde otros dispositivos.',
@@ -41,7 +41,7 @@ export const esGatewayHost: GatewayHostTranslations = {
     startStages: {
       preparing: 'Preparando la aplicación web. Compilarla puede tardar unos minutos.',
       building: 'Compilando la aplicación web. Puede tardar unos minutos.',
-      registering: 'Configurando el inicio de sesión de Nous para esta dirección.',
+      registering: 'Configurando el inicio de sesión de Thor para esta dirección.',
       restarting: 'Reiniciando el gateway para servir la aplicación web.'
     },
     startElapsed: time => `Tiempo transcurrido: ${time}`,

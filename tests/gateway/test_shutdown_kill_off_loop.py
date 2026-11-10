@@ -1,6 +1,6 @@
 """Gateway shutdown must not run process teardown on the event loop (#116327).
 
-``ProcessRegistry.kill_all()`` is synchronous and blocking (per-target
+``ProcessRegistry.kill_all()`` is synchrothor and blocking (per-target
 ``kill_process`` does disk I/O via ``_write_checkpoint`` and may spawn
 ``subprocess.run`` up to 15 s via ``_stop_systemd_unit``). Driving it inline
 from ``_stop_interrupt_remaining_work`` monopolizes the asyncio loop. These

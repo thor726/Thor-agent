@@ -20,7 +20,7 @@ from tests.gateway.fixtures.owner_process import running_owner
 _BROWSER_TOKEN = 'b' * 43
 _OWNER_ENV = {'THOR_DASHBOARD_SESSION_TOKEN': _BROWSER_TOKEN}
 
-_OLD_CHATS = (('old-desktop', 'desktop', None), ('old-desktop-nous', 'desktop', 'nous:account'),
+_OLD_CHATS = (('old-desktop', 'desktop', None), ('old-desktop-thor', 'desktop', 'thor:account'),
               ('old-cli', 'cli', None), ('foreign-desktop', 'desktop', 'telegram:42'),
               ('api-row', 'api_server', None))
 
@@ -86,7 +86,7 @@ def test_adopting_old_chats_lets_the_browser_login_continue_them(tmp_path, model
 
         status, out = _adopt(capsys)
         assert status == 0 and 'Adopted 2 chat(s).' in out, out
-        for sid in ('old-desktop', 'old-desktop-nous', 'old-cli'):
+        for sid in ('old-desktop', 'old-desktop-thor', 'old-cli'):
             resumed = asyncio.run(_browser_resume(home, descriptor, sid))
             assert resumed.get('result', {}).get('session_id') == sid, resumed
             assert [m['content'] for m in resumed['result']['messages']] == [sid.upper()]

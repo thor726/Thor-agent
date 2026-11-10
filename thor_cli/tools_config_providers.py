@@ -12,9 +12,9 @@ from thor_cli.cli_output import (
 )
 from thor_cli.colors import Colors, color
 from thor_cli.config import cfg_get, get_env_value, load_config, save_config, save_env_value
-from thor_cli.nous_account import format_nous_portal_entitlement_message
-from thor_cli.nous_subscription import MANAGED_FEATURE_COVERAGE_CATEGORY, NousSubscriptionFeatures
-from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, fal_key_is_configured
+from thor_cli.thor_account import format_thor_portal_entitlement_message
+from thor_cli.thor_subscription import MANAGED_FEATURE_COVERAGE_CATEGORY, ThorSubscriptionFeatures
+from tools.tool_backend_helpers import THOR_PORTAL_MANAGED_PROVIDER, fal_key_is_configured
 from tools.transcription_common import STT_MODEL_CATALOG, STT_MODEL_CONFIG_KEY
 from utils import base_url_hostname, is_truthy_value
 
@@ -140,25 +140,25 @@ def _computer_use_provider_rows() -> list[dict]:
 
 
 def _visible_providers(
-    cat: dict, config: dict, *, force_fresh: bool = False, features: Optional[NousSubscriptionFeatures] = None,
+    cat: dict, config: dict, *, force_fresh: bool = False, features: Optional[ThorSubscriptionFeatures] = None,
 ) -> list[dict]:
     """Provider entries visible for the current auth/config state.
-    Nous-managed rows (``managed_nous_feature``) are always shown, even logged-out/unentitled, to
+    Thor-managed rows (``managed_thor_feature``) are always shown, even logged-out/unentitled, to
     advertise the capability."""
-    from thor_cli.tools_config import get_nous_subscription_features
+    from thor_cli.tools_config import get_thor_subscription_features
 
     if features is None:
-        features = get_nous_subscription_features(config, force_fresh=force_fresh)
+        features = get_thor_subscription_features(config, force_fresh=force_fresh)
     acct = features.account_info
     # Pool-only users (free tool pool, no paid access) get image gen but NOT video gen — the pool doesn't
     # fund `fal-video`, so hide the managed video row rather than advertise a denial.
     pool_only = bool(acct and acct.logged_in and acct.paid_service_access is not True and acct.tool_gateway_entitled)
     visible = []
     for provider in cat.get("providers", []):
-        managed = provider.get("managed_nous_feature")
+        managed = provider.get("managed_thor_feature")
         # Managed rows stay visible regardless of auth (selecting one drives an inline Portal login); a
-        # `requires_nous_auth` row without a managed feature hides until logged in.
-        if provider.get("requires_nous_auth") and not managed and not features.nous_auth_present:
+        # `requires_thor_auth` row without a managed feature hides until logged in.
+        if provider.get("requires_thor_auth") and not managed and not features.thor_auth_present:
             continue
         if pool_only and managed == "video_gen" and not (acct and acct.tool_gateway_entitled_for("fal-video")):
             continue
@@ -175,17 +175,17 @@ def provider_readiness_status(provider: dict, config: dict, *, features=None, is
     """Honest readiness state for a provider picker row.
     ``features`` avoids re-fetching portal state per row. ``is_active`` is the completed-setup fallback
     for post_setup hooks with no registered installed-check (selecting a row runs its hook)."""
-    from thor_cli.tools_config import _POST_SETUP_READY, _provider_env_ready, get_nous_subscription_features
+    from thor_cli.tools_config import _POST_SETUP_READY, _provider_env_ready, get_thor_subscription_features
     from thor_cli.tools_config_post_setup import _POST_SETUP_AUTH_READY
 
     if provider.get("env_vars", []):
         return "ready" if _provider_env_ready(provider) else "needs_keys"
 
-    managed_feature = provider.get("managed_nous_feature")
-    if provider.get("requires_nous_auth") or managed_feature:
+    managed_feature = provider.get("managed_thor_feature")
+    if provider.get("requires_thor_auth") or managed_feature:
         if features is None:
-            features = get_nous_subscription_features(config)
-        if not features.nous_auth_present:
+            features = get_thor_subscription_features(config)
+        if not features.thor_auth_present:
             return "needs_auth"
         if managed_feature:
             # Same per-category entitlement gate the CLI applies at selection time.
@@ -276,9 +276,9 @@ def _any_plugin_provider_available(registry_module: str) -> bool:
 
 def _configure_tool_category(ts_key: str, cat: dict, config: dict, *, force_fresh: bool = True, reconfigure: bool = False):
     """Provider selection for a tool category, then API-key setup for the chosen row.
-    ``reconfigure`` ("Reconfigure an existing tool"): no setup note / skip row / Nous marker, and the
+    ``reconfigure`` ("Reconfigure an existing tool"): no setup note / skip row / Thor marker, and the
     chosen provider goes through the key-update prompts instead of the new-enable prompts."""
-    from thor_cli.tools_config import _prompt_choice, _provider_env_ready, get_nous_subscription_features
+    from thor_cli.tools_config import _prompt_choice, _provider_env_ready, get_thor_subscription_features
 
     name = cat["name"]
     providers = _visible_providers(cat, config, force_fresh=force_fresh)
@@ -297,11 +297,11 @@ def _configure_tool_category(ts_key: str, cat: dict, config: dict, *, force_fres
         return
     print()
 
-    # Logged-in Nous users get a marker on rows included in their subscription (cost-extra vs. included).
-    _nous_logged_in = False
+    # Logged-in Thor users get a marker on rows included in their subscription (cost-extra vs. included).
+    _thor_logged_in = False
     if not reconfigure:
         try:
-            _nous_logged_in = bool(get_nous_subscription_features(config, force_fresh=force_fresh).nous_auth_present)
+            _thor_logged_in = bool(get_thor_subscription_features(config, force_fresh=force_fresh).thor_auth_present)
         except Exception:
             pass
 
@@ -317,8 +317,8 @@ def _configure_tool_category(ts_key: str, cat: dict, config: dict, *, force_fres
                 configured = " [configured]"
         # Subscribers get the "included" star; everyone else a hint that selecting triggers a Portal login.
         sub_marker = ""
-        if not reconfigure and p.get("managed_nous_feature"):
-            sub_marker = "  ★ Included with your Nous subscription" if _nous_logged_in else "  ★ via Nous Portal (login on select)"
+        if not reconfigure and p.get("managed_thor_feature"):
+            sub_marker = "  ★ Included with your Thor subscription" if _thor_logged_in else "  ★ via Thor Portal (login on select)"
         provider_choices.append(f"{p['name']}{badge}{tag}{configured}{sub_marker}")
 
     if not reconfigure:
@@ -361,7 +361,7 @@ def _web_tier_matches(provider: dict, config: dict) -> bool:
 def _web_serving_backends(config: dict) -> set:
     """Backend names serving web search / extract as configured: each capability's own
     ``web.<cap>_backend`` override first, else the shared ``web.backend`` (``tools/web_tools.py``
-    dispatch order; legacy ``use_gateway: true`` reads as the managed ``nous`` selection).
+    dispatch order; legacy ``use_gateway: true`` reads as the managed ``thor`` selection).
     Lower-cased and stripped like the dispatchers."""
     raw_web_cfg = config.get("web")
     web_cfg = raw_web_cfg if isinstance(raw_web_cfg, dict) else {}
@@ -370,7 +370,7 @@ def _web_serving_backends(config: dict) -> set:
         value = web_cfg.get(key)
         return value.lower().strip() if isinstance(value, str) else ""
 
-    shared = NOUS_MANAGED_PROVIDER if is_truthy_value(web_cfg.get("use_gateway"), default=False) else _name("backend")
+    shared = THOR_PORTAL_MANAGED_PROVIDER if is_truthy_value(web_cfg.get("use_gateway"), default=False) else _name("backend")
     serving = {_name(key) or shared for key in ("search_backend", "extract_backend")}
     serving.discard("")
     return serving
@@ -379,7 +379,7 @@ def _web_serving_backends(config: dict) -> set:
 def _web_backend_active(provider: dict, config: dict) -> bool:
     """True when a web row's ``web_backend`` serves either capability as configured: a vendor serving
     one capability through its override is in use even when the shared key names a different one,
-    and a shared vendor shadowed by both overrides serves nothing. Managed Nous rows never reach
+    and a shared vendor shadowed by both overrides serves nothing. Managed Thor rows never reach
     here — they answer in ``_managed_provider_active``."""
     backend = provider.get("web_backend")
     if not (backend and backend in _web_serving_backends(config) and _web_tier_matches(provider, config)):
@@ -409,34 +409,34 @@ def _has_marker(provider: dict, marker: str) -> bool:
 
 
 def _managed_provider_active(provider: dict, config: dict, managed_feature: str, force_fresh: bool) -> bool:
-    """Active check for a Nous-managed row: the feature must be managed AND the category's selected
-    provider must be the row's vendor or ``nous``."""
-    from thor_cli.tools_config import get_nous_subscription_features
+    """Active check for a Thor-managed row: the feature must be managed AND the category's selected
+    provider must be the row's vendor or ``thor``."""
+    from thor_cli.tools_config import get_thor_subscription_features
 
-    feature = get_nous_subscription_features(config, force_fresh=force_fresh).features.get(managed_feature)
+    feature = get_thor_subscription_features(config, force_fresh=force_fresh).features.get(managed_feature)
     if feature is None:
         return False
     if managed_feature in ("image_gen", "video_gen"):
         gen_cfg = config.get(managed_feature, {})
         if isinstance(gen_cfg, dict):
             configured_provider = gen_cfg.get("provider")
-            if configured_provider not in {None, "", "fal", NOUS_MANAGED_PROVIDER}:
+            if configured_provider not in {None, "", "fal", THOR_PORTAL_MANAGED_PROVIDER}:
                 return False
             if (
-                configured_provider != NOUS_MANAGED_PROVIDER
+                configured_provider != THOR_PORTAL_MANAGED_PROVIDER
                 and gen_cfg.get("use_gateway") is not None
                 and not is_truthy_value(gen_cfg.get("use_gateway"), default=False)):
                 return False
-        return feature.managed_by_nous
+        return feature.managed_by_thor
     if _has_marker(provider, "web_backend"):
         # Search and extract pick their route separately: the managed row serves whichever one
-        # resolves to the gateway (a ``nous`` override, or the shared ``nous`` selection).
-        return feature.managed_by_nous and NOUS_MANAGED_PROVIDER in _web_serving_backends(config)
+        # resolves to the gateway (a ``thor`` override, or the shared ``thor`` selection).
+        return feature.managed_by_thor and THOR_PORTAL_MANAGED_PROVIDER in _web_serving_backends(config)
     for marker, section, key in _MANAGED_SELECTION_KEYS:
         if _has_marker(provider, marker):
             current = cfg_get(config, section, key)
-            return feature.managed_by_nous and current in {provider[marker], NOUS_MANAGED_PROVIDER}
-    return feature.managed_by_nous
+            return feature.managed_by_thor and current in {provider[marker], THOR_PORTAL_MANAGED_PROVIDER}
+    return feature.managed_by_thor
 
 
 def _browser_provider_active(provider: dict, config: dict) -> bool:
@@ -472,7 +472,7 @@ _ACTIVE_CHECKS: tuple[tuple[str, Callable[[dict, dict], bool]], ...] = (
 
 def _is_provider_active(provider: dict, config: dict, *, force_fresh: bool = False) -> bool:
     """Check if a provider entry matches the currently active config."""
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_thor_feature")
     # Managed entries fall through to the managed branch, which also checks use_gateway — otherwise a
     # managed FAL pick and a direct-key FAL pick would both report active.
     for section in ("image_gen", "video_gen"):
@@ -516,10 +516,10 @@ def _managed_image_catalog(config: dict):
 
     A free-pool account is funded for FAL only, so its picker never offers a Krea or Portal model it
     would be denied at generation time; a logged-out or paid account sees everything."""
-    from thor_cli.tools_config import get_nous_subscription_features
+    from thor_cli.tools_config import get_thor_subscription_features
     from tools.image_generation_managed import managed_image_catalog
 
-    acct = get_nous_subscription_features(config).account_info
+    acct = get_thor_subscription_features(config).account_info
     pool_only = bool(acct and acct.logged_in and acct.paid_service_access is not True)
     return managed_image_catalog(
         include_krea=not pool_only or acct.tool_gateway_entitled_for("krea"), include_portal=not pool_only)
@@ -527,10 +527,10 @@ def _managed_image_catalog(config: dict):
 
 # Per-backend model catalog (config_key = top-level config.yaml section, catalog_fn(config) -> ({model_id:
 # metadata}, default_model)); a TOOL_CATEGORIES row tagged `imagegen_backend: "<name>"` selects the catalog at
-# picker time. "nous" is the single managed row: one catalog spanning the FAL, Krea and Portal gateways.
+# picker time. "thor" is the single managed row: one catalog spanning the FAL, Krea and Portal gateways.
 IMAGEGEN_BACKENDS = {
     "fal": {"display": "FAL.ai", "config_key": "image_gen", "catalog_fn": _fal_model_catalog},
-    "nous": {"display": "Nous Subscription", "config_key": "image_gen", "catalog_fn": _managed_image_catalog}}
+    "thor": {"display": "Thor Subscription", "config_key": "image_gen", "catalog_fn": _managed_image_catalog}}
 
 
 def _plugin_model_catalog(registry_module: str, plugin_name: str):
@@ -639,18 +639,18 @@ def _configure_xai_imagine_storage(section_name: str, config: dict) -> None:
 
 
 def _select_into(config: dict, section: str, key: str, vendor, managed) -> dict:
-    """Write ``config[section][key] = vendor`` (``nous`` for a managed pick) and drop any legacy ``use_gateway``
+    """Write ``config[section][key] = vendor`` (``thor`` for a managed pick) and drop any legacy ``use_gateway``
     key so the old read-time shim cannot override the new choice. Returns the section dict."""
     from thor_cli.tools_config import _cfg_section
 
     cfg = _cfg_section(config, section)
-    cfg[key] = NOUS_MANAGED_PROVIDER if managed else vendor
+    cfg[key] = THOR_PORTAL_MANAGED_PROVIDER if managed else vendor
     cfg.pop("use_gateway", None)
     return cfg
 
 
 def _select_plugin_gen_provider(section: str, plugin_name: str, config: dict, *, use_gateway: bool = False) -> None:
-    """Persist a plugin-backed image/video gen provider selection (``nous`` for a Nous-managed pick, else the
+    """Persist a plugin-backed image/video gen provider selection (``thor`` for a Thor-managed pick, else the
     plugin name) and run its model picker."""
     cfg = _select_into(config, section, "provider", plugin_name, use_gateway)
     _print_success(f"  {section}.provider set to: {cfg['provider']}")
@@ -690,9 +690,9 @@ _PROVIDER_MARKER_SECTIONS = {
 
 def _write_provider_config(provider: dict, config: dict, *, managed_feature) -> None:
     """Persist the provider/backend config keys for a selected provider.
-    Pure, non-interactive core of :func:`_configure_provider` (no env prompts, post-setup hooks, Nous
+    Pure, non-interactive core of :func:`_configure_provider` (no env prompts, post-setup hooks, Thor
     auth gating or model pickers) shared by the CLI and the GUI ``PUT .../provider`` endpoint. Each pick
-    writes exactly ONE provider string per category (``nous`` for managed rows) and removes any legacy
+    writes exactly ONE provider string per category (``thor`` for managed rows) and removes any legacy
     ``use_gateway`` key so the read-time shim cannot override the new choice."""
     from thor_cli.tools_config import TOOL_CATEGORIES
 
@@ -714,7 +714,7 @@ def _write_provider_config(provider: dict, config: dict, *, managed_feature) -> 
         web_cfg = _select_into(config, "web", "backend", provider["web_backend"], managed_feature)
         if managed_feature:
             # A whole-toolset managed pick governs both capabilities: per-capability pins resolve FIRST,
-            # so a leftover one would keep outranking the "nous" selection just written.
+            # so a leftover one would keep outranking the "thor" selection just written.
             web_cfg.pop("search_backend", None)
             web_cfg.pop("extract_backend", None)
         tier = provider.get("web_tier")
@@ -729,11 +729,11 @@ def _write_provider_config(provider: dict, config: dict, *, managed_feature) -> 
         config.setdefault("computer_use", {})["backend"] = provider["computer_use_backend"]
 
     if managed_feature and managed_feature not in {"web", "tts", "stt", "browser"}:
-        # Managed rows without a marker above (image_gen/video_gen "Nous Subscription" rows carry only
-        # managed_nous_feature) still persist the "nous" selection.
+        # Managed rows without a marker above (image_gen/video_gen "Thor Subscription" rows carry only
+        # managed_thor_feature) still persist the "thor" selection.
         section = config.setdefault(managed_feature, {})
         if isinstance(section, dict):
-            section["provider"] = NOUS_MANAGED_PROVIDER
+            section["provider"] = THOR_PORTAL_MANAGED_PROVIDER
             section.pop("use_gateway", None)
     elif not managed_feature:
         # Non-gateway pick — clear any stale legacy use_gateway key on the category. Resolve the category from
@@ -762,11 +762,11 @@ def apply_provider_selection(ts_key: str, provider_name: str, config: dict) -> N
     if provider is None:
         raise KeyError(f"Unknown provider {provider_name!r} for toolset {ts_key!r}")
 
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_thor_feature")
     _write_provider_config(provider, config, managed_feature=managed_feature)
 
     # Plugin image/video gen backends record the provider name in their own section (model choice is a separate
-    # GUI flow); managed picks store "nous". The in-tree FAL BYOK row always persists an explicit
+    # GUI flow); managed picks store "thor". The in-tree FAL BYOK row always persists an explicit
     # ``image_gen.provider: fal`` so a deliberate pick is distinguishable from a never-configured install.
     selections = [
         ("image_gen", provider.get("image_gen_plugin_name")),
@@ -777,31 +777,31 @@ def apply_provider_selection(ts_key: str, provider_name: str, config: dict) -> N
             _select_into(config, section_key, "provider", vendor, managed_feature)
 
 
-def _nous_provider_gate(provider: dict, config: dict, managed_feature, *, force_fresh: bool) -> bool:
-    """Return False (after printing why) when a Nous-gated row cannot be selected.
-    Managed Tool Gateway rows are always listed but only *activate* with paid Nous Portal access —
+def _thor_provider_gate(provider: dict, config: dict, managed_feature, *, force_fresh: bool) -> bool:
+    """Return False (after printing why) when a Thor-gated row cannot be selected.
+    Managed Tool Gateway rows are always listed but only *activate* with paid Thor Portal access —
     selecting one runs an inline Portal login (auth + entitlement only, no inference-provider switch).
-    Pure pre-auth UX rows (``requires_nous_auth`` without a managed feature) keep the older logged-in +
+    Pure pre-auth UX rows (``requires_thor_auth`` without a managed feature) keep the older logged-in +
     entitled gate."""
-    from thor_cli.tools_config import get_nous_subscription_features
+    from thor_cli.tools_config import get_thor_subscription_features
 
     if managed_feature:
-        from thor_cli.nous_subscription import ensure_nous_portal_access
+        from thor_cli.thor_subscription import ensure_thor_portal_access
 
-        if not ensure_nous_portal_access(
-            capability=f"{provider.get('name', 'the Nous Tool Gateway')}",
+        if not ensure_thor_portal_access(
+            capability=f"{provider.get('name', 'the Thor Tool Gateway')}",
             coverage_category=MANAGED_FEATURE_COVERAGE_CATEGORY.get(managed_feature)):
-            _print_warning("  Not enabled — Nous Portal access is required for this backend.")
+            _print_warning("  Not enabled — Thor Portal access is required for this backend.")
             return False
         return True
 
-    if provider.get("requires_nous_auth"):
-        features = get_nous_subscription_features(config, force_fresh=force_fresh)
+    if provider.get("requires_thor_auth"):
+        features = get_thor_subscription_features(config, force_fresh=force_fresh)
         entitled = bool(features.account_info and features.account_info.paid_service_access is True)
-        if not features.nous_auth_present or not entitled:
-            message = format_nous_portal_entitlement_message(
-                features.account_info, capability=f"{provider.get('name', 'Nous Subscription')}")
-            _print_warning(f"  {message or 'Nous Subscription is only available after logging into Nous Portal.'}")
+        if not features.thor_auth_present or not entitled:
+            message = format_thor_portal_entitlement_message(
+                features.account_info, capability=f"{provider.get('name', 'Thor Subscription')}")
+            _print_warning(f"  {message or 'Thor Subscription is only available after logging into Thor Portal.'}")
             return False
     return True
 
@@ -816,7 +816,7 @@ def _finish_provider_selection(provider: dict, config: dict, managed_feature) ->
     backend = provider.get("imagegen_backend")
     if backend:
         _configure_imagegen_model(backend, config)
-        # "nous" for the managed row (the picked model id chooses the FAL / Krea / Portal gateway at run time),
+        # "thor" for the managed row (the picked model id chooses the FAL / Krea / Portal gateway at run time),
         # "fal" for BYOK, drop legacy use_gateway — never clobber a managed pick back onto direct keys.
         _select_into(config, "image_gen", "provider", "fal", managed_feature)
     # STT rows prompt for a model after the pick (skipped for managed rows — the gateway pins it).
@@ -833,7 +833,7 @@ def _print_provider_selection(provider: dict, managed_feature, *, reconfigure: b
     if "browser_provider" in provider:
         bp = provider["browser_provider"]
         if reconfigure and managed_feature:
-            _print_success(f"  Browser cloud provider set to: {bp or 'nous'}")
+            _print_success(f"  Browser cloud provider set to: {bp or 'thor'}")
         elif bp == "local":
             _print_success("  Browser set to local mode")
         elif bp:
@@ -842,24 +842,24 @@ def _print_provider_selection(provider: dict, managed_feature, *, reconfigure: b
         _print_success(f"  Browser engine set to: {provider['browser_engine']}")
     if provider.get("web_backend"):
         tier = f" ({provider['web_tier']} tier)" if reconfigure and provider.get("web_tier") else ""
-        backend = NOUS_MANAGED_PROVIDER if managed_feature else provider["web_backend"]
+        backend = THOR_PORTAL_MANAGED_PROVIDER if managed_feature else provider["web_backend"]
         _print_success(f"  Web backend set to: {backend}{tier}")
     if reconfigure and provider.get("computer_use_backend"):
         _print_success(f"  Computer Use backend set to: {provider['computer_use_backend']}")
 
 
 def _show_portal_hint(provider: dict, config: dict, managed_feature, force_fresh: bool) -> bool:
-    """True when a BYOK row shares its category with a Nous-managed sibling and the user is not authed to
-    Nous — a single dim hint tells them the key is avoidable via a Portal subscription."""
-    from thor_cli.tools_config import TOOL_CATEGORIES, get_nous_subscription_features
+    """True when a BYOK row shares its category with a Thor-managed sibling and the user is not authed to
+    Thor — a single dim hint tells them the key is avoidable via a Portal subscription."""
+    from thor_cli.tools_config import TOOL_CATEGORIES, get_thor_subscription_features
 
-    if managed_feature or provider.get("requires_nous_auth"):
+    if managed_feature or provider.get("requires_thor_auth"):
         return False
     try:
         for _cat in TOOL_CATEGORIES.values():
             _providers = _cat.get("providers", [])
-            if provider in _providers and any(sib.get("managed_nous_feature") for sib in _providers):
-                return not get_nous_subscription_features(config, force_fresh=force_fresh).nous_auth_present
+            if provider in _providers and any(sib.get("managed_thor_feature") for sib in _providers):
+                return not get_thor_subscription_features(config, force_fresh=force_fresh).thor_auth_present
     except Exception:
         pass
     return False
@@ -919,9 +919,9 @@ def _configure_provider(provider: dict, config: dict, *, force_fresh: bool = Tru
     from thor_cli.tools_config import _run_post_setup
 
     env_vars = provider.get("env_vars", [])
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_thor_feature")
 
-    if not _nous_provider_gate(provider, config, managed_feature, force_fresh=force_fresh):
+    if not _thor_provider_gate(provider, config, managed_feature, force_fresh=force_fresh):
         return
 
     _print_provider_selection(provider, managed_feature, reconfigure=reconfigure)
@@ -933,12 +933,12 @@ def _configure_provider(provider: dict, config: dict, *, force_fresh: bool = Tru
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your Thor subscription.")
         _finish_provider_selection(provider, config, managed_feature)
         return
 
     if not reconfigure and _show_portal_hint(provider, config, managed_feature, force_fresh):
-        _print_info("  Available through Nous Portal subscription.")
+        _print_info("  Available through Thor Portal subscription.")
 
     all_configured = _prompt_env_vars(env_vars, reconfigure=reconfigure)
     if provider.get("post_setup") and all_configured:

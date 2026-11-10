@@ -471,7 +471,7 @@ def test_frozen_launch_url_override_never_borrows_the_named_pool(tmp_path, monke
 
 
 def test_lazy_info_reports_the_free_tier_pinned_model(tmp_path, monkeypatch):
-    """A not-yet-built session with no launch model/provider runs on ``nous/welcome`` on the free
+    """A not-yet-built session with no launch model/provider runs on ``thor/welcome`` on the free
     tier (the agent build pins it), so ``session.info`` says so; an explicit launch model stands."""
     from dataclasses import replace
     from types import SimpleNamespace

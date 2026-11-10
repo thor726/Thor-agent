@@ -69,7 +69,7 @@ def _set_cron_session_title(session_db, session_id, base_title):
     - #50535: never leaves the session blank. base_title already carries a cron-id fallback for nameless
     jobs; this also guards a failed write. Recover by appending a #N suffix via get_next_title_in_lineage()
     when supported, instead of swallowing the error and ending up untitled. - #50536: this runs
-    synchronously in the cron finally block ahead of the session close, so no in-flight title write can race
+    synchrothorly in the cron finally block ahead of the session close, so no in-flight title write can race
     the close.
     """
     if not session_db or not session_id:
@@ -613,7 +613,7 @@ def _inflight_home_path(home_key: str) -> Path:
 # ids so host-wide consumers (shutdown drain, idle-exit, metrics) see the union across profiles.
 _running_job_ids: set = set()
 _running_fire_owners: dict[tuple, dict[object, tuple[Optional[str], Path]]] = {}
-# Parent gateway threads synchronously waiting on restart-safe scope workers.
+# Parent gateway threads synchrothorly waiting on restart-safe scope workers.
 # Shutdown must not misclassify these as ownerless in-process runs: the tool
 # process sweep cannot reach the worker's transient scope.
 _restart_safe_waiter_job_ids: set = set()
@@ -1856,7 +1856,7 @@ def _open_cron_session_db(job: dict):
     # session_search (same pattern as gateway/run.py) — only now, after every early-return path (wake-gate,
     # prompt validation, drift skip) has passed, so a gated run never opens state.db just to abandon the
     # handle (#96290). Bounded with its own timeout (separate from THOR_CRON_TIMEOUT, which only watches
-    # the agent's run_conversation below): SessionDB.__init__ opens/migrates state.db synchronously and has
+    # the agent's run_conversation below): SessionDB.__init__ opens/migrates state.db synchrothorly and has
     # no timeout of its own against a wedged sqlite3.connect (e.g. a stale flock left by a crashed sibling
     # process). An unbounded hang here would wedge the job's worker thread, so the init is bounded and a
     # timeout proceeds without a session store instead of blocking the run forever.
@@ -2358,7 +2358,7 @@ class _CronRunScope:
             # run_job has already shipped the job's final response via _deliver_result; there is no turn
             # left to re-enter. (Worse, get_current_session_key() can fall back to the ambient os.environ
             # THOR_SESSION_KEY, which risks routing a cron subagent's output into an unrelated user chat.)
-            # Declaring the channel stateless routes delegate_task to its existing inline/synchronous path,
+            # Declaring the channel stateless routes delegate_task to its existing inline/synchrothor path,
             # so results return within the job's own turn. See declare_stateless_channel(). Upstream:
             # #53027, #63142.
             async_delivery=False,
@@ -3502,7 +3502,7 @@ def _wait_for_external_cron_worker_body(
     execution_id: str,
     stderr_path: Optional[Path] = None,
 ) -> bool:
-    """Preserve ``run_one_job``'s synchronous contract after handoff.
+    """Preserve ``run_one_job``'s synchrothor contract after handoff.
 
     The worker owns the durable execution and survives this gateway process.
     The caller nevertheless waits while it remains alive so manual/background

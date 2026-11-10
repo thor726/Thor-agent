@@ -32,9 +32,9 @@ test.each([['repository', true, true], ['missing repository', false, true], ['no
         await assert.rejects(getPublishConfigs(packager, null, null, true), /Cannot detect repository/)
       } else {
         const repositoryInfo = await packager.repositoryInfo
-        assert.equal(repositoryInfo.user, 'NousResearch')
+        assert.equal(repositoryInfo.user, 'dwisetyabudi15581')
         assert.equal(repositoryInfo.project, 'thor-agent')
-        assert.deepEqual(await getPublishConfigs(packager, null, null, true), [{ owner: 'NousResearch', repo: 'thor-agent', provider: 'github' }])
+        assert.deepEqual(await getPublishConfigs(packager, null, null, true), [{ owner: 'dwisetyabudi15581', repo: 'thor-agent', provider: 'github' }])
       }
     } finally { fs.rmSync(root, { recursive: true, force: true }) }
   }

@@ -1,6 +1,6 @@
 name: Sandbox desktop image
 
-# nousresearch/thor-sandbox:desktop is the terminal-backend sandbox base
+# thor-agent/thor-sandbox:desktop is the terminal-backend sandbox base
 # (nikolaik/python-nodejs) plus a display stack; Bot Screen, computer_use and
 # the bot's browser run inside it when terminal.backend is docker/ssh/etc.
 # It contains NO Thor code, so it does not need to track main: it changes
@@ -28,7 +28,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  IMAGE_NAME: nousresearch/thor-sandbox
+  IMAGE_NAME: thor-agent/thor-sandbox
 
 jobs:
   # PR code: secret-free build + smoke per arch.

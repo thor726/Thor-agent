@@ -533,7 +533,7 @@ class CLISessionMixin:
         self, history_snapshot: list, *, session_id: Optional[str] = None) -> Optional[list]:
         """Stage old-session memory extraction so /new stays responsive.
 
-        The context-engine ``on_session_end`` is delivered synchronously here: cheap (no LLM)
+        The context-engine ``on_session_end`` is delivered synchrothorly here: cheap (no LLM)
         and ordering-sensitive — it must land before ``reset_session_state()`` rebinds the
         engine. The memory-provider half (LLM-bound, seconds) is NOT run here: the returned
         snapshot goes to ``MemoryManager.commit_session_boundary_async`` as one end→switch

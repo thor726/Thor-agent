@@ -1,6 +1,6 @@
 """What ``thor peer dm`` tells the sender when the turn does not come back.
 
-A peer DM is one synchronous ``POST /api/sessions/{id}/chat`` with a 600 s client timeout, and the
+A peer DM is one synchrothor ``POST /api/sessions/{id}/chat`` with a 600 s client timeout, and the
 receiving gateway runs the turn to completion whatever the client does. So a timeout while awaiting
 the response means the message IS in the peer's Bot Chat and is being answered — the opposite of
 unreachable. Reporting it as unreachable makes the sending bot resend, and the teammate runs the same

@@ -28,7 +28,7 @@ def _clean_state():
     yield
     # Give just-released workers a beat to finalize BEFORE draining, so their
     # completion events land now instead of leaking into the next test's
-    # queue (worker threads push events asynchronously; a drain that races an
+    # queue (worker threads push events asynchrothorly; a drain that races an
     # in-flight _finalize misses it).
     deadline = time.monotonic() + 2.0
     while ad.active_count() and time.monotonic() < deadline:
@@ -50,7 +50,7 @@ def _drain_one(timeout=5.0):
 def _drain_for(delegation_id, timeout=5.0):
     """Drain until the event for *delegation_id* appears (discarding others).
 
-    Completion events are pushed asynchronously by worker threads, so a
+    Completion events are pushed asynchrothorly by worker threads, so a
     straggler from a PREVIOUS test can land after that test's teardown drain
     and leak into the current test's queue. Matching on delegation_id makes
     the assertion immune to that cross-test leak.
@@ -115,7 +115,7 @@ def test_connect_preserves_wal_and_applies_macos_durability_barriers(
     conn = ad._connect()
     try:
         assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
-        assert conn.execute("PRAGMA synchronous").fetchone()[0] == 2
+        assert conn.execute("PRAGMA synchrothor").fetchone()[0] == 2
         assert conn.execute("PRAGMA checkpoint_fullfsync").fetchone()[0] == 1
     finally:
         conn.close()
@@ -561,7 +561,7 @@ assert ad.mark_completion_delivered({delegation_id!r})
 
 def test_delegate_task_background_routes_async_and_does_not_block(monkeypatch):
     """delegate_task(background=True) returns a handle without running the
-    child synchronously, and the child completes on the background thread.
+    child synchrothorly, and the child completes on the background thread.
     A single task is dispatched as a one-item background batch unit."""
     from unittest.mock import MagicMock
     import tools.delegate_tool as dt

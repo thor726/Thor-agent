@@ -38,7 +38,7 @@ def test_background_dispatch_prints_resume_notice(monkeypatch):
 
 
 
-def test_synchronous_delegate_result_prints_no_notice(monkeypatch):
+def test_synchrothor_delegate_result_prints_no_notice(monkeypatch):
     """A non-background result (e.g. the stateless sync fallback) must not claim
     a background dispatch."""
     cli_obj = _make_cli()

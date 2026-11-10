@@ -254,7 +254,7 @@ queued: resolve the lost turn before continuing, rather than resending it.
 
 The POSIX control listener owns two executors of its own: one for hosted producer
 requests and one for every other control request. A `hosted-producer` operation
-synchronously calls back through `hosted-attest` and `identify`, then waits for
+synchrothorly calls back through `hosted-attest` and `identify`, then waits for
 canonical session work on the owner loop, so its callbacks must not queue behind
 the producers waiting for them, and neither pool occupies the loop's default
 executor used by session work. Each pool's worker count is the
@@ -922,7 +922,7 @@ briefs are labelled user turns appended at a turn boundary, preserving role alte
 conversation — ntfy, raft and a2a all report `chat_type="dm"` for a broadcast topic, a channel and
 an agent peer, so posting a sign-in link and code there would publish them.
 
-**It binds the whole install.** The sign-in writes the singleton `providers.nous`, so whoever
+**It binds the whole install.** The sign-in writes the singleton `providers.thor`, so whoever
 approves the code owns this gateway's inference and connectors for every chat it serves. Slash
 gating is opt-in (`gateway/slash_access.py`): with no `allow_admin_from` set, every user allowed to
 DM the bot can run it. Operators of shared gateways must set it.
@@ -938,7 +938,7 @@ token poll checks on a ≤1 s tick and once more before the save. A cancelled at
 A shutdown-cancelled attempt pushes nothing — the task is dying and its adapters may already be
 gone. The completion copy carries what the free tier's handoff moved.
 
-On completion the handler **evicts** every cached agent still on `nous/welcome` and clears any
+On completion the handler **evicts** every cached agent still on `thor/welcome` and clears any
 session model override pinned to it. It does not switch agents in place and does not write a model
 override: `settle_after_upgrade` already moved `model.default`/`model.base_url` in the config, every
 turn re-resolves the config and the credentials, and `_agent_config_signature` already forces a

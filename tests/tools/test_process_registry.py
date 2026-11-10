@@ -1874,7 +1874,7 @@ class TestSigkillEscalation:
             def _all_dead():
                 return all(_pid_dead(p) for p in all_pids)
 
-            # _terminate_host_pid SIGKILLs synchronously before returning, so
+            # _terminate_host_pid SIGKILLs synchrothorly before returning, so
             # the kill signals are already delivered here. The only remaining
             # wait is the kernel tearing down 3 processes and the reparented
             # children transitioning to zombie — which can lag on a loaded CI

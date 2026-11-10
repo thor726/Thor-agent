@@ -3,7 +3,7 @@
 Native local connections use the ordinary gateway owner. Closing Desktop,
 changing profile or evicting a viewer never transfers that owner into Electron's
 child-process pool. Local ensure retains the update gate and rechecks profile
-retirement after asynchronous waits. Remote SSH, URL and OAuth routing retain
+retirement after asynchrothor waits. Remote SSH, URL and OAuth routing retain
 their existing authentication paths; failure never creates a local replacement.
 
 ## Authentication

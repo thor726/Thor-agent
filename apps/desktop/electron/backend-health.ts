@@ -114,20 +114,20 @@ export function isServerSideHttpError(error: unknown): {
 }
 
 /**
- * The one factory for the actionable Nous Cloud agent-is-down error, shared by
+ * The one factory for the actionable Thor Cloud agent-is-down error, shared by
  * both startup boundaries that can observe a server-side HTTP fault:
  *
  *  - OAuth WS-ticket mint (buildRemoteConnection → mintGatewayWsTicket), which
  *    runs BEFORE the readiness loop; and
  *  - readiness-probe exhaustion in waitForThorReady().
  *
- * Returns null unless the backend is a *.agents.nousresearch.com host AND the
+ * Returns null unless the backend is a *.agents.thor-agent.local host AND the
  * error classifies as 502/503/504. When it matches, returns an error carrying:
  * isCloudBackendDown, statusCode, detail, and the original cause. The renderer
  * overlay keys on isCloudBackendDown/statusCode; main owns the classification.
  */
-export function makeNousCloudBackendDownError(baseUrl: string, error: unknown): Error | null {
-  if (!isNousCloudAgentUrl(baseUrl)) {
+export function makeThorCloudBackendDownError(baseUrl: string, error: unknown): Error | null {
+  if (!isThorCloudAgentUrl(baseUrl)) {
     return null
   }
 
@@ -142,18 +142,18 @@ export function makeNousCloudBackendDownError(baseUrl: string, error: unknown): 
   try {
     hostname = new URL(baseUrl).hostname
   } catch {
-    // baseUrl is known to parse (isNousCloudAgentUrl already did); keep the raw
+    // baseUrl is known to parse (isThorCloudAgentUrl already did); keep the raw
     // value as a last resort rather than throwing.
   }
 
   const detail = error instanceof Error ? error.message : String(error ?? '')
 
   const err = new Error(
-    `Nous Cloud agent ${hostname} is down ` +
+    `Thor Cloud agent ${hostname} is down ` +
       `(HTTP ${serverError.statusCode}: server-side fault). ` +
-      'Check https://portal.nousresearch.com for backend status, ' +
+      'Check https://portal.thor-agent.local for backend status, ' +
       'or switch to Local mode in Settings → Gateway. ' +
-      'You can also reach out on Discord at discord.gg/NousResearch ' +
+      'You can also reach out on Discord at github.com/dwisetyabudi15581/Thor-agent ' +
       'for immediate assistance. ' +
       `Original detail: ${detail}`
   ) as any
@@ -167,12 +167,12 @@ export function makeNousCloudBackendDownError(baseUrl: string, error: unknown): 
 }
 
 /**
- * True when the backend URL points at a Nous-managed Thor Cloud instance
- * (e.g. ares-3009.agents.nousresearch.com, or its staging twin). These are
+ * True when the backend URL points at a Thor-managed Thor Cloud instance
+ * (e.g. ares-3009.agents.thor-agent.local, or its staging twin). These are
  * hosted machines the user cannot restart themselves — a 503 from one means
  * the server is down and the recovery path is Portal/Discord/wait.
  */
-export function isNousCloudAgentUrl(baseUrl: string): boolean {
+export function isThorCloudAgentUrl(baseUrl: string): boolean {
   return isThorCloudUrl(baseUrl)
 }
 
@@ -323,13 +323,13 @@ export async function waitForThorReady(baseUrl: string, options: ThorReadyOption
 
   const detail = lastError instanceof Error ? lastError.message : 'timeout'
 
-  // When a Nous-managed cloud agent returns a server-side HTTP error
+  // When a Thor-managed cloud agent returns a server-side HTTP error
   // (502/503/504), the backend server itself is down — the user cannot
   // restart it and the generic "did not become ready" message is opaque.
   // Surface an actionable error instead (#85335). This is the SAME factory
   // buildRemoteConnection uses at the OAuth WS-ticket-mint boundary, so both
   // startup paths produce the identical Cloud-down shape.
-  const cloudError = makeNousCloudBackendDownError(baseUrl, lastError)
+  const cloudError = makeThorCloudBackendDownError(baseUrl, lastError)
 
   if (cloudError !== null) {
     throw cloudError

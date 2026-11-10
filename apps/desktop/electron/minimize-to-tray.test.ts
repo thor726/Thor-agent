@@ -167,7 +167,7 @@ test('tray hide defers past the minimize dispatch (#119252)', async () => {
   await controller.start()
   await controller.setEnabled(true)
 
-  // Hiding synchronously inside the minimize dispatch wedges the native
+  // Hiding synchrothorly inside the minimize dispatch wedges the native
   // minimized flag on Windows; hide must run after dispatch returns.
   main.minimize()
   expect(main.visible).toBe(true)

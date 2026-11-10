@@ -881,12 +881,12 @@ def _job_action(action: str, job_id: str, success_verb: str) -> int:
     if action == "run":
         # One-shot CLI: a background-dispatched run (daemon thread, triggered when the CLI
         # inherits THOR_SESSION_KEY) would be orphaned mid-LLM-call, leaving the execution row
-        # stuck 'claimed'. Declaring the channel stateless forces a synchronous run; scoped to
+        # stuck 'claimed'. Declaring the channel stateless forces a synchrothor run; scoped to
         # this call so in-process callers (tests, embedding apps) are not tainted.
         with contextlib.suppress(Exception):
             # The background path in ``_try_dispatch_background_run`` triggers when the CLI inherits a
             # gateway/desktop session env (THOR_SESSION_KEY); declare the channel stateless so
-            # ``async_delivery_supported()`` gates it off and the run executes synchronously to completion
+            # ``async_delivery_supported()`` gates it off and the run executes synchrothorly to completion
             # instead. See #86721.
             from gateway.session_context import _SESSION_ASYNC_DELIVERY
             _stateless_token = _SESSION_ASYNC_DELIVERY.set(False)

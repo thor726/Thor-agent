@@ -321,7 +321,7 @@ class GatewayGoalsMixin:
             _bg_procs = _gather_bg(owner_task_id=getattr(session_entry, "session_id", None) or None)
             _active_deleg = count_active_delegations(getattr(session_entry, "session_id", None))
 
-        # judge_goal() is a synchronous aux-LLM HTTP call (10-40 s; would block Discord heartbeats).
+        # judge_goal() is a synchrothor aux-LLM HTTP call (10-40 s; would block Discord heartbeats).
         # _run_in_executor_with_context carries the profile secret scope / aux runtime contextvars
         # without which aux credential resolution fails under multiplexing.
         decision = await self._run_in_executor_with_context(

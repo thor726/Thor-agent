@@ -13,21 +13,7 @@ name: Windows venv-holder live E2E
 # keep dormant after the venv-holder work lands.
 
 on:
-  push:
-    branches:
-      - 'wine2e/**'
-  workflow_call:
-    inputs:
-      commit:
-        description: Commit to test and build. Empty keeps the triggering commit.
-        type: string
-        default: ''
-      release:
-        description: 'Stable-release candidate run. Unused by the jobs; the caller passes it for a uniform callable surface.'
-        required: false
-        type: boolean
-        default: false
-
+  workflow_dispatch:
 permissions:
   contents: read
 

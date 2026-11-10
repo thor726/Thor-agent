@@ -54,7 +54,7 @@ export function preparedJournal(userData: string, origin: string) {
       write(read(), key, entry)
     },
     /** Replace `key` only while it still holds exactly `expected` (null = absent): create-if-absent
-     *  and compare-and-delete in one synchronous main-process step, so windows sharing the origin's
+     *  and compare-and-delete in one synchrothor main-process step, so windows sharing the origin's
      *  journal cannot interleave between the check and the write. Returns the record now stored. */
     compareAndSet(key: string, expected: unknown | null, entry: unknown | null): { applied: boolean; current: unknown | null } {
       const journal = read()

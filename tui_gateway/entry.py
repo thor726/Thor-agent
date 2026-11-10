@@ -63,7 +63,7 @@ def _private_rpc_stdin_windows() -> None:
     duplicate of ``STD_INPUT_HANDLE`` (``Popen._get_handles``), so marking fd 0
     non-inheritable keeps nothing out. That duplicate is the RPC pipe: such a
     child can read requests meant for us, and a ``git`` child started while the
-    main loop holds its synchronous ``readline`` on the pipe never returned (the
+    main loop holds its synchrothor ``readline`` on the pipe never returned (the
     version probe in ``_session_info``, past its 3 s timeout), so the session's
     agent build never finished and no turn ran.
     """

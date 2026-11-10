@@ -82,11 +82,11 @@ def _(rid, request):
 )
 def _(rid, _params):
     from tools.connectors.portal.client import PortalConnectorClient
-    from tools.managed_tool_gateway import read_nous_access_token
+    from tools.managed_tool_gateway import read_thor_access_token
     from tui_gateway.contracts.connectors import ConnectorsCatalogResult
 
     client = PortalConnectorClient()
-    catalog = client.catalog() if read_nous_access_token() else client.public_catalog()
+    catalog = client.catalog() if read_thor_access_token() else client.public_catalog()
     return _ok(rid, ConnectorsCatalogResult.model_validate(catalog, from_attributes=True).model_dump(mode="json"))
 
 
@@ -101,10 +101,10 @@ def _(rid, _params):
 )
 def _(rid, request):
     from tools.connectors.portal.client import PortalConnectorClient
-    from tools.managed_tool_gateway import read_nous_access_token
+    from tools.managed_tool_gateway import read_thor_access_token
     from tui_gateway.contracts.connectors import ConnectorAccountRow, ConnectorAccountsResult
 
-    accounts = PortalConnectorClient().list_accounts() if read_nous_access_token() else []
+    accounts = PortalConnectorClient().list_accounts() if read_thor_access_token() else []
     rows = [account for account in accounts if request.connector is None or account["connector"] == request.connector]
     result = ConnectorAccountsResult(accounts=[_account_row(account) for account in rows])
     return _ok(rid, result.model_dump(mode="json"))
@@ -309,7 +309,7 @@ def _policy_auth_error(exc, reasons):
     if exc.code == "forbidden":
         return 4030, reasons.forbidden_scope, "Connector policy cannot be changed for this member."
     if exc.status == 401 or exc.code in {"invalid_token", "INVALID_TOKEN", "NO_TOKEN"}:
-        return 4032, reasons.needs_nous_auth, "Sign in to use connectors."
+        return 4032, reasons.needs_thor_auth, "Sign in to use connectors."
     return 5034, reasons.policy_unavailable, "Connector policy is unavailable."
 
 

@@ -38,7 +38,7 @@ const installDesktopPlugin = vi.fn()
 
 const BLENDER = {
   catalogName: 'blender',
-  repo: 'https://github.com/NousResearch/thor-official-plugins#blender',
+  repo: 'https://github.com/dwisetyabudi15581/thor-official-plugins#blender',
   sha: 'abec9e822a23089943dd1d476a104bf746f19f86',
   summary: 'Build and render 3D scenes in your Blender.',
   title: 'Blender'
@@ -113,7 +113,7 @@ describe('A reviewed catalog pick', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Blender' })
     expect(within(dialog).getByText('Verified')).toBeTruthy()
     expect(within(dialog).getByText(BLENDER.summary)).toBeTruthy()
-    expect(within(dialog).getByText('Reviewed by Nous. Installs for default and turns on right away.')).toBeTruthy()
+    expect(within(dialog).getByText('Reviewed by Thor. Installs for default and turns on right away.')).toBeTruthy()
     expect(within(dialog).queryByText(BLENDER.repo)).toBeNull()
     expect(within(dialog).queryByRole('combobox')).toBeNull()
     expect(within(dialog).queryByRole('checkbox')).toBeNull()
@@ -185,7 +185,7 @@ describe('A reviewed catalog pick', () => {
     fireEvent.click(screen.getByRole('combobox', { name: 'Install for profile' }))
     fireEvent.click(await screen.findByRole('option', { name: 'Research Bot' }))
 
-    expect(screen.getByText('Reviewed by Nous. Installs for Research Bot and turns on right away.')).toBeTruthy()
+    expect(screen.getByText('Reviewed by Thor. Installs for Research Bot and turns on right away.')).toBeTruthy()
     fireEvent.click(installButton())
 
     await waitFor(() => expect(installCalls()[0]?.[1]).toMatchObject({ catalog_name: 'blender', profile: 'research' }))

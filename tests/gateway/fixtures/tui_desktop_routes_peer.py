@@ -259,7 +259,7 @@ async def _connection_card(authority, ws, reader, sid, marker, receipt):
 
     run.reissue = auth_failure
     refused = await rpc(ws, 'connectors.connect', owner=owner, connectors=['linear'], reconnect=True)
-    assert refused['error']['code'] == 4032 and refused['error']['data']['reason'] == 'NEEDS_NOUS_AUTH', refused
+    assert refused['error']['code'] == 4032 and refused['error']['data']['reason'] == 'NEEDS_THOR_PORTAL_AUTH', refused
 
     def broken(op, names):
         raise OSError('transport down')

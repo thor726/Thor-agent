@@ -137,7 +137,7 @@ def test_inherit_launch_model_preserves_explicit_profile_selection(
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("THOR_HOME", str(home))
     atomic_config_write(
-        home / "config.yaml", {"model": {"provider": "nous", "default": "launch-model"}}
+        home / "config.yaml", {"model": {"provider": "thor", "default": "launch-model"}}
     )
     profile = home / "profiles" / "scout"
     profile.mkdir(parents=True)

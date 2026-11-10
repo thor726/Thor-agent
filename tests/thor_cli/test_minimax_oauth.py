@@ -197,7 +197,7 @@ def test_resolve_credentials_quarantines_dead_tokens_on_terminal_refresh_failure
     clear access_token/refresh_token/expires_* from auth.json and write a
     last_auth_error marker, so subsequent calls fail fast with not_logged_in
     instead of replaying the dead refresh token over the network.
-    Mirrors Nous / xAI-OAuth / Codex-OAuth quarantine pattern.
+    Mirrors Thor / xAI-OAuth / Codex-OAuth quarantine pattern.
     """
     stale_state = {
         "access_token": "dead-access-token",
@@ -518,7 +518,7 @@ def _minimax_state(tmp_path, *, expires_in: int = 30, refresh_token: str = "r1",
         **_minimax_expiry_fields_for_test(expires_in),
     }
     (tmp_path / "auth.json").write_text(json.dumps({
-        "version": 1, "active_provider": "nous",
+        "version": 1, "active_provider": "thor",
         "providers": {"minimax-oauth": state},
     }), encoding="utf-8")
     return state
@@ -661,7 +661,7 @@ def test_concurrent_refresh_rotates_token_once_and_keeps_login(tmp_path, monkeyp
 
 def test_aux_refresh_preserves_active_provider(tmp_path, monkeypatch):
     """An aux-triggered refresh rewrites credentials, not the user's provider
-    choice: ``auth.json.active_provider`` stays ``nous`` (review case B'; the
+    choice: ``auth.json.active_provider`` stays ``thor`` (review case B'; the
     rule ``_save_provider_state_to_source`` already documents)."""
     from thor_cli.auth import build_minimax_oauth_token_provider, get_active_provider
 
@@ -673,12 +673,12 @@ def test_aux_refresh_preserves_active_provider(tmp_path, monkeypatch):
         store["providers"]["minimax-oauth"]["portal_base_url"] = portal.url
         (tmp_path / "auth.json").write_text(json.dumps(store), encoding="utf-8")
 
-        assert get_active_provider() == "nous"
+        assert get_active_provider() == "thor"
         token = build_minimax_oauth_token_provider()()
         assert token == "tok-r2", "the refresh must actually run over the loopback portal"
 
         final = json.loads((tmp_path / "auth.json").read_text(encoding="utf-8"))
-        assert final["active_provider"] == "nous", (
+        assert final["active_provider"] == "thor", (
             "an aux-side refresh must not flip the user's active provider"
         )
         assert final["providers"]["minimax-oauth"]["access_token"] == "tok-r2"

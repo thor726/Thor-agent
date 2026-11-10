@@ -3,8 +3,8 @@ contact_links:
   - name: 🔒 Report a security vulnerability
     url: https://github.com/dwisetyabudi15581/Thor-agent/security/advisories/new
     about: Report vulnerabilities privately — never in a public issue. Read SECURITY.md for scope first.
-  - name: 💬 Nous Research Discord
-    url: https://discord.gg/NousResearch
+  - name: 💬 Thor Agent Discord
+    url: https://github.com/dwisetyabudi15581/Thor-agent
     about: For quick questions, showcasing projects, sharing skills, and community chat.
   - name: 📖 Documentation
     url: https://github.com/dwisetyabudi15581/Thor-agent/blob/main/README.md

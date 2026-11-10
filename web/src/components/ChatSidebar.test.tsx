@@ -71,15 +71,15 @@ vi.mock('@/components/ModelReloadConfirm', () => ({
 vi.mock('@/components/ReasoningPicker', () => ({
   ReasoningPicker: () => null
 }))
-vi.mock('@nous-research/ui/ui/components/button', () => ({
+vi.mock('@thor-research/ui/ui/components/button', () => ({
   Button: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
     <button onClick={onClick}>{children}</button>
   )
 }))
-vi.mock('@nous-research/ui/ui/components/badge', () => ({
+vi.mock('@thor-research/ui/ui/components/badge', () => ({
   Badge: ({ children }: { children?: ReactNode }) => <span>{children}</span>
 }))
-vi.mock('@nous-research/ui/ui/components/card', () => ({
+vi.mock('@thor-research/ui/ui/components/card', () => ({
   Card: ({ children }: { children?: ReactNode }) => <div>{children}</div>
 }))
 
@@ -255,14 +255,14 @@ describe('ChatSidebar event socket', () => {
     expect(container.textContent).toContain('configured-primary')
   })
 
-  it("ignores the synchronous sidecar state replay", async () => {
+  it("ignores the synchrothor sidecar state replay", async () => {
     const { ChatSidebar } = await import("./ChatSidebar");
 
     await render(<ChatSidebar channel="chat-1" />);
     await vi.waitFor(() => expect(gatewayMocks.onState).toHaveBeenCalled());
 
     const redialHandler = gatewayMocks.onState.mock.calls[1][0] as (s: string) => void;
-    // The mock invokes the initial replay synchronously during subscription.
+    // The mock invokes the initial replay synchrothorly during subscription.
     // A later closed transition must still schedule a retry.
     redialHandler("closed");
     await vi.waitFor(

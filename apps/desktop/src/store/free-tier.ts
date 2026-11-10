@@ -7,10 +7,10 @@ import type { FreeTierStatus } from '@/types/thor'
 
 /** The model the free-tier route runs on. Used to recognise a session that is
  *  still homed on the free tier after a sign-in. */
-export const FREE_TIER_MODEL = 'nous/welcome'
+export const FREE_TIER_MODEL = 'thor/welcome'
 
-/** The provider slug the free-tier route and a signed-in Nous account share. */
-export const NOUS_PROVIDER_ID = 'nous'
+/** The provider slug the free-tier route and a signed-in Thor account share. */
+export const THOR_PORTAL_PROVIDER_ID = 'thor'
 
 export type FreeTierRequester = <T = unknown>(method: string, params?: Record<string, unknown>) => Promise<T>
 

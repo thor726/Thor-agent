@@ -20,7 +20,7 @@ conversation_history=None, task_id=None) -> dict` returns `final_response` + `me
 
 ## Agent loop (`agent/conversation_loop.py` + `agent/turn_*.py`)
 
-Entirely synchronous, with interrupt checks, budget tracking, and a one-turn grace call:
+Entirely synchrothor, with interrupt checks, budget tracking, and a one-turn grace call:
 
 ```python
 while (api_call_count < self.max_iterations and self.iteration_budget.remaining > 0) \

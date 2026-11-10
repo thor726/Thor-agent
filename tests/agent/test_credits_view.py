@@ -12,14 +12,14 @@ from __future__ import annotations
 import pytest
 
 from agent.account_usage import build_credits_view
-from thor_cli.nous_account import NousPortalAccountInfo, NousPaidServiceAccessInfo
+from thor_cli.thor_account import ThorPortalAccountInfo, ThorPaidServiceAccessInfo
 
-def _account(**kwargs) -> NousPortalAccountInfo:
+def _account(**kwargs) -> ThorPortalAccountInfo:
     kwargs.setdefault("logged_in", True)
     kwargs.setdefault("source", "account_api")
     kwargs.setdefault("fresh", True)
     kwargs.setdefault("portal_base_url", "https://portal.example.test")
-    return NousPortalAccountInfo(**kwargs)
+    return ThorPortalAccountInfo(**kwargs)
 
 @pytest.fixture
 def _logged_in_account(monkeypatch):
@@ -31,7 +31,7 @@ def _logged_in_account(monkeypatch):
 
     def _install(account):
         monkeypatch.setattr(
-            "thor_cli.nous_account.get_nous_portal_account_info",
+            "thor_cli.thor_account.get_thor_portal_account_info",
             lambda *a, **kw: account,
         )
 
@@ -46,7 +46,7 @@ def test_view_built_with_org_pinned_url_and_identity(_logged_in_account):
             org_name="Acme Inc",
             email="alice@example.test",
             paid_service_access=True,
-            paid_service_access_info=NousPaidServiceAccessInfo(
+            paid_service_access_info=ThorPaidServiceAccessInfo(
                 purchased_credits_remaining=30.0,
                 total_usable_credits=30.0,
             ),

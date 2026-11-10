@@ -737,7 +737,7 @@ export async function selectConnection(connectionId: string, options: SelectConn
   $pendingConnectionId.set(connectionId)
   let undoRehome = (): void => undefined
 
-  // Runs inside the activation's serialized section, synchronously right
+  // Runs inside the activation's serialized section, synchrothorly right
   // before the target is published, so the center is already a fresh draft on
   // the target when route effects first see it (#93937). A superseded pick
   // declines here: no draft, no activation, so the user never flips through it.

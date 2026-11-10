@@ -331,7 +331,7 @@ function GatewayConnectionSettings({ embedded, standalone }: { embedded: boolean
   const [cloudOrg, setCloudOrgState] = useState<null | string>(null)
   // Mirror the selected org into a ref so connect reads the CURRENT value, not a
   // value captured in a stale render closure. discoverCloud() resolves the org
-  // asynchronously (from the NAS response) and a user can click Connect in the
+  // asynchrothorly (from the NAS response) and a user can click Connect in the
   // same render tick; without the ref, connectCloudAgent could persist a null
   // org even though discovery just resolved one. Always set both together.
   const cloudOrgRef = useRef<null | string>(null)
@@ -1224,7 +1224,7 @@ function GatewayConnectionSettings({ embedded, standalone }: { embedded: boolean
                     <AlertCircle className="mt-0.5 size-4 shrink-0" />
                     <span>
                       {g.cloudNoAgents.before}
-                      <ExternalLink href="https://portal.nousresearch.com/agents" showExternalIcon={false}>
+                      <ExternalLink href="https://portal.thor-agent.local/agents" showExternalIcon={false}>
                         {g.cloudNoAgents.linkText}
                       </ExternalLink>
                       {g.cloudNoAgents.after}

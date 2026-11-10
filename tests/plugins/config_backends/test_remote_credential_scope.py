@@ -1,4 +1,4 @@
-"""The Nous plane credential resolves under its own profile's secret scope when the gateway multiplexes.
+"""The Thor plane credential resolves under its own profile's secret scope when the gateway multiplexes.
 
 The Remote Config poller is a bare thread with no profile scope. Without a binding, the resolver's
 read of ``THOR_PORTAL_BASE_URL`` fails closed, the override counts as absent, the stored
@@ -17,18 +17,18 @@ import pytest
 from agent.secret_scope import set_multiplex_active, set_secret_scope, reset_secret_scope
 from plugins.config_backends.remote import credentials
 
-STAGING = "https://portal.staging-nousresearch.com"
-OTHER = "https://portal.other-nousresearch.com"
+STAGING = "https://portal.staging-thor-agent.local"
+OTHER = "https://portal.other-thor-agent.local"
 
 
 def _profile(home: Path, portal: str) -> Path:
     home.mkdir(parents=True, exist_ok=True)
     (home / ".env").write_text(f"THOR_PORTAL_BASE_URL={portal}\n", encoding="utf-8")
-    nous = {"access_token": "expired-access", "refresh_token": f"refresh-for-{portal}",
+    thor = {"access_token": "expired-access", "refresh_token": f"refresh-for-{portal}",
             "client_id": "thor-cli-vps", "portal_base_url": portal,
             "expires_at": "2000-01-01T00:00:00+00:00"}
     (home / "auth.json").write_text(json.dumps(
-        {"version": 1, "active_provider": "nous", "providers": {"nous": nous}}), encoding="utf-8")
+        {"version": 1, "active_provider": "thor", "providers": {"thor": thor}}), encoding="utf-8")
     return home
 
 
@@ -38,13 +38,13 @@ def launch_home(tmp_path, monkeypatch):
     monkeypatch.setenv("THOR_HOME", str(home))
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared"))
     monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
-    monkeypatch.delenv("NOUS_PORTAL_BASE_URL", raising=False)
+    monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
     return home
 
 
 @pytest.fixture
 def refreshes(monkeypatch):
-    from thor_cli import auth, auth_nous
+    from thor_cli import auth, auth_thor
 
     seen: list[tuple[str, str]] = []
 
@@ -55,7 +55,7 @@ def refreshes(monkeypatch):
 
     monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
     monkeypatch.setattr(auth, "_refresh_access_token", fake_refresh)
-    monkeypatch.setattr(auth_nous, "_refresh_access_token", fake_refresh)
+    monkeypatch.setattr(auth_thor, "_refresh_access_token", fake_refresh)
     return seen
 
 
@@ -137,7 +137,7 @@ def test_scope_is_reset_when_resolution_fails(launch_home, monkeypatch):
         assert current_secret_scope() is not None  # bound during the resolution
         raise RuntimeError("network down")
 
-    monkeypatch.setattr(auth, "resolve_nous_access_token", boom)
+    monkeypatch.setattr(auth, "resolve_thor_access_token", boom)
 
     def call():
         with pytest.raises(credentials.PlaneCredentialError):
@@ -191,14 +191,14 @@ def test_launch_profile_keeps_its_env_only_override_frozen_at_activation(tmp_pat
 def test_secondary_never_borrows_the_launch_profiles_env_override(launch_home, monkeypatch, refreshes):
     """A secondary with no Portal override of its own routes on its stored (allowlisted) URL, never
     on the launch profile's process-env override."""
-    secondary = _profile(launch_home / "profiles" / "work", "https://portal.nousresearch.com")
+    secondary = _profile(launch_home / "profiles" / "work", "https://portal.thor-agent.local")
     (secondary / ".env").write_text("", encoding="utf-8")
     monkeypatch.setenv("THOR_PORTAL_BASE_URL", STAGING)
     set_multiplex_active(True)
 
     _in_fresh_thread(lambda: credentials.plane_token(secondary))
 
-    assert refreshes == [("https://portal.nousresearch.com", "refresh-for-https://portal.nousresearch.com")]
+    assert refreshes == [("https://portal.thor-agent.local", "refresh-for-https://portal.thor-agent.local")]
 
 
 def test_single_profile_binds_nothing(launch_home, refreshes, monkeypatch):
@@ -207,14 +207,14 @@ def test_single_profile_binds_nothing(launch_home, refreshes, monkeypatch):
     from thor_cli import auth
 
     monkeypatch.setenv("THOR_PORTAL_BASE_URL", OTHER)
-    real = auth.resolve_nous_access_token
+    real = auth.resolve_thor_access_token
     scopes = []
 
     def spy(**kw):
         scopes.append(current_secret_scope())
         return real(**kw)
 
-    monkeypatch.setattr(auth, "resolve_nous_access_token", spy)
+    monkeypatch.setattr(auth, "resolve_thor_access_token", spy)
     credentials.plane_token(launch_home)
     assert scopes == [None]
     assert refreshes[0][0] == OTHER

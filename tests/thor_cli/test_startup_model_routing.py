@@ -5,13 +5,13 @@ import pytest
 from thor_cli import model_switch
 
 
-def test_startup_route_uses_configured_nous_provider(monkeypatch):
+def test_startup_route_uses_configured_thor_provider(monkeypatch):
     monkeypatch.setattr(model_switch, "DIRECT_ALIASES", {})
     route = model_switch.resolve_startup_model_route(
-        "nous/deepseek-v4-pro",
-        user_providers={"nous": {"base_url": "https://inference.example/v1"}},
+        "thor/deepseek-v4-pro",
+        user_providers={"thor": {"base_url": "https://inference.example/v1"}},
     )
-    assert route == model_switch.StartupModelRoute("deepseek-v4-pro", "nous", "")
+    assert route == model_switch.StartupModelRoute("deepseek-v4-pro", "thor", "")
 
 
 def test_startup_route_keeps_configured_custom_provider_name(monkeypatch):
@@ -55,11 +55,11 @@ def test_startup_route_aggregator_native_slug_stays_on_aggregator(monkeypatch):
 def test_startup_route_non_aggregator_current_provider_still_routes(monkeypatch):
     monkeypatch.setattr(model_switch, "DIRECT_ALIASES", {})
     route = model_switch.resolve_startup_model_route(
-        "nous/deepseek-v4-pro",
+        "thor/deepseek-v4-pro",
         current_provider="anthropic",
-        user_providers={"nous": {"base_url": "https://inference.example/v1"}},
+        user_providers={"thor": {"base_url": "https://inference.example/v1"}},
     )
-    assert route == model_switch.StartupModelRoute("deepseek-v4-pro", "nous", "")
+    assert route == model_switch.StartupModelRoute("deepseek-v4-pro", "thor", "")
 
 
 def test_startup_route_resolves_dict_alias_and_preserves_endpoint(monkeypatch):

@@ -10,7 +10,7 @@ from thor_cli.config_defaults_auxiliary import _aux
 #: user pins one. LEGACY_SANDBOX_IMAGES are the plain defaults that preceded the desktop stack
 #: (the 3.14 pin shipped between the two without a migration); a saved config still holding one
 #: is the template copied, and the config migration unsets it, never a user's own pin.
-DEFAULT_SANDBOX_IMAGE = "nousresearch/thor-sandbox:desktop"
+DEFAULT_SANDBOX_IMAGE = "thor-agent/thor-sandbox:desktop"
 LEGACY_SANDBOX_IMAGES = ("nikolaik/python-nodejs:python3.11-nodejs20", "nikolaik/python-nodejs:python3.14-nodejs22")
 LEGACY_SANDBOX_IMAGE = LEGACY_SANDBOX_IMAGES[0]
 # Vercel Sandbox managed image (Vercel deprecated its `runtime` presets in Aug 2026).
@@ -245,7 +245,7 @@ DEFAULT_CONFIG = {
         # startup-restore inbound gate (all inbound is QUEUED while shut, so one long resumed turn
         # would leave every channel unanswered). On timeout the gate opens and the resume keeps
         # running in the background; duplicate-agent protection is unaffected because the resume
-        # slot is claimed synchronously first. 0 = wait forever.
+        # slot is claimed synchrothorly first. 0 = wait forever.
         "gateway_startup_restore_drain_timeout": 30,
         # Max seconds the boot turn-machinery warm-up (run_agent import graph, tool schemas +
         # availability probes, context-file tier) may hold the inbound gate shut, so an early
@@ -671,7 +671,7 @@ DEFAULT_CONFIG = {
         "in_place": True,
         # Per-model threshold overrides: keys substring-match the model name (longest wins), values
         # replace the global `threshold`, e.g. {"glm-5.2": 0.40}. Prefix a key with "<provider>:" to
-        # scope it to one route ({"openai-codex:astra": 0.85} leaves Astra on OpenRouter/Nous at the
+        # scope it to one route ({"openai-codex:astra": 0.85} leaves Astra on OpenRouter/Thor at the
         # global value). The <512K floor (0.75) still applies raise-only on top.
         "model_thresholds": {},
         # Opt-in idle compaction (0 = off): a session resuming after this many idle seconds compacts up
@@ -866,7 +866,7 @@ DEFAULT_CONFIG = {
         # and was never superseded by a successful write to the same path (catches "half the
         # parallel patches failed, model claims success").
         "file_mutation_verifier": True,
-        # Nous credits status-bar notices (usage bands, grant-spent, depleted/restored). False mutes
+        # Thor credits status-bar notices (usage bands, grant-spent, depleted/restored). False mutes
         # them; balance data and /usage keep working.
         "credits_notices": True,
         # Append a one-line explanation when a turn ends with no usable reply (empty after retries,
@@ -1017,7 +1017,7 @@ DEFAULT_CONFIG = {
         # leaves disconnected sessions ``ended_at IS NULL`` forever — phantom "active" rows in /resume and
         # dashboards. See #65194.
         "startup_orphan_sweep": True,
-        # OAuth gate (engaged when --host is set and --insecure is not), read by the Nous Portal
+        # OAuth gate (engaged when --host is set and --insecure is not), read by the Thor Portal
         # plugin. Env THOR_DASHBOARD_OAUTH_CLIENT_ID / THOR_DASHBOARD_PORTAL_URL win when
         # non-empty. Empty client_id = no provider; empty portal_url = production.
         "oauth": {
@@ -1801,11 +1801,11 @@ DEFAULT_CONFIG = {
         # provider falls back to the built-in so cron never loses its trigger.
         "provider": "",
         # Chronos settings; consulted only when provider == "chronos". All non-secret — the agent
-        # holds NO scheduler credentials (provision reuses the Nous Portal token).
+        # holds NO scheduler credentials (provision reuses the Thor Portal token).
         "chronos": {
             # NAS/portal base URL that arms/cancels one-shots and mints the inbound fire JWT (used
             # as the expected issuer).
-            "portal_url": "https://portal.nousresearch.com",
+            "portal_url": "https://portal.thor-agent.local",
             # This agent's publicly reachable base URL; NAS POSTs {callback_url}/api/cron/fire. ""
             # -> Chronos unavailable, resolver falls back to the built-in ticker.
             "callback_url": "",
@@ -2003,7 +2003,7 @@ DEFAULT_CONFIG = {
                 "set_theme", "read_terminal", "read_window_below", "focus_pane",
             ],
         },
-        # Remote connector discovery/lifecycle through the Nous tool gateway.
+        # Remote connector discovery/lifecycle through the Thor tool gateway.
         # The flag is the user's off switch; availability additionally requires
         # the portal sign-in every managed tool gates on.
         "connectors": {"enabled": True},
@@ -2013,12 +2013,12 @@ DEFAULT_CONFIG = {
         "max_size_mb": 5,      # max size per log file before rotation
         "backup_count": 3,     # rotated backups to keep
     },
-    # Remote model-catalog manifest: curated OpenRouter / Nous Portal model lists fetched from this
+    # Remote model-catalog manifest: curated OpenRouter / Thor Portal model lists fetched from this
     # URL (falls back to the in-repo snapshot on network failure), so picker lists update without a
     # release. Default URL is served by the docs-site GitHub Pages deploy.
     "model_catalog": {
         "enabled": True,
-        "url": "https://thor-agent.nousresearch.com/docs/api/model-catalog.json",
+        "url": "https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/website/static/api/model-catalog.json",
         # Disk cache TTL in minutes. The gateway refreshes in the background on this cadence; the
         # CLI refetches on the next /model or `thor model` once the cache is older. Network
         # failures silently use the stale cache. Legacy `ttl_hours` is honoured if set.
@@ -2306,7 +2306,7 @@ DEFAULT_CONFIG = {
         "run": None,
     },
     # Privacy-safe aggregate metrics in this profile's local telemetry dir. Collection (`enabled`)
-    # and upload to Nous (`send`) are separate keys that every consent surface sets together; see
+    # and upload to Thor (`send`) are separate keys that every consent surface sets together; see
     # website/docs/developer-guide/relay-shared-metrics.md Appendix A for consent/retention.
     "telemetry": {
         "shared_metrics": {
@@ -2316,7 +2316,7 @@ DEFAULT_CONFIG = {
             "send": False,
             # Ingest endpoint (override for staging/local). Deliberately NOT env- overridable.
             # Non-HTTPS refused unless the host is localhost.
-            "endpoint": "https://telemetry.nousresearch.com/v1/telemetry",
+            "endpoint": "https://telemetry.thor-agent.local/v1/telemetry",
         },
     },
 
@@ -2517,7 +2517,7 @@ DEFAULT_CONFIG = {
         #   terminal  always inside the terminal backend (error when it cannot host one).
         #   gateway   always on the gateway host, even with a sandbox terminal: the agent's screen, browser
         #             and computer_use then act OUTSIDE the terminal sandbox. Explicit opt-in.
-        # The sandbox image needs the desktop stack: nousresearch/thor-sandbox:desktop.
+        # The sandbox image needs the desktop stack: thor-agent/thor-sandbox:desktop.
         "placement": "auto",
     },
     "computer_use": {
@@ -2653,8 +2653,8 @@ DEFAULT_CONFIG = {
         },
     },
 
-    "nous": {
-        # Upper bound (seconds) on the Nous auth keepalive tick, which derives from the
+    "thor": {
+        # Upper bound (seconds) on the Thor auth keepalive tick, which derives from the
         # server-issued credential lifetime (raising above it has no effect). 0 disables the
         # keepalive thread.
         "keepalive_interval_seconds": 900,
@@ -2665,10 +2665,10 @@ DEFAULT_CONFIG = {
         # Portal upstream serving the model is one where native is known clean. Native is the
         # better wire but on the OpenRouter-served path it re-writes the previous turn's cache on
         # 14-20% of consecutive calls in concurrent tool loops (measured 2026-09-06;
-        # NousResearch/api#227), so chat is the default until that is fixed.
+        # dwisetyabudi15581/api#227), so chat is the default until that is fixed.
         "anthropic_wire": "chat",
-        # Nous free tier: with no other provider configured, Thor sets up a free Nous identity on
-        # first use (inference on nous/welcome + connectors) and offers `/login` (terminal:
+        # Thor free tier: with no other provider configured, Thor sets up a free Thor identity on
+        # first use (inference on thor/welcome + connectors) and offers `/login` (terminal:
         # `thor auth upgrade`) to sign in. false turns the free tier off entirely: nothing is set
         # up and nothing is used.
         "guest": True,
@@ -2709,11 +2709,11 @@ from thor_cli.config_defaults_env import OptionalEnvVars, _base_url, _env, _msg,
 # tools=[...] lists the model tools the key unlocks. Provider entries: config_provider_env (on first read).
 OPTIONAL_ENV_VARS = OptionalEnvVars({
     # ── Provider (handled in provider selection, not shown in checklists) ──
-    "NOUS_BASE_URL": _base_url("Nous Portal"),
+    "THOR_PORTAL_BASE_URL": _base_url("Thor Portal"),
     "THOR_ANON_API_SECRET": _env(
-        "Shared secret for the Nous free-tier sign-up endpoints while they are in their gated "
+        "Shared secret for the Thor free-tier sign-up endpoints while they are in their gated "
         "integration phase (not needed once the gate is removed)",
-        "Nous free-tier shared secret (leave empty unless given one)", password=True,
+        "Thor free-tier shared secret (leave empty unless given one)", password=True,
         category="provider", advanced=True),
     "OPENROUTER_API_KEY": _env("OpenRouter API key (for vision, web scraping helpers, and MoA)",
         "OpenRouter API key", url="https://openrouter.ai/keys", password=True, tools=["vision_analyze"],
@@ -2828,7 +2828,7 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
     "FIRECRAWL_API_URL": _tool("Firecrawl API URL for self-hosted instances (optional)",
         "Firecrawl API URL (leave empty for cloud)", None, password=False, advanced=True),
     "FIRECRAWL_GATEWAY_URL": _tool(
-        "Exact Firecrawl tool-gateway origin override for Nous Subscribers only (optional)",
+        "Exact Firecrawl tool-gateway origin override for Thor Subscribers only (optional)",
         "Firecrawl gateway URL (leave empty to derive from domain)", None, password=False,
         advanced=True),
     "TOOL_GATEWAY_URL": _tool(
@@ -2840,15 +2840,15 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
         "Connector-gateway URL (leave empty to derive from domain)", None,
         password=False, advanced=True),
     "TOOL_GATEWAY_DOMAIN": _tool(
-        "Shared tool-gateway domain suffix for Nous Subscribers only, used to derive vendor "
-        "hosts, e.g. nousresearch.com -> firecrawl-gateway.nousresearch.com",
+        "Shared tool-gateway domain suffix for Thor Subscribers only, used to derive vendor "
+        "hosts, e.g. thor-agent.local -> firecrawl-gateway.thor-agent.local",
         "Tool-gateway domain suffix", None, password=False, advanced=True),
     "TOOL_GATEWAY_SCHEME": _tool(
-        "Shared tool-gateway URL scheme for Nous Subscribers only, used to derive vendor hosts "
+        "Shared tool-gateway URL scheme for Thor Subscribers only, used to derive vendor hosts "
         "(`https` by default, set `http` for local gateway testing)", "Tool-gateway URL scheme",
         None, password=False, advanced=True),
     "TOOL_GATEWAY_USER_TOKEN": _tool(
-        "Explicit Nous Subscriber access token for tool-gateway requests (optional; otherwise "
+        "Explicit Thor Subscriber access token for tool-gateway requests (optional; otherwise "
         "read from the Thor auth store)", "Tool-gateway user token", None, advanced=True),
     "TAVILY_API_KEY": _tool(
         "Tavily API key for AI-native web search and extract (optional — keyless works when "

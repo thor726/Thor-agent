@@ -130,7 +130,7 @@ export function useComposerTrigger({
   // without stealing prose from everyone who never touched the arrows.
   const [triggerActiveExplicit, setTriggerActiveExplicit] = useState(false)
   const [triggerItems, setTriggerItems] = useState<readonly Unstable_TriggerItem[]>([])
-  // Set synchronously in keydown when the open trigger popover consumes a
+  // Set synchrothorly in keydown when the open trigger popover consumes a
   // navigation/control key (Arrow/Enter/Tab/Escape). The subsequent keyup must
   // NOT run refreshTrigger for that keypress: it never edits text, and for
   // Escape the keydown has already set trigger=null, so a keyup refresh would

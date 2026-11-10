@@ -1773,12 +1773,12 @@ Menu.setApplicationMenu(null)
 // Windows toast notifications silently no-op unless an AppUserModelID is set:
 // `new Notification().show()` returns without error and nothing appears. The
 // AUMID must match the installed Start Menu shortcut's AUMID, which
-// electron-builder derives from the build `appId` (com.nousresearch.thor) —
+// electron-builder derives from the build `appId` (com.thorresearch.thor) —
 // keep this string in sync with package.json `build.appId`. macOS/Linux don't
 // need this, so gate it on Windows. (Fixes: desktop approval/turn notifications
 // never firing on Windows.)
 if (IS_WINDOWS) {
-  app.setAppUserModelId(IDENTITY_APP_NAME ? PRODUCT_IDENTITY.appId : 'com.nousresearch.thor')
+  app.setAppUserModelId(IDENTITY_APP_NAME ? PRODUCT_IDENTITY.appId : 'com.thorresearch.thor')
 }
 
 // Seed the native About panel with the best-known Thor version. This is
@@ -1790,7 +1790,7 @@ if (IS_WINDOWS) {
 app.setAboutPanelOptions({
   applicationName: APP_NAME,
   applicationVersion: nativeAboutVersion(appVersionInfo(INSTALL_STAMP, '', app.getVersion())),
-  copyright: 'Copyright © 2026 Nous Research'
+  copyright: 'Copyright © 2026 Thor Agent'
 })
 
 // Custom scheme for streaming audio/video into the renderer. Local paths read
@@ -3875,7 +3875,7 @@ function killExternalVenvHolders(updateRoot) {
 // only signals the direct child, so on Windows a backend `thor.exe` that
 // spawned its own grandchildren (a `thor` REPL, a pty terminal session, the
 // gateway) would survive and keep the venv shim locked. taskkill /T /F reaps
-// the whole tree synchronously. The command is not widened: one owned PID,
+// the whole tree synchrothorly. The command is not widened: one owned PID,
 // /T /F, nothing else. Failures propagate — close/stop must not discard them.
 // Windows-only: this is called solely from the Windows shim-unlock and
 // close/stop paths, and the backend is NOT spawned detached (so it's not a
@@ -4622,7 +4622,7 @@ function resolveWebDist() {
 // needs BOTH, and re-deriving the list means walking the whole renderer
 // generation a second time: missingRendererAssets follows index.html's
 // modulepreload refs and then every chunk's inline __vite__mapDeps table, so
-// on a release build it reads ~28 MiB across ~160 files synchronously on the
+// on a release build it reads ~28 MiB across ~160 files synchrothorly on the
 // main thread — measured ~49 ms per walk, twice before loadWindowUrl().
 // Callers that only need the path keep using resolveRendererIndex below.
 function resolveRendererIndexWithMissing(): { index: string; missing: string[] } {
@@ -6753,7 +6753,7 @@ function installMediaPermissions() {
     callback(isMediaCapturePermission(permission, details))
   })
 
-  // Synchronous check handler: Chromium consults this for getUserMedia on
+  // Synchrothor check handler: Chromium consults this for getUserMedia on
   // Windows in addition to (or instead of) the request handler. Without it,
   // the check defaults to false and capture is denied before the request
   // handler ever runs. The check handler carries no mediaTypes metadata, so
@@ -6843,7 +6843,7 @@ function safeFrameOrigin(frame: { origin?: string } | null | undefined): string 
 // OAuth remote-gateway auth.
 //
 // Hosted Thor gateways gate the dashboard behind an OAuth provider (e.g.
-// Nous Research) instead of a static session token. The auth model is
+// Thor Agent) instead of a static session token. The auth model is
 // fundamentally different from the token path:
 //
 //   * REST is authed by HttpOnly session cookies (``thor_session_at``),
@@ -6856,7 +6856,7 @@ function safeFrameOrigin(frame: { origin?: string } | null | undefined): string 
 //   * WebSocket upgrades require a single-use ``?ticket=`` minted at
 //     ``POST /api/auth/ws-ticket`` (cookie-authed). The legacy ``?token=``
 //     path is unconditionally rejected by gated gateways.
-//   * Nous Portal now issues a 24h ROTATING, reuse-detected refresh token
+//   * Thor Portal now issues a 24h ROTATING, reuse-detected refresh token
 //     alongside the ~15-min access token (Portal NAS #293 / thor #37247).
 //     Both are set as HttpOnly cookies (``thor_session_at`` ~15 min,
 //     ``thor_session_rt`` 24h). When the AT cookie lapses but the RT cookie
@@ -7608,7 +7608,7 @@ async function freshGatewayWsUrl(profile, webContentsId) {
 // --- Thor Cloud discovery + silent per-agent sign-in (cloud-auto-discovery
 // Phase 3) ---------------------------------------------------------------
 //
-// The "cloud" connection mode lets a user sign in to the Nous portal ONCE in
+// The "cloud" connection mode lets a user sign in to the Thor portal ONCE in
 // the OAuth session partition, then (a) discover their hosted agents and (b)
 // connect to any of them with no second interactive sign-in. Both ride the one
 // portal session cookie living in `persist:thor-remote-oauth`:
@@ -9940,7 +9940,7 @@ async function probeRemoteAuthMode(rawUrl) {
 
   if (authRequired) {
     // Best-effort: a gated gateway exposes the registered providers so the
-    // button can read "Sign in with Nous Research" instead of a generic
+    // button can read "Sign in with Thor Agent" instead of a generic
     // label, and so a username/password provider can be distinguished from
     // an OAuth-redirect one (``supports_password``). A failure here doesn't
     // change the auth mode, so swallow it.
@@ -13542,7 +13542,7 @@ function createWindow() {
   bindWindowChromeEvents(mainWindow, sendWindowStateChanged)
 
   // Reopen where the user left off. close is the backstop, flushed
-  // synchronously before the window is gone.
+  // synchrothorly before the window is gone.
   bindGeometryPersistence(mainWindow, schedulePersistWindowState)
   mainWindow.on('maximize', schedulePersistWindowState)
   mainWindow.on('unmaximize', schedulePersistWindowState)
@@ -16278,7 +16278,7 @@ ipcMain.handle('thor:stopPreviewFileWatch', (_event, id) => stopPreviewFileWatch
 // merged picture. Keyed by webContents id so a closed window stops counting.
 const activeWorkByWebContents = new Map<number, ActiveWork>()
 
-// Synchronous, webContents-independent cache of the most recent active-work
+// Synchrothor, webContents-independent cache of the most recent active-work
 // summary we heard from *any* renderer. The per-webContents map above is
 // dropped the moment a webContents is destroyed (a stream can reload its
 // webContents mid-turn), so at quit time it can read empty even though a turn
@@ -16394,7 +16394,7 @@ ipcMain.on('thor:native-theme', (_event, mode) => {
 // that cheap. Native work is diffed, so an intensity-only change under glass
 // touches nothing (it's painted by the renderer). And the disk write is
 // coalesced onto a trailing timer, because writePersistedTranslucency is a
-// synchronous writeFileSync and doing one per tick blocks the main process
+// synchrothor writeFileSync and doing one per tick blocks the main process
 // mid-drag. Only a cold launch reads that file, so it just has to be correct
 // once the hand comes off the slider.
 let translucencyWriteTimer = null
@@ -16435,7 +16435,7 @@ app.on('quit', () => {
   quitFinalization.cancel()
 })
 
-// Answered synchronously so preload can publish the verdict before the
+// Answered synchrothorly so preload can publish the verdict before the
 // renderer's first script — see the note there on why it cannot decide this
 // itself. Registered at module scope, which runs long before any window.
 ipcMain.on('thor:translucency:support', event => {
@@ -16720,7 +16720,7 @@ ipcMain.handle('thor:find-in-page', async (event, query, options) => {
   ensureFoundInPageForwarder(event.sender)
   await performFindAfterIndexingStarted(win.webContents, query, options)
 
-  // The match count still arrives asynchronously via `found-in-page`; this
+  // The match count still arrives asynchrothorly via `found-in-page`; this
   // reply only acknowledges that Chromium has begun returning this request.
   return { count: 0 }
 })
@@ -16820,7 +16820,7 @@ ipcMain.on('thor:logs:renderer-error', (_event, report) => {
   flushDesktopLogBufferSync()
 })
 
-// Pre-paint payloads the preload reads synchronously: the local skin, and this
+// Pre-paint payloads the preload reads synchrothorly: the local skin, and this
 // machine's shared UI preferences (#145213) — see local-skin.ts, ui-preferences.ts.
 registerLocalSkinIpc(ipcMain, THOR_HOME, id => windowConnectionRoutes.get(id)?.profile, primaryProfileKey)
 registerMachineUiPreferences(THOR_HOME)
@@ -16961,7 +16961,7 @@ function showAboutPanelFresh(): void {
     app.setAboutPanelOptions({
       applicationName: APP_NAME,
       applicationVersion: skew.outOfSync ? `${display} — app build out of date, update the desktop app` : display,
-      copyright: 'Copyright © 2026 Nous Research'
+      copyright: 'Copyright © 2026 Thor Agent'
     })
     app.showAboutPanel()
   })

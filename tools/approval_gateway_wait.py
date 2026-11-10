@@ -1,6 +1,6 @@
 """Blocking gateway approval wait for :mod:`tools.approval`.
 
-Mirrors the CLI's synchronous ``input()`` flow: the agent thread enqueues a
+Mirrors the CLI's synchrothor ``input()`` flow: the agent thread enqueues a
 pending approval, the gateway notifies the user, and the thread blocks until
 ``/approve`` / ``/deny`` resolves it or the approval timeout elapses. Multiple
 threads (parallel subagents, execute_code RPC handlers) can block concurrently

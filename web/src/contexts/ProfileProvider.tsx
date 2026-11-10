@@ -66,7 +66,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Mirror into the api module synchronously on every render where it
+  // Mirror into the api module synchrothorly on every render where it
   // changed, so fetches fired by child effects in the same commit see it.
   setManagementProfile(profile);
 

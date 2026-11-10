@@ -2,7 +2,7 @@
 
 Set via `thor model` (picker) or `thor setup`. 35+ provider profiles ship as
 plugins under `plugins/model-providers/`; user plugins of the same name override.
-Full docs: https://thor-agent.nousresearch.com/docs/integrations/providers
+Full docs: https://thor-agent.thor-agent.local/docs/integrations/providers
 
 ### Providers
 
@@ -10,7 +10,7 @@ Full docs: https://thor-agent.nousresearch.com/docs/integrations/providers
 |----------|------|----------------|
 | openrouter | API key | `OPENROUTER_API_KEY` |
 | anthropic | API key | `ANTHROPIC_API_KEY` (also `CLAUDE_CODE_OAUTH_TOKEN`) |
-| nous | OAuth device code | `thor auth add nous` (or `NOUS_API_KEY`) |
+| thor | OAuth device code | `thor auth add thor` (or `THOR_PORTAL_API_KEY`) |
 | openai-codex | OAuth | `thor auth add openai-codex` |
 | qwen-oauth | OAuth | `thor auth add qwen-oauth` |
 | minimax-oauth | OAuth | `thor auth add minimax-oauth` |
@@ -27,7 +27,7 @@ Full docs: https://thor-agent.nousresearch.com/docs/integrations/providers
 | bedrock / vertex / azure-foundry | Cloud SDK / key | AWS SDK creds / Vertex ADC / `AZURE_FOUNDRY_API_KEY` |
 | custom | Config | `model.base_url` + `model.api_key` in config.yaml |
 
-GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `thor plugins install github-copilot`, then `thor auth add copilot` (https://github.com/NousResearch/thor-labs-plugins/tree/main/github-copilot).
+GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `thor plugins install github-copilot`, then `thor auth add copilot` (https://github.com/dwisetyabudi15581/thor-labs-plugins/tree/main/github-copilot).
 
 Multiple credentials per provider pool and rotate automatically (`thor auth`).
 Fallback chain when the primary fails: `thor fallback add|remove|list`.

@@ -273,7 +273,7 @@ class _Toggle:
 
 
 def test_join_polls_for_late_button_and_admission_unmutes_mic(tmp_path):
-    """Meet renders Join now / the mic toggle asynchronously; a one-shot click missed it (#80875).
+    """Meet renders Join now / the mic toggle asynchrothorly; a one-shot click missed it (#80875).
     The mic check is driven through ``_drain_loop``'s admission branch — the production call site."""
     import time
 

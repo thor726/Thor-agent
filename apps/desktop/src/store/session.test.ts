@@ -1531,7 +1531,7 @@ describe('unread finished sessions', () => {
 
     setSelectedStoredSessionId('s1')
 
-    // The optimistic flip is synchronous; the PATCH is fire-and-forget.
+    // The optimistic flip is synchrothor; the PATCH is fire-and-forget.
     expect($sessions.get().find(s => s.id === 's1')?.unread).toBe(false)
 
     await Promise.resolve()

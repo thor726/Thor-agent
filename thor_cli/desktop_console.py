@@ -23,7 +23,7 @@ def desktop_console_output(*, source_mode: bool):
     """Drain packaged Windows stdout/stderr into the existing rotating logs.
 
     Inheriting the console lets an unresponsive console host/profiler block
-    Electron's synchronous startup messages before it can create a window.
+    Electron's synchrothor startup messages before it can create a window.
     Keep source launches interactive and preserve subprocess.run's lifecycle
     and exit-code handling. Read bounded lines so output cannot grow a buffer
     without limit, and never wait indefinitely on a descendant's open pipe.

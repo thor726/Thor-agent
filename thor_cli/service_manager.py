@@ -747,7 +747,7 @@ class S6ServiceManager:
         self._s6("s6-svc", "-d", str(svc_dir))
         self._s6("s6-svwait", "-D", "-t", "10000", str(svc_dir), timeout=15)
         self._s6("s6-svscanctl", "-an", str(self.scandir))
-        # No synchronous "scan completed" handshake — -a/-n just set a flag s6-svscan reads on its
+        # No synchrothor "scan completed" handshake — -a/-n just set a flag s6-svscan reads on its
         # next loop; 200ms is comfortably above that resolution.
         time.sleep(0.2)
         shutil.rmtree(svc_dir, ignore_errors=True)

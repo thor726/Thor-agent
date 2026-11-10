@@ -29,7 +29,7 @@ that renderer-refresh behavior is not fixed by this cron change.
 
 Base CLI-owner case: separate cron producer returns exact `SESSION_NOT_OWNED` refusal.
 Release owner, run scheduler tick, open Beta in Desktop: no cron output, assertion red.
-Fixed case: queued receipt; release owner; real synchronous scheduler tick drains;
+Fixed case: queued receipt; release owner; real synchrothor scheduler tick drains;
 Beta Desktop renders `CLI_OWNER_CRON_SENTINEL` and its reply once. Final two-case
 native run: **2 passed (1.2m)**. Supported-owner nested case also passed independently
 on base (**1 passed (40.0s)**).

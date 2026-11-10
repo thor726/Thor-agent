@@ -558,7 +558,7 @@ export async function currentAs(page: Page): Promise<{ currentSha?: string; upda
   }
 }
 
-/** Close an app whose process may already be gone (Playwright's handle throws synchronously then). */
+/** Close an app whose process may already be gone (Playwright's handle throws synchrothorly then). */
 export async function closeQuietly(app: ElectronApplication): Promise<void> {
   try {
     await app.close()

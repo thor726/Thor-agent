@@ -217,7 +217,7 @@ def test_public_base_url_precedence(monkeypatch):
     # Explicit value, then $CLOUDFLARE_R2_PUBLIC_URL, then the documented
     # production origin — so a local command always names a real page.
     monkeypatch.delenv("CLOUDFLARE_R2_PUBLIC_URL", raising=False)
-    assert public_base_url() == "https://thor-assets.nousresearch.com"
+    assert public_base_url() == "https://thor-assets.thor-agent.local"
     monkeypatch.setenv("CLOUDFLARE_R2_PUBLIC_URL", "https://cdn.example.com")
     assert public_base_url() == "https://cdn.example.com"
     assert public_base_url("https://explicit.example.com/") == "https://explicit.example.com"
@@ -229,7 +229,7 @@ def test_channel_public_base_defaults_to_production(monkeypatch):
     # secret, so a local command should not have to hand-set it.
     monkeypatch.delenv("CLOUDFLARE_R2_PUBLIC_URL", raising=False)
     monkeypatch.delenv("R2_DISPOSABLE_RUN", raising=False)
-    assert channel_public_base() == "https://thor-assets.nousresearch.com"
+    assert channel_public_base() == "https://thor-assets.thor-agent.local"
     monkeypatch.setenv("CLOUDFLARE_R2_PUBLIC_URL", "https://cdn.example.com")
     assert channel_public_base() == "https://cdn.example.com"
     assert channel_public_base("https://explicit.example.com/") == "https://explicit.example.com"
@@ -287,7 +287,7 @@ CANARY_FEED_XML = (
     '<?xml version="1.0" encoding="utf-8"?>\n'
     '<AppInstaller Uri="https://r2.example/releases/win32/canary/canary.appinstaller" '
     'Version="0.27.2.9" xmlns="http://schemas.microsoft.com/appx/appinstaller/2017/2">\n'
-    '  <MainPackage Name="NousResearch.ThorBundled" Publisher="CN=..." Version="0.27.2.9" '
+    '  <MainPackage Name="dwisetyabudi15581.ThorBundled" Publisher="CN=..." Version="0.27.2.9" '
     'Uri="https://r2.example/releases/win32/canary/ThorBundled-0.27.2.9-win.msixbundle" />\n'
     "</AppInstaller>\n"
 )

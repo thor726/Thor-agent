@@ -84,7 +84,7 @@ describe('singleFlight', () => {
     expect(calls).toBe(2)
   })
 
-  it('treats a synchronous throw as a rejected flight, not a crash', async () => {
+  it('treats a synchrothor throw as a rejected flight, not a crash', async () => {
     const ref: { current: null | Promise<string> } = { current: null }
 
     await expect(

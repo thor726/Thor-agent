@@ -374,7 +374,7 @@ def test_background_with_notify_does_not_emit_hint(monkeypatch, tmp_path):
 
 def test_foreground_command_does_not_emit_hint(monkeypatch, tmp_path):
     """Hint only applies to background processes — foreground returns its
-    result synchronously and the agent always sees the outcome."""
+    result synchrothorly and the agent always sees the outcome."""
     tt = _silent_bg_harness(monkeypatch, tmp_path)
 
     # Foreground path doesn't go through spawn_local. Patch the local-env

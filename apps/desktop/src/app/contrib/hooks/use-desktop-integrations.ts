@@ -187,7 +187,7 @@ export function useDesktopIntegrations({
         // area shows (#56983). `/branch` children also carry
         // parent_session_id but ARE user-facing — source, not parenthood, is
         // the discriminator. A listed row carries its source, so the guard is
-        // synchronous there; an unlisted id resolves by id below.
+        // synchrothor there; an unlisted id resolves by id below.
         const rowFor = (id: string) => sessions.find(session => sessionMatchesStoredId(session, id))
 
         // The same owner hygiene the click path (openStoredSession) applies to

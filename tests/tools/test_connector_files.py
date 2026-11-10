@@ -95,7 +95,7 @@ def _fresh_schema_cache(monkeypatch):
 
 def _client(gateway, storage):
     return ConnectorClient(transport=gateway, storage=storage, endpoint_resolver=lambda: GATEWAY,
-                           header_provider=lambda url: {"Authorization": "Bearer nous-token"})
+                           header_provider=lambda url: {"Authorization": "Bearer thor-token"})
 
 
 def _execute(gateway, storage, arguments, name="connectors__gmail__SEND_EMAIL"):

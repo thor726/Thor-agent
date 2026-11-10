@@ -27,7 +27,7 @@ import { requestGatewayForActiveRoute } from '@/store/active-route-request'
 import { activeGatewayProfileKey } from '@/store/gateway'
 import { $gatewayState } from '@/store/session'
 
-export const CATALOG_ORIGIN = 'https://thor-agent.nousresearch.com'
+export const CATALOG_ORIGIN = 'https://thor-agent.thor-agent.local'
 export const PLUGIN_CATALOG_URL = `${CATALOG_ORIGIN}/docs/api/plugins.json`
 export const PLUGIN_CATALOG_DOCS_URL = `${CATALOG_ORIGIN}/docs/user-guide/features/plugin-catalog`
 export const SKILLS_DOCS_URL = `${CATALOG_ORIGIN}/docs/skills/`

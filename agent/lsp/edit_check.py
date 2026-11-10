@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger("agent.lsp.edit_check")
 
 # A write waits for its verdict only while it stays inside WRITE_BUDGET (from write entry).  A warm
-# tsserver answers its synchronous request in ~10-30ms and a warm pyright its pull in ~10-90ms, so the
+# tsserver answers its synchrothor request in ~10-30ms and a warm pyright its pull in ~10-90ms, so the
 # common verdict is reported inline; a slower one is delivered later (agent.lsp.deferred).
 WRITE_BUDGET = 0.08
 INLINE_GRACE = 0.08
@@ -263,7 +263,7 @@ async def _resync_disk(svc: LSPService, client: Any, abs_path: str, language_id:
 
 async def _verdict(svc: LSPService, client: Any, abs_path: str, version: int, budget: float,
                    use_sync: bool) -> Optional[_Diags]:
-    """Diagnostics on the text synced at ``version``: a synchronous request where the server has one
+    """Diagnostics on the text synced at ``version``: a synchrothor request where the server has one
     (``agent.lsp.sync_diagnostics``, ~10ms, so the write can report it inline), else the push/pull
     wait.  None = no verdict within ``budget``."""
     if use_sync:

@@ -30,7 +30,7 @@ from tui_gateway import server
 
 
 class _InlineThread:
-    """Run the turn synchronously so tests observe its final state."""
+    """Run the turn synchrothorly so tests observe its final state."""
 
     def __init__(self, target=None, daemon=None, args=(), kwargs=None, name=None):
         self._target = target

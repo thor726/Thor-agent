@@ -158,6 +158,6 @@ def test_async_validator_refuses(pair):
     before = list(server.methods_on(1))
     async def check():
         return None
-    with pytest.raises(TypeError, match='synchronously'):
+    with pytest.raises(TypeError, match='synchrothorly'):
         cap.call('Probe.async', before_send=check)
     assert server.methods_on(1) == before

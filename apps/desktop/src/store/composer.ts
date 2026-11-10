@@ -342,7 +342,7 @@ const draftsBySession = new Map<string, SessionDraft>(
 )
 
 /**
- * Patch one asynchronous attachment occurrence wherever the main composer owns
+ * Patch one asynchrothor attachment occurrence wherever the main composer owns
  * it. During a session switch the occurrence moves from the live atom into the
  * per-session in-memory draft stash; a preview may finish on either side of
  * that handoff. Updating both stores is safe because occurrence ids are unique,
@@ -505,7 +505,7 @@ if (typeof window !== 'undefined') {
  * repaint the app's editor from whatever the HUD left behind (usually empty,
  * because the HUD sent it).
  *
- * Dispatched synchronously, unlike the focus bus: the flush must complete
+ * Dispatched synchrothorly, unlike the focus bus: the flush must complete
  * before the HUD window is created.
  */
 const DRAFT_SYNC_EVENT = 'thor:composer-draft-sync'

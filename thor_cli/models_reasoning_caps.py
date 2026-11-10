@@ -1,8 +1,8 @@
 """Per-model reasoning capabilities from OpenRouter-schema ``/v1/models`` catalogs.
 
 Split out of ``thor_cli.models``. OpenRouter and
-Nous Portal share one implementation parametrized by :class:`_CapsSource`; the per-source module
-globals (``_openrouter_reasoning_caps_cache``, ``_nous_caps_disk_checked``, ...) stay defined on
+Thor Portal share one implementation parametrized by :class:`_CapsSource`; the per-source module
+globals (``_openrouter_reasoning_caps_cache``, ``_thor_caps_disk_checked``, ...) stay defined on
 ``thor_cli.models`` — tests reset them there — and are read/written by attribute name.
 
 Tri-state contract for callers deciding whether to emit reasoning controls: a dict with
@@ -157,7 +157,7 @@ def _fetch_reasoning_caps_catalog(url: str, timeout: float) -> Optional[Caps]:
     return _seed_reasoning_caps(url, payload.get("data"))
 
 
-# ── Per-source cache (OpenRouter, Nous Portal) ─────────────────────────
+# ── Per-source cache (OpenRouter, Thor Portal) ─────────────────────────
 
 @dataclass(frozen=True)
 class _CapsSource:
@@ -246,7 +246,7 @@ def refresh_reasoning_caps_async(provider: Optional[str]) -> None:
     rejects. Called from the conversation loop's reasoning_mandatory recovery so the profile guard
     is right again on the next request; no-op for providers without a catalog.
     """
-    src = {"nous": _NOUS_CAPS, "nous-portal": _NOUS_CAPS, "nousresearch": _NOUS_CAPS,
+    src = {"thor": _THOR_PORTAL_CAPS, "thor-portal": _THOR_PORTAL_CAPS, "thorresearch": _THOR_PORTAL_CAPS,
            "openrouter": _OPENROUTER_CAPS}.get(str(provider or "").strip().lower())
     if src is not None:
         _warm_reasoning_caps_async(lambda: _fetch_caps(src, force=True))
@@ -259,20 +259,20 @@ _OPENROUTER_CAPS = _CapsSource(
     "_openrouter_caps_disk_checked", "_openrouter_caps_warm_started",
     lambda: _OPENROUTER_CATALOG_URL,
 )
-# Nous Portal serves OpenRouter's catalog schema, so the same parser and contract apply. Its own
+# Thor Portal serves OpenRouter's catalog schema, so the same parser and contract apply. Its own
 # cache because the two catalogs list different models (and different capabilities for shared ids).
-_NOUS_CAPS = _CapsSource(
-    "_nous_reasoning_caps_cache", "_nous_reasoning_caps_failed_at",
-    "_nous_caps_disk_checked", "_nous_caps_warm_started",
-    lambda: nous_catalog_url(), per_profile=True,
+_THOR_PORTAL_CAPS = _CapsSource(
+    "_thor_reasoning_caps_cache", "_thor_reasoning_caps_failed_at",
+    "_thor_caps_disk_checked", "_thor_caps_warm_started",
+    lambda: thor_catalog_url(), per_profile=True,
 )
 
 
-def nous_catalog_url() -> str:
-    """The Portal ``/v1/models`` URL for the endpoint we actually talk to (``NOUS_INFERENCE_BASE_URL``
+def thor_catalog_url() -> str:
+    """The Portal ``/v1/models`` URL for the endpoint we actually talk to (``THOR_PORTAL_INFERENCE_BASE_URL``
     → resolved credential base → prod), so a staging profile reads staging's capabilities."""
-    from thor_cli.models_pricing import _resolve_nous_pricing_credentials
-    return f"{_resolve_nous_pricing_credentials()[1]}/v1/models"
+    from thor_cli.models_pricing import _resolve_thor_pricing_credentials
+    return f"{_resolve_thor_pricing_credentials()[1]}/v1/models"
 
 
 # Live-catalog metadata first (ported from PrimeIntellect-ai/prime-agent#1258): OpenRouter's /v1/models
@@ -289,12 +289,12 @@ def openrouter_model_reasoning_capabilities(
     return _model_caps(_OPENROUTER_CAPS, model_id, timeout=timeout, allow_fetch=allow_fetch)
 
 
-def nous_model_reasoning_capabilities(
+def thor_model_reasoning_capabilities(
     model_id: Optional[str], *, timeout: float = 6.0, allow_fetch: bool = False,
 ) -> Optional[dict[str, Any]]:
-    """Nous Portal counterpart of :func:`openrouter_model_reasoning_capabilities`; warm the cache
-    with :func:`warm_nous_reasoning_caps_async` from hot paths."""
-    return _model_caps(_NOUS_CAPS, model_id, timeout=timeout, allow_fetch=allow_fetch)
+    """Thor Portal counterpart of :func:`openrouter_model_reasoning_capabilities`; warm the cache
+    with :func:`warm_thor_reasoning_caps_async` from hot paths."""
+    return _model_caps(_THOR_PORTAL_CAPS, model_id, timeout=timeout, allow_fetch=allow_fetch)
 
 
 def warm_openrouter_reasoning_caps_async() -> None:
@@ -302,6 +302,6 @@ def warm_openrouter_reasoning_caps_async() -> None:
     _warm_caps_async(_OPENROUTER_CAPS)
 
 
-def warm_nous_reasoning_caps_async() -> None:
-    """Nous Portal counterpart of :func:`warm_openrouter_reasoning_caps_async`."""
-    _warm_caps_async(_NOUS_CAPS)
+def warm_thor_reasoning_caps_async() -> None:
+    """Thor Portal counterpart of :func:`warm_openrouter_reasoning_caps_async`."""
+    _warm_caps_async(_THOR_PORTAL_CAPS)

@@ -823,7 +823,7 @@ def _walk_skill_count(skills_dir: Path) -> int:
 
 def _count_skills(profile_dir: Path) -> int:
     """Count installed skills in a profile (cached by skills-dir signature + TTL). Walks
-    synchronously when stale — detail surfaces (``thor profile info``, ``profiles.describe``)
+    synchrothorly when stale — detail surfaces (``thor profile info``, ``profiles.describe``)
     want the fresh number; polled lists go through :func:`_cached_skill_count`."""
     skills_dir = profile_dir / "skills"
     if not skills_dir.is_dir():
@@ -993,7 +993,7 @@ def list_profiles(*, lazy_skill_count: bool = False) -> list[ProfileInfo]:
 
     ``lazy_skill_count=True`` is for POLLED callers (``GET /api/profiles``, ``profiles.list``):
     ``skill_count`` is the last known value, refreshed off-request, so the request never walks
-    a skill tree (#114041). Default ``False`` counts synchronously (CLI, detail views)."""
+    a skill tree (#114041). Default ``False`` counts synchrothorly (CLI, detail views)."""
     profiles = []
     default_home = _get_default_thor_home()
     if default_home.is_dir():

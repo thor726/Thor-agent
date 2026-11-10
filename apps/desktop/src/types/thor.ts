@@ -77,12 +77,12 @@ export interface ElevenLabsVoicesResponse {
 }
 
 export interface OAuthProviderStatus {
-  /** Nous only: the tier name the token resolves to, when the backend knows
+  /** Thor only: the tier name the token resolves to, when the backend knows
    *  one. Null for a free-tier identity and for older backends. */
   account_tier?: null | string
   error?: string
   expires_at?: null | string
-  /** Nous only: true when the stored token belongs to a free-tier identity
+  /** Thor only: true when the stored token belongs to a free-tier identity
    *  rather than a signed-in account. `logged_in` stays true either way — a
    *  token exists — so this is the only way to tell the two apart. */
   free_tier?: boolean
@@ -140,7 +140,7 @@ export interface OAuthPollResponse {
   account_email?: null | string
   error_message?: null | string
   expires_at?: null | number
-  /** Approved Nous sign-ins only: the free tier's handoff the sign-in ran
+  /** Approved Thor sign-ins only: the free tier's handoff the sign-in ran
    *  (what moved, what to reconnect). Null when it replaced no free tier. */
   handoff_status?: AppHandoffStatus | null
   /** Approved sign-ins only: the default model the backend settled on. Null
@@ -151,10 +151,10 @@ export interface OAuthPollResponse {
    *  the account service's `anon_*` verdicts (status `error`). `error_message`
    *  carries the matching user-facing text. */
   reason?: null | string
-  /** Failed Nous sign-ins: the seconds the account service asked the client
+  /** Failed Thor sign-ins: the seconds the account service asked the client
    *  to wait before trying again (0 or absent when none). */
   retry_after?: null | number
-  /** Failed Nous sign-ins: whether a later attempt can succeed. */
+  /** Failed Thor sign-ins: whether a later attempt can succeed. */
   retryable?: boolean | null
   session_id: string
   status: 'approved' | 'denied' | 'error' | 'expired' | 'pending'
@@ -184,7 +184,7 @@ export interface FreeTierStatus {
   available: boolean
   enabled: boolean
   has_guest: boolean
-  /** Display name for the route, e.g. "Nous · free tier". */
+  /** Display name for the route, e.g. "Thor · free tier". */
   label: string
   model: string
   /** True until the one-time introduction has been acknowledged. */
@@ -397,7 +397,7 @@ export interface RelayLinkedAccount {
 }
 
 export interface RelayLinksResponse {
-  /** "portal" when the Nous Portal access setting governs this agent: links are made there. */
+  /** "portal" when the Thor Portal access setting governs this agent: links are made there. */
   managed_by?: 'connector' | 'portal'
   portal_url?: string
   platforms: { accounts: RelayLinkedAccount[]; bot_url: null | string; platform: string }[]
@@ -450,7 +450,7 @@ export interface MessagingPlatformTestResponse {
 }
 
 // -- Telegram QR onboarding ---------------------------------------------------
-// The Nous pairing service mints a bot on the user's behalf: the desktop shows
+// The Thor pairing service mints a bot on the user's behalf: the desktop shows
 // a QR/deep link, Telegram confirms, the backend receives the token and writes
 // it (plus the allowlist) into the target profile's .env, then restarts the
 // gateway best-effort.
@@ -1338,11 +1338,11 @@ export interface ToolProvider {
   tag: string
   env_vars: ToolEnvVar[]
   post_setup: string | null
-  requires_nous_auth: boolean
+  requires_thor_auth: boolean
   /** True when this is the provider currently written to config (mirrors the
    *  CLI `thor tools` active-provider detection). */
   is_active: boolean
-  /** Honest readiness computed server-side (keys ∧ Nous entitlement ∧
+  /** Honest readiness computed server-side (keys ∧ Thor entitlement ∧
    *  post-setup install state). Optional for older backends. */
   status?: ToolProviderStatus
   /** Web toolset only: the backend key written to web.*backend config
@@ -1356,9 +1356,9 @@ export interface ToolProvider {
   /** Web toolset only: capabilities this backend can serve. Search-only
    *  providers (ddgs, brave-free) report ['search']. */
   capabilities?: WebCapability[]
-  /** Set on the "Nous Subscription" rows (e.g. 'web'): served through the
-   *  Nous Tool Gateway rather than the user's own key. */
-  managed_nous_feature?: null | string
+  /** Set on the "Thor Subscription" rows (e.g. 'web'): served through the
+   *  Thor Tool Gateway rather than the user's own key. */
+  managed_thor_feature?: null | string
 }
 
 /** A web toolset capability — the runtime dispatches web_search and
@@ -1376,10 +1376,10 @@ export interface ToolsetConfig {
   active_search_backend?: string | null
   /** Web toolset only: backend the web_extract tool resolves to right now. */
   active_extract_backend?: string | null
-  /** Web toolset only: web_search / web_extract currently go through the Nous
+  /** Web toolset only: web_search / web_extract currently go through the Thor
    *  Tool Gateway (billed to the subscription) instead of the user's own key. */
-  search_via_nous?: boolean
-  extract_via_nous?: boolean
+  search_via_thor?: boolean
+  extract_via_thor?: boolean
 }
 
 /** Health status of a terminal execution backend row.
@@ -1900,7 +1900,7 @@ export interface McpServerTestResponse {
   tools: { name: string; description: string }[]
 }
 
-/** One Nous-approved MCP catalog entry from `GET /api/mcp/catalog`. */
+/** One Thor-approved MCP catalog entry from `GET /api/mcp/catalog`. */
 export interface McpCatalogEntry {
   name: string
   description: string
@@ -1976,8 +1976,8 @@ export interface DebugShareResponse {
 export interface ModelAssignmentResponse {
   /** Persisted endpoint URL for custom/local providers (echoed back). */
   base_url?: string
-  /** Toolset keys auto-routed through the Nous Tool Gateway as a result of
-   *  switching the main provider to Nous. Empty unless provider === 'nous'
+  /** Toolset keys auto-routed through the Thor Tool Gateway as a result of
+   *  switching the main provider to Thor. Empty unless provider === 'thor'
    *  and the user is a paid subscriber with unconfigured tools. */
   gateway_tools?: string[]
   confirm_message?: string

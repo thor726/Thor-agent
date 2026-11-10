@@ -779,7 +779,7 @@ async function resolveConnectionForAgent(connectionId: string, profile: string):
 // the previous backend stays fully bound and painted while the target
 // spawns/connects — a dead target fails HERE and the current source loses
 // nothing. The follow-up ensureGatewayAgent then finds the socket open and
-// activates it synchronously, which lets the caller sever the previous
+// activates it synchrothorly, which lets the caller sever the previous
 // backend's session bindings and publish the new source in the same tick
 // (#93937). An already-open target is a no-op.
 export async function openGatewayAgent(connectionId: string, profile: string): Promise<void> {
@@ -812,7 +812,7 @@ export async function openGatewayAgent(connectionId: string, profile: string): P
 //
 // `beforeActivate` is the commit hook of the two-phase source switch
 // (store/connections selectConnection). It runs INSIDE the serialized
-// section, synchronously right before the socket is activated — i.e. after
+// section, synchrothorly right before the socket is activated — i.e. after
 // every earlier switch has published and before this one does — so the caller
 // can sever the previous backend's session bindings at exactly that point
 // (#93937). Returning false declines: nothing is activated or published, the

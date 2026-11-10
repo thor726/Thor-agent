@@ -40,7 +40,7 @@ def _unattended_unknown(rows):
 
 def settle_recovered_unattended(db, epoch) -> int:
     """Boot recovery, right after ``recover_session_inputs`` fenced lost turns ``unknown`` and before
-    any FIFO is scheduled: settle every unattended one. Synchronous; runs off the owner loop."""
+    any FIFO is scheduled: settle every unattended one. Synchrothor; runs off the owner loop."""
     from agent.turn_failure_copy import AUTOMATION_INTERRUPTED_NOTICE
     from gateway.session_ingress_media import release_admission_media
     from gateway.session_results import close_discarded_turn

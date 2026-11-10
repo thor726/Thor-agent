@@ -12,9 +12,6 @@ name: Windows Desktop attach E2E
 
 on:
   workflow_dispatch:
-  push:
-    branches: ['wine2e-desktop/**']
-
 permissions:
   contents: read
 
@@ -64,7 +61,7 @@ jobs:
           THOR_E2E_PYTHON: ${{ steps.pm.outputs.python-path }}
           OPENROUTER_API_KEY: ''
           OPENAI_API_KEY: ''
-          NOUS_API_KEY: ''
+          THOR_PORTAL_API_KEY: ''
           ANTHROPIC_API_KEY: ''
 
       # The Windows app the way electron-builder lays it out (no msix, unsigned): the packaged
@@ -95,7 +92,7 @@ jobs:
           THOR_E2E_PYTHON: ${{ steps.pm.outputs.python-path }}
           OPENROUTER_API_KEY: ''
           OPENAI_API_KEY: ''
-          NOUS_API_KEY: ''
+          THOR_PORTAL_API_KEY: ''
           ANTHROPIC_API_KEY: ''
 
       - name: Upload failure artifacts

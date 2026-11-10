@@ -37,7 +37,7 @@ export interface RelaunchWaiterOptions {
   processId: number
   /** Wall-clock ms the parent process started (PID-reuse guard). */
   processStartTimeMs: number
-  /** The MSIX identity name of this install (e.g. NousResearch.ThorBundled). */
+  /** The MSIX identity name of this install (e.g. dwisetyabudi15581.ThorBundled). */
   identityName: string
   /** Absolute path to the waiter script shipped in the app's resources. */
   scriptPath: string

@@ -168,11 +168,11 @@ export const arAssistant = {
         },
         free_tier_disabled: {
           title: 'سجّل الدخول لمتابعة المحادثة',
-          body: 'سجّل الدخول بحساب Nous لمتابعة المحادثة، فهو مجاني.'
+          body: 'سجّل الدخول بحساب Thor لمتابعة المحادثة، فهو مجاني.'
         },
         free_tier_rate_limited: {
           title: 'نفدت الحصة المجانية',
-          body: 'تتجدد قريبًا. سجّل الدخول بحساب Nous للحصول على حصة أكبر، فهو مجاني.'
+          body: 'تتجدد قريبًا. سجّل الدخول بحساب Thor للحصول على حصة أكبر، فهو مجاني.'
         },
         free_tier_at_capacity: {
           title: 'الفئة المجانية مزدحمة',
@@ -180,11 +180,11 @@ export const arAssistant = {
         },
         free_tier_model_not_free: {
           title: 'هذا النموذج يتطلب تسجيل الدخول',
-          body: 'يستخدم Thor النموذج المجاني حاليًا. سجّل الدخول بحساب Nous للوصول إلى نماذج أكثر، فهو مجاني.'
+          body: 'يستخدم Thor النموذج المجاني حاليًا. سجّل الدخول بحساب Thor للوصول إلى نماذج أكثر، فهو مجاني.'
         },
         free_tier_route: {
           title: 'تعذّر الوصول إلى النموذج المجاني',
-          body: 'سجّل الدخول بحساب Nous، فهو مجاني، أو تحقّق من إعداد NOUS_INFERENCE_BASE_URL.'
+          body: 'سجّل الدخول بحساب Thor، فهو مجاني، أو تحقّق من إعداد THOR_PORTAL_INFERENCE_BASE_URL.'
         },
         free_tier_outage: {
           title: 'النموذج المجاني يواجه مشكلة',
@@ -192,7 +192,7 @@ export const arAssistant = {
         },
         free_tier_refused: {
           title: 'سجّل الدخول لمتابعة المحادثة',
-          body: 'تسجيل الدخول بحساب Nous مجاني.'
+          body: 'تسجيل الدخول بحساب Thor مجاني.'
         },
         cron_session_read_only: {
           title: 'هذه المحادثة تابعة لمهمة مجدولة',

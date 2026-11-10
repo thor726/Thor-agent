@@ -706,7 +706,7 @@ const sidebars: SidebarsConfig = {
       collapsed: true,
       items: [
         'integrations/index',
-        'integrations/nous-portal',
+        'integrations/thor-portal',
         'integrations/providers',
         'integrations/buzz',
         'user-guide/features/mcp',
@@ -722,7 +722,7 @@ const sidebars: SidebarsConfig = {
       collapsed: true,
       items: [
         'guides/run-nemotron-3-ultra-free',
-        'guides/run-thor-with-nous-portal',
+        'guides/run-thor-with-thor-portal',
         'guides/tips',
         'guides/secure-thor-on-a-work-machine',
         'guides/local-llm-on-mac',

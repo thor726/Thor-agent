@@ -52,8 +52,8 @@ afterEach(() => {
 describe('update entry points under Thor Cloud', () => {
   it('a Webapp tab served by a Cloud agent checks, applies and opens nothing', async () => {
     document.documentElement.dataset.thorDesktopHost = 'browser'
-    vi.stubGlobal('location', new URL('https://lab--app.agents.nousresearch.com/'))
-    setConnection(remote('https://lab--app.agents.nousresearch.com'))
+    vi.stubGlobal('location', new URL('https://lab--app.agents.thor-agent.local/'))
+    setConnection(remote('https://lab--app.agents.thor-agent.local'))
 
     await updates.checkUpdates({ force: true })
     await updates.checkBackendUpdates({ force: true })
@@ -71,7 +71,7 @@ describe('update entry points under Thor Cloud', () => {
   })
 
   it('native Desktop connected to a Cloud agent still updates its own app, never the agent', async () => {
-    setConnection(remote('https://lab.agents.nousresearch.com'))
+    setConnection(remote('https://lab.agents.thor-agent.local'))
 
     await updates.checkBackendUpdates({ force: true })
     expect(await updates.applyBackendUpdate()).toMatchObject({ ok: false, error: 'cloud-managed' })
@@ -85,7 +85,7 @@ describe('update entry points under Thor Cloud', () => {
   })
 
   it('the generic Update command on Desktop connected to Cloud updates this app and skips the agent', async () => {
-    setConnection(remote('https://lab.agents.nousresearch.com'))
+    setConnection(remote('https://lab.agents.thor-agent.local'))
     updates.$updateStatus.set({ supported: true, behind: 2, targetSha: 'a' })
 
     updates.startActiveUpdate()
@@ -98,7 +98,7 @@ describe('update entry points under Thor Cloud', () => {
   it('a Cloud-served tab running older code than its agent offers Reload, not an updater', () => {
     document.documentElement.dataset.thorDesktopHost = 'browser'
     const reload = vi.fn()
-    vi.stubGlobal('location', Object.assign(new URL('https://lab--app.agents.nousresearch.com/'), { reload }))
+    vi.stubGlobal('location', Object.assign(new URL('https://lab--app.agents.thor-agent.local/'), { reload }))
 
     updates.reportBackendContract(updates.REQUIRED_BACKEND_CONTRACT + 1)
     const toast = notifySpy.mock.calls.at(-1)?.[0] as { action: { onClick: () => void } }

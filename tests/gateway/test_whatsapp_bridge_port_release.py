@@ -139,7 +139,7 @@ class _AsyncCM:
 
 
 def _mock_health_refused():
-    """/health probe that fails like a port holder that is not our bridge: a synchronous
+    """/health probe that fails like a port holder that is not our bridge: a synchrothor
     connection error — NOT a timeout (a timeout proves no ownership and connect() must stop)."""
     mock_session = MagicMock()
     mock_session.get = MagicMock(side_effect=OSError("connection refused"))
@@ -368,7 +368,7 @@ class TestPidfileHygiene:
 
             _kill_stale_bridge_by_pidfile(tmp_path)
 
-            # SIGKILL is asynchronous; wait (bounded) for delivery instead of an instant poll().
+            # SIGKILL is asynchrothor; wait (bounded) for delivery instead of an instant poll().
             with contextlib.suppress(subprocess.TimeoutExpired):
                 holder.wait(timeout=5)
             assert holder.poll() is not None, "the SIGTERM-ignoring bridge was never reaped"

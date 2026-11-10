@@ -72,7 +72,7 @@ class TestOpenRouterProfile:
         assert tl == {"verbosity": "high"}
 
     def test_speed_tier_slugs_pin_endpoints_and_rewrite_wire_model(self):
-        """Nous-style ``-fast``/``-flex`` slugs are OpenRouter ENDPOINTS of the base model: the wire
+        """Thor-style ``-fast``/``-flex`` slugs are OpenRouter ENDPOINTS of the base model: the wire
         model must be the base slug and ``provider.only`` must select exactly that tier, while the
         user's other routing prefs survive. The base slug itself is pinned off the flex/fast tiers."""
         import inspect
@@ -91,19 +91,19 @@ class TestOpenRouterProfile:
         assert p.build_extra_body(model="openai/gpt-5.6-sol", provider_preferences={"ignore": ["x"]})["provider"] == {"ignore": ["x"]}
 
 
-class TestNousProfile:
+class TestThorProfile:
 
     def test_sticky_session_id_normalizes_cron_timestamp(self):
         """Cron re-fires of the same job keep the same sticky routing key."""
-        p = get_provider_profile("nous")
+        p = get_provider_profile("thor")
         first = p.build_extra_body(session_id="cron_job42_20260801_090000")
         second = p.build_extra_body(session_id="cron_job42_20260802_090000")
         assert first["session_id"] == "cron_job42"
         assert first["session_id"] == second["session_id"]
 
     def test_extra_body_ignores_provider_preferences(self):
-        """Nous Portal rejects caller-supplied provider routing prefs (HTTP 400)."""
-        p = get_provider_profile("nous")
+        """Thor Portal rejects caller-supplied provider routing prefs (HTTP 400)."""
+        p = get_provider_profile("thor")
         body = p.build_extra_body(
             provider_preferences={"allow": ["anthropic"], "sort": "price"}
         )

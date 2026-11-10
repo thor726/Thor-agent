@@ -4,7 +4,7 @@ import { runFreeTierChallenge } from './free-tier-challenge'
 
 const challenge = {
   type: 'browser',
-  url: 'https://portal.nousresearch.com/challenge?code=abc',
+  url: 'https://portal.thor-agent.local/challenge?code=abc',
   required: true,
   expires_in: 600,
   message: 'A quick check first.'

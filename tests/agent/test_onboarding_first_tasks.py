@@ -73,7 +73,7 @@ def test_how_thor_works_reads_the_docs_and_builds_three_screens():
 
     assert text.split("\n")[1] == ("Load these skills with skill_view first: thor-agent, claude-design, p5js, "
                                    "humanizer.")
-    assert "https://thor-agent.nousresearch.com/docs" in text and "web_extract" in text
+    assert "https://thor-agent.thor-agent.local/docs" in text and "web_extract" in text
     assert all(f"Screen {n}" in text for n in (1, 2, 3)) and "~/thor-first-task/" in text
 
 

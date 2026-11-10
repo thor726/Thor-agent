@@ -1122,7 +1122,7 @@ def cmd_mcp_configure(args):
 
 _MCP_USAGE = (
     "thor mcp                                    Open the catalog picker (default)",
-    "thor mcp catalog                            List Nous-approved MCPs",
+    "thor mcp catalog                            List Thor-approved MCPs",
     "thor mcp install <name>                     Install a catalog MCP",
     "thor mcp add <name> --url <endpoint>        Add a custom MCP server",
     "thor mcp add <name> --command <cmd>         Add a stdio server",

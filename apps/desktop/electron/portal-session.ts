@@ -23,13 +23,13 @@ interface CookieWindowOptions {
 
 type CookieWindowOutcome = 'landed' | 'closed' | 'timeout' | Error
 
-// Canonical Nous portal base URL, overridable for staging/dev. Mirrors the CLI
-// convention (thor_cli/auth.py DEFAULT_NOUS_PORTAL_URL + the same env names)
+// Canonical Thor portal base URL, overridable for staging/dev. Mirrors the CLI
+// convention (thor_cli/auth.py DEFAULT_THOR_PORTAL_URL + the same env names)
 // so a single override flips every Thor surface to the same portal.
-const DEFAULT_NOUS_PORTAL_URL = 'https://portal.nousresearch.com'
+const DEFAULT_THOR_PORTAL_URL = 'https://portal.thor-agent.local'
 
 export function resolvePortalBaseUrl() {
-  const raw = process.env.THOR_PORTAL_BASE_URL || process.env.NOUS_PORTAL_BASE_URL || DEFAULT_NOUS_PORTAL_URL
+  const raw = process.env.THOR_PORTAL_BASE_URL || process.env.THOR_PORTAL_BASE_URL || DEFAULT_THOR_PORTAL_URL
 
   return String(raw).trim().replace(/\/+$/, '')
 }

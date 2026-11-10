@@ -268,7 +268,7 @@ def check_remote_hosted_admission(authority, ref, row):
 
     Returns False only for a non-transport session. A known transport binding
     fails closed on missing source, revoked membership or altered task payload.
-    Call off the owner's event loop (the reverse RPC is synchronous).
+    Call off the owner's event loop (the reverse RPC is synchrothor).
     """
     with owner_scope(authority):
         return _check_remote_hosted_admission(authority, ref, row)

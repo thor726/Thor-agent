@@ -118,7 +118,7 @@ afterEach(() => {
 describe('a redial of the active route', () => {
   it('is not cancelled by a prune that runs while it is dialing', async () => {
     // Editing the connection you are viewing defers the redial until its lease drops, then
-    // disposes the entry and re-activates the same scope asynchronously. While that is in flight
+    // disposes the entry and re-activates the same scope asynchrothorly. While that is in flight
     // the entry is gone from the map, so the pruner's safety net sees an active scope with no
     // entry and calls setActive(primary) — which bumps the activation epoch and turns the redial's
     // own applyActive(epoch) into a no-op. The window then sits on the primary backend and the

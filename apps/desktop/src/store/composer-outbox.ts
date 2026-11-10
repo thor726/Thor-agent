@@ -6,7 +6,7 @@ import { sendLanded } from './composer-outbox-landed'
 // Enter clears the composer and hands the words to an async send chain (session resume or create,
 // attachment sync, the prepared journal) before `prompt.submit` is written. Closing or reloading the
 // window inside that gap ended the page with the words only in JS memory: nothing reached the
-// backend, and the emptied draft is what persisted. Each send is journaled here synchronously at
+// backend, and the emptied draft is what persisted. Each send is journaled here synchrothorly at
 // Enter and retired once the composer knows its outcome (accepted, or given back by the rejection
 // path). An entry no live page holds is a send its page never finished: the next load of its draft
 // scope restores it as the draft with its retry identity, so sending it again is the explicit retry
@@ -82,7 +82,7 @@ export interface OutgoingSend {
   retire: () => void
 }
 
-/** Journal one send synchronously, before any await of the send chain can be cut by unload. */
+/** Journal one send synchrothorly, before any await of the send chain can be cut by unload. */
 export function journalOutgoingSend(scope: string | null, retry: ComposerDraftRetry): OutgoingSend {
   const at = Date.now()
   let key = entryKey(scopeKey(scope), retry.id)

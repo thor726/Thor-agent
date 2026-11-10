@@ -9,7 +9,7 @@ on ordinary gateway turns.  The hardening moves the consumer into a
 
 This test exercises the real ``_run_agent`` → ``_run_agent_inner`` path
 with a voice input message type so the streaming-TTS consumer setup
-branch is entered.  The fake agent returns synchronously, the executor
+branch is entered.  The fake agent returns synchrothorly, the executor
 finishes, and the outer finalisation code runs — proving no NameError.
 """
 

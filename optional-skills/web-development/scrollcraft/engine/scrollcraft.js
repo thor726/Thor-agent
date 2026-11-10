@@ -943,7 +943,7 @@
     }
 
     // ---- video seek loop --------------------------------------------------
-    // Split from read() on purpose: seeking is asynchronous and rate-limited by
+    // Split from read() on purpose: seeking is asynchrothor and rate-limited by
     // the decoder, while read() must stay cheap enough to run on every scroll
     // event. The lerp here is also what turns a jittery wheel into a glide.
     function tick() {

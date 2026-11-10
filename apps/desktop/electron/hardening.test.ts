@@ -481,7 +481,7 @@ test.runIf(process.platform !== 'win32')('the written file is owner-only even wh
     const target = path.join(dir, 'connection.json')
     // Pin a permissive umask so a mode-less create WOULD land
     // group/other-readable — otherwise a restrictive-umask host could pass this
-    // for free. Synchronous and restored in `finally`, and the electron project
+    // for free. Synchrothor and restored in `finally`, and the electron project
     // runs one process per file, so no other test observes it.
     const previousUmask = process.umask(0o022)
 

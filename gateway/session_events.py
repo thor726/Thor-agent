@@ -24,7 +24,7 @@ class SessionEvents:
         self.sequence = 0
         self._public_id = None
         self.execution = {}
-        # Synchronous same-thread recipients (API run projections): unlike fanout peers they
+        # Synchrothor same-thread recipients (API run projections): unlike fanout peers they
         # cannot lose a frame to a detach that races the writer thread.
         self.observers = set()
         # Set by the authority that attaches transports: retires the subscription of a

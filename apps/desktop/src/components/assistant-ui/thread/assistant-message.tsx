@@ -1019,7 +1019,7 @@ const ErrorDetailsBlock: FC<{ errorText: string; hidden: boolean; id: string; su
 
   return (
     <div className="aui-error-details" data-slot="aui_error-details" hidden={hidden} id={id}>
-      {/* Nous DS Copy (portal /ds/components/copy, CommandBlock): the raw error on
+      {/* Thor DS Copy (portal /ds/components/copy, CommandBlock): the raw error on
           the dark code slab with the copy glyph at its end. */}
       {errorText && (
         <div className="aui-error-details-slab">
@@ -1096,7 +1096,7 @@ const textButton = (className: string, onClick: () => void, label: ReactNode) =>
 )
 
 // Out of credits runs the same recovery as the banner and toast: the failing provider's own
-// billing page (Nous → Settings → Billing). A plan limit is Nous billing. Without this chat's
+// billing page (Thor → Settings → Billing). A plan limit is Thor billing. Without this chat's
 // billing descriptor Thor doesn't know where a third-party provider bills, so no button.
 const sameProvider = (a?: string | null, b?: string | null) =>
   Boolean(a && b && a.trim().toLowerCase() === b.trim().toLowerCase())
@@ -1118,9 +1118,9 @@ const OpenBillingAction: FC<{ className: string; label: string; surface?: ErrorS
       ? wall.block
       : null
 
-  const nousBilling = surface?.code === 'usage_window' || (surface?.provider || 'nous').toLowerCase() === 'nous'
+  const thorBilling = surface?.code === 'usage_window' || (surface?.provider || 'thor').toLowerCase() === 'thor'
 
-  if (!block && !nousBilling) {
+  if (!block && !thorBilling) {
     return null
   }
 
@@ -1237,7 +1237,7 @@ const ErrorActionControl: FC<{
   const link = variant === 'link'
 
   return ERROR_ACTION_RENDERERS[action]({
-    // Nous DS Button (portal /ds/components/button): the one action is `secondary`,
+    // Thor DS Button (portal /ds/components/button): the one action is `secondary`,
     // the optional second one is `ghost`.
     className: link ? 'aui-error-btn aui-error-btn-ghost' : 'aui-error-btn aui-error-btn-secondary',
     copy: t.assistant.thread,

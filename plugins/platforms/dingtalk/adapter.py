@@ -77,7 +77,7 @@ def _is_sdk_incompat(exc: BaseException | None) -> bool:
     for _ in range(4):
         if exc is None:
             return False
-        if isinstance(exc, TypeError) and "asynchronous context manager" in str(exc):
+        if isinstance(exc, TypeError) and "asynchrothor context manager" in str(exc):
             return True
         exc = exc.__cause__ or exc.__context__
     return False

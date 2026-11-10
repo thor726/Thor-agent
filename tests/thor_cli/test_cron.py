@@ -38,14 +38,14 @@ class TestCronCommandLifecycle:
                 "--model",
                 "new-model",
                 "--provider",
-                "nous",
+                "thor",
             ]
         )
         cron_command(args)
 
         updated = get_job(job["id"])
         assert updated["model"] == "new-model"
-        assert updated["provider"] == "nous"
+        assert updated["provider"] == "thor"
         assert "Updated job" in capsys.readouterr().out
 
     def test_edit_can_replace_and_clear_skills(self, tmp_cron_dir, capsys):
@@ -432,7 +432,7 @@ class TestCronRunBackgroundDispatch:
     responses carry execution_mode='background' / delegation_id and the job
     keeps running after the CLI exits — a terminal success/failure verdict
     would be a lie (#83340). The CLI must report the background dispatch
-    instead, and leave synchronous runs unchanged.
+    instead, and leave synchrothor runs unchanged.
     """
 
     def _run_cmd(self, capsys):
@@ -506,7 +506,7 @@ class TestCronRunBackgroundDispatch:
         assert "Ran now: succeeded." in out
 
     def test_sync_run_failure_still_reported(self, monkeypatch, capsys):
-        # A genuine synchronous failure must keep reporting 'failed' — only
+        # A genuine synchrothor failure must keep reporting 'failed' — only
         # background-dispatched runs are exempt from the terminal verdict.
         monkeypatch.setattr(
             cron_cli,

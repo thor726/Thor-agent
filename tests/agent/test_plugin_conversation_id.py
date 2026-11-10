@@ -129,7 +129,7 @@ def test_delegated_child_reports_its_delegators_conversation(tmp_path, probe, mo
 
 
 def test_lineage_walks_leave_a_running_loop_and_a_failed_rotation_walk_is_retried():
-    """A Relay tool callback runs on an event loop, where WorkerRPC refuses a synchronous read
+    """A Relay tool callback runs on an event loop, where WorkerRPC refuses a synchrothor read
     (#139029): the walks run off it. A rotation walk that fails is not memoized as the answer."""
     class Store:
         def __init__(self):

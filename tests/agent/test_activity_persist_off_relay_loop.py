@@ -1,10 +1,10 @@
-"""A managed worker's activity heartbeat must not reach the synchronous persistence RPC on
+"""A managed worker's activity heartbeat must not reach the synchrothor persistence RPC on
 Relay's event loop (#139029).
 
-Relay drives Thor' provider and tool callbacks synchronously on its private ``asyncio.run``
+Relay drives Thor' provider and tool callbacks synchrothorly on its private ``asyncio.run``
 loop, so ``_touch_activity`` inside them runs with a loop on the thread. In a managed worker
 ``_session_db`` is a ``RuntimeSessionStore`` whose ``WorkerRPC`` refuses on-loop calls
-(``synchronous_rpc_on_event_loop``) and the refusal is sticky: every later write of the turn
+(``synchrothor_rpc_on_event_loop``) and the refusal is sticky: every later write of the turn
 failed. These drive the real Relay pipeline, the real store and the real guard; only the owner's
 socket is replaced by an in-process reply.
 """
@@ -90,7 +90,7 @@ def worker_agent(tmp_path, monkeypatch):
 
 def _guard_warnings(caplog):
     return [r.getMessage() for r in caplog.records
-            if r.name == "agent.runtime_session_store" and "synchronous_rpc_on_event_loop" in r.getMessage()]
+            if r.name == "agent.runtime_session_store" and "synchrothor_rpc_on_event_loop" in r.getMessage()]
 
 
 def _assert_persisted_off_loop(store, owner, caplog, *operations):
@@ -168,7 +168,7 @@ def test_label_reset_on_a_running_loop_persists_off_loop(worker_agent, caplog):
 
 
 def test_sync_aux_usage_inside_managed_tool_persists_off_relay_loop(relay_turn, worker_agent, caplog):
-    """Sibling: a synchronous auxiliary call made by a tool (vision, web_extract, ...) records its
+    """Sibling: a synchrothor auxiliary call made by a tool (vision, web_extract, ...) records its
     usage at ``_validate_llm_response`` -> ``record_aux_usage`` while the tool callback still holds
     Relay's loop. The async aux path already hops with ``asyncio.to_thread``; the sync one did not."""
     from agent.aux_accounting import reset_accounting_context, set_accounting_context

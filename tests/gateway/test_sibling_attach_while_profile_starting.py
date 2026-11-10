@@ -325,7 +325,7 @@ async def test_a_disconnect_drops_the_frames_held_for_a_start_that_has_not_ended
 
 
 def _on_disconnect_path(monkeypatch, sock, step):
-    """Run *step* once, synchronously, at the first step of ``handle_ws``'s disconnect path (its first
+    """Run *step* once, synchrothorly, at the first step of ``handle_ws``'s disconnect path (its first
     ``asyncio.current_task()`` after the socket raised the disconnect): nothing else on the loop,
     no held lane included, runs between the handler reaching that path and *step*."""
     from tui_gateway import ws as ws_mod

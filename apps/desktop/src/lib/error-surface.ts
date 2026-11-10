@@ -72,7 +72,7 @@ export const ERROR_CODE_KEYS = [
   // Raised by the desktop, never by the backend: the backend reported a turn
   // over after its events stopped, and no reply reached this window.
   'no_reply',
-  // The Nous free tier refused or could not serve the turn (agent/error_surface.py
+  // The Thor free tier refused or could not serve the turn (agent/error_surface.py
   // `free_tier_<kind>`). The backend's sentence rides in `message` and is the card body.
   'free_tier_disabled',
   'free_tier_rate_limited',
@@ -103,7 +103,7 @@ export interface ErrorSurface {
    *  the fix is signing in again (expired/revoked grant); `api_key` means a
    *  key needs replacing. Absent from older backends. */
   authKind?: 'api_key' | 'oauth'
-  /** Auth layer only: display name of the failing provider ("Nous Portal"). */
+  /** Auth layer only: display name of the failing provider ("Thor Portal"). */
   providerLabel?: string
   /** Auth layer, api_key only: the env var holding the rejected key
    *  (OPENAI_API_KEY). Deep-links Settings → Keys to that row. Absent from
@@ -153,7 +153,7 @@ function parseUsageLimit(value: unknown): UsageLimitSurface | undefined {
             model: s.model,
             label: typeof s.label === 'string' && s.label ? s.label : s.model,
             note: typeof s.note === 'string' ? s.note : '',
-            provider: typeof s.provider === 'string' && s.provider ? s.provider : 'nous'
+            provider: typeof s.provider === 'string' && s.provider ? s.provider : 'thor'
           }
         ]
       : []
@@ -248,7 +248,7 @@ export function formatCountdown(remainingMs: number): string {
   return hours > 0 ? `${hours}h ${tail}` : tail.replace(/^0/, '')
 }
 
-/** True when the Nous free tier refused or could not serve the turn: the way
+/** True when the Thor free tier refused or could not serve the turn: the way
  *  forward is the free sign-in (or another provider), never an OAuth re-login. */
 export function isFreeTierSurface(surface: ErrorSurface | null | undefined): boolean {
   return typeof surface?.code === 'string' && surface.code.startsWith('free_tier_')
@@ -367,14 +367,14 @@ export interface ErrorCardActions {
 }
 
 export const ERROR_SETUP_GUIDE_URLS = {
-  tls: 'https://thor-agent.nousresearch.com/docs/user-guide/security#tls-certificate-trust',
-  local: 'https://thor-agent.nousresearch.com/docs/user-guide/local-models#using-your-own-llama-server'
+  tls: 'https://thor-agent.thor-agent.local/docs/user-guide/security#tls-certificate-trust',
+  local: 'https://thor-agent.thor-agent.local/docs/user-guide/local-models#using-your-own-llama-server'
 } as const
 
 /** Provider pages where the user fixes an account-level routing/privacy block. */
 const PROVIDER_SETTINGS_URLS: Record<string, string> = {
   openrouter: 'https://openrouter.ai/settings/privacy',
-  nous: 'https://portal.nousresearch.com'
+  thor: 'https://portal.thor-agent.local'
 }
 
 /** The provider's own settings page (privacy/data policy), when Thor knows one. */

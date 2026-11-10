@@ -31,8 +31,8 @@ If you are trying to add a new first-class inference provider, read [Adding Prov
 
 OpenAI-compatible relays can return `reasoning` or `reasoning_content` as strings,
 text-part dictionaries, or lists of text parts and string fragments. Thor flattens
-these fields before string operations in the main stream, Relay recording, synchronous
-and asynchronous auxiliary streams, and completed-response reasoning extraction.
+these fields before string operations in the main stream, Relay recording, synchrothor
+and asynchrothor auxiliary streams, and completed-response reasoning extraction.
 Fragments retain their explicit whitespace; normalization adds no intra-field separator.
 Main-stream and Relay recording retain the existing paragraph breaks between complete
 bold reasoning headings. Reasoning stays separate from the visible answer.
@@ -61,7 +61,7 @@ Current provider families include (see `plugins/model-providers/` for the comple
 
 - AI Gateway (Vercel)
 - OpenRouter
-- Nous Portal
+- Thor Portal
 - OpenAI Codex
 - Anthropic (native)
 - Google / Gemini (`gemini`)

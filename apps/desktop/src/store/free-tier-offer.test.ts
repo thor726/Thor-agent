@@ -17,8 +17,8 @@ const status = (nudge_due_in: null | number, available = true): FreeTierStatus =
   available,
   enabled: true,
   has_guest: available,
-  label: 'Nous · free tier',
-  model: 'nous/welcome',
+  label: 'Thor · free tier',
+  model: 'thor/welcome',
   notice_pending: false,
   nudge_due_in
 })

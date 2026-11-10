@@ -1,6 +1,6 @@
 """No test reaches a host off this machine unless it is a ``live`` canary (``tests/conftest.py``).
 
-A test home has no Nous identity, so a hosted connector action used to mint a real guest on
+A test home has no Thor identity, so a hosted connector action used to mint a real guest on
 the production Portal: seconds per test, red when the Portal was slow, and a new production
 guest on every CI run. Every other live host had the same shape: building an agent fetched
 OpenRouter / models.dev / model-catalog metadata, and verdicts followed whatever came back.
@@ -22,8 +22,8 @@ def test_first_connector_action_in_a_test_home_mints_no_portal_guest():
 
 
 @pytest.mark.parametrize("host", [
-    "portal.nousresearch.com", "inference-api.nousresearch.com", b"WELCOME-API.NOUSRESEARCH.COM.",
-    "telemetry.staging-nousresearch.com", "openrouter.ai", "models.dev", "raw.githubusercontent.com",
+    "portal.thor-agent.local", "inference-api.thor-agent.local", b"WELCOME-API.NOUSRESEARCH.COM.",
+    "telemetry.staging-thor-agent.local", "openrouter.ai", "models.dev", "raw.githubusercontent.com",
     "example.com", b"pypi.org",
 ])
 def test_external_hosts_are_refused_at_the_name_lookup(host):

@@ -106,7 +106,7 @@ async def test_each_session_resolves_its_own_clients_provider_request(tmp_path, 
     from gateway.session_policy import policy_scope
     from thor_cli.runtime_provider import resolve_requested_provider
     home = _home(tmp_path, 'platform_toolsets: {cli: []}\nmodel: {default: m}\n')
-    monkeypatch.setenv('THOR_INFERENCE_PROVIDER', 'nous')
+    monkeypatch.setenv('THOR_INFERENCE_PROVIDER', 'thor')
     owner, connection = await _owner(home, monkeypatch)
     try:
         _, mine = _create(owner, connection.actor, home, 'r1', client_env={'THOR_INFERENCE_PROVIDER': 'openrouter'})
@@ -115,7 +115,7 @@ async def test_each_session_resolves_its_own_clients_provider_request(tmp_path, 
             assert resolve_requested_provider() == 'openrouter'
         with policy_scope(bare, authority=owner):
             assert resolve_requested_provider() == 'auto'
-        assert resolve_requested_provider() == 'nous'  # the gateway's own (messaging/cron)
+        assert resolve_requested_provider() == 'thor'  # the gateway's own (messaging/cron)
     finally:
         await connection.close()
         owner.db.close()

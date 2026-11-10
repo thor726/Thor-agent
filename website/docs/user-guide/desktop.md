@@ -22,7 +22,7 @@ Pick whichever fits the moment. They share state, so you can start a session in 
 
 ## Install
 
-Download the app from the [Thor Desktop product page](https://thor-agent.nousresearch.com/desktop), or follow the [installation instructions for Thor Desktop](../getting-started/installation.md).
+Download the app from the [Thor Desktop product page](https://thor-agent.thor-agent.local/desktop), or follow the [installation instructions for Thor Desktop](../getting-started/installation.md).
 
 If you already have Thor installed, simply run
 
@@ -81,7 +81,7 @@ serves instead; that requires the same sign-in. A proxy in another container or 
 cannot reach that loopback address: see [Docker → Behind a tunnel or reverse proxy](./docker.md#webapp-behind-a-proxy).
 `thor webapp` then opens the Webapp's address, where you sign in with
 your dashboard account: `webapp.public_url` when set; on the LAN, the address **Web Access → Start**
-registered Nous sign-in for, while it is still this machine's address and the Webapp's port; else the
+registered Thor sign-in for, while it is still this machine's address and the Webapp's port; else the
 loopback address (a password provider, or sign-in you set up by hand for that address). One-use
 links serve only a Webapp that needs no sign-in. HTTPS is strongly recommended remotely.
 
@@ -128,7 +128,7 @@ or subagent runs, stay read-only.
 ### Open it from your phone or another computer
 
 In the native app, **Settings → Web Access** turns the Webapp on for other devices, behind sign-in with
-your Nous account (Providers → Accounts). It appears only in the native app on its local connection,
+your Thor account (Providers → Accounts). It appears only in the native app on its local connection,
 and only that app can change it: a browser signed in over the network cannot.
 
 - **This network:** devices on the same Wi-Fi open `http://<this computer's address>:<port>`, where the
@@ -141,7 +141,7 @@ and only that app can change it: a browser signed in over the network cannot.
   from your router directly.
 
 **Start** builds the Webapp if it is missing or out of date (the same build `thor webapp` runs, which
-can take a few minutes the first time), registers its sign-in address with your Nous account when that
+can take a few minutes the first time), registers its sign-in address with your Thor account when that
 address changed, saves the `webapp:` settings and restarts the gateway, which reads them when it
 starts. Until it is done the pane names the step it is on and how long Start has run, also in a
 pane opened during it. While a chat is running the gateway refuses to restart: the pane shows
@@ -151,10 +151,10 @@ the chat ends. **Stop** turns the Webapp off the same way. A Webapp you turned o
 
 Web Access changes only the `webapp:` settings and keeps your `webapp.port`. It leaves
 `dashboard.public_url` alone, so a standalone dashboard you publish separately keeps its own address.
-Its Nous sign-in uses a sign-in client of its own, which the first Start registers with your Nous
+Its Thor sign-in uses a sign-in client of its own, which the first Start registers with your Thor
 account and keeps in the gateway's home (`webapp/sign-in-registration.json`). Start never reads or
 writes `THOR_DASHBOARD_OAUTH_CLIENT_ID` in `.env`, so turning Web Access on never changes the
-standalone dashboard's Nous sign-in. A standalone profile with its own gateway serves its Webapp on a
+standalone dashboard's Thor sign-in. A standalone profile with its own gateway serves its Webapp on a
 port of its own: when its `webapp.port` is unset, the first Start picks the first free port above 9120
 that no other profile uses and saves it as that profile's `webapp.port`, so its address stays the same
 after restarts. A `webapp.port` you set is always kept. `thor update` rebuilds the Webapp
@@ -580,7 +580,7 @@ The desktop app and the Thor backend it talks to update on separate clocks — t
 
 After any backend update, the app also re-checks its own version and warns with a one-click **Update desktop app** action if the GUI is still behind — so updating a remote backend can never silently leave you on a stale desktop build.
 
-The [manual update process](https://thor-agent.nousresearch.com/docs/getting-started/updating) also works with the GUI.
+The [manual update process](https://thor-agent.thor-agent.local/docs/getting-started/updating) also works with the GUI.
 
 ## Uninstalling
 
@@ -671,10 +671,10 @@ The connection has two halves: on the backend you protect it with an **auth prov
 
 **Pick a provider based on where the backend lives:**
 
-- **OAuth (Nous Portal) — preferred for anything reachable beyond your own machine.** Logins are verified against your Nous account, so this is the option suitable for a VPS, a public host, or any remote backend. Register the dashboard with `thor dashboard register` (or the Portal [`/local-dashboards`](https://portal.nousresearch.com/local-dashboards) page) to provision its OAuth client, then sign in from the app with **Sign in with Nous Research**. A self-hosted OIDC provider works the same way if you run your own identity provider.
+- **OAuth (Thor Portal) — preferred for anything reachable beyond your own machine.** Logins are verified against your Thor account, so this is the option suitable for a VPS, a public host, or any remote backend. Register the dashboard with `thor dashboard register` (or the Portal [`/local-dashboards`](https://portal.thor-agent.local/local-dashboards) page) to provision its OAuth client, then sign in from the app with **Sign in with Thor Agent**. A self-hosted OIDC provider works the same way if you run your own identity provider.
 - **Username/password — local / trusted-network use only.** The simplest option when the backend is on the same trusted LAN or reachable only over a VPN (e.g. Tailscale). It protects a single shared credential with no external identity provider, so **do not use it for a dashboard exposed to the public internet** — reach for OAuth there instead.
 
-The rest of this section shows the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Web Dashboard → Default provider: Nous Research](./features/web-dashboard.md#default-provider-nous-research).
+The rest of this section shows the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Web Dashboard → Default provider: Thor Agent](./features/web-dashboard.md#default-provider-thor-research).
 
 ### On the backend (the remote machine)
 
@@ -708,7 +708,7 @@ Prefer not to keep a plaintext password at rest? Set `THOR_DASHBOARD_BASIC_AUTH_
 Running the backend as a systemd service? Give the unit `EnvironmentFile=%h/.thor/.env` so the credentials are in the environment at boot.
 
 :::warning
-The backend reads and writes your `.env` (API keys, secrets) and can run agent commands. The **username/password** setup shown above is for a trusted network — never expose a password-protected backend directly to the open internet; put it behind a VPN. [Tailscale](https://tailscale.com/) is the clean option: bind to the machine's tailscale IP (`--host <tailscale-ip>`) and use `http://<tailscale-ip>:9119` as the Remote URL so only your tailnet can reach it. To reach a backend over the public internet, use the **OAuth (Nous Portal)** provider instead.
+The backend reads and writes your `.env` (API keys, secrets) and can run agent commands. The **username/password** setup shown above is for a trusted network — never expose a password-protected backend directly to the open internet; put it behind a VPN. [Tailscale](https://tailscale.com/) is the clean option: bind to the machine's tailscale IP (`--host <tailscale-ip>`) and use `http://<tailscale-ip>:9119` as the Remote URL so only your tailnet can reach it. To reach a backend over the public internet, use the **OAuth (Thor Portal)** provider instead.
 :::
 
 ### In the app
@@ -716,7 +716,7 @@ The backend reads and writes your `.env` (API keys, secrets) and can run agent c
 **Settings → Gateways → Remote gateway:**
 
 1. **Remote URL** — `http://<backend-host>:9119` (path prefixes like `/thor` work if you front it with a reverse proxy)
-2. **Sign in** — the app detects which provider the backend advertises and adapts the button. For a username/password backend it shows a **Sign in** button that opens a credential form (enter the credentials from step 1). For an OAuth backend it shows **Sign in with `<provider>`** (e.g. *Sign in with Nous Research*), which runs the provider's browser sign-in. Either way the app ends up with an authenticated session against the backend.
+2. **Sign in** — the app detects which provider the backend advertises and adapts the button. For a username/password backend it shows a **Sign in** button that opens a credential form (enter the credentials from step 1). For an OAuth backend it shows **Sign in with `<provider>`** (e.g. *Sign in with Thor Agent*), which runs the provider's browser sign-in. Either way the app ends up with an authenticated session against the backend.
 3. **Save and reconnect** — switches the desktop shell onto the remote backend. The session refreshes automatically; you stay signed in across restarts when `THOR_DASHBOARD_BASIC_AUTH_SECRET` is set.
 
 You can also set the backend URL without the UI via the `THOR_DESKTOP_REMOTE_URL` environment variable before launching the app (it overrides the in-app setting); you still sign in from the Gateways settings panel.
@@ -823,7 +823,7 @@ Thor: **one row per plugin**, with two switch columns.
   half is **not** installed in the selected profile shows **Install here**,
   which pre-fills the install dialog from the package's origin (catalog entry
   or git remote) for that profile only. Optional extras such as the
-  [Accent Picker](https://github.com/NousResearch/thor-official-plugins/tree/main/accent-picker)
+  [Accent Picker](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/accent-picker)
   install from the plugin catalog.
 - **Uninstall** — every plugin installed under the selected profile's
   `plugins/` folder (user or git install) has a trash button beside its name.
@@ -889,12 +889,12 @@ generic error toast. The card offers recovery actions matched to the failure:
   or Cloud connection the button reads **Open Desktop logs**: it opens the
   local Desktop-side logs (transport evidence), since the failed turn's
   gateway/agent logs live on the remote machine.
-- **Send diagnostics** — uploads a redacted debug bundle to Nous-internal
+- **Send diagnostics** — uploads a redacted debug bundle to Thor-internal
   storage after an explicit consent prompt (same pipeline as
-  `thor debug share --nous`; secrets are always redacted, the bundle is
-  viewable by Nous staff only and auto-deletes after 14 days). On success you
+  `thor debug share --thor`; secrets are always redacted, the bundle is
+  viewable by Thor staff only and auto-deletes after 14 days). On success you
   get a private view link to paste into your support thread, plus quick links
-  to GitHub Issues, Nous Portal Support, and Discord. On a remote or Cloud
+  to GitHub Issues, Thor Portal Support, and Discord. On a remote or Cloud
   connection the backend bundles its own agent/gateway logs and the local
   Desktop log is attached alongside, so support sees both halves.
 - **Copy error details** — copies a compact plain-text summary (layer, code,
@@ -928,7 +928,7 @@ damaged application files, repair through the
 
 ```bash
 # Reset a stuck macOS microphone prompt
-tccutil reset Microphone com.nousresearch.thor
+tccutil reset Microphone com.thorresearch.thor
 ```
 
 ### Windows: the SSH client is missing or broken
@@ -1041,7 +1041,7 @@ button, so it looks like there is nothing to re-check. If that happens, reset
 the stale grant once and re-grant:
 
 ```bash
-tccutil reset ScreenCapture com.nousresearch.thor   # repeat per service
+tccutil reset ScreenCapture com.thorresearch.thor   # repeat per service
 ```
 
 then toggle the fresh entry ON in System Settings and fully quit & relaunch
@@ -1079,7 +1079,7 @@ detected and never re-signed.
 One-time note: changing the signing identity (including the first update after
 this fix) changes the app's identity once, so macOS will re-prompt one final
 time. Grants are stable from then on. If a permission gets stuck, reset it with
-`tccutil reset All com.nousresearch.thor` and re-grant.
+`tccutil reset All com.thorresearch.thor` and re-grant.
 
 ## See also
 

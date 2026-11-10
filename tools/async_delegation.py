@@ -1026,7 +1026,7 @@ def dispatch_async_delegation(
         interrupt_fn=interrupt_fn, max_async_children=max_async_children, progress_fn=progress_fn,
         capacity_error=(
             f"Async delegation capacity reached ({max_async_children} running). Wait for one to finish "
-            "(its result will re-enter the chat), or run this task synchronously (background=false). "
+            "(its result will re-enter the chat), or run this task synchrothorly (background=false). "
             "Raise delegation.max_concurrent_children in config.yaml to allow more concurrent background subagents."))
     if handle["status"] == "dispatched":
         logger.info("Dispatched async delegation %s (session_key=%s): %s",

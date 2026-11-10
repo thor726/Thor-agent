@@ -1,6 +1,6 @@
 # Thor Plugin Catalog
 
-Curated, Nous-approved Thor plugins. Each YAML file in this directory
+Curated, Thor-approved Thor plugins. Each YAML file in this directory
 (except `removed.yaml`) is one catalog entry, discoverable via
 `thor plugins catalog` / `thor plugins search` and installable with
 `thor plugins install <name>`.
@@ -131,7 +131,7 @@ meaningful:
    (`thor plugins validate --install-deps` is what CI runs).
 15. **No skins or forks of bundled plugins.** A change to a bundled plugin is a
    PR against `thor-agent`, not a competing listing, and vendor-lookalike skins
-   are not listed under Nous branding.
+   are not listed under Thor branding.
 16. **One listing per plugin lineage.** A fork of a listed community plugin is
    listed only when it is materially different from the original: a different
    transport or architecture, or capability the original lacks and its author
@@ -161,7 +161,7 @@ meaningful:
 18. **Password managers come from their vendor.** A plugin that registers a
    `browser_vault` login backend (`ctx.register_login_backend`) is listed only at
    `tier: verified`, submitted from the password-manager vendor's own repository
-   by that vendor, or at `tier: official` when Nous maintains it. Community-tier,
+   by that vendor, or at `tier: official` when Thor maintains it. Community-tier,
    fork and third-party listings of a login backend are declined. Thor enforces
    the same rule when the plugin loads: a login backend is accepted only from a
    plugin bundled with Thor or installed from this catalog at `verified` or
@@ -173,7 +173,7 @@ meaningful:
 
 The step-by-step submission guide, with the same rules and what reviewers check,
 lives at
-[Submitting to the plugin catalog](https://thor-agent.nousresearch.com/docs/developer-guide/plugins/catalog-submission).
+[Submitting to the plugin catalog](https://thor-agent.thor-agent.local/docs/developer-guide/plugins/catalog-submission).
 
 ## Entry schema
 
@@ -187,7 +187,7 @@ subdir: ""                  # optional; plain relative path inside the repo
 description: One-line description.
 maintainer: OwnerName
 tier: community             # official | verified | community (default community);
-                            # official and verified are set by Nous maintainers only
+                            # official and verified are set by Thor maintainers only
 category: memory            # desktop | memory | platform | web | tools | voice | automation | models | general
                             # (default desktop) — the shelf the entry sits on at /docs/plugins
 requires_thor: ">=0.19"   # optional; enforced at install and update (also declare it in plugin.yaml)
@@ -208,10 +208,10 @@ capabilities:
   requires_env: []
 ```
 
-`tier` says who stands behind an entry. `official`: maintained by NousResearch.
-`verified`: verified by the Nous team to come from the company that makes what
+`tier` says who stands behind an entry. `official`: maintained by dwisetyabudi15581.
+`verified`: verified by the Thor team to come from the company that makes what
 the plugin integrates into Thor, and that company is well known or reputable.
-`community`: everything else. Only Nous maintainers set `official` or
+`community`: everything else. Only Thor maintainers set `official` or
 `verified`; a contributor PR that sets either is changed to `community` in
 review (maintainer review is the gate; no CI check inspects the tier value).
 
@@ -223,7 +223,7 @@ so the Desktop catalog and the docs site never fetch from third-party hosts;
 pin the raw URL to the entry's commit and the picture is as immutable as the
 code.
 
-Every entry gets a page at `https://thor-agent.nousresearch.com/docs/plugins/<name>`
+Every entry gets a page at `https://thor-agent.thor-agent.local/docs/plugins/<name>`
 and every maintainer a page at `/docs/plugins/by/<maintainer>`, both generated
 from these files at docs build time. `screenshots:` fills the page's gallery;
 the build fetches the README (from `subdir` if set, else the repo root) **at the

@@ -278,7 +278,7 @@ class TestReaderFlush:
 
 
     def test_enqueue_after_close_lands_via_reopen(self, tmp_path):
-        """After close() the synchronous fallback used to surface an opaque
+        """After close() the synchrothor fallback used to surface an opaque
         AttributeError to the caller and drop the delta. Since the #94736
         self-heal, a write that reaches the store after a teardown close()
         reopens the connection and LANDS instead — strictly better than the
@@ -296,7 +296,7 @@ class TestReaderFlush:
 
 
 # =========================================================================
-# Ordering vs synchronous route writes (/model switch)
+# Ordering vs synchrothor route writes (/model switch)
 # =========================================================================
 
 

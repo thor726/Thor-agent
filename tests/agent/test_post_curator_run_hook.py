@@ -60,7 +60,7 @@ def _fresh_plugin_manager():
 
 def _run_pass(curator):
     """One real prune-only pass (no LLM fork), the path a scheduled tick and `thor curator run` take."""
-    curator.run_curator_review(synchronous=True, consolidate=False)
+    curator.run_curator_review(synchrothor=True, consolidate=False)
     return curator.load_state().get("last_report_path")
 
 
@@ -120,7 +120,7 @@ def test_dry_run_pass_fires_flagged_with_the_hooks_test_payload_shape(curator_en
     received = []
     _plugins().get_plugin_manager()._hooks.setdefault("post_curator_run", []).append(
         lambda **kw: received.append(kw))
-    curator.run_curator_review(synchronous=True, consolidate=False, dry_run=True)
+    curator.run_curator_review(synchrothor=True, consolidate=False, dry_run=True)
     _run_pass(curator)
     assert [kw["dry_run"] for kw in received] == [True, False]
     assert set(received[0]) - {"telemetry_schema_version"} == set(_DEFAULT_PAYLOADS["post_curator_run"])

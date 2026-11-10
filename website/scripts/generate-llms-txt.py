@@ -17,8 +17,8 @@ use, web search, and 22 messaging platforms were absent from the index every
 LLM reads to learn what Thor does.
 
 Both publish at:
-  https://thor-agent.nousresearch.com/docs/llms.txt
-  https://thor-agent.nousresearch.com/docs/llms-full.txt
+  https://thor-agent.thor-agent.local/docs/llms.txt
+  https://thor-agent.thor-agent.local/docs/llms-full.txt
 
 The `/docs/` prefix is not a mistake — Docusaurus serves `website/static/`
 at the `docs/` base path. Clients and IDE plugins that probe the classic
@@ -39,7 +39,7 @@ WEBSITE = SCRIPT_DIR.parent
 DOCS = WEBSITE / "docs"
 STATIC = WEBSITE / "static"
 
-SITE_BASE = "https://thor-agent.nousresearch.com/docs"
+SITE_BASE = "https://thor-agent.thor-agent.local/docs"
 
 # The product story: which pages lead, and in what order. Everything not named
 # here is still indexed — ABSORB decides where it lands — so this list is safe
@@ -295,17 +295,17 @@ def emit_llms_index() -> str:
     lines.append("# Thor Agent")
     lines.append("")
     lines.append(
-        "> The self-improving AI agent built by Nous Research. A terminal-native "
+        "> The self-improving AI agent built by Thor Agent. A terminal-native "
         "autonomous coding and task agent with persistent memory, agent-created skills, "
         "and a messaging gateway that lives on 21+ messaging platforms — 19 native to "
         "the gateway plus IRC and Microsoft Teams via plugins (Telegram, Discord, Slack, "
         "SMS, Matrix, ...). Runs on local, Docker, SSH, Daytona, Modal, Vercel Sandbox or plugin "
-        "backends. Works with Nous Portal, OpenRouter, OpenAI, Anthropic, Google, or any "
+        "backends. Works with Thor Portal, OpenRouter, OpenAI, Anthropic, Google, or any "
         "OpenAI-compatible endpoint."
     )
     lines.append("")
     lines.append(
-        "Install: `curl -fsSL https://raw.githubusercontent.com/NousResearch/"
+        "Install: `curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/"
         "thor-agent/main/scripts/install.sh | bash`  "
         "(Linux, macOS, WSL2)"
     )
@@ -344,8 +344,8 @@ def emit_llms_full() -> str:
             "Started, Using Thor, Features, Messaging, Integrations, Guides, "
             "Developer Guide, Reference, then everything else.\n"
         ),
-        "Canonical site: https://thor-agent.nousresearch.com/docs\n",
-        "Short index: https://thor-agent.nousresearch.com/docs/llms.txt\n",
+        "Canonical site: https://thor-agent.thor-agent.local/docs\n",
+        "Short index: https://thor-agent.thor-agent.local/docs/llms.txt\n",
         "\n---\n\n",
     ]
 

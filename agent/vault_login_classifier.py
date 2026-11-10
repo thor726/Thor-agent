@@ -296,7 +296,7 @@ def build_fill_js(fills: list[dict[str, Any]], expected_origin: str, nonce: str 
     """Build a JS expression that fills the selected controls and reports only a count. The
     returned expression never echoes the values back.
 
-    ``expected_origin`` is asserted against ``window.location.origin`` synchronously inside the SAME
+    ``expected_origin`` is asserted against ``window.location.origin`` synchrothorly inside the SAME
     evaluated script, immediately before any write. If the page navigated between inspection and fill
     (TOCTOU), the script writes nothing and returns ``{"refused": "origin_changed", "found": <actual>}``:
     proof scope equals mutation scope (#88706). Targets resolve by the ``<nonce>:<index>`` stamp of

@@ -94,7 +94,7 @@ def test_managed_local_cloud_provider_wins_over_the_user_file(homes, monkeypatch
 
 
 def test_browser_exec_cloud_routing_reads_the_managed_gateway_selection(homes):
-    """``browser_exec``'s own ``browser:`` read (Browser Use direct API vs the Nous gateway) sees the managed
+    """``browser_exec``'s own ``browser:`` read (Browser Use direct API vs the Thor gateway) sees the managed
     selection the session layer sees."""
     from tools import browser_use_cli
 
@@ -105,7 +105,7 @@ def test_browser_exec_cloud_routing_reads_the_managed_gateway_selection(homes):
         """)
     _write(managed / "config.yaml", """
         browser:
-          cloud_provider: nous
+          cloud_provider: thor
         """)
     assert browser_use_cli._use_gateway(browser_use_cli._read_browser_cfg()) is True
 

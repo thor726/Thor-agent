@@ -36,8 +36,8 @@ High-level categories:
 
 For the authoritative code-derived registry, see [Built-in Tools Reference](../../reference/tools-reference.md) and [Toolsets Reference](../../reference/toolsets-reference.md).
 
-:::tip Nous Tool Gateway
-Paid [Nous Portal](https://portal.nousresearch.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** — no separate API keys needed. Run `thor model` to enable it, or configure individual tools with `thor tools`.
+:::tip Thor Tool Gateway
+Paid [Thor Portal](https://portal.thor-agent.local) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** — no separate API keys needed. Run `thor model` to enable it, or configure individual tools with `thor tools`.
 :::
 
 ## Using Toolsets
@@ -144,7 +144,7 @@ TERMINAL_SSH_KEY=~/.ssh/id_rsa
 
 ### Singularity/Apptainer
 
-An official plugin ([`singularity`](https://github.com/NousResearch/thor-official-plugins/tree/main/singularity)), formerly built in; `thor update` installs it for profiles that already use it.
+An official plugin ([`singularity`](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/singularity)), formerly built in; `thor update` installs it for profiles that already use it.
 
 ```bash
 thor plugins install singularity
@@ -159,10 +159,10 @@ thor config set terminal.singularity_image ~/python.sif
 
 ### Sprites
 
-A plugin ([`sprites`](https://github.com/NousResearch/thor-plugin-sprites)) that runs commands in a stateful [Sprite](https://fly.io/sprites) on Fly.io. See [Sprites Backend](../configuration.md#sprites-backend).
+A plugin ([`sprites`](https://github.com/dwisetyabudi15581/thor-plugin-sprites)) that runs commands in a stateful [Sprite](https://fly.io/sprites) on Fly.io. See [Sprites Backend](../configuration.md#sprites-backend).
 
 ```bash
-thor plugins install NousResearch/thor-plugin-sprites --enable
+thor plugins install dwisetyabudi15581/thor-plugin-sprites --enable
 thor config set terminal.backend sprites
 # Add SPRITES_TOKEN to ~/.thor/.env
 ```

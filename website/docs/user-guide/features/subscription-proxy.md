@@ -1,7 +1,7 @@
 ---
 sidebar_position: 15
 title: "Subscription Proxy"
-description: "Use your Nous Portal subscription (or other OAuth provider) as an OpenAI-compatible endpoint for external apps"
+description: "Use your Thor Portal subscription (or other OAuth provider) as an OpenAI-compatible endpoint for external apps"
 ---
 
 # Subscription Proxy
@@ -32,7 +32,7 @@ proxy when you just want **the model** through your subscription.
 thor portal
 ```
 
-This opens your browser for the Nous Portal OAuth flow. Thor stores
+This opens your browser for the Thor Portal OAuth flow. Thor stores
 the refresh token in `~/.thor/auth.json` — the same place all Thor
 provider logins live.
 
@@ -43,7 +43,7 @@ thor proxy start
 ```
 
 ```
-Starting Thor proxy for Nous Portal
+Starting Thor proxy for Thor Portal
   Listening on:  http://127.0.0.1:8645/v1
   Forwarding to: (resolved per-request from your subscription)
   Use any bearer token in the client — the proxy attaches your real credential.
@@ -59,7 +59,7 @@ Any OpenAI-compatible app config takes the same triple:
 ```
 Base URL:   http://127.0.0.1:8645/v1
 API key:    anything (e.g. "sk-unused")
-Model:      Hermes-4-70B    # or Hermes-4.3-36B, Hermes-4-405B
+Model:      Thor-4-70B    # or Thor-4.3-36B, Thor-4-405B
 ```
 
 The proxy ignores the `Authorization` header from your app and attaches
@@ -72,7 +72,7 @@ automatically when the bearer approaches expiry.
 thor proxy providers
 ```
 
-Currently shipped: `nous` (Nous Portal) and `xai` (xAI / Grok). More
+Currently shipped: `thor` (Thor Portal) and `xai` (xAI / Grok). More
 OAuth providers can be added by implementing the `UpstreamAdapter`
 interface in `thor_cli/proxy/adapters/`.
 
@@ -85,7 +85,7 @@ thor proxy status
 ```
 Thor proxy upstream adapters
 
-  [nous    ] Nous Portal — ready (bearer expires 2026-05-15T06:43:21Z)
+  [thor    ] Thor Portal — ready (bearer expires 2026-05-15T06:43:21Z)
 ```
 
 If you see `not logged in`, run `thor portal`. If you see
@@ -95,7 +95,7 @@ happens if you signed out from the Portal web UI) — just re-run
 
 ## Allowed paths
 
-The proxy only forwards paths the upstream actually serves. For Nous
+The proxy only forwards paths the upstream actually serves. For Thor
 Portal:
 
 | Path | Purpose |
@@ -122,7 +122,7 @@ Edit `~/.openviking/ov.conf`:
 {
   "vlm": {
     "provider": "openai",
-    "model": "Hermes-4-70B",
+    "model": "Thor-4-70B",
     "api_base": "http://127.0.0.1:8645/v1",
     "api_key": "unused-proxy-attaches-real-creds"
   }
@@ -142,7 +142,7 @@ openviking-server
 OpenViking's VLM calls now flow through your Portal subscription. The
 embedding model side still needs its own provider — Portal does serve
 `/v1/embeddings` but the model selection depends on what your tier
-supports; check `portal.nousresearch.com/models`.
+supports; check `portal.thor-agent.local/models`.
 
 ## Configuring Karakeep (or any bookmark/summarizer app)
 
@@ -153,7 +153,7 @@ bookmark summarization. In its config:
 # Karakeep .env
 OPENAI_API_BASE_URL=http://127.0.0.1:8645/v1
 OPENAI_API_KEY=any-non-empty-string
-INFERENCE_TEXT_MODEL=Hermes-4-70B
+INFERENCE_TEXT_MODEL=Thor-4-70B
 ```
 
 Same pattern works for Open WebUI, LobeChat, NextChat, or any other
@@ -185,7 +185,7 @@ this beyond your trusted network.
 Your Portal tier's RPM/TPM limits apply across the whole proxy. The
 proxy doesn't fan out or pool — it's a single bearer with your full
 subscription quota. Monitor usage at
-[portal.nousresearch.com](https://portal.nousresearch.com).
+[portal.thor-agent.local](https://portal.thor-agent.local).
 
 ## Architecture
 

@@ -42,11 +42,11 @@ def client(monkeypatch):
 
 
 @pytest.fixture()
-def nous(monkeypatch):
+def thor(monkeypatch):
     from thor_cli import webapp_access
 
-    monkeypatch.setattr(webapp_access, "nous_signed_in", lambda: True)
-    monkeypatch.setattr(webapp_access, "_register_nous_sign_in", lambda _callback: None)
+    monkeypatch.setattr(webapp_access, "thor_signed_in", lambda: True)
+    monkeypatch.setattr(webapp_access, "_register_thor_sign_in", lambda _callback: None)
     monkeypatch.setattr(webapp_access, "lan_address", lambda: "192.168.1.50")
 
 
@@ -151,7 +151,7 @@ def _reports(client, step: str, profile: str | None = None) -> Any:
                       what=f"a Start reported {step!r}")
 
 
-def test_a_start_waiting_for_another_gateways_start_is_reported_from_when_it_was_asked(nous, gateway, builds, monkeypatch):
+def test_a_start_waiting_for_another_gateways_start_is_reported_from_when_it_was_asked(thor, gateway, builds, monkeypatch):
     from thor_constants import get_thor_home
 
     solo = get_thor_home() / "profiles" / "solo"
@@ -177,7 +177,7 @@ def test_a_start_waiting_for_another_gateways_start_is_reported_from_when_it_was
     _joined(first, second)
 
 
-def test_one_start_ending_leaves_the_start_queued_behind_it_on_the_same_gateway(client, nous, gateway, builds, starts):
+def test_one_start_ending_leaves_the_start_queued_behind_it_on_the_same_gateway(client, thor, gateway, builds, starts):
     # Refused restarts: each Start's record ends with its own request.
     gateway["restart"] = {"restart_started": False, "restart_error": "a chat is running", "restart_busy": True}
 
@@ -201,7 +201,7 @@ def test_one_start_ending_leaves_the_start_queued_behind_it_on_the_same_gateway(
     assert _progress(client) is None
 
 
-def test_a_start_is_reported_restarting_until_the_restarted_gateway_serves_it(client, nous, gateway, instant_build):
+def test_a_start_is_reported_restarting_until_the_restarted_gateway_serves_it(client, thor, gateway, instant_build):
     response = client.post("/api/webapp-access/start", json={"mode": "lan"})
     assert response.status_code == 200, response.text
     answer = response.json()
@@ -219,7 +219,7 @@ def test_a_start_is_reported_restarting_until_the_restarted_gateway_serves_it(cl
 
 
 def test_the_gateway_a_start_restarts_does_not_end_it_by_serving_an_earlier_config_on_its_port(
-        client, nous, gateway, instant_build):
+        client, thor, gateway, instant_build):
     # An earlier Start's gateway serves the Webapp on this port; only its replacement reads this
     # Start's mode and address.
     port = client.get("/api/webapp-access/status").json()["port"]
@@ -232,7 +232,7 @@ def test_the_gateway_a_start_restarts_does_not_end_it_by_serving_an_earlier_conf
     assert _progress(client) is None
 
 
-def test_a_later_starts_restart_replaces_the_one_an_earlier_start_is_followed_by(client, nous, gateway, builds):
+def test_a_later_starts_restart_replaces_the_one_an_earlier_start_is_followed_by(client, thor, gateway, builds):
     first = _start_in_background(client)
     builds.wait_started()
     second = _start_in_background(client)
@@ -252,7 +252,7 @@ def test_a_later_starts_restart_replaces_the_one_an_earlier_start_is_followed_by
 
 @pytest.mark.parametrize("ending", ["restart failed", "followed as long as the pane waits", "stop", "restart"])
 def test_a_followed_restart_is_no_longer_reported_once_it_cannot_serve_the_start(
-        client, nous, gateway, instant_build, monkeypatch, ending):
+        client, thor, gateway, instant_build, monkeypatch, ending):
     from thor_cli.web_routers import webapp_access as routes
 
     if ending == "followed as long as the pane waits":
@@ -270,7 +270,7 @@ def test_a_followed_restart_is_no_longer_reported_once_it_cannot_serve_the_start
     assert _progress(client) is None
 
 
-def test_a_refused_restart_ends_the_start_with_its_request(client, nous, gateway, instant_build):
+def test_a_refused_restart_ends_the_start_with_its_request(client, thor, gateway, instant_build):
     gateway["restart"] = {"restart_started": False, "restart_error": "a chat is running", "restart_busy": True}
 
     response = client.post("/api/webapp-access/start", json={"mode": "lan"})

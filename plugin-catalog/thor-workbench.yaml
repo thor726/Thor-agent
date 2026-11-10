@@ -1,7 +1,7 @@
 name: thor-workbench
 repo: https://github.com/sxuff/thor-workbench
 sha: f07fb5c90e24c1a396604758feb0fd4ae077760b
-description: The Thor desktop app in your browser. `thor workbench` serves the desktop interface through the Thor dashboard, for headless servers, VPSes and tablets. Disclosure — community plugin, not a Nous product. On the first `thor workbench` run and again after each Thor update it runs `npm install --ignore-scripts` (guided by Thor's lockfile) and Vite against your Thor checkout's desktop sources, writing only under ~/.thor/thor-workbench and its own plugin dir (the checkout is only read), and starts `thor dashboard` on loopback when none is running.
+description: The Thor desktop app in your browser. `thor workbench` serves the desktop interface through the Thor dashboard, for headless servers, VPSes and tablets. Disclosure — community plugin, not a Thor product. On the first `thor workbench` run and again after each Thor update it runs `npm install --ignore-scripts` (guided by Thor's lockfile) and Vite against your Thor checkout's desktop sources, writing only under ~/.thor/thor-workbench and its own plugin dir (the checkout is only read), and starts `thor dashboard` on loopback when none is running.
 maintainer: sxuff
 tier: community
 category: desktop

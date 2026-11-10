@@ -1,7 +1,7 @@
 # Configuration, Toolsets & Voice
 
 Edit with `thor config edit` or `thor config set section.key value`.
-Full reference: https://thor-agent.nousresearch.com/docs/user-guide/configuration
+Full reference: https://thor-agent.thor-agent.local/docs/user-guide/configuration
 
 ### Config Sections (most-used keys)
 

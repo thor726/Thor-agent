@@ -396,8 +396,8 @@ describe('free-tier Sign in in every interface mode', () => {
     available,
     enabled: true,
     has_guest: available,
-    label: 'Nous · free tier',
-    model: 'nous/welcome',
+    label: 'Thor · free tier',
+    model: 'thor/welcome',
     notice_pending: false
   })
 
@@ -439,7 +439,7 @@ describe('free-tier Sign in in every interface mode', () => {
     const chip = [...leftStatusbarItems, ...statusbarItems].find(item => item.id === 'free-tier')
 
     expect(signInChipVisible()).toBe(true)
-    expect(chip?.title).toBe('Nous')
+    expect(chip?.title).toBe('Thor')
   })
 
   it('holds the chip while onboarding is open and brings it back after', () => {

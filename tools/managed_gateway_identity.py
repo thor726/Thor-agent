@@ -2,7 +2,7 @@
 
 ``user_agent()`` goes on every request. The correlation headers name the conversation, turn and tool
 call, so they go only to connector routes and only when the profile has opted in to sending
-telemetry. The gateway strips every ``x-nous-`` header before it calls a vendor.
+telemetry. The gateway strips every ``x-thor-`` header before it calls a vendor.
 """
 
 from __future__ import annotations
@@ -24,9 +24,9 @@ __all__ = [
     "user_agent",
 ]
 
-SESSION_HEADER = "x-nous-thor-session"
-TURN_HEADER = "x-nous-thor-turn"
-TOOL_CALL_HEADER = "x-nous-thor-tool-call"
+SESSION_HEADER = "x-thor-thor-session"
+TURN_HEADER = "x-thor-thor-turn"
+TOOL_CALL_HEADER = "x-thor-thor-tool-call"
 REQUEST_ID_HEADER = "x-request-id"
 
 # sys.platform -> the shared-metrics OS family.

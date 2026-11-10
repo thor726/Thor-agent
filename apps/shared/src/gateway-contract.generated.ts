@@ -653,13 +653,13 @@ export interface SetupRuntimeCheckResult {
   free_tier_route?: boolean | null
   profile?: string | null
 }
-export interface DiagnosticsShareNousParams {
+export interface DiagnosticsShareThorParams {
   error_context?: string | null
   extra_files?: Record<string, string> | null
   log_lines?: number | null
 }
 /** Structured envelope: ``ok=False`` + ``error`` renders inline instead of failing the RPC. */
-export interface DiagnosticsShareNousResult {
+export interface DiagnosticsShareThorResult {
   ok: boolean
   view_url?: string | null
   upload_id?: string | null
@@ -861,7 +861,7 @@ export interface ModelCapabilities {
   reasoning: boolean
   can_disable_reasoning?: boolean | null
 }
-/** ``thor_cli/inventory.py::_apply_pricing`` — formatted $/Mtok strings (``""`` unknown, ``"free"``); the sale fields are Nous Portal-only. */
+/** ``thor_cli/inventory.py::_apply_pricing`` — formatted $/Mtok strings (``""`` unknown, ``"free"``); the sale fields are Thor Portal-only. */
 export interface ModelPricing {
   input: string
   output: string
@@ -5922,7 +5922,7 @@ export interface BillingBlock {
   provider_label: string
   model: string
   billing_url: string | null
-  is_nous: boolean
+  is_thor: boolean
   message: string
   unverified?: boolean | null
 }
@@ -6267,7 +6267,7 @@ export interface PetHatchProgressPayload {
 }
 /** ``change_watcher._CHANGE_WATCHES`` payload fn — ``{}`` for every watch except pet.changed. */
 export type ChangeSignalPayload = Record<string, unknown>
-export type ConnectorErrorReason = 'INVALID_PARAMS' | 'NOT_OWNER' | 'UNSUPPORTED_RUNTIME' | 'CONNECTOR_REQUEST_FAILED' | 'INVALID_CONNECTOR_RESPONSE' | 'UNKNOWN_TARGET' | 'LINK_STILL_VALID' | 'REISSUE_REFUSED' | 'UNKNOWN_OPERATION' | 'INVALID_ANSWER' | 'NEEDS_NOUS_AUTH' | 'CONNECTOR_NOT_FOUND' | 'TOOLS_UNAVAILABLE' | 'CONNECTORS_UNAVAILABLE' | 'CATALOG_UNAVAILABLE' | 'ACCOUNTS_UNAVAILABLE' | 'CONNECTION_NOT_FOUND' | 'POLICY_UNAVAILABLE' | 'POLICY_CONFLICT' | 'FORBIDDEN_SCOPE' | 'ORG_REQUIRED' | 'ORG_ACCESS_DENIED' | 'INVALID_POLICY' | 'ALIAS_TAKEN'
+export type ConnectorErrorReason = 'INVALID_PARAMS' | 'NOT_OWNER' | 'UNSUPPORTED_RUNTIME' | 'CONNECTOR_REQUEST_FAILED' | 'INVALID_CONNECTOR_RESPONSE' | 'UNKNOWN_TARGET' | 'LINK_STILL_VALID' | 'REISSUE_REFUSED' | 'UNKNOWN_OPERATION' | 'INVALID_ANSWER' | 'NEEDS_THOR_PORTAL_AUTH' | 'CONNECTOR_NOT_FOUND' | 'TOOLS_UNAVAILABLE' | 'CONNECTORS_UNAVAILABLE' | 'CATALOG_UNAVAILABLE' | 'ACCOUNTS_UNAVAILABLE' | 'CONNECTION_NOT_FOUND' | 'POLICY_UNAVAILABLE' | 'POLICY_CONFLICT' | 'FORBIDDEN_SCOPE' | 'ORG_REQUIRED' | 'ORG_ACCESS_DENIED' | 'INVALID_POLICY' | 'ALIAS_TAKEN'
 
 // ── Client→server methods ──
 export interface RpcMethods {
@@ -6287,7 +6287,7 @@ export interface RpcMethods {
   'billing.charge_status': { params: BillingChargeStatusParams; result: BillingChargeStatusResult }
   /** Window plans: turn 'Keep going on credits' on/off (billing:manage). */
   'billing.keep_going_on_credits': { params: BillingKeepGoingOnCreditsParams; result: BillingMutationResult }
-  /** Read-only billing view (no scope); the Nous free tier is answered locally without a portal call. */
+  /** Read-only billing view (no scope); the Thor free tier is answered locally without a portal call. */
   'billing.state': { params: ProfileParams; result: BillingStateResult }
   /** Run the billing:manage device flow; the URL/code arrive via billing.step_up.verification. */
   'billing.step_up': { params: BillingStepUpParams; result: BillingStepUpResult }
@@ -6355,8 +6355,8 @@ export interface RpcMethods {
   'delegation.pause': { params: DelegationPauseParams; result: DelegationPauseResult }
   /** Running subagent tree plus the spawn pause flag and limits. */
   'delegation.status': { params: ProfileParams; result: DelegationStatusResult }
-  /** Upload a force-redacted debug bundle to Nous-internal diagnostics storage. */
-  'diagnostics.share_nous': { params: DiagnosticsShareNousParams; result: DiagnosticsShareNousResult }
+  /** Upload a force-redacted debug bundle to Thor-internal diagnostics storage. */
+  'diagnostics.share_thor': { params: DiagnosticsShareThorParams; result: DiagnosticsShareThorResult }
   /** Run the distro package install on the gateway host; progress streams as display.install.log/.done. */
   'display.install': { params: ProfileParams; result: DisplayInstallResult }
   /** Take over: the human named by a viewer id this connection minted controls the screen. */
@@ -6683,7 +6683,7 @@ export interface RpcMethods {
   'session.title': { params: SessionTitleParams; result: SessionTitleResult }
   /** Drop the last user turn (and everything after it) from an idle session. */
   'session.undo': { params: SessionUndoParams; result: SessionUndoResult }
-  /** Token / context / cost counters for the session (+ Nous credit lines when available). */
+  /** Token / context / cost counters for the session (+ Thor credit lines when available). */
   'session.usage': { params: SessionUsageParams; result: SessionUsageResult }
   /** Re-home a stored session's workspace; git identity is replaced and a live agent follows. */
   'session.workspace.move': { params: SessionWorkspaceMoveParams; result: SessionWorkspaceMoveResult }
@@ -6840,7 +6840,7 @@ export const RPC_METHODS = [
   'cron.manage',
   'delegation.pause',
   'delegation.status',
-  'diagnostics.share_nous',
+  'diagnostics.share_thor',
   'display.install',
   'display.lease.acquire',
   'display.lease.release',

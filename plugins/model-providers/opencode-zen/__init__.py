@@ -15,7 +15,7 @@ from datetime import UTC
 # Attribution headers (same values as OpenRouter / Vercel / Fireworks); via
 # default_headers so they survive model switches and credential rotation.
 _ATTRIBUTION_HEADERS = {
-    "HTTP-Referer": "https://thor-agent.nousresearch.com",
+    "HTTP-Referer": "https://thor-agent.thor-agent.local",
     "X-Title": "Thor Agent",
     "User-Agent": lambda: thor_user_agent("ThorAgent"),
 }

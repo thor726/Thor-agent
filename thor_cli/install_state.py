@@ -37,7 +37,7 @@ class Evidence(enum.Enum):
     NAMED_PROFILE = "named-profile"        # a live profile someone created
     PROVIDER_CONFIG = "provider-config"    # config.yaml picks a provider other than auto
     PROVIDER_KEY = "provider-key"          # .env holds a provider, tool, messaging or skill key
-    PROVIDER_LOGIN = "provider-login"      # auth.json / nous_auth.json holds a login or a guest
+    PROVIDER_LOGIN = "provider-login"      # auth.json / thor_auth.json holds a login or a guest
     MESSAGES = "messages"                  # state.db holds a message
     UNREADABLE = "unreadable"              # a root we could not, or must not, read
 
@@ -355,7 +355,7 @@ class _Root:
     @cached_property
     def auth_stores(self) -> tuple[dict[str, Any], ...]:
         # The shared-auth override names the directory itself, so its file sits at the top.
-        names = ("auth.json", "shared/nous_auth.json", "nous_auth.json")
+        names = ("auth.json", "shared/thor_auth.json", "thor_auth.json")
         return tuple(_read_mapping(self.file(name), json.loads) for name in names)
 
 
@@ -420,7 +420,7 @@ def _provider_login(home: _Root) -> bool:
         if store.get("active_provider") or (isinstance(providers, dict) and any(providers.values())):
             return True
         if store.get("auth_method") or store.get("anon_token") or store.get("refresh_token"):
-            return True  # nous_auth.json holds one provider state at its top level
+            return True  # thor_auth.json holds one provider state at its top level
         pool = store.get("credential_pool")
         rows = (row for rows in (pool.values() if isinstance(pool, dict) else ()) if isinstance(rows, list)
                 for row in rows if isinstance(row, dict))

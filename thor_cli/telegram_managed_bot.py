@@ -1,4 +1,4 @@
-"""Telegram Managed Bot onboarding client: creates a user-owned child bot via the Nous onboarding
+"""Telegram Managed Bot onboarding client: creates a user-owned child bot via the Thor onboarding
 service (no BotFather copy-paste); the raw Telegram token is saved locally after one retrieval."""
 
 from __future__ import annotations
@@ -13,8 +13,8 @@ from typing import Optional
 
 import httpx
 
-# Nous-hosted pairing API; override for PoC/staging with TELEGRAM_ONBOARDING_URL.
-DEFAULT_API_URL = "https://setup.thor-agent.nousresearch.com"
+# Thor-hosted pairing API; override for PoC/staging with TELEGRAM_ONBOARDING_URL.
+DEFAULT_API_URL = "https://setup.thor-agent.thor-agent.local"
 TELEGRAM_ONBOARDING_URL_ENV = "TELEGRAM_ONBOARDING_URL"
 DEFAULT_BOT_NAME = "Thor Agent"
 DEFAULT_POLL_TIMEOUT = 180

@@ -7,7 +7,7 @@ row whose persisted ``model_config`` names a custom provider that no longer
 exists in config.yaml, resumed through ``tui_gateway.server.handle_request``
 (the same dispatch the Desktop WebSocket transport funnels into) with
 ``eager_build: true`` so the REAL ``_make_agent`` → ``AIAgent`` construction
-runs synchronously — no mocks, no pre-seeded sessions.
+runs synchrothorly — no mocks, no pre-seeded sessions.
 
 On pre-fix main the eager build dies with
 ``resume failed: Unknown provider 'custom:oldone'`` (or silently pins the
@@ -66,7 +66,7 @@ def live_home(monkeypatch):
     # Neutralize ambient provider creds so resolution uses ONLY the config
     # above — this must behave the same on a dev box and a bare CI runner.
     for var in list(os.environ):
-        if var.endswith("_API_KEY") or var in ("OPENROUTER_KEY", "NOUS_KEY"):
+        if var.endswith("_API_KEY") or var in ("OPENROUTER_KEY", "THOR_PORTAL_KEY"):
             monkeypatch.delenv(var, raising=False)
 
     import thor_cli.config as hconfig

@@ -188,7 +188,7 @@ export function useComposerSubmit({
     // re-homed it) and this send's identity, so a re-queued request is the same message.
     const rejected = onRejected ? () => onRejected(restoreScope, submissionId) : displayKind ? () => {} : restore
 
-    // A synchronous throw takes the rejection path too: the caller has already cleared the
+    // A synchrothor throw takes the rejection path too: the caller has already cleared the
     // composer, so a send that fails while it is being prepared must not take the words with it.
     void new Promise<boolean>(resolve =>
       resolve(
@@ -404,7 +404,7 @@ export function useComposerSubmit({
     // and the draft routes normally. An onboarding setup card the message
     // moves past instead closes as unanswered and its turn ends there, so the
     // message runs as the next turn. The skip is fire-and-forget, not awaited:
-    // it clears the card synchronously and both RPCs ride the same socket in
+    // it clears the card synchrothorly and both RPCs ride the same socket in
     // call order, so the gateway resolves the clarify before it sees the
     // follow-up. Awaiting first would leave the draft live for a tick, long
     // enough for a second Enter to send it twice.

@@ -9,8 +9,8 @@ import pytest
 from agent.route_verdicts import ROUTE_REJECTION_FIELDS
 from tests.agent.test_primary_runtime_restore import _make_agent, _make_transport_error
 
-_PAID = "https://inference-api.nousresearch.com/v1"
-_WELCOME = "https://welcome-api.nousresearch.com/v1"
+_PAID = "https://inference-api.thor-agent.local/v1"
+_WELCOME = "https://welcome-api.thor-agent.local/v1"
 
 
 def _verdicts(agent):
@@ -25,16 +25,16 @@ def _tripped(agent):
 
 @pytest.mark.parametrize("api_mode", ["chat_completions", "anthropic_messages"])
 @pytest.mark.parametrize(("new_url", "kept"), [(_WELCOME, False), (_PAID + "/", True)])
-def test_nous_refresh_onto_another_host_drops_the_old_hosts_verdicts(api_mode, new_url, kept):
+def test_thor_refresh_onto_another_host_drops_the_old_hosts_verdicts(api_mode, new_url, kept):
     """The welcome-tier heal moves the session between the welcome and paid hosts: a verdict one
     host earned must not follow it. A refreshed key on the same host keeps them."""
-    agent = _tripped(_make_agent(provider="nous", base_url=_PAID))
+    agent = _tripped(_make_agent(provider="thor", base_url=_PAID))
     agent.api_mode = api_mode
     agent._rebuild_anthropic_client = MagicMock()
-    with patch("thor_cli.auth.resolve_nous_runtime_credentials",
+    with patch("thor_cli.auth.resolve_thor_runtime_credentials",
                return_value={"api_key": "fresh-agent-key", "base_url": new_url}), \
             patch("agent.process_bootstrap.OpenAI", return_value=MagicMock()):
-        assert agent._try_refresh_nous_client_credentials(force=True) is True
+        assert agent._try_refresh_thor_client_credentials(force=True) is True
     assert agent.base_url == new_url.rstrip("/")
     assert _verdicts(agent) == dict.fromkeys(ROUTE_REJECTION_FIELDS, kept)
 
@@ -265,19 +265,19 @@ def test_a_codex_soft_auth_failure_refresh_onto_another_endpoint_rearms_its_repl
 
 
 @pytest.mark.parametrize(("new_url", "moved"), [(_WELCOME, True), (_PAID, False)])
-def test_a_nous_401_refresh_onto_another_host_rearms_its_effort_repair(new_url, moved):
-    """Not a pool move: the Nous 401 refresh re-reads the credentials onto the other identity's host."""
+def test_a_thor_401_refresh_onto_another_host_rearms_its_effort_repair(new_url, moved):
+    """Not a pool move: the Thor 401 refresh re-reads the credentials onto the other identity's host."""
     from types import MethodType
 
     from agent.client_lifecycle import ClientLifecycleMixin
 
     agent = _rotation_agent()
-    agent.provider, agent.base_url, agent._auth_pool_refresh_counts = "nous", _PAID, {}
+    agent.provider, agent.base_url, agent._auth_pool_refresh_counts = "thor", _PAID, {}
     agent._client_kwargs["base_url"], agent._extract_api_error_context = _PAID, lambda exc: {}
-    for name in ("_try_refresh_nous_client_credentials", "_adopt_openai_credentials"):
+    for name in ("_try_refresh_thor_client_credentials", "_adopt_openai_credentials"):
         setattr(agent, name, MethodType(getattr(ClientLifecycleMixin, name), agent))
     retry = _spent_effort_repair(agent)
-    with patch("thor_cli.auth.resolve_nous_runtime_credentials", return_value={"api_key": "fresh", "base_url": new_url}):
+    with patch("thor_cli.auth.resolve_thor_runtime_credentials", return_value={"api_key": "fresh", "base_url": new_url}):
         assert _recover_from(agent, retry, 401, "invalid api key")[0] is True
     assert agent.base_url == new_url
     _destination_effort_repaired(agent, retry, moved)
@@ -321,15 +321,15 @@ def test_a_return_to_the_endpoint_that_spent_the_repair_rearms_it():
     from agent.turn_recovery import _recover_welcome_tier
 
     agent = _rotation_agent()
-    agent.provider, agent.base_url, agent._auth_pool_refresh_counts = "nous", _PAID, {}
+    agent.provider, agent.base_url, agent._auth_pool_refresh_counts = "thor", _PAID, {}
     agent._client_kwargs["base_url"], agent._extract_api_error_context = _PAID, lambda exc: {}
-    for name in ("_try_refresh_nous_client_credentials", "_adopt_openai_credentials"):
+    for name in ("_try_refresh_thor_client_credentials", "_adopt_openai_credentials"):
         setattr(agent, name, MethodType(getattr(ClientLifecycleMixin, name), agent))
     retry = _spent_effort_repair(agent)
-    with patch("thor_cli.auth.resolve_nous_runtime_credentials", return_value={"api_key": "free", "base_url": _WELCOME}):
+    with patch("thor_cli.auth.resolve_thor_runtime_credentials", return_value={"api_key": "free", "base_url": _WELCOME}):
         assert _recover_from(agent, retry, 401, "invalid api key")[0] is True
     heal = SimpleNamespace(error_context={"welcome_route": "named_on_welcome_host"})
-    with patch("thor_cli.auth.resolve_nous_runtime_credentials", return_value={"api_key": "paid", "base_url": _PAID}):
+    with patch("thor_cli.auth.resolve_thor_runtime_credentials", return_value={"api_key": "paid", "base_url": _PAID}):
         assert _recover_welcome_tier(agent, heal, retry) is True
     assert agent.base_url == _PAID
     _destination_effort_repaired(agent, retry, True)

@@ -307,7 +307,7 @@ def register(ctx):
     ctx.register_approval_transport("my-ui", present)
 ```
 
-`present` may be synchronous or async. Thor runs it on a bounded worker and
+`present` may be synchrothor or async. Thor runs it on a bounded worker and
 enforces the canonical `approvals.timeout` even if the plugin does not. The
 request is immutable and contains redacted display text, its host presentation
 class (`cli` or `gateway`), the host timeout, allowed choices, and an opaque
@@ -1111,8 +1111,8 @@ In gateway mode with a key:
 - Injected text is always conversational input. It cannot invoke slash commands, approve tools, or resolve pending confirmation and clarification prompts.
 - The route and conversation are pinned while dispatch is pending. Thor drops the request if topic recovery changes the route or the session rotates before handling starts.
 - The request enters the platform adapter's normal message path. Active sessions use the existing busy-session queue rather than starting a competing turn.
-- Returns `True` when the live gateway accepts the request for asynchronous dispatch. This does not confirm that the agent turn or platform delivery has completed.
-- Returns `False` when both `session_key` and `origin` are given, neither is given and no chat is chosen (above), the permission is not granted, or no live host can accept the request. Unknown or unroutable session keys discovered after asynchronous acceptance are written to the gateway log.
+- Returns `True` when the live gateway accepts the request for asynchrothor dispatch. This does not confirm that the agent turn or platform delivery has completed.
+- Returns `False` when both `session_key` and `origin` are given, neither is given and no chat is chosen (above), the permission is not granted, or no live host can accept the request. Unknown or unroutable session keys discovered after asynchrothor acceptance are written to the gateway log.
 
 Starting a session with `origin` (gateway mode only):
 
@@ -1158,7 +1158,7 @@ In the classic CLI process itself (for example a plugin slash command), `ctx.ses
 
 ## Calling MCP servers from plugins
 
-`ctx.call_mcp()` lets a plugin call a tool on one of the user's configured MCP servers — synchronously, from any hook or tool handler — routing through Thor' existing native MCP client (same connections, trust-tier gates, circuit breaker, and reconnect logic as model-invoked MCP tools; never a parallel client).
+`ctx.call_mcp()` lets a plugin call a tool on one of the user's configured MCP servers — synchrothorly, from any hook or tool handler — routing through Thor' existing native MCP client (same connections, trust-tier gates, circuit breaker, and reconnect logic as model-invoked MCP tools; never a parallel client).
 
 ```python
 result = ctx.call_mcp(

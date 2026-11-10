@@ -18,7 +18,7 @@ import { pathToFileURL } from 'node:url'
 import { type MockBackendFixture, setupMockBackend, waitForAppReady } from './fixtures'
 import { expect, test } from './test'
 
-const CATALOG_FEED = 'https://nousresearch.github.io/thor-agent/docs/api/plugins.json'
+const CATALOG_FEED = 'https://thorresearch.github.io/thor-agent/docs/api/plugins.json'
 const NAME = 'accent-picker'
 const INSTALL_ORIGIN = '.thor-origin.json'
 
@@ -60,7 +60,7 @@ test.beforeAll(async () => {
   const entry = {
     category: 'desktop',
     description: 'OKLCH accent colour picker for the status bar. Desktop-only.',
-    maintainer: 'NousResearch',
+    maintainer: 'dwisetyabudi15581',
     name: NAME,
     repo: pathToFileURL(repo).href,
     sha,

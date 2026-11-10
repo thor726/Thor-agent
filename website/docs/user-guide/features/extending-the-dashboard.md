@@ -701,7 +701,7 @@ Key points:
 - Multiple plugins can claim the same page-scoped slot. They render stacked in registration order.
 - Zero footprint when no plugin registers: the built-in page renders exactly as before.
 
-A reference plugin (`example-dashboard` in [`thor-example-plugins`](https://github.com/NousResearch/thor-example-plugins/tree/main/example-dashboard)) ships a live demo that injects a banner into `sessions:top` — install it to see the pattern end-to-end.
+A reference plugin (`example-dashboard` in [`thor-example-plugins`](https://github.com/dwisetyabudi15581/thor-example-plugins/tree/main/example-dashboard)) ships a live demo that injects a banner into `sessions:top` — install it to see the pattern end-to-end.
 
 ### Slot-only plugins (`tab.hidden`)
 
@@ -753,7 +753,7 @@ Plugin API routes sit behind the dashboard's normal auth gate — unauthenticate
 
 With the default `plugins.isolation: in_process`, API handlers run on the gateway's event loop, the same
 loop that answers every other dashboard, Desktop and chat request. A handler that blocks (`time.sleep`, a
-synchronous HTTP client, a long file scan) holds all of them until it returns: a handler sleeping 3 s
+synchrothor HTTP client, a long file scan) holds all of them until it returns: a handler sleeping 3 s
 delays an unrelated `/api/status` by seconds and can time out Desktop's connection. Use `async def` with
 async I/O, or move blocking work off the loop with `await asyncio.to_thread(...)` (a plain `def` handler
 also runs in a worker thread). `plugins.isolation: host` runs the handlers in a separate process
@@ -856,7 +856,7 @@ If a plugin's script fails to load (404, syntax error, exception during IIFE), t
 
 ## Combined theme + plugin demo
 
-The [`strike-freedom-cockpit`](https://github.com/NousResearch/thor-example-plugins/tree/main/strike-freedom-cockpit) plugin (companion repo `thor-example-plugins`) is a complete reskin demo. It pairs a theme YAML with a slot-only plugin to produce a cockpit-style HUD without forking the dashboard.
+The [`strike-freedom-cockpit`](https://github.com/dwisetyabudi15581/thor-example-plugins/tree/main/strike-freedom-cockpit) plugin (companion repo `thor-example-plugins`) is a complete reskin demo. It pairs a theme YAML with a slot-only plugin to produce a cockpit-style HUD without forking the dashboard.
 
 **What it demonstrates:**
 
@@ -870,7 +870,7 @@ The [`strike-freedom-cockpit`](https://github.com/NousResearch/thor-example-plug
 **Install:**
 
 ```bash
-git clone https://github.com/NousResearch/thor-example-plugins.git
+git clone https://github.com/dwisetyabudi15581/thor-example-plugins.git
 
 # Theme
 cp thor-example-plugins/strike-freedom-cockpit/theme/strike-freedom.yaml \

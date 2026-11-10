@@ -1,8 +1,8 @@
-"""Model pickers under a Nous free-tier identity.
+"""Model pickers under a Thor free-tier identity.
 
-A guest carrying the welcome trial shows one row, "Nous · free tier", with the single model
-``nous/welcome``; the same guest with ``nous.guest: false`` shows no Nous row at all. The rule lives
-in one helper (``_free_tier_nous_row``) and this file exercises it through the real row builders
+A guest carrying the welcome trial shows one row, "Thor · free tier", with the single model
+``thor/welcome``; the same guest with ``thor.guest: false`` shows no Thor row at all. The rule lives
+in one helper (``_free_tier_thor_row``) and this file exercises it through the real row builders
 against a temp ``THOR_HOME`` with the network catalog fetch stubbed.
 """
 
@@ -23,7 +23,7 @@ GUEST_STATE = {
     "anon_token": "anon_t",
     "access_token": "aaa.bbb.ccc",
     "expires_at": "2030-01-01T00:00:00+00:00",
-    "inference_base_url": "https://welcome-api.nousresearch.com/v1",
+    "inference_base_url": "https://welcome-api.thor-agent.local/v1",
     WELCOME_CLAIM_FLAG: True,
 }
 
@@ -31,21 +31,21 @@ GUEST_STATE = {
 @pytest.fixture
 def guest_home(monkeypatch, tmp_path):
     """Seed a guest that claimed the welcome trial, read on the desktop's local backend, as the only
-    Nous state, and keep every row builder offline."""
+    Thor state, and keep every row builder offline."""
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared-store"))
     as_local_desktop_backend(monkeypatch)
-    for var in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "NOUS_API_KEY", "LM_API_KEY", "LM_BASE_URL"):
+    for var in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "THOR_PORTAL_API_KEY", "LM_API_KEY", "LM_BASE_URL"):
         monkeypatch.delenv(var, raising=False)
-    _save_auth_store({"active_provider": "nous", "providers": {"nous": dict(GUEST_STATE)}})
+    _save_auth_store({"active_provider": "thor", "providers": {"thor": dict(GUEST_STATE)}})
 
     # No network from any lap: models.dev, the Portal catalog, and Ollama Cloud all stubbed.
     from agent import models_dev
     from thor_cli import models as models_mod
     from thor_cli import model_switch_providers as msp
     monkeypatch.setattr(models_dev, "fetch_models_dev", lambda *a, **k: {})
-    monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda *a, **k: ["anthropic/claude-x", "openai/gpt-y"])
+    monkeypatch.setattr(models_mod, "get_curated_thor_model_ids", lambda *a, **k: ["anthropic/claude-x", "openai/gpt-y"])
     monkeypatch.setattr(models_mod, "fetch_ollama_cloud_models", lambda *a, **k: [])
-    monkeypatch.setattr(msp, "_nous_picker_model_ids", lambda *a, **k: pytest.fail("guest must not fetch the Portal catalog"))
+    monkeypatch.setattr(msp, "_thor_picker_model_ids", lambda *a, **k: pytest.fail("guest must not fetch the Portal catalog"))
     return Path(os.environ["THOR_HOME"])
 
 
@@ -57,42 +57,42 @@ def _write_config(monkeypatch, home: Path, text: str) -> None:
             monkeypatch.setattr(cfg_mod, attr, None, raising=False)
 
 
-def _nous_rows(rows):
-    return [r for r in rows if str(r.get("slug", "")).lower() == "nous"]
+def _thor_rows(rows):
+    return [r for r in rows if str(r.get("slug", "")).lower() == "thor"]
 
 
-def _cli_nous_rows(config):
+def _cli_thor_rows(config):
     from thor_cli.main_provider_setup import _build_provider_picker_rows
-    ordered, _ = _build_provider_picker_rows(config, "nous", {}, {})
-    return [(key, label) for key, label, _members in ordered if key == "nous"]
+    ordered, _ = _build_provider_picker_rows(config, "thor", {}, {})
+    return [(key, label) for key, label, _members in ordered if key == "thor"]
 
 
 def test_guest_identity_shows_free_tier_row_with_only_welcome_model(guest_home, monkeypatch):
     from thor_cli.model_switch_providers import list_picker_providers
-    rows = _nous_rows(list_picker_providers("nous", "", None, None, 50, "nous/welcome"))
+    rows = _thor_rows(list_picker_providers("thor", "", None, None, 50, "thor/welcome"))
     assert len(rows) == 1
     row = rows[0]
     assert "free tier" in row["name"]
-    assert row["models"] == ["nous/welcome"]
+    assert row["models"] == ["thor/welcome"]
     assert row["total_models"] == 1
     rendered = repr(row).lower()
     assert "guest" not in rendered and "anonymous" not in rendered
 
     # The `thor model` provider picker applies the same rule from the same helper.
-    cli_rows = _cli_nous_rows({})
+    cli_rows = _cli_thor_rows({})
     assert len(cli_rows) == 1
     assert "free tier" in cli_rows[0][1]
     assert "guest" not in cli_rows[0][1].lower() and "anonymous" not in cli_rows[0][1].lower()
 
 
-def test_guest_identity_with_guest_off_hides_the_nous_row(guest_home, monkeypatch):
-    _write_config(monkeypatch, guest_home, "nous:\n  guest: false\n")
+def test_guest_identity_with_guest_off_hides_the_thor_row(guest_home, monkeypatch):
+    _write_config(monkeypatch, guest_home, "thor:\n  guest: false\n")
     from thor_cli import anon_auth
     assert anon_auth.has_guest() and not anon_auth.free_inference_active()
 
     from thor_cli.model_switch_providers import list_picker_providers
-    assert _nous_rows(list_picker_providers("nous", "", None, None, 50, "nous/welcome")) == []
-    assert _cli_nous_rows({"nous": {"guest": False}}) == []
+    assert _thor_rows(list_picker_providers("thor", "", None, None, 50, "thor/welcome")) == []
+    assert _cli_thor_rows({"thor": {"guest": False}}) == []
 
 
 def test_desktop_picker_payload_never_locks_the_free_tier_row(guest_home, monkeypatch):
@@ -101,10 +101,10 @@ def test_desktop_picker_payload_never_locks_the_free_tier_row(guest_home, monkey
     from thor_cli import inventory
     monkeypatch.setattr(inventory, "_prewarm_pricing_async", lambda *a, **k: None)
     payload = inventory.build_model_options_payload(inventory.load_picker_context())
-    rows = _nous_rows(payload["providers"])
+    rows = _thor_rows(payload["providers"])
     assert len(rows) == 1
     row = rows[0]
     assert row["free_tier_row"] is True
-    assert row["models"] == ["nous/welcome"]
+    assert row["models"] == ["thor/welcome"]
     assert row.get("unavailable_models", []) == []
     assert not row.get("free_tier_pending") and not row.get("pricing_pending")

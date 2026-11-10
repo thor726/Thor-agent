@@ -7,10 +7,10 @@ import {
   isAuthRejectionError,
   isGatedMissingHealthError,
   isMissingHealthEndpointError,
-  isNousCloudAgentUrl,
+  isThorCloudAgentUrl,
   isReauthRequiredError,
   isServerSideHttpError,
-  makeNousCloudBackendDownError,
+  makeThorCloudBackendDownError,
   makeUnsignedOauthError,
   waitForThorReady
 } from './backend-health'
@@ -425,17 +425,17 @@ test('isServerSideHttpError detects 502/503/504', () => {
   assert.equal(isServerSideHttpError('503: something'), null) // not an Error
 })
 
-test('isNousCloudAgentUrl detects cloud agent hosts', () => {
+test('isThorCloudAgentUrl detects cloud agent hosts', () => {
   // Positive cases
-  assert.equal(isNousCloudAgentUrl('https://ares-3009.agents.nousresearch.com'), true)
-  assert.equal(isNousCloudAgentUrl('https://ares-3009.agents.nousresearch.com/api/health'), true)
-  assert.equal(isNousCloudAgentUrl('http://test.agents.nousresearch.com'), true)
+  assert.equal(isThorCloudAgentUrl('https://ares-3009.agents.thor-agent.local'), true)
+  assert.equal(isThorCloudAgentUrl('https://ares-3009.agents.thor-agent.local/api/health'), true)
+  assert.equal(isThorCloudAgentUrl('http://test.agents.thor-agent.local'), true)
 
   // Negative cases
-  assert.equal(isNousCloudAgentUrl('http://127.0.0.1:9000'), false)
-  assert.equal(isNousCloudAgentUrl('https://gateway.example.com'), false)
-  assert.equal(isNousCloudAgentUrl('https://nousresearch.com'), false)
-  assert.equal(isNousCloudAgentUrl('not-a-url'), false)
+  assert.equal(isThorCloudAgentUrl('http://127.0.0.1:9000'), false)
+  assert.equal(isThorCloudAgentUrl('https://gateway.example.com'), false)
+  assert.equal(isThorCloudAgentUrl('https://github.com/dwisetyabudi15581/Thor-agent'), false)
+  assert.equal(isThorCloudAgentUrl('not-a-url'), false)
 })
 
 test('waitForThorReady classifies a persistent cloud agent 503 as cloud-backend-down', async () => {
@@ -443,7 +443,7 @@ test('waitForThorReady classifies a persistent cloud agent 503 as cloud-backend-
   const currentTime = { value: 0 }
 
   try {
-    await waitForThorReady('https://ares-3009.agents.nousresearch.com', {
+    await waitForThorReady('https://ares-3009.agents.thor-agent.local', {
       fetchPublicJson: async () => {
         attempts++
         // Always return 503
@@ -534,32 +534,32 @@ test('isServerSideHttpError structured path excludes 500/401/403/404/429 even wh
   }
 })
 
-test('makeNousCloudBackendDownError produces the Cloud shape and preserves cause', () => {
+test('makeThorCloudBackendDownError produces the Cloud shape and preserves cause', () => {
   const err = new Error('upstream unavailable') as any
   err.statusCode = 503
-  const result = makeNousCloudBackendDownError('https://ares-3009.agents.nousresearch.com', err)
+  const result = makeThorCloudBackendDownError('https://ares-3009.agents.thor-agent.local', err)
   assert.ok(result)
   assert.equal((result as any).isCloudBackendDown, true)
   assert.equal((result as any).statusCode, 503)
   assert.equal((result as any).cause, err)
 })
 
-test('makeNousCloudBackendDownError returns null for a Cloud 401 (routes to reauth)', () => {
+test('makeThorCloudBackendDownError returns null for a Cloud 401 (routes to reauth)', () => {
   const err = new Error('Unauthorized') as any
   err.statusCode = 401
-  assert.equal(makeNousCloudBackendDownError('https://ares-3009.agents.nousresearch.com', err), null)
+  assert.equal(makeThorCloudBackendDownError('https://ares-3009.agents.thor-agent.local', err), null)
 })
 
-test('makeNousCloudBackendDownError returns null for a non-Cloud 503 (generic remote failure)', () => {
+test('makeThorCloudBackendDownError returns null for a non-Cloud 503 (generic remote failure)', () => {
   const err = new Error('Service Unavailable') as any
   err.statusCode = 503
-  assert.equal(makeNousCloudBackendDownError('https://gateway.example.com', err), null)
-  assert.equal(makeNousCloudBackendDownError('http://127.0.0.1:9000', err), null)
+  assert.equal(makeThorCloudBackendDownError('https://gateway.example.com', err), null)
+  assert.equal(makeThorCloudBackendDownError('http://127.0.0.1:9000', err), null)
 })
 
-test('makeNousCloudBackendDownError preserves legacy string-prefix compatibility', () => {
-  const result = makeNousCloudBackendDownError(
-    'https://ares-3009.agents.nousresearch.com',
+test('makeThorCloudBackendDownError preserves legacy string-prefix compatibility', () => {
+  const result = makeThorCloudBackendDownError(
+    'https://ares-3009.agents.thor-agent.local',
     new Error('503: Service Unavailable')
   )
 

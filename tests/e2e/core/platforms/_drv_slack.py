@@ -89,7 +89,7 @@ class SlackDriver:
         return self.standin.block_action(user_id or self.user_id, chat_id, str(button["message_id"]), button)
 
     def click_answered(self, handle: dict[str, Any]) -> bool:
-        """Bolt acks an interactive envelope first, then authorizes the clicker synchronously; a
+        """Bolt acks an interactive envelope first, then authorizes the clicker synchrothorly; a
         refused click is only logged, so the ack is the last platform-visible sign of it."""
         return self.standin.acked(handle)
 

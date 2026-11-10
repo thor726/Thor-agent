@@ -1,7 +1,7 @@
 """Shared constants, the lazy ``httpx`` proxy and :class:`AuthError` for the auth package.
 
 Pure leaf: imports nothing from ``thor_cli.auth`` so the per-provider modules
-(``auth_nous``, ``auth_codex``, ...) can import it at module scope without cycles."""
+(``auth_thor``, ``auth_codex``, ...) can import it at module scope without cycles."""
 
 from __future__ import annotations
 
@@ -50,24 +50,24 @@ else:
 AUTH_STORE_VERSION = 1
 AUTH_LOCK_TIMEOUT_SECONDS = 15.0
 
-# Nous Portal defaults
-DEFAULT_NOUS_PORTAL_URL = "https://portal.nousresearch.com"
-DEFAULT_NOUS_INFERENCE_URL = "https://inference-api.nousresearch.com/v1"
+# Thor Portal defaults
+DEFAULT_THOR_PORTAL_URL = "https://portal.thor-agent.local"
+DEFAULT_THOR_PORTAL_INFERENCE_URL = "https://inference-api.thor-agent.local/v1"
 # The free tier's (anonymous account) inference host. NAS hands it to the client on every token
 # exchange (``inference_base_url``); this literal is the fallback when that field is absent or fails
 # the host allowlist, because the paid host cross-refuses an anonymous JWT with a 400.
-DEFAULT_NOUS_WELCOME_URL = "https://welcome-api.nousresearch.com/v1"
-DEFAULT_NOUS_CLIENT_ID = "thor-cli"
+DEFAULT_THOR_PORTAL_WELCOME_URL = "https://welcome-api.thor-agent.local/v1"
+DEFAULT_THOR_PORTAL_CLIENT_ID = "thor-cli"
 # On every guest minted since the welcome trial: True when the desktop's first install claimed it
 # (``thor_cli.welcome_trial``), False for a connector mint. Absent = minted before the trial existed.
 WELCOME_CLAIM_FLAG = "welcome_claim"
-NOUS_INFERENCE_INVOKE_SCOPE = "inference:invoke"
-NOUS_BILLING_MANAGE_SCOPE = "billing:manage"
-DEFAULT_NOUS_SCOPE = NOUS_INFERENCE_INVOKE_SCOPE
-NOUS_DEVICE_CODE_SOURCE = "device_code"
-NOUS_AUTH_PATH_INVOKE_JWT = "invoke_jwt"
+THOR_PORTAL_INFERENCE_INVOKE_SCOPE = "inference:invoke"
+THOR_PORTAL_BILLING_MANAGE_SCOPE = "billing:manage"
+DEFAULT_THOR_PORTAL_SCOPE = THOR_PORTAL_INFERENCE_INVOKE_SCOPE
+THOR_PORTAL_DEVICE_CODE_SOURCE = "device_code"
+THOR_PORTAL_AUTH_PATH_INVOKE_JWT = "invoke_jwt"
 ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120       # refresh 2 min before expiry
-NOUS_INVOKE_JWT_MIN_TTL_SECONDS = ACCESS_TOKEN_REFRESH_SKEW_SECONDS
+THOR_PORTAL_INVOKE_JWT_MIN_TTL_SECONDS = ACCESS_TOKEN_REFRESH_SKEW_SECONDS
 DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS = 1     # poll at most every 1s
 DEVICE_CODE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code"
 _FORM_JSON_HEADERS = {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}
@@ -108,7 +108,7 @@ OPENROUTER_AUTH_URL = "https://openrouter.ai/auth"
 OPENROUTER_AUTH_KEYS_URL = "https://openrouter.ai/api/v1/auth/keys"
 OPENROUTER_OAUTH_DOCS_URL = "https://openrouter.ai/docs/guides/overview/auth/oauth"
 
-OAUTH_OVER_SSH_DOCS_URL = "https://thor-agent.nousresearch.com/docs/guides/oauth-over-ssh"
+OAUTH_OVER_SSH_DOCS_URL = "https://thor-agent.thor-agent.local/docs/guides/oauth-over-ssh"
 # LM Studio's default no-auth mode still needs *some* non-empty bearer for the API-key code paths to
 # treat the provider as configured. Sent only to LM Studio, never to a remote service.
 LMSTUDIO_NOAUTH_PLACEHOLDER = "dummy-lm-api-key"
@@ -145,7 +145,7 @@ def _provider_error_factory(provider: str) -> Callable[..., AuthError]:
 
 
 # Per-provider AuthError constructors: ``_xai_err(message, code, relogin=True)``.
-_nous_err = _provider_error_factory("nous")
+_thor_err = _provider_error_factory("thor")
 _xai_err = _provider_error_factory("xai-oauth")
 _codex_err = _provider_error_factory("openai-codex")
 _qwen_err = _provider_error_factory("qwen-oauth")

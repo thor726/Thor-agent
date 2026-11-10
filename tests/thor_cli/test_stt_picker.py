@@ -39,10 +39,10 @@ class TestConfigWrites:
     def test_apply_provider_selection_stt(self):
         config = {}
         with patch(
-            "thor_cli.tools_config.get_nous_subscription_features"
+            "thor_cli.tools_config.get_thor_subscription_features"
         ) as feats:
             feats.return_value = MagicMock(
-                nous_auth_present=False, account_info=None
+                thor_auth_present=False, account_info=None
             )
             apply_provider_selection("stt", "OpenAI", config)
         assert config["stt"]["provider"] == "openai"

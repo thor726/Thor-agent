@@ -83,14 +83,14 @@ def test_launch_tui_exports_model_provider_and_toolsets(monkeypatch, main_mod):
 
     with pytest.raises(SystemExit):
         main_mod._launch_tui(
-            model="nous/thor-test", provider="nous", toolsets="web, terminal"
+            model="thor/thor-test", provider="thor", toolsets="web, terminal"
         )
 
     env = captured["env"]
-    assert env["THOR_MODEL"] == "nous/thor-test"
-    assert env["THOR_INFERENCE_MODEL"] == "nous/thor-test"
-    assert env["THOR_TUI_PROVIDER"] == "nous"
-    assert env["THOR_INFERENCE_PROVIDER"] == "nous"
+    assert env["THOR_MODEL"] == "thor/thor-test"
+    assert env["THOR_INFERENCE_MODEL"] == "thor/thor-test"
+    assert env["THOR_TUI_PROVIDER"] == "thor"
+    assert env["THOR_INFERENCE_PROVIDER"] == "thor"
     assert env["THOR_TUI_TOOLSETS"] == "web,terminal"
     active_path = Path(env["THOR_TUI_ACTIVE_SESSION_FILE"])
     assert active_path.name.startswith("thor-tui-active-session-")

@@ -952,7 +952,7 @@ describe('useGatewayBoot remote reconnect loop (real hook, fake socket)', () => 
       throw failure
     })
     vi.mocked(notifyError).mockImplementationOnce((_error, fallback) => {
-      // A notification/recovery callback may synchronously start another
+      // A notification/recovery callback may synchrothorly start another
       // switch. The failed Settings attempt never received a token and must
       // not force this newer owner's barrier down from its finally block.
       newerToken = beginGatewaySwitch()

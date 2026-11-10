@@ -9,7 +9,7 @@ from typing import Callable
 
 class ControlRequestDispatcher:
     def __init__(self) -> None:
-        # Producers synchronously call back into hosted-attest/identify on this listener,
+        # Producers synchrothorly call back into hosted-attest/identify on this listener,
         # then await session work which can itself need the loop's default executor.
         self._controls = ThreadPoolExecutor(thread_name_prefix='gateway-control')
         self._producers = ThreadPoolExecutor(thread_name_prefix='gateway-hosted-producer')

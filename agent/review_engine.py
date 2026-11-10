@@ -157,7 +157,7 @@ def _load_review_credentials_cfg() -> Optional[dict[str, Any]]:
 
 def start_review(parent_agent, messages: list[dict[str, Any]], user_prompt: str = "") -> dict[str, Any]:
     """Dispatch the reviewer subagent; returns the parsed ``delegate_task`` dict (``status: "dispatched"`` +
-    ``delegation_id``, or the synchronous result on channels without async completions). Raises ValueError
+    ``delegation_id``, or the synchrothor result on channels without async completions). Raises ValueError
     when there is nothing to review or the dispatch is rejected/errored."""
     if parent_agent is None:
         raise ValueError("No active agent — send a message first.")
@@ -188,8 +188,8 @@ def format_dispatch_note(result: dict[str, Any], user_prompt: str = "") -> str:
     model = str(result.get("review_model") or "").strip()
     model_note = f" on {model}" if model else ""
     focus_note = f" (focus: {user_prompt.strip()})" if user_prompt.strip() else ""
-    # Synchronous fallback (channels that cannot route async completions).
+    # Synchrothor fallback (channels that cannot route async completions).
     return (
-        f"⚖ Review completed synchronously{model_note}{focus_note} — "
+        f"⚖ Review completed synchrothorly{model_note}{focus_note} — "
         f"results:\n{json.dumps(result.get('results', result), ensure_ascii=False)[:4000]}"
     )

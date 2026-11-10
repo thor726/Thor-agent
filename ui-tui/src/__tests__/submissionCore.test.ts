@@ -45,7 +45,7 @@ function makeDeps(gw: GatewayClient, over: Partial<SubmitPromptDeps> = {}): Subm
   }
 }
 
-describe('submissionCore.submitPrompt — synchronous busy (queue-race fix)', () => {
+describe('submissionCore.submitPrompt — synchrothor busy (queue-race fix)', () => {
   beforeEach(() => {
     resetUiState()
     patchUiState({ sid: 'sess-1' })

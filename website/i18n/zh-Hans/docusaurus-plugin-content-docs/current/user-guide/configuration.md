@@ -17,7 +17,7 @@ description: "配置 Thor Agent — config.yaml、providers、模型、API 密�
 ~/.thor/
 ├── config.yaml     # 设置（模型、终端、TTS、压缩等）
 ├── .env            # API 密钥和机密
-├── auth.json       # OAuth provider 凭据（Nous Portal 等）
+├── auth.json       # OAuth provider 凭据（Thor Portal 等）
 ├── SOUL.md         # 主要 agent 身份（系统提示词第 #1 槽位）
 ├── memories/       # 持久记忆（MEMORY.md、USER.md）
 ├── skills/         # Agent 创建的技能（通过 skill_manage 工具管理）
@@ -86,7 +86,7 @@ delegation:
 
 ## 终端后端配置
 
-Thor 支持七种终端后端。每种后端决定 agent 的 shell 命令实际在哪里执行 —— 本地机器、Docker 容器、通过 SSH 的远程服务器、Modal 云沙箱（直接或通过 Nous 托管的 gateway）、Daytona 工作区、Vercel Sandbox，或 Singularity/Apptainer 容器。
+Thor 支持七种终端后端。每种后端决定 agent 的 shell 命令实际在哪里执行 —— 本地机器、Docker 容器、通过 SSH 的远程服务器、Modal 云沙箱（直接或通过 Thor 托管的 gateway）、Daytona 工作区、Vercel Sandbox，或 Singularity/Apptainer 容器。
 
 ```yaml
 terminal:
@@ -611,7 +611,7 @@ compression:
 auxiliary:
   compression:
     model: ""                                       # 空 = 使用主聊天模型。覆盖为例如 "google/gemini-3-flash-preview" 以获得更便宜/更快的压缩。
-    provider: "auto"                                # Provider："auto"、"openrouter"、"nous"、"codex"、"main" 等
+    provider: "auto"                                # Provider："auto"、"openrouter"、"thor"、"codex"、"main" 等
     base_url: null                                  # 自定义 OpenAI 兼容端点（覆盖 provider）
 ```
 
@@ -643,10 +643,10 @@ compression:
 ```yaml
 auxiliary:
   compression:
-    provider: nous
+    provider: thor
     model: gemini-3-flash
 ```
-适用于任何 provider：`nous`、`openrouter`、`codex`、`anthropic`、`main` 等。
+适用于任何 provider：`thor`、`openrouter`、`codex`、`anthropic`、`main` 等。
 
 **自定义端点**（自托管、Ollama、zai、DeepSeek 等）：
 ```yaml
@@ -662,7 +662,7 @@ auxiliary:
 | `auxiliary.compression.provider` | `auxiliary.compression.base_url` | 结果 |
 |---------------------|---------------------|--------|
 | `auto`（默认） | 未设置 | 自动检测最佳可用 provider |
-| `nous` / `openrouter` / 等 | 未设置 | 强制使用该 provider，使用其认证 |
+| `thor` / `openrouter` / 等 | 未设置 | 强制使用该 provider，使用其认证 |
 | 任意 | 已设置 | 直接使用自定义端点（忽略 provider） |
 
 :::warning 摘要模型上下文长度要求
@@ -784,7 +784,7 @@ credential_pool_strategies:
 
 当活跃 provider 支持时，Thor 自动开启跨会话 prompt 缓存 —— 无需用户配置。
 
-对于**原生 Anthropic**、**OpenRouter** 和 **Nous Portal** 上的 Claude，Thor 在系统提示词和技能块上附加带有 1 小时 TTL（`ttl: "1h"`）的 `cache_control` 断点。在新鲜的一小时内首次发送时按完整输入费率计费；同一小时内任何会话的后续发送以折扣缓存读取费率从缓存中提取。这意味着系统提示词、加载的技能内容以及任何长上下文包含的早期部分在第一个小时内跨 `thor` 会话和分叉子 agent 被重用。
+对于**原生 Anthropic**、**OpenRouter** 和 **Thor Portal** 上的 Claude，Thor 在系统提示词和技能块上附加带有 1 小时 TTL（`ttl: "1h"`）的 `cache_control` 断点。在新鲜的一小时内首次发送时按完整输入费率计费；同一小时内任何会话的后续发送以折扣缓存读取费率从缓存中提取。这意味着系统提示词、加载的技能内容以及任何长上下文包含的早期部分在第一个小时内跨 `thor` 会话和分叉子 agent 被重用。
 
 Qwen Cloud（阿里巴巴 DashScope）上游将缓存 TTL 限制为 5 分钟，因此 Thor 在那里使用 5 分钟断点 TTL。其他通过第三方的 Claude 路径（AWS Bedrock、Azure Foundry）回退到 provider 自己的缓存默认值。xAI Grok 使用单独的会话固定对话 ID 机制 —— 参阅 [xAI prompt 缓存](../integrations/providers.md#xai-grok--responses-api--prompt-caching)。
 
@@ -795,7 +795,7 @@ Qwen Cloud（阿里巴巴 DashScope）上游将缓存 TTL 限制为 5 分钟，�
 Thor 使用"辅助"模型处理图像分析、浏览器截图分析、会话标题生成和上下文压缩等附带任务。默认情况下（`auxiliary.*.provider: "auto"`），Thor 将每个辅助任务路由到您的**主聊天模型** —— 与您在 `thor model` 中选择的相同 provider/模型。您无需配置任何内容即可开始，但请注意，在昂贵的推理模型（Opus、MiniMax M2.7 等）上，辅助任务会增加显著成本。如果您希望无论主模型如何都使用便宜且快速的附带任务，请显式设置 `auxiliary.<task>.provider` 和 `auxiliary.<task>.model`（例如，在 OpenRouter 上使用 Gemini Flash 进行视觉分析）。（网页提取不是辅助任务：`web_extract` 和浏览器快照会确定性截断长内容，并将完整文本存储供 `read_file` 分页读取 —— 不涉及 LLM。）
 
 :::note 为什么 "auto" 使用您的主模型
-早期版本将聚合器用户（OpenRouter、Nous Portal）分流到便宜的 provider 端默认值。这令人惊讶 —— 付费购买聚合器订阅的用户会看到不同的模型处理其辅助流量。`auto` 现在对所有人使用主模型，`config.yaml` 中的每任务覆盖仍然优先（见下方[完整辅助配置参考](#full-auxiliary-config-reference)）。
+早期版本将聚合器用户（OpenRouter、Thor Portal）分流到便宜的 provider 端默认值。这令人惊讶 —— 付费购买聚合器订阅的用户会看到不同的模型处理其辅助流量。`auto` 现在对所有人使用主模型，`config.yaml` 中的每任务覆盖仍然优先（见下方[完整辅助配置参考](#full-auxiliary-config-reference)）。
 :::
 
 ### 交互式配置辅助模型
@@ -841,7 +841,7 @@ Thor 中的每个模型槽位 —— 辅助任务、压缩、回退 —— 使�
 
 当设置 `base_url` 时，Thor 忽略 provider 并直接调用该端点（使用 `api_key` 或 `OPENAI_API_KEY` 进行认证）。当仅设置 `provider` 时，Thor 使用该 provider 的内置认证和基础 URL。
 
-辅助任务的可用 providers：`auto`、`main`，以及[provider 注册表](../reference/environment-variables.md)中的任何 provider —— `openrouter`、`nous`、`openai-codex`、`anthropic`、`gemini`、`qwen-oauth`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`deepseek`、`nvidia`、`xai`、`xai-oauth`、`ollama-cloud`、`alibaba`、`bedrock`、`huggingface`、`arcee`、`xiaomi`、`kilocode`、`opencode-zen`、`opencode-go`、`ai-gateway`、`azure-foundry` —— 或您 `custom_providers` 列表中任何命名的自定义 provider（例如 `provider: "beans"`）。
+辅助任务的可用 providers：`auto`、`main`，以及[provider 注册表](../reference/environment-variables.md)中的任何 provider —— `openrouter`、`thor`、`openai-codex`、`anthropic`、`gemini`、`qwen-oauth`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`deepseek`、`nvidia`、`xai`、`xai-oauth`、`ollama-cloud`、`alibaba`、`bedrock`、`huggingface`、`arcee`、`xiaomi`、`kilocode`、`opencode-zen`、`opencode-go`、`ai-gateway`、`azure-foundry` —— 或您 `custom_providers` 列表中任何命名的自定义 provider（例如 `provider: "beans"`）。
 
 :::tip MiniMax OAuth
 `minimax-oauth` 通过浏览器 OAuth 登录（无需 API 密钥）。运行 `thor model` 并选择 **MiniMax (OAuth)** 进行认证。辅助任务自动使用 `MiniMax-M2.7-highspeed`。参阅 [MiniMax OAuth 指南](../guides/minimax-oauth.md)。
@@ -865,7 +865,7 @@ Thor 中的每个模型槽位 —— 辅助任务、压缩、回退 —— 使�
 auxiliary:
   # 图像分析（vision_analyze 工具 + 浏览器截图）
   vision:
-    provider: "auto"           # "auto"、"openrouter"、"nous"、"codex"、"main" 等
+    provider: "auto"           # "auto"、"openrouter"、"thor"、"codex"、"main" 等
     model: ""                  # 例如 "openai/gpt-4o"、"google/gemini-2.5-flash"
     base_url: ""               # 自定义 OpenAI 兼容端点（覆盖 provider）
     api_key: ""                # base_url 的 API 密钥（回退到 OPENAI_API_KEY）
@@ -884,7 +884,7 @@ auxiliary:
   compression:
     timeout: 120               # 秒 —— 压缩摘要长对话，需要更多时间
     # fallback_chain:           # 可选 —— 发生速率限制/连接故障时尝试的 provider
-    #   - provider: nous
+    #   - provider: thor
     #     model: deepseek/deepseek-chat
     #   - provider: openrouter
     #     model: google/gemini-2.5-flash
@@ -930,7 +930,7 @@ auxiliary:
     provider: openrouter
     model: openai/gpt-4o-mini
     fallback_chain:
-      - provider: nous
+      - provider: thor
         model: deepseek/deepseek-chat
       - provider: openrouter
         model: google/gemini-2.5-flash
@@ -942,7 +942,7 @@ auxiliary:
 
 | 键 | 描述 |
 |-----|-------------|
-| `provider` | Provider 名称（`nous`、`openrouter`、`anthropic`、`gemini`、`main` 等） |
+| `provider` | Provider 名称（`thor`、`openrouter`、`anthropic`、`gemini`、`main` 等） |
 | `model` | 该 provider 的模型名称 |
 | `base_url` | （可选）自定义 OpenAI 兼容端点 |
 
@@ -992,9 +992,9 @@ AUXILIARY_VISION_MODEL=openai/gpt-4o
 
 | Provider | 描述 | 要求 |
 |----------|-------------|-------------|
-| `"auto"` | 最佳可用（默认）。Vision 尝试 OpenRouter → Nous → Codex。 | — |
+| `"auto"` | 最佳可用（默认）。Vision 尝试 OpenRouter → Thor → Codex。 | — |
 | `"openrouter"` | 强制 OpenRouter —— 路由到任何模型（Gemini、GPT-4o、Claude 等） | `OPENROUTER_API_KEY` |
-| `"nous"` | 强制 Nous Portal | `thor auth` |
+| `"thor"` | 强制 Thor Portal | `thor auth` |
 | `"codex"` | 强制 Codex OAuth（ChatGPT 账户）。请显式设置 `model`（例如 `gpt-5.4`）。 | `thor model` → ChatGPT or Codex Subscription |
 | `"minimax-oauth"` | 强制 MiniMax OAuth（浏览器登录，无需 API 密钥）。辅助任务使用 MiniMax-M2.7-highspeed。 | `thor model` → MiniMax (OAuth) |
 | `"xai-oauth"` | 强制 xAI Grok OAuth（SuperGrok 或 X Premium+ 订阅者的浏览器登录，无需 API 密钥）。相同的 OAuth token 涵盖聊天、TTS、图像、视频和转录。 | `thor model` → xAI Grok OAuth (SuperGrok / Premium+) |
@@ -1544,7 +1544,7 @@ browser:
   user_data_dir: ""              # 所有会话共享的持久 profile；"" = 每个会话使用全新 profile
   chromium_args: []              # 额外的 Chromium 命令行参数，例如 ["--lang=de-DE"]
   # 云端浏览器选择（由 `thor tools` → Browser Automation 写入）
-  cloud_provider: local          # local | browserbase | browser-use | firecrawl | nous | <提供商插件>；未设置 = 根据凭据自动检测
+  cloud_provider: local          # local | browserbase | browser-use | firecrawl | thor | <提供商插件>；未设置 = 根据凭据自动检测
   auto_local_for_private_urls: true  # 使用云端提供商时，在本地 Chromium 中打开 LAN/localhost URL
   allow_private_urls: false      # 允许私有/内部地址（localhost、192.168.x.x 等）
   # 可选 CDP 覆盖 —— 设置后，浏览器工具附加到您自己的
@@ -1695,7 +1695,7 @@ delegation:
 
 **线路协议（`api_mode`）：** Thor 从 `delegation.base_url` 自动检测线路协议（例如以 `/anthropic` 结尾的路径 → `anthropic_messages`；Codex/原生 Anthropic/Kimi-coding 主机名保留其现有检测）。对于启发式无法分类的端点 —— 例如 Azure AI Foundry、MiniMax、Zhipu GLM 或前置 Anthropic 形状后端的 LiteLLM 代理 —— 请将 `delegation.api_mode` 显式设置为 `chat_completions`、`codex_responses` 或 `anthropic_messages` 之一。留空（默认）以保持自动检测。
 
-委托 provider 使用与 CLI/gateway 启动相同的凭据解析。所有配置的 provider 均受支持：`openrouter`、`nous`、`zai`、`kimi-coding`、`minimax`、`minimax-cn`。设置 provider 时，系统自动解析正确的基础 URL、API 密钥和 API 模式 —— 无需手动凭据连接。
+委托 provider 使用与 CLI/gateway 启动相同的凭据解析。所有配置的 provider 均受支持：`openrouter`、`thor`、`zai`、`kimi-coding`、`minimax`、`minimax-cn`。设置 provider 时，系统自动解析正确的基础 URL、API 密钥和 API 模式 —— 无需手动凭据连接。
 
 **优先级：** 配置中的 `delegation.base_url` → 配置中的 `delegation.provider` → 父 provider（继承）。配置中的 `delegation.model` → 父模型（继承）。仅设置 `model` 而不设置 `provider` 仅更改模型名称，同时保留父级凭据（适用于在同一 provider（如 OpenRouter）内切换模型）。
 

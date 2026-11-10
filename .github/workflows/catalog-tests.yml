@@ -48,7 +48,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
+          THOR_PORTAL_API_KEY: ""
         run: |
           set -euo pipefail
           mapfile -t FILES < <(python3 scripts/ci/catalog_test_files.py)

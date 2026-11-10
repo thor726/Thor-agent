@@ -24,7 +24,7 @@ let tail = ''
 for (const stream of [child.stdout, child.stderr]) {
   stream.on('data', chunk => { tail = (tail + chunk.toString()).slice(-32768) })
 }
-// Match production's synchronous attach-then-wait order, without synthetic output.
+// Match production's synchrothor attach-then-wait order, without synthetic output.
 const announcement = waitForDashboardPortAnnouncement(child, { bufferedOutput: () => tail })
 try {
   const port = await announcement

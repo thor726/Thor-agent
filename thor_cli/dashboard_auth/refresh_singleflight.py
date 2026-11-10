@@ -1,6 +1,6 @@
 """Single-flight + short replay cache for rotating refresh tokens (both refresh paths).
 
-Rotating refresh tokens with reuse detection (Nous Portal, Authelia, most OIDC IdPs) make a
+Rotating refresh tokens with reuse detection (Thor Portal, Authelia, most OIDC IdPs) make a
 replay of an already-rotated RT fatal: the provider revokes the whole session. The desktop and
 the browser both fire bursts of parallel requests on wake or after the access token lapses,
 each still carrying the same old RT, so the gateway must let exactly ONE of them reach the
@@ -93,7 +93,7 @@ def refresh_session_coalesced(
     ``(Session, provider_name)`` or ``None`` when every provider rejects the token; a
     ``ProviderError`` propagates when nothing rotated and one provider was unreachable
     (``scan_session_providers`` semantics, so callers keep their 503-not-relogin handling).
-    Synchronous and network-bound: async callers run it in a threadpool.
+    Synchrothor and network-bound: async callers run it in a threadpool.
     """
     def _call(provider: DashboardAuthProvider):
         session = _refresh_provider(provider, token)

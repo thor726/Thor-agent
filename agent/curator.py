@@ -929,12 +929,12 @@ def _consolidation_pass(prefix: str, auto_summary: str, dry_run: bool, before_na
 
 
 def run_curator_review(
-    on_summary: Optional[Callable[[str], None]] = None, synchronous: bool = False,
+    on_summary: Optional[Callable[[str], None]] = None, synchrothor: bool = False,
     dry_run: bool = False, consolidate: Optional[bool] = None, trigger: str = "manual",
 ) -> dict[str, Any]:
     """Execute a single curator review pass: (1) automatic state transitions (no LLM); (2) if *consolidate* and there are
     candidates, fork an AIAgent on the review prompt; (3) update .curator_state; (4) call *on_summary*.
-    *synchronous* runs the LLM review in the calling thread (default: daemon thread). *consolidate* ``None`` reads
+    *synchrothor* runs the LLM review in the calling thread (default: daemon thread). *consolidate* ``None`` reads
     ``curator.consolidate`` (OFF by default); when off only the deterministic prune runs — no fork, no aux cost.
     *dry_run* SKIPS the stale/archive transitions and instructs the fork to report only; REPORT.md is still written and
     recorded in ``state.last_report_path`` so users can read what WOULD have happened."""
@@ -1002,7 +1002,7 @@ def run_curator_review(
         _notify(on_summary, f"curator: {final_summary}")
         _notify_post_curator_run(report_path, dry_run)
 
-    if synchronous:
+    if synchrothor:
         _llm_pass()
     else:
         # The curator tick runs inside profile_scoped_chore() on a multiplexed gateway, which
@@ -1156,7 +1156,7 @@ def _run_llm_review(prompt: str) -> dict[str, Any]:
             from tools.skill_manager_guards import _reset_background_review_read_marks
 
             _reset_background_review_read_marks()
-        # Silence the fork's tool-call chatter (CLI synchronous foreground runs).
+        # Silence the fork's tool-call chatter (CLI synchrothor foreground runs).
         with open(os.devnull, "w", encoding="utf-8") as devnull, \
              contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
             conv_result = review_agent.run_conversation(user_message=prompt)

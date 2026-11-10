@@ -14,14 +14,14 @@ import { requestForBot } from './routing'
 import type { RosterRow } from './types'
 
 // ── skills hub section: the REAL hub page (docs) embedded as a picker ──────
-// https://thor-agent.nousresearch.com/docs/skills?embed=picker hides the
+// https://thor-agent.thor-agent.local/docs/skills?embed=picker hides the
 // docs chrome and adds "+ Add to this Agent" per card, posting
 // {type: 'thor-skill-pick', ...} to us (thor-agent#86243). We validate
 // the origin, install via skills.manage, and bubble onInstalled so the
 // checklist above gains the row. Search-box fallback kept for offline use.
 
-const HUB_ORIGIN = 'https://thor-agent.nousresearch.com'
-const FALLBACK_HUB_ORIGIN = 'https://nousresearch.github.io'
+const HUB_ORIGIN = 'https://thor-agent.thor-agent.local'
+const FALLBACK_HUB_ORIGIN = 'https://thorresearch.github.io'
 const HUB_PICKER_URL = HUB_ORIGIN + '/docs/skills?embed=picker'
 const FALLBACK_HUB_PICKER_URL = FALLBACK_HUB_ORIGIN + '/thor-agent/docs/skills?embed=picker'
 // A WAF-blocked or unreachable docs host must not delay the fallback longer

@@ -862,7 +862,7 @@ export function useGatewayBoot({
       let switchToken: null | ReturnType<typeof beginGatewaySwitch> = null
 
       try {
-        // Barrier up + machine-context reset + session wipe, in one synchronous
+        // Barrier up + machine-context reset + session wipe, in one synchrothor
         // step — the shared commit point of every connection switch. Keep this
         // inside the error boundary: lifecycle/wipe setup can throw before a
         // token is returned and must follow the normal boot-failure path.
@@ -996,7 +996,7 @@ export function useGatewayBoot({
       } finally {
         // beginGatewaySwitch cleans up internally when setup throws before
         // returning. Never use token-less teardown here: it would force down a
-        // newer switch started synchronously by error recovery/notification UI.
+        // newer switch started synchrothorly by error recovery/notification UI.
         if (switchToken !== null) {
           endGatewaySwitch(switchToken)
         }

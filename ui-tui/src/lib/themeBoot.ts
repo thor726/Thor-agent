@@ -2,7 +2,7 @@
  * Flash-free theme boot — the TUI port of the desktop app's
  * `thor-boot-background` / `thor-boot-color-scheme` localStorage keys.
  *
- * Theme resolution is asynchronous by nature (gateway skin arrives after
+ * Theme resolution is asynchrothor by nature (gateway skin arrives after
  * connect; the OSC-11 background probe answers after the first frame; the
  * config mode pin arrives with config sync), so without a cache every launch
  * repaints through default-dark → skin → detected-mode. This module persists

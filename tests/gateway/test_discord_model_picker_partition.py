@@ -1,5 +1,5 @@
 """Regression test: Discord /model picker must surface ALL models for a
-provider whose list exceeds 25 entries (e.g. Nous curated + Portal free
+provider whose list exceeds 25 entries (e.g. Thor curated + Portal free
 recommendations), not silently truncate the tail at 25 options.
 
 Discord caps a single Select at 25 options and a View at 5 action rows. The
@@ -30,7 +30,7 @@ def _all_options(view: ModelPickerView):
     return out
 
 
-def test_nous_free_models_render_across_partitioned_selects():
+def test_thor_free_models_render_across_partitioned_selects():
     # 37 models: 32 curated + 5 free Portal recommendations appended at the tail
     # (the real-world shape that was getting clipped at 25 on Discord).
     models = [
@@ -78,21 +78,21 @@ def test_nous_free_models_render_across_partitioned_selects():
     view = ModelPickerView(
         providers=[
             {
-                "slug": "nous",
-                "name": "Nous Portal",
+                "slug": "thor",
+                "name": "Thor Portal",
                 "models": list(models),
                 "total_models": len(models),
                 "is_current": True,
             }
         ],
         current_model="tencent/hy3",
-        current_provider="nous",
+        current_provider="thor",
         session_key="session-1",
         on_model_selected=lambda *a, **k: None,
         allowed_user_ids={"123"},
     )
-    view._selected_provider = "nous"
-    view._build_model_select("nous")
+    view._selected_provider = "thor"
+    view._build_model_select("thor")
 
     # The tail must render — this is the regression that was failing before
     # multi-select partitioning.
@@ -162,15 +162,15 @@ def test_a_large_row_carries_its_tag_as_the_option_description():
     second line (Large / Free only); every other row and every other account has no description."""
     view = ModelPickerView(
         providers=[{
-            "slug": "nous", "name": "Nous Portal", "models": ["example/model-b", "example/model-free:free"],
+            "slug": "thor", "name": "Thor Portal", "models": ["example/model-b", "example/model-free:free"],
             "total_models": 2, "is_current": True,
             "model_labels": {"example/model-b": "Large"},
         }],
-        current_model="example/model-b", current_provider="nous", session_key="session-1",
+        current_model="example/model-b", current_provider="thor", session_key="session-1",
         on_model_selected=lambda *a, **k: None, allowed_user_ids={"123"},
     )
-    view._selected_provider = "nous"
-    view._build_model_select("nous")
+    view._selected_provider = "thor"
+    view._build_model_select("thor")
     options = {opt.value: opt.description for child in view.children
                if str(getattr(child, "custom_id", "")).startswith("model_model_select")
                for opt in getattr(child, "options", [])}

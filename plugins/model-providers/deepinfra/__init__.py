@@ -56,7 +56,7 @@ deepinfra = _DeepInfraProfile(
     env_vars=("DEEPINFRA_API_KEY", "DEEPINFRA_BASE_URL"), base_url="https://api.deepinfra.com/v1/openai",
     auth_type="api_key",
     default_max_tokens=None,  # DeepInfra applies its documented per-model limit
-    # The only hardcoded DeepInfra model: aux resolution is synchronous, so it
+    # The only hardcoded DeepInfra model: aux resolution is synchrothor, so it
     # can't wait on a catalog round-trip. Everything else is discovered live.
     default_aux_model="deepseek-ai/DeepSeek-V4-Flash",
     # Empty on purpose: the live catalog is the source of truth; an empty picker

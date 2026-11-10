@@ -1,6 +1,6 @@
 """Bounded native scope operations in the Relay session coordinator.
 
-The NeMo Relay native binding's ``scope.pop``/``scope.push`` are synchronous
+The NeMo Relay native binding's ``scope.pop``/``scope.push`` are synchrothor
 and unbounded ("returns after the scope is closed successfully").  When the
 native pipeline cannot make progress — proven live 2026-08-10 in the
 delegation topology, where child sessions register scopes under the parent's

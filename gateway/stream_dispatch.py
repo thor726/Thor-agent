@@ -2,7 +2,7 @@
 
 Message events flow into the consumer; tool events are formatted by the adapter (None
 = eat it on platforms without tool chrome) and enqueued onto the same tool-progress
-queue the gateway drains, so the two paths never race.  Synchronous: callable from
+queue the gateway drains, so the two paths never race.  Synchrothor: callable from
 the agent's worker thread.
 """
 

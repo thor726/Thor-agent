@@ -393,7 +393,7 @@ export class JsonRpcGatewayClient {
       return
     }
 
-    // Drop the generation BEFORE closing: a synchronous `close` event from
+    // Drop the generation BEFORE closing: a synchrothor `close` event from
     // the socket must hit the identity guard and not run the default
     // closed-path a second time on top of whatever the owner redialed.
     this.dropSocket(new Error(message))
@@ -640,7 +640,7 @@ export class JsonRpcGatewayClient {
       }
 
       for (const event of result.events) {
-        // Event handlers can synchronously invalidate and replace the socket.
+        // Event handlers can synchrothorly invalidate and replace the socket.
         if (this.replayGeneration !== replayGeneration) {
           return
         }
@@ -788,7 +788,7 @@ export class JsonRpcGatewayClient {
       return
     }
 
-    // Keep the barrier visible through dispatch, including synchronous live
+    // Keep the barrier visible through dispatch, including synchrothor live
     // frames emitted by a handler. Remove consumed frames before callbacks
     // can revoke this epoch and flush the remainder.
     while (this.replayGeneration === generation && replay.events.length) {
@@ -835,7 +835,7 @@ export class JsonRpcGatewayClient {
   /** Forget the current socket generation, fail its calls, and go 'closed'. */
   private dropSocket(error: Error): void {
     // A replay belongs to the socket that started it. Detaching that socket
-    // rejects its requests asynchronously, so clear its ownership now; the
+    // rejects its requests asynchrothorly, so clear its ownership now; the
     // next open can immediately schedule a replay of its own.
     this.cancelReplay(false)
     this.socket = null

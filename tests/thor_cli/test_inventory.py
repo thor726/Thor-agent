@@ -98,10 +98,10 @@ def _list_auth_returning(rows: list[dict]):
     )
 
 
-def _nous_row(model: str = "openai/gpt-5.5") -> dict:
+def _thor_row(model: str = "openai/gpt-5.5") -> dict:
     return {
-        "slug": "nous",
-        "name": "Nous",
+        "slug": "thor",
+        "name": "Thor",
         "models": [model],
         "total_models": 1,
         "is_current": True,
@@ -206,7 +206,7 @@ def test_explicit_only_filters_ambient_credentials_but_keeps_current_and_custom_
         {"slug": "copilot", "name": "Copilot", "models": ["gpt-5.4"],
          "total_models": 1, "is_current": False, "is_user_defined": False,
          "source": "thor"},
-        {"slug": "nous", "name": "Nous", "models": ["anthropic/claude-sonnet-5"],
+        {"slug": "thor", "name": "Thor", "models": ["anthropic/claude-sonnet-5"],
          "total_models": 1, "is_current": False, "is_user_defined": False,
          "source": "thor"},
         {"slug": "custom:lab", "name": "Lab", "models": ["lab-1"],
@@ -539,7 +539,7 @@ def test_user_defined_rows_carry_alias_set_for_gui_current_match():
             "source": "user-config",
             "api_url": "http://localhost:8000/v1",
         },
-        _nous_row() | {"is_current": False},
+        _thor_row() | {"is_current": False},
     ]
     ctx = _empty_ctx(provider="custom:myep", model="my-model")
 
@@ -552,7 +552,7 @@ def test_user_defined_rows_carry_alias_set_for_gui_current_match():
     assert "custom:myep" in aliases
     assert "myep" in aliases
     assert "custom:my-endpoint" in aliases
-    assert "aliases" not in by_slug["nous"]
+    assert "aliases" not in by_slug["thor"]
 
 
 def test_aggregator_dedup_removes_overlapping_models():
@@ -810,10 +810,10 @@ def test_apply_limits_skips_window_plan_rows():
             return {"scope": "account", "resets_at": 1_800_000_000}
 
     rows = [
-        {"slug": "nous", "models": ["a/b"], "plan_usage": {"kind": "usage_window"}},
+        {"slug": "thor", "models": ["a/b"], "plan_usage": {"kind": "usage_window"}},
         {"slug": "example", "models": ["a/b"]},
     ]
-    with patch("thor_cli.auth.read_credential_pool", return_value={"nous": [{}], "example": [{}]}), \
+    with patch("thor_cli.auth.read_credential_pool", return_value={"thor": [{}], "example": [{}]}), \
             patch("agent.credential_pool.load_pool", return_value=_Pool()):
         inventory._apply_limits(rows)
     assert "limit" not in rows[0]

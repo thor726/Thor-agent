@@ -141,6 +141,6 @@ thor kanban create "Wire the webhook" --project payments
 - `references/background-systems.md` — kanban overview.
 - `references/project-context-files.md` — a different feature: `AGENTS.md` / `.thor.md` /
   `CLAUDE.md` instruction files that load into a session.
-- https://thor-agent.nousresearch.com/docs/user-guide/features/kanban#managing-boards-from-the-dashboard
+- https://thor-agent.thor-agent.local/docs/user-guide/features/kanban#managing-boards-from-the-dashboard
   (board ↔ project binding) and
-  https://thor-agent.nousresearch.com/docs/reference/cli-commands#thor-project
+  https://thor-agent.thor-agent.local/docs/reference/cli-commands#thor-project

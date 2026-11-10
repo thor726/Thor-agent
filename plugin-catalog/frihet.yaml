@@ -5,7 +5,7 @@
 # - The maintainer of the plugin repository (Frihet-io) is the only one
 #   authorised to submit the entry.
 # - ``tier`` MUST be ``community`` — ``official`` in the catalog means
-#   "maintained by NousResearch". We describe ourselves as the "Official
+#   "maintained by dwisetyabudi15581". We describe ourselves as the "Official
 #   Thor Agent integration for Frihet" in the description, not in the
 #   catalog's tier label.
 # - The SHA must be a 40-character full commit hash of a tagged, audited

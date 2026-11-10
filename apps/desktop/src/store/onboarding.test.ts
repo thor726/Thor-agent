@@ -549,7 +549,7 @@ describe('OAuth onboarding', () => {
     vi.restoreAllMocks()
   })
 
-  it('a Nous sign-in shows its account and what moved on the confirm screen, not in a dialog after it', async () => {
+  it('a Thor sign-in shows its account and what moved on the confirm screen, not in a dialog after it', async () => {
     const { startProviderOAuth } = await import('./onboarding')
     const { $freeTierSignIn } = await import('./free-tier-sign-in')
     const { setOnboardingSurfaceActive } = await import('./onboarding-presence')
@@ -565,15 +565,15 @@ describe('OAuth onboarding', () => {
       }
 
       if (path.startsWith('/api/model/options')) {
-        return { providers: [{ models: ['nous/m'], name: 'Nous Portal', slug: 'nous' }] }
+        return { providers: [{ models: ['thor/m'], name: 'Thor Portal', slug: 'thor' }] }
       }
 
-      return path.startsWith('/api/model/recommended-default') ? { model: 'nous/m' } : { ok: true }
+      return path.startsWith('/api/model/recommended-default') ? { model: 'thor/m' } : { ok: true }
     })
     vi.spyOn(window, 'open').mockReturnValue(null)
     setOnboardingSurfaceActive('onboarding', true)
 
-    await startProviderOAuth(makeOAuthProvider('nous', 'Nous Portal'), {
+    await startProviderOAuth(makeOAuthProvider('thor', 'Thor Portal'), {
       requestGateway: async method =>
         // SAFETY: onboarding reads only `provider_configured` from setup.status and `ok` from the rest.
         (method === 'setup.status' ? { provider_configured: true } : { ok: true }) as never
@@ -592,7 +592,7 @@ describe('OAuth onboarding', () => {
     installApiMock(async ({ body, path }: { body?: unknown; path: string }) => {
       calls.push({ body, path })
 
-      if (path === '/api/providers/oauth/nous/submit') {
+      if (path === '/api/providers/oauth/thor/submit') {
         return { ok: true, status: 'approved' }
       }
 
@@ -600,8 +600,8 @@ describe('OAuth onboarding', () => {
         return {
           providers: [
             {
-              name: 'Nous Portal',
-              slug: 'nous',
+              name: 'Thor Portal',
+              slug: 'thor',
               models: [model]
             }
           ]
@@ -609,11 +609,11 @@ describe('OAuth onboarding', () => {
       }
 
       if (path.startsWith('/api/model/recommended-default?')) {
-        return { provider: 'nous', model, free_tier: false }
+        return { provider: 'thor', model, free_tier: false }
       }
 
       if (path === '/api/model/set') {
-        return { ok: true, provider: 'nous', model, gateway_tools: [] }
+        return { ok: true, provider: 'thor', model, gateway_tools: [] }
       }
 
       throw new Error(`unexpected api path: ${path}`)
@@ -629,7 +629,7 @@ describe('OAuth onboarding', () => {
       }
 
       if (method === 'setup.runtime_check') {
-        expect(params).toEqual({ provider: 'nous' })
+        expect(params).toEqual({ provider: 'thor' })
 
         return { ok: true } as never
       }
@@ -641,7 +641,7 @@ describe('OAuth onboarding', () => {
       baseState({
         flow: {
           status: 'awaiting_user',
-          provider: makeOAuthProvider('nous', 'Nous Portal'),
+          provider: makeOAuthProvider('thor', 'Thor Portal'),
           start: {
             auth_url: 'https://portal.example/auth',
             expires_in: 600,
@@ -651,7 +651,7 @@ describe('OAuth onboarding', () => {
           code: 'fresh-code'
         },
         reason:
-          'No access token found for Nous Portal login. setup.status reports configured credentials, but runtime resolution still failed.',
+          'No access token found for Thor Portal login. setup.status reports configured credentials, but runtime resolution still failed.',
         requested: true
       })
     )
@@ -663,7 +663,7 @@ describe('OAuth onboarding', () => {
     expect(state.flow.status).toBe('confirming_model')
 
     if (state.flow.status === 'confirming_model') {
-      expect(state.flow.label).toBe('Nous Portal')
+      expect(state.flow.label).toBe('Thor Portal')
       expect(state.flow.currentModel).toBe(model)
     }
 
@@ -681,22 +681,22 @@ describe('OAuth onboarding', () => {
   it('does not advance when the default model assignment is not persisted', async () => {
     const model = 'openai/gpt-5.5-pro'
     installApiMock(async ({ path }: { path: string }) => {
-      if (path === '/api/providers/oauth/nous/submit') {
+      if (path === '/api/providers/oauth/thor/submit') {
         return { ok: true, status: 'approved' }
       }
 
       if (path.startsWith('/api/model/options')) {
-        return { providers: [{ name: 'Nous Portal', slug: 'nous', models: [model] }] }
+        return { providers: [{ name: 'Thor Portal', slug: 'thor', models: [model] }] }
       }
 
       if (path.startsWith('/api/model/recommended-default?')) {
-        return { provider: 'nous', model, free_tier: false }
+        return { provider: 'thor', model, free_tier: false }
       }
 
       if (path === '/api/model/set') {
         return {
           ok: false,
-          provider: 'nous',
+          provider: 'thor',
           model,
           confirm_required: true,
           confirm_message: 'Confirm this expensive model.'
@@ -719,7 +719,7 @@ describe('OAuth onboarding', () => {
       baseState({
         flow: {
           status: 'awaiting_user',
-          provider: makeOAuthProvider('nous', 'Nous Portal'),
+          provider: makeOAuthProvider('thor', 'Thor Portal'),
           start: {
             auth_url: 'https://portal.example/auth',
             expires_in: 600,
@@ -754,26 +754,26 @@ describe('manual onboarding (Settings / Add provider on an already-configured in
   })
 
   it('does not flip the global default until the user confirms on the confirm card', async () => {
-    const model = 'nous/thor-5'
+    const model = 'thor/thor-5'
     const calls: { body?: unknown; path: string }[] = []
 
     installApiMock(async ({ body, path }: { body?: unknown; path: string }) => {
       calls.push({ body, path })
 
-      if (path === '/api/providers/oauth/nous/submit') {
+      if (path === '/api/providers/oauth/thor/submit') {
         return { ok: true, status: 'approved' }
       }
 
       if (path.startsWith('/api/model/options')) {
-        return { providers: [{ name: 'Nous Portal', slug: 'nous', models: [model] }] }
+        return { providers: [{ name: 'Thor Portal', slug: 'thor', models: [model] }] }
       }
 
       if (path.startsWith('/api/model/recommended-default?')) {
-        return { provider: 'nous', model, free_tier: false }
+        return { provider: 'thor', model, free_tier: false }
       }
 
       if (path === '/api/model/set') {
-        return { ok: true, provider: 'nous', model, gateway_tools: [] }
+        return { ok: true, provider: 'thor', model, gateway_tools: [] }
       }
 
       throw new Error(`unexpected api path: ${path}`)
@@ -792,7 +792,7 @@ describe('manual onboarding (Settings / Add provider on an already-configured in
         // Still validated against the just-connected provider, not the
         // (unchanged) config default — this is what makes deferring the
         // persist safe.
-        expect(params).toEqual({ provider: 'nous' })
+        expect(params).toEqual({ provider: 'thor' })
 
         return { ok: true } as never
       }
@@ -801,14 +801,14 @@ describe('manual onboarding (Settings / Add provider on an already-configured in
     }
 
     // The user already has a working, different default configured — the
-    // exact scenario from the bug report (anthropic default, connecting Nous
+    // exact scenario from the bug report (anthropic default, connecting Thor
     // Portal as an *additional* provider from Settings).
     $desktopOnboarding.set(
       baseState({
         manual: true,
         flow: {
           status: 'awaiting_user',
-          provider: makeOAuthProvider('nous', 'Nous Portal'),
+          provider: makeOAuthProvider('thor', 'Thor Portal'),
           start: {
             auth_url: 'https://portal.example/auth',
             expires_in: 600,
@@ -835,14 +835,14 @@ describe('manual onboarding (Settings / Add provider on an already-configured in
   })
 
   it('persists the confirmed model only when the user clicks Begin', async () => {
-    const model = 'nous/thor-5'
+    const model = 'thor/thor-5'
     const calls: { body?: unknown; path: string }[] = []
 
     installApiMock(async ({ body, path }: { body?: unknown; path: string }) => {
       calls.push({ body, path })
 
       if (path === '/api/model/set') {
-        return { ok: true, provider: 'nous', model, gateway_tools: [] }
+        return { ok: true, provider: 'thor', model, gateway_tools: [] }
       }
 
       throw new Error(`unexpected api path: ${path}`)
@@ -854,9 +854,9 @@ describe('manual onboarding (Settings / Add provider on an already-configured in
         configured: true,
         flow: {
           status: 'confirming_model',
-          providerSlug: 'nous',
+          providerSlug: 'thor',
           currentModel: model,
-          label: 'Nous Portal',
+          label: 'Thor Portal',
           saving: false
         }
       })
@@ -866,7 +866,7 @@ describe('manual onboarding (Settings / Add provider on an already-configured in
     await confirmOnboardingModel({ requestGateway: vi.fn(), onCompleted })
 
     const assign = calls.find(c => c.path === '/api/model/set')
-    expect(assign?.body).toMatchObject({ scope: 'main', provider: 'nous', model })
+    expect(assign?.body).toMatchObject({ scope: 'main', provider: 'thor', model })
     expect(onCompleted).toHaveBeenCalledTimes(1)
   })
 })
@@ -1186,7 +1186,7 @@ describe('device-code poll expiry', () => {
   function deviceCodeProvider() {
     // makeOAuthProvider builds a pkce provider; device-code flows need the
     // device_code branch instead.
-    return { ...makeOAuthProvider('nous', 'Nous Portal'), flow: 'device_code' as const }
+    return { ...makeOAuthProvider('thor', 'Thor Portal'), flow: 'device_code' as const }
   }
 
   function deviceStart(expiresIn: number) {
@@ -1203,11 +1203,11 @@ describe('device-code poll expiry', () => {
   it('lapses to an error with actionable guidance when the window expires still pending', async () => {
     vi.useFakeTimers()
     installApiMock(async ({ path }: { path: string }) => {
-      if (path === '/api/providers/oauth/nous/start') {
+      if (path === '/api/providers/oauth/thor/start') {
         return deviceStart(2)
       }
 
-      if (path.startsWith('/api/providers/oauth/nous/poll/device-sess-1')) {
+      if (path.startsWith('/api/providers/oauth/thor/poll/device-sess-1')) {
         return { status: 'pending' }
       }
 
@@ -1230,11 +1230,11 @@ describe('device-code poll expiry', () => {
   it('keeps polling while the window is open and clears the expiry on cancel', async () => {
     vi.useFakeTimers()
     installApiMock(async ({ path }: { path: string }) => {
-      if (path === '/api/providers/oauth/nous/start') {
+      if (path === '/api/providers/oauth/thor/start') {
         return deviceStart(600)
       }
 
-      if (path.startsWith('/api/providers/oauth/nous/poll/device-sess-1')) {
+      if (path.startsWith('/api/providers/oauth/thor/poll/device-sess-1')) {
         return { status: 'pending' }
       }
 
@@ -1296,7 +1296,7 @@ describe('setOnboardingModel', () => {
     })
     $desktopOnboarding.set(confirmingModelState())
 
-    await setOnboardingModel('deepseek/deepseek-v4-flash-0731', 'nous', 'Nous Portal')
+    await setOnboardingModel('deepseek/deepseek-v4-flash-0731', 'thor', 'Thor Portal')
 
     const flow = $desktopOnboarding.get().flow
     expect(flow.status).toBe('confirming_model')

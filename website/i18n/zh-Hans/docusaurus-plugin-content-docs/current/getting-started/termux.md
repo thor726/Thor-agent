@@ -28,7 +28,7 @@ Thor 的 Termux 软件包适用于 aarch64（arm64-v8a）设备，目前处于�
    ```bash
    mkdir -p "$PREFIX/etc/apt/keyrings"
    curl -fsSL \
-     https://thor-assets.nousresearch.com/releases/termux/canary/key.asc \
+     https://thor-assets.thor-agent.local/releases/termux/canary/key.asc \
      -o "$PREFIX/etc/apt/keyrings/thor-agent.asc"
    ```
 
@@ -50,7 +50,7 @@ Thor 的 Termux 软件包适用于 aarch64（arm64-v8a）设备，目前处于�
 
    ```bash
    printf '%s\n' \
-     "deb [signed-by=$PREFIX/etc/apt/keyrings/thor-agent.asc] https://thor-assets.nousresearch.com/releases/termux/canary thor-canary main" \
+     "deb [signed-by=$PREFIX/etc/apt/keyrings/thor-agent.asc] https://thor-assets.thor-agent.local/releases/termux/canary thor-canary main" \
      > "$PREFIX/etc/apt/sources.list.d/thor-agent.list"
    ```
 

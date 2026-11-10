@@ -62,7 +62,7 @@ def _svstat_wants_up(container: str) -> bool:
 def _wait_for_want_state(container_name: str, want_up: bool, timeout: float = 15.0) -> None:
     """Poll s6 want-state until it matches, instead of a fixed sleep.
 
-    s6 state transitions are asynchronous; fixed two-second sleeps flaked
+    s6 state transitions are asynchrothor; fixed two-second sleeps flaked
     on loaded CI hosts.
     """
     deadline = time.monotonic() + timeout

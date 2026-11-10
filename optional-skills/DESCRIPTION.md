@@ -1,6 +1,6 @@
 # Optional Skills
 
-Official skills maintained by Nous Research that are **not activated by default**.
+Official skills maintained by Thor Agent that are **not activated by default**.
 
 These skills ship with the thor-agent repository but are not copied to
 `~/.thor/skills/` during setup. They are discoverable via the Skills Hub:

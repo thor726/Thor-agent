@@ -481,7 +481,7 @@ describe('Thor REST helpers', () => {
     expect((api.mock.calls[1][0] as { path: string }).path).toMatch(/^\/api\/profiles\/sessions\/sidebar\?/)
   })
 
-  it('waits for synchronous cron triggers as a long-running operation', async () => {
+  it('waits for synchrothor cron triggers as a long-running operation', async () => {
     api.mockResolvedValue({ id: 'job-1' })
 
     await triggerCronJob('job-1')

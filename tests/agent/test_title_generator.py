@@ -463,7 +463,7 @@ class TestMaybeAutoTitle:
             ("custom:gptoss-local", {"provider": "custom:other", "base_url": "http://10.0.0.2:8080/v1"}, False),
             ("custom:gptoss-local", {"provider": "gptoss-local", "base_url": "http://10.0.0.2:8080/v1"}, False),
             ("custom:gptoss-local", {"provider": "openrouter"}, False),
-            ("custom:gptoss-local", {"provider": "nous"}, False),
+            ("custom:gptoss-local", {"provider": "thor"}, False),
             ("custom", {"provider": "ollama"}, True),  # alias of custom
             ("custom", {"provider": "vllm"}, True),  # normalises to `local`: the same local server
             ("lmstudio", {"provider": "lm-studio"}, True),
@@ -484,7 +484,7 @@ class TestMaybeAutoTitle:
             assert tg.title_upgrade_must_wait_for_turn(main_runtime) is deferred
 
     def test_kanban_worker_is_named_after_its_card_without_the_llm_thread(self, tmp_path, monkeypatch):
-        """A worker's session takes the board card's title synchronously; no auxiliary model call (#111166)."""
+        """A worker's session takes the board card's title synchrothorly; no auxiliary model call (#111166)."""
         from thor_cli import kanban_db, kanban_db_connect
 
         with kanban_db_connect.connect_closing(board="default") as conn:
@@ -549,7 +549,7 @@ class TestMaybeAutoTitle:
         mock_auto.assert_called_once()
 
     def test_writes_instant_title_before_the_model_runs(self, tmp_path):
-        """The derived title lands synchronously — no LLM, no waiting."""
+        """The derived title lands synchrothorly — no LLM, no waiting."""
         db = SessionDB(tmp_path / "state.db")
         db.create_session(session_id="sess-1", source="cli")
         with patch("agent.title_generator.auto_title_session"):

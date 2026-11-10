@@ -142,7 +142,7 @@ async def test_a_trial_users_desktop_chat_runs_on_the_free_model(tmp_path, monke
     no model at all (a launch policy with no model can never be restored)."""
     from thor_cli import anon_auth
     guest = {"auth_method": anon_auth.ANON_AUTH_METHOD, anon_auth.WELCOME_CLAIM_FLAG: True}
-    monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: guest)
+    monkeypatch.setattr(anon_auth, "current_thor_state", lambda *a, **k: guest)
     conn = await _connect(tmp_path, monkeypatch)
     try:
         await _request(conn, 1, "client.capabilities", {"desktop_local": True})
@@ -173,9 +173,9 @@ async def test_a_fresh_launch_claims_the_trial_and_opens_onboarding_on_it(tmp_pa
         state.update(guest)
         return dict(guest)
 
-    monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: dict(state) if state else None)
+    monkeypatch.setattr(anon_auth, "current_thor_state", lambda *a, **k: dict(state) if state else None)
     monkeypatch.setattr(welcome_trial, "claim_desktop_free_tier", claim)
-    monkeypatch.setattr(welcome_trial, "_has_nous_identity", lambda: bool(state))
+    monkeypatch.setattr(welcome_trial, "_has_thor_identity", lambda: bool(state))
     conn = await _connect(tmp_path, monkeypatch)
     try:
         await _request(conn, 1, "client.capabilities", {"desktop_local": True})
@@ -270,12 +270,12 @@ async def test_an_exact_create_retry_from_a_socket_not_yet_declared_local_resume
 @pytest.mark.asyncio
 async def test_a_chat_opened_on_the_trial_moves_to_the_provider_the_user_connects(tmp_path, monkeypatch):
     """A trial-only chat runs on the free model; once the user connects a real provider, the same
-    chat's next turn runs on that provider's model instead of asking a paid route for nous/welcome."""
+    chat's next turn runs on that provider's model instead of asking a paid route for thor/welcome."""
     from thor_cli import anon_auth
     from thor_state_local import local_receipt
     from gateway.session_policy import restore_policy
     guest = {"auth_method": anon_auth.ANON_AUTH_METHOD, anon_auth.WELCOME_CLAIM_FLAG: True}
-    monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: guest)
+    monkeypatch.setattr(anon_auth, "current_thor_state", lambda *a, **k: guest)
     conn = await _connect(tmp_path, monkeypatch)
     try:
         await _request(conn, 1, "client.capabilities", {"desktop_local": True})

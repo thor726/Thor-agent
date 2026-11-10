@@ -34,7 +34,7 @@ from thor_cli.auth import PROVIDER_REGISTRY as _REGISTRY
 
 _EXTRA_ENV_VARS = (
     # Checked directly in resolve_provider("auto"), not via the registry.
-    "OPENROUTER_API_KEY", "NOUS_API_KEY",
+    "OPENROUTER_API_KEY", "THOR_PORTAL_API_KEY",
     # Base URLs / paths that influence detection but aren't api_key_env_vars.
     "LM_BASE_URL", "KIMI_BASE_URL", "STEPFUN_BASE_URL", "KILOCODE_BASE_URL",
     "GMI_BASE_URL", "OPENAI_BASE_URL",
@@ -387,19 +387,19 @@ class TestHasAnyProviderConfigured:
         import json
         thor_home = self._setup_home(monkeypatch, tmp_path)
         (thor_home / "auth.json").write_text(json.dumps({
-            "active_provider": "nous",
+            "active_provider": "thor",
         }))
         calls = []
 
         def _guarded_status(provider_id):
             calls.append(provider_id)
-            assert provider_id == "nous", "sweep must be skipped"
+            assert provider_id == "thor", "sweep must be skipped"
             return {"logged_in": True}
 
         monkeypatch.setattr("thor_cli.auth.get_auth_status", _guarded_status)
         from thor_cli.main import _has_any_provider_configured
         assert _has_any_provider_configured() is True
-        assert calls == ["nous"], (
+        assert calls == ["thor"], (
             f"provider registry sweep ran before auth.json short-circuit: {calls}"
         )
 

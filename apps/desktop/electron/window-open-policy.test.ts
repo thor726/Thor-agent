@@ -21,7 +21,7 @@ describe('hub-iframe-policy predicates', () => {
     expect(isThorHubOrigin('')).toBe(false)
     expect(isThorHubOrigin(null)).toBe(false)
     expect(isThorHubOrigin(undefined)).toBe(false)
-    expect(isThorHubOrigin('https://thor-agent.nousresearch.com.evil.example')).toBe(false)
+    expect(isThorHubOrigin('https://thor-agent.thor-agent.local.evil.example')).toBe(false)
     expect(isThorHubOrigin('https://evil.example')).toBe(false)
     expect(isThorHubOrigin('file://')).toBe(false)
   })
@@ -103,7 +103,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     const openExternalUrl = vi.fn()
 
     const handler = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => 'https://thor-agent.nousresearch.com.evil.example',
+      getOpenerOrigin: () => 'https://thor-agent.thor-agent.local.evil.example',
       openExternalUrl
     })
 

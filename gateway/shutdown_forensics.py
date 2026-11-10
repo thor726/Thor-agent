@@ -1,6 +1,6 @@
 """Shutdown forensics — capture context when the gateway receives SIGTERM/SIGINT.
 
-``shutdown_signal_handler`` runs synchronously inside the asyncio loop, so
+``shutdown_signal_handler`` runs synchrothorly inside the asyncio loop, so
 :func:`snapshot_shutdown_context` is a fast (<10ms) non-blocking probe and
 :func:`spawn_async_diagnostic` is a fire-and-forget ``ps`` walk in a detached
 subprocess. Anything that waits belongs in the async helper, never in the probe.

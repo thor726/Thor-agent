@@ -134,7 +134,7 @@ export interface JudgeEnv {
   nowS: number
 }
 
-/** {@link JudgeEnv} whose process facts answer synchronously. */
+/** {@link JudgeEnv} whose process facts answer synchrothorly. */
 export interface SyncJudgeEnv {
   ourPid: number
   ourCt: () => number | null
@@ -146,7 +146,7 @@ export interface SyncJudgeEnv {
 /**
  * The identity rule itself, the one copy every Desktop reader runs: the
  * async judge resolves the facts first, the module-init repair lock reads
- * them synchronously. `startedAt` anchors the v1 ceiling.
+ * them synchrothorly. `startedAt` anchors the v1 ceiling.
  */
 export function identityStateSync(
   pid: number,

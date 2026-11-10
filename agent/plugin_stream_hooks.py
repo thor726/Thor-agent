@@ -1,4 +1,4 @@
-"""Asynchronous per-consumer plugin observers for streaming LLM output.
+"""Asynchrothor per-consumer plugin observers for streaming LLM output.
 
 Each registered hook callback gets its own bounded queue + daemon worker thread
 so plugin code never runs inline on the token path. Queues drop the oldest

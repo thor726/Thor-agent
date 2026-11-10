@@ -34,7 +34,7 @@ from thor_cli._startup_fast import project_root_str
 
 PROJECT_ROOT = Path(project_root_str())
 
-_DOCS_BASE = "https://thor-agent.nousresearch.com/docs"
+_DOCS_BASE = "https://thor-agent.thor-agent.local/docs"
 _BRACKETED_PASTE_PATTERN = re.compile(r"\x1b\[\s*200~|\x1b\[\s*201~")
 
 
@@ -142,7 +142,7 @@ class _SetupGoBack(_SetupControlFlow):
 
 
 class _SetupNavigationState:
-    """Per-invocation navigation state for the synchronous setup wizard."""
+    """Per-invocation navigation state for the synchrothor setup wizard."""
 
     def __init__(self, *, section_index: int = -1, prompt_index: int = 0):
         self.reset(section_index)
@@ -515,7 +515,7 @@ def setup_tools(config: dict, first_install: bool = False):
 
 
 _SEND_CONSENT_EXPLAINER = (
-    "", "Sharing uploads each daily package to the Nous telemetry",
+    "", "Sharing uploads each daily package to the Thor telemetry",
     "service. Packages carry your profile-scoped install ID, a",
     "stable random UUID that identifies this profile across days",
     "(it contains no personal information and is reset by deleting",
@@ -529,7 +529,7 @@ _SEND_CONSENT_EXPLAINER = (
 
 
 def setup_telemetry(config: dict):
-    """Turn shared metrics on (collect and send to Nous) or off: one answer sets both keys."""
+    """Turn shared metrics on (collect and send to Thor) or off: one answer sets both keys."""
     print_header("Shared Metrics")
     _info("Shared metrics contain only bounded counters: activity, session length,",
           "outcomes, error classes (with a fixed-list reason when a memory write or",
@@ -552,10 +552,10 @@ def setup_telemetry(config: dict):
     shared_metrics = _sub_dict(_sub_dict(config, "telemetry"), "shared_metrics")
     sharing = shared_metrics.get("enabled") is True and shared_metrics.get("send") is True
     # One answer for both keys: off also withdraws send consent and stops collection.
-    share = prompt_yes_no("Send shared metrics to Nous?", default=sharing)
+    share = prompt_yes_no("Send shared metrics to Thor?", default=sharing)
     save_consent(share, share, config)
     if share:
-        print_success("Shared metrics sent to Nous once a day.")
+        print_success("Shared metrics sent to Thor once a day.")
     else:
         print_info("Shared metrics off.")
 
@@ -663,7 +663,7 @@ def _run_full_setup(config: dict, thor_home, *, is_existing: bool, imported_from
 
 # First-time mode picker: (menu label, setup_quick runner name) — None falls through to Full Setup.
 _FIRST_TIME_MODES = (
-    ("Quick Setup (Nous Portal) — free OAuth login, no API keys, model + tools (recommended)",
+    ("Quick Setup (Thor Portal) — free OAuth login, no API keys, model + tools (recommended)",
      "_run_first_time_quick_setup"),
     ("Full setup — configure every provider, tool & option yourself (bring your own keys)", None),
     ("Blank Slate — everything off except the bare minimum; opt in to each capability", "_run_blank_slate_setup"),
@@ -696,7 +696,7 @@ def _run_setup_wizard_impl(args):
     if getattr(args, 'non_interactive', False) or not is_interactive_stdin():
         print_noninteractive_setup_guidance("Running in a non-interactive environment (no TTY detected).")
         return
-    if getattr(args, "portal", False):  # one-shot Nous Portal setup; skips the rest
+    if getattr(args, "portal", False):  # one-shot Thor Portal setup; skips the rest
         _run_portal_one_shot(config)
         return
     section = getattr(args, "section", None)

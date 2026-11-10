@@ -1,4 +1,4 @@
-import collapseBold from '@nous-research/ui/fonts/Collapse-Bold.woff2?url'
+import collapseBold from '@thor-research/ui/fonts/Collapse-Bold.woff2?url'
 import { within } from '@testing-library/dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 

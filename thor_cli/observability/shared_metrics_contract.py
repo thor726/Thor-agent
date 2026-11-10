@@ -314,7 +314,7 @@ PLATFORM_HEALTH_MARK = PLATFORM_HEALTH_METRIC = "thor.platform.health"
 PLATFORM_DELIVERY_MARK = PLATFORM_DELIVERY_METRIC = "thor.platform.delivery"
 REPLY_LATENCY_MARK = REPLY_LATENCY_METRIC = "thor.gateway.reply_latency"
 CRON_RUN_MARK = CRON_RUN_METRIC = "thor.cron.run"
-# Plugin platforms are named only when Nous ships them (plugins/platforms/) or the installer proved a
+# Plugin platforms are named only when Thor ships them (plugins/platforms/) or the installer proved a
 # plugin-catalog install (shared_metrics_catalog.platform_metric_name); every other one is ``plugin``.
 _PLATFORM_CATALOGS = ("bundled_platform_names", "catalog_platform_names")
 GATEWAY_PLATFORMS = _CatalogValues(*_PLATFORM_CATALOGS, extra=_CORE_GATEWAY_PLATFORMS)

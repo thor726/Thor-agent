@@ -246,7 +246,7 @@ async def _run_abandon_cleanup(on_abandon: Callable[[], Awaitable[Any]]) -> None
 def _dump_blocked_loop_diagnostics(label: str, timeout_s: float) -> None:
     logger.warning(
         "[deadline] %r deadline (%.0fs) expired but the event loop has not processed the expiry "
-        "after a further %.0fs — the loop thread appears BLOCKED in a synchronous call, which is "
+        "after a further %.0fs — the loop thread appears BLOCKED in a synchrothor call, which is "
         "why no asyncio timeout can fire. Dumping all thread stacks to stderr to identify the "
         "blocking frame.",
         label, timeout_s, _LOOP_BLOCKED_DUMP_GRACE_S,

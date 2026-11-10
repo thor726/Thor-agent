@@ -5,45 +5,45 @@ from __future__ import annotations
 import pytest
 
 from thor_cli import auth
-from thor_cli import auth_nous
+from thor_cli import auth_thor
 from thor_cli.auth import (
-    NOUS_BILLING_MANAGE_SCOPE,
-    nous_token_has_billing_scope,
-    step_up_nous_billing_scope,
+    THOR_PORTAL_BILLING_MANAGE_SCOPE,
+    thor_token_has_billing_scope,
+    step_up_thor_billing_scope,
 )
 
 
 # ---------------------------------------------------------------------------
-# nous_token_has_billing_scope
+# thor_token_has_billing_scope
 # ---------------------------------------------------------------------------
 
 
-class TestNousTokenHasBillingScope:
+class TestThorTokenHasBillingScope:
     def test_true_when_scope_string_contains_billing_manage(self, monkeypatch):
         monkeypatch.setattr(
             auth, "get_provider_auth_state",
-            lambda pid: {"scope": f"openid {NOUS_BILLING_MANAGE_SCOPE} inference"},
+            lambda pid: {"scope": f"openid {THOR_PORTAL_BILLING_MANAGE_SCOPE} inference"},
         )
-        assert nous_token_has_billing_scope() is True
+        assert thor_token_has_billing_scope() is True
 
     def test_false_when_scope_missing_or_not_a_string(self, monkeypatch):
         monkeypatch.setattr(auth, "get_provider_auth_state", lambda pid: {"scope": "openid inference"})
-        assert nous_token_has_billing_scope() is False
+        assert thor_token_has_billing_scope() is False
         monkeypatch.setattr(auth, "get_provider_auth_state", lambda pid: {"scope": None})
-        assert nous_token_has_billing_scope() is False
+        assert thor_token_has_billing_scope() is False
         monkeypatch.setattr(auth, "get_provider_auth_state", lambda pid: None)
-        assert nous_token_has_billing_scope() is False
+        assert thor_token_has_billing_scope() is False
 
     def test_false_when_auth_state_lookup_raises(self, monkeypatch):
         def _boom(pid):
             raise RuntimeError("auth store unreadable")
 
         monkeypatch.setattr(auth, "get_provider_auth_state", _boom)
-        assert nous_token_has_billing_scope() is False
+        assert thor_token_has_billing_scope() is False
 
 
 # ---------------------------------------------------------------------------
-# step_up_nous_billing_scope
+# step_up_thor_billing_scope
 # ---------------------------------------------------------------------------
 
 
@@ -54,10 +54,10 @@ def _stub_persist(monkeypatch):
     monkeypatch.setattr(auth, "_load_auth_store", dict)
     monkeypatch.setattr(auth, "_save_provider_state", lambda *a, **kw: None)
     monkeypatch.setattr(auth, "_save_auth_store", lambda *a, **kw: "auth.json")
-    monkeypatch.setattr(auth, "_write_shared_nous_state", lambda *a, **kw: None)
-    monkeypatch.setattr(auth_nous, "_write_shared_nous_state", lambda *a, **kw: None)
-    monkeypatch.setattr(auth, "_sync_nous_pool_from_auth_store", lambda: None)
-    monkeypatch.setattr(auth_nous, "_sync_nous_pool_from_auth_store", lambda: None)
+    monkeypatch.setattr(auth, "_write_shared_thor_state", lambda *a, **kw: None)
+    monkeypatch.setattr(auth_thor, "_write_shared_thor_state", lambda *a, **kw: None)
+    monkeypatch.setattr(auth, "_sync_thor_pool_from_auth_store", lambda: None)
+    monkeypatch.setattr(auth_thor, "_sync_thor_pool_from_auth_store", lambda: None)
 
 
 class _NullCtx:
@@ -86,10 +86,10 @@ def test_step_up_requests_billing_scope_and_reuses_prior_urls(monkeypatch, _stub
         # Simulate the admin ticking the box → token comes back WITH the scope.
         return {"scope": "inference:invoke billing:manage", "access_token": "t"}
 
-    monkeypatch.setattr(auth, "_nous_device_code_login", _fake_login)
-    monkeypatch.setattr(auth_nous, "_nous_device_code_login", _fake_login)
+    monkeypatch.setattr(auth, "_thor_device_code_login", _fake_login)
+    monkeypatch.setattr(auth_thor, "_thor_device_code_login", _fake_login)
 
-    granted = step_up_nous_billing_scope()
+    granted = step_up_thor_billing_scope()
     assert granted is True
     # Requests the granted inference scope plus billing access.
     assert captured["scope"] == "inference:invoke billing:manage"
@@ -101,15 +101,15 @@ def test_step_up_requests_billing_scope_and_reuses_prior_urls(monkeypatch, _stub
 def test_step_up_drops_the_billing_token_cache(monkeypatch, _stub_persist):
     """The refused action is replayed right after the grant; a still-cached pre-grant token would 403 again
     (desktop showed "Remote Spending needs approval" straight after approving)."""
-    from thor_cli import nous_billing
+    from thor_cli import thor_billing
     monkeypatch.setattr(auth, "get_provider_auth_state", lambda p: {"scope": "inference:invoke"})
     fake_login = lambda **kw: {"scope": "inference:invoke billing:manage", "access_token": "new"}
-    monkeypatch.setattr(auth, "_nous_device_code_login", fake_login)
-    monkeypatch.setattr(auth_nous, "_nous_device_code_login", fake_login)
-    nous_billing._token_cache["home"] = (0.0, "old-unscoped", "https://portal")
+    monkeypatch.setattr(auth, "_thor_device_code_login", fake_login)
+    monkeypatch.setattr(auth_thor, "_thor_device_code_login", fake_login)
+    thor_billing._token_cache["home"] = (0.0, "old-unscoped", "https://portal")
 
-    assert step_up_nous_billing_scope() is True
-    assert nous_billing._token_cache == {}
+    assert step_up_thor_billing_scope() is True
+    assert thor_billing._token_cache == {}
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ def test_device_login_fires_on_verification_before_polling(monkeypatch):
     # validation (JWT usability checks) is out of scope and may raise on the
     # synthetic token — swallow it; the ordering assertion is what matters.
     try:
-        auth._nous_device_code_login(open_browser=False, on_verification=_cb)
+        auth._thor_device_code_login(open_browser=False, on_verification=_cb)
     except Exception:
         pass
 

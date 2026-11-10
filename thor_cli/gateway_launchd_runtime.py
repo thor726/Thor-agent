@@ -23,7 +23,7 @@ from pathlib import Path
 
 # Never ``ai.thor.*``: that prefix is what the gateway's restart route, its control-socket
 # supervisor declaration and every fleet scan read as "an installed, KeepAlive service".
-LABEL_PREFIX = "com.nousresearch.thor.runtime."
+LABEL_PREFIX = "com.thorresearch.thor.runtime."
 _POLL_INTERVAL_S = 0.5
 
 

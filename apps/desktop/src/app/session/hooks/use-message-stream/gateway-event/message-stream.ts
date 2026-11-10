@@ -38,7 +38,7 @@ function firstBillingLine(text: string): string {
  * we cache it per-session, which drives the out-of-credits banner above the
  * composer. A wall in a session that is NOT on screen also raises one sticky,
  * billing-specific toast — never the generic "Thor error" — with a smart CTA
- * (Nous → in-app Settings → Billing, other providers → their billing page); on
+ * (Thor → in-app Settings → Billing, other providers → their billing page); on
  * screen the banner and the turn's card carry it, so no toast repeats them.
  */
 function surfaceBillingBlock(sessionId: string, raw: unknown, toast: boolean): void {
@@ -68,8 +68,8 @@ function surfaceBillingBlock(sessionId: string, raw: unknown, toast: boolean): v
     id: `billing-block:${block.provider}`,
     kind: 'warning',
     icon: 'credit-card',
-    title: block.is_nous
-      ? translateNow('billingBlock.titleNous')
+    title: block.is_thor
+      ? translateNow('billingBlock.titleThor')
       : translateNow('billingBlock.titleProvider', block.provider_label),
     message: firstBillingLine(block.message) || translateNow('billingBlock.fallbackMessage'),
     // Sticky: a credit wall blocks every turn until resolved.

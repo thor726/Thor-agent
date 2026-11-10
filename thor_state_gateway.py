@@ -1068,7 +1068,7 @@ class SessionGatewayMixin:
     def reclaim_stale_running_handoffs(self, error: str) -> list[str]:
         """Fail every handoff stuck in ``running``; returns the ids reclaimed. Only the gateway watcher sets
         ``running``, for one in-process dispatch — so a ``running`` row at watcher startup belongs to a
-        PREVIOUS gateway that died mid-dispatch. It is poisonous: ``request_handoff`` only accepts
+        PREVIOUS gateway that died mid-dispatch. It is poisothor: ``request_handoff`` only accepts
         NULL/``completed``/``failed``, so the session could never hand off again, with no error surfaced.
         Failing rather than re-queueing is deliberate: the dead gateway may already have switched the
         session key and dispatched the synthetic turn, so a blind retry risks double delivery; a clean
@@ -1082,7 +1082,7 @@ class SessionGatewayMixin:
         try:
             return self._execute_write(_do) or []
         except Exception:
-            # Swallow but never silently: a persistently failing reclaim leaves poisonous
+            # Swallow but never silently: a persistently failing reclaim leaves poisothor
             # 'running' rows in place, so the operator needs a trace.
             logger.warning(
                 "reclaim_stale_running_handoffs failed; stranded 'running' "

@@ -238,25 +238,25 @@ def _tts_xai_step(config: dict) -> str:
 
 def _setup_tts_provider(config: dict):
     """Interactive TTS provider selection with install flow for local engines."""
-    from thor_cli import nous_subscription
+    from thor_cli import thor_subscription
     current_provider = config.get("tts", {}).get("provider", "edge")
     current_label = _TTS_PROVIDER_LABELS.get(current_provider, current_provider)
     print()
     _setup.print_header("Text-to-Speech Provider (optional)")
     _setup._info(f"Current: {current_label}", None)
     options = list(_TTS_PROVIDER_CHOICES)
-    if tool_backend_helpers.managed_nous_tools_enabled() and nous_subscription.get_nous_subscription_features(config).nous_auth_present:
-        options.insert(0, ("nous-openai",
-                           "Nous Subscription (managed OpenAI TTS, billed to your subscription)"))
+    if tool_backend_helpers.managed_thor_tools_enabled() and thor_subscription.get_thor_subscription_features(config).thor_auth_present:
+        options.insert(0, ("thor-openai",
+                           "Thor Subscription (managed OpenAI TTS, billed to your subscription)"))
     choices = [label for _, label in options] + [f"Keep current ({current_label})"]
     keep_current_idx = len(choices) - 1
     idx = _setup.prompt_choice("Select TTS provider:", choices, keep_current_idx)
     if idx == keep_current_idx:
         return
     selected = options[idx][0]
-    if selected == "nous-openai":
+    if selected == "thor-openai":
         selected = "openai"
-        _setup.print_info("OpenAI TTS will use the managed Nous gateway and bill to your subscription.")
+        _setup.print_info("OpenAI TTS will use the managed Thor gateway and bill to your subscription.")
         if _setup.get_env_value("VOICE_TOOLS_OPENAI_KEY") or _setup.get_env_value("OPENAI_API_KEY"):
             _setup.print_warning("Direct OpenAI credentials are still configured and may take precedence "
                                  "until removed from ~/.thor/.env.")

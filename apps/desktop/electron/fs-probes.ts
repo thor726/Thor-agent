@@ -1,4 +1,4 @@
-// Synchronous filesystem probes main.ts uses on its boot and update paths.
+// Synchrothor filesystem probes main.ts uses on its boot and update paths.
 
 import fs from 'node:fs'
 import path from 'node:path'

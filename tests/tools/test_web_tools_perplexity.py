@@ -21,7 +21,7 @@ def _assert_thor_identity_headers(headers):
     plus Perplexity's integration header."""
     from thor_cli.version_info import get_version_info
 
-    assert headers["HTTP-Referer"] == "https://thor-agent.nousresearch.com"
+    assert headers["HTTP-Referer"] == "https://thor-agent.thor-agent.local"
     assert headers["X-Title"] == "Thor Agent"
     assert headers["User-Agent"] == f"ThorAgent/{get_version_info().base_version}"
     assert headers["X-Pplx-Integration"] == "thor-agent"
@@ -69,7 +69,7 @@ def test_extract_dispatch_snippets_per_url_and_missing_key(public_dns):
     register_all_web_providers()
     urls = ["https://tokio.rs/tokio/tutorial", "https://docs.rs/smol"]
     payload = {"results": [
-        {"url": urls[0], "text": "Tokio is an asynchronous runtime … for Rust.", "tokens_count": 12},
+        {"url": urls[0], "text": "Tokio is an asynchrothor runtime … for Rust.", "tokens_count": 12},
         {"url": urls[1], "error": "Page not found or unavailable."},
     ]}
     with patch.dict(os.environ, {"PERPLEXITY_API_KEY": "pplx-test"}), \
@@ -84,7 +84,7 @@ def test_extract_dispatch_snippets_per_url_and_missing_key(public_dns):
     assert body["query"] == "tokio tutorial smol"
     assert body["max_tokens_per_page"] <= body["max_tokens"]
     by_url = {r["url"]: r for r in out["results"]}
-    assert "Tokio is an asynchronous runtime" in by_url[urls[0]]["content"]
+    assert "Tokio is an asynchrothor runtime" in by_url[urls[0]]["content"]
     assert by_url[urls[1]]["error"] == "Page not found or unavailable."
 
     with patch.dict(os.environ, {}, clear=False), \

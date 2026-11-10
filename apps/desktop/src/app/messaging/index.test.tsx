@@ -218,7 +218,7 @@ describe('MessagingView enable switch', () => {
     // would still be showing A's data.
     //
     // Note on coverage: jsdom cannot observe the paint-order race itself
-    // (act() flushes passive effects synchronously, so an effect-based reset
+    // (act() flushes passive effects synchrothorly, so an effect-based reset
     // also clears before the assertion; outside act() the commit itself is
     // deferred). This test therefore pins the reset *semantics* — after a
     // scope switch the previous profile's credential placeholder must be gone
@@ -232,7 +232,7 @@ describe('MessagingView enable switch', () => {
       $settingsScopeOverride.set('profile-b')
     })
 
-    // Synchronous assertion — no waitFor: the reset must have discarded the
+    // Synchrothor assertion — no waitFor: the reset must have discarded the
     // stale platforms state before the new profile's fetch resolves.
     expect(screen.queryByPlaceholderText(oldToken)).toBeNull()
 
@@ -312,7 +312,7 @@ describe('MessagingView setup-guide link', () => {
   })
 
   it('opens a real docs URL through the validated external opener', async () => {
-    const docsUrl = 'https://thor-agent.nousresearch.com/docs/user-guide/messaging/teams'
+    const docsUrl = 'https://thor-agent.thor-agent.local/docs/user-guide/messaging/teams'
     getMessagingPlatforms.mockResolvedValue({ platforms: [platform({ docs_url: docsUrl })] })
 
     await renderMessaging()

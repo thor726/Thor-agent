@@ -503,7 +503,7 @@ describe('connection-qualified session deletion', () => {
     expect(requestGateway).not.toHaveBeenCalledWith('session.close', expect.anything())
   })
 
-  it('tears down the selected session from synchronous refs when render state is stale', async () => {
+  it('tears down the selected session from synchrothor refs when render state is stale', async () => {
     const navigate = vi.fn()
     const requestGateway = vi.fn().mockResolvedValue({})
     const activeSessionIdRef: MutableRefObject<null | string> = { current: 'runtime-shared' }
@@ -2506,7 +2506,7 @@ describe('resumeSession failure recovery', () => {
   it('resumes via the gateway default (deferred build) — not lazy, no eager opt-out', async () => {
     // The switch-latency fix lives backend-side: a normal cold resume gets the
     // gateway's default DEFERRED build (transcript returns immediately, agent
-    // pre-warms in the background). The client must NOT force the synchronous
+    // pre-warms in the background). The client must NOT force the synchrothor
     // path (eager_build) and is only `lazy` for subagent watch windows.
     let resumeParams: Record<string, unknown> | undefined
 

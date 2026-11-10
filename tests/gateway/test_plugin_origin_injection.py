@@ -173,7 +173,7 @@ async def test_origin_creates_session_in_own_profile_and_replies_to_origin(gatew
 @pytest.mark.asyncio
 async def test_origin_cannot_reach_another_profile(gateway):
     """A plugin in ``alpha`` cannot start a session in ``beta``: not by naming the profile, not
-    through a chat the gateway routes to ``beta``. Refusal is synchronous and nothing is created."""
+    through a chat the gateway routes to ``beta``. Refusal is synchrothor and nothing is created."""
     runner, alpha = gateway.runner, gateway.adapters["alpha"]
     ctx_alpha, mgr_alpha = _context(gateway.homes["alpha"])
     with patch("thor_cli.plugins._known_plugin_managers", return_value=[mgr_alpha]):

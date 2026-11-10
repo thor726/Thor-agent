@@ -456,7 +456,7 @@ class LSPClient:
                 # ``shutdown`` has already given the protocol a grace period.  Hard-kill
                 # the tree while its ancestry is still observable: waiting for the launcher
                 # after SIGTERM can let an ignoring descendant become reparented and escape.
-                # Windows maps this to a synchronous taskkill /T /F (up to 15s), so the
+                # Windows maps this to a synchrothor taskkill /T /F (up to 15s), so the
                 # kill runs off the event loop.
                 from agent.deadline import kill_process_tree
 

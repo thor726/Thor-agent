@@ -17,18 +17,18 @@ import type {
   MemoryProviderSetupResult,
   PluginsHubResponse,
 } from "@/lib/api";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Select, SelectOption } from "@nous-research/ui/ui/components/select";
-import { Switch } from "@nous-research/ui/ui/components/switch";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { CommandBlock, CopyButton } from "@nous-research/ui/ui/components/command-block";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { ConfirmDialog } from "@nous-research/ui/ui/components/confirm-dialog";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Label } from "@nous-research/ui/ui/components/label";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
-import { Toast } from "@nous-research/ui/ui/components/toast";
+import { Button } from "@thor-research/ui/ui/components/button";
+import { Badge } from "@thor-research/ui/ui/components/badge";
+import { Select, SelectOption } from "@thor-research/ui/ui/components/select";
+import { Switch } from "@thor-research/ui/ui/components/switch";
+import { Spinner } from "@thor-research/ui/ui/components/spinner";
+import { CommandBlock, CopyButton } from "@thor-research/ui/ui/components/command-block";
+import { Card, CardContent, CardHeader, CardTitle } from "@thor-research/ui/ui/components/card";
+import { ConfirmDialog } from "@thor-research/ui/ui/components/confirm-dialog";
+import { Input } from "@thor-research/ui/ui/components/input";
+import { Label } from "@thor-research/ui/ui/components/label";
+import { useToast } from "@thor-research/ui/hooks/use-toast";
+import { Toast } from "@thor-research/ui/ui/components/toast";
 import { useI18n } from "@/i18n";
 import { en } from "@/i18n/en";
 import { PluginSlot } from "@/plugins";
@@ -885,7 +885,7 @@ export default function PluginsPage() {
 
           <p className="text-xs tracking-[0.06em] text-text-tertiary">
             {t.pluginsPage.catalogHint ??
-              "Curated, Nous-reviewed plugins pinned to exact commits."}
+              "Curated, Thor-reviewed plugins pinned to exact commits."}
           </p>
 
           <Input
@@ -906,7 +906,7 @@ export default function PluginsPage() {
               {t.pluginsPage.catalogEmpty ?? "No catalog entries match."}{" "}
               <a
                 className="underline"
-                href="https://thor-agent.nousresearch.com/docs/plugins"
+                href="https://thor-agent.thor-agent.local/docs/plugins"
                 target="_blank"
                 rel="noreferrer"
               >

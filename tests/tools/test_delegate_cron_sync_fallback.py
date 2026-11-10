@@ -1,9 +1,9 @@
-"""Regression test for #86632: cron's synchronous delegate_task fallback must
+"""Regression test for #86632: cron's synchrothor delegate_task fallback must
 return after the child completes — the automatic background review must not
 fire inside the delegated child.
 
 Field signature (issue #86632): a cron job's top-level ``delegate_task`` takes
-the #66617 stateless-channel synchronous fallback, the child finishes its turn
+the #66617 stateless-channel synchrothor fallback, the child finishes its turn
 normally (``Turn ended: reason=text_response``), and the delegation never
 returns to the parent — the heartbeat monitor goes stale and the cron
 inactivity watchdog kills the job.  Root cause (traced in the issue thread and
@@ -16,7 +16,7 @@ inside the child's finalize path is the wedge site the cron watchdog kills.
 This exercises the REAL end-to-end #86632 path: a genuine ``AIAgent`` child
 (mocked LLM client) with the skill-review trigger armed, dispatched through
 ``delegate_task(background=True)`` under a session runtime where async delivery
-is unsupported (cron), forcing the synchronous fallback.
+is unsupported (cron), forcing the synchrothor fallback.
 """
 
 from __future__ import annotations
@@ -129,7 +129,7 @@ def test_cron_sync_fallback_returns_and_spawns_no_review_fork(monkeypatch):
     def _call_delegate_task():
         # Cron declares the channel stateless (#66617): async delivery is
         # unsupported and there is no bound origin session id to wake, so
-        # delegate_task must run the batch synchronously.
+        # delegate_task must run the batch synchrothorly.
         with (
             patch(
                 "gateway.session_context.async_delivery_supported",
@@ -151,11 +151,11 @@ def test_cron_sync_fallback_returns_and_spawns_no_review_fork(monkeypatch):
     worker.start()
     worker.join(timeout=90)
     try:
-        # 1) The synchronous fallback must return to the parent. On the field
+        # 1) The synchrothor fallback must return to the parent. On the field
         #    failure this never happened; here a non-return means the child's
         #    finalize path (or the parent join) wedged.
         assert not worker.is_alive(), (
-            "delegate_task synchronous fallback did not return after the "
+            "delegate_task synchrothor fallback did not return after the "
             "child completed (#86632 wedge)"
         )
         parsed = json.loads(done["out"])

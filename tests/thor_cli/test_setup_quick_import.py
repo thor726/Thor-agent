@@ -1,5 +1,5 @@
 """First-time Quick Setup after an agent import: a model the import brought is kept by default
-instead of being replaced by the Nous Portal login/model step."""
+instead of being replaced by the Thor Portal login/model step."""
 
 from argparse import Namespace
 from unittest.mock import patch
@@ -17,18 +17,18 @@ def _fake_import(_thor_home):
     return "OpenClaw"
 
 
-def _fake_nous_flow(config):
-    """The real flow logs in and saves provider ``nous`` with a Portal model."""
+def _fake_thor_flow(config):
+    """The real flow logs in and saves provider ``thor`` with a Portal model."""
     from thor_cli.config import save_config
-    config["model"] = {"provider": "nous", "default": "Hermes-4-405B"}
+    config["model"] = {"provider": "thor", "default": "Thor-4-405B"}
     save_config(config)
 
 
-@pytest.mark.parametrize("switch, nous_runs, expected_model", [
+@pytest.mark.parametrize("switch, thor_runs, expected_model", [
     (False, 0, {"provider": "openrouter", "default": "anthropic/claude-sonnet-4.5"}),
-    (True, 1, {"provider": "nous", "default": "Hermes-4-405B"}),
+    (True, 1, {"provider": "thor", "default": "Thor-4-405B"}),
 ])
-def test_quick_setup_keeps_imported_model_unless_user_switches(switch, nous_runs, expected_model):
+def test_quick_setup_keeps_imported_model_unless_user_switches(switch, thor_runs, expected_model):
     from thor_cli.config import get_env_value, load_config
     from thor_cli.setup import run_setup_wizard
 
@@ -38,14 +38,14 @@ def test_quick_setup_keeps_imported_model_unless_user_switches(switch, nous_runs
         # Enter on every menu (the mode menu's default is Quick Setup), except the keep/switch
         # question when the test switches.
         questions.append(question)
-        if switch and "switch to Nous Portal" in question:
+        if switch and "switch to Thor Portal" in question:
             return 1
         return default
 
     with patch("thor_cli.setup.is_interactive_stdin", return_value=True), \
             patch("thor_cli.setup.offer_agent_import", side_effect=_fake_import), \
             patch("thor_cli.setup.prompt_choice", side_effect=answer), \
-            patch("thor_cli.model_setup_flows._model_flow_nous", side_effect=_fake_nous_flow) as nous, \
+            patch("thor_cli.model_setup_flows._model_flow_thor", side_effect=_fake_thor_flow) as thor, \
             patch("thor_cli.setup.setup_terminal_backend"), \
             patch("thor_cli.setup.setup_gateway") as gateway, \
             patch("thor_cli.setup._print_setup_summary"), \
@@ -53,7 +53,7 @@ def test_quick_setup_keeps_imported_model_unless_user_switches(switch, nous_runs
         run_setup_wizard(Namespace(non_interactive=False, section=None, reset=False,
                                    reconfigure=False, quick=False))
 
-    assert nous.call_count == nous_runs
+    assert thor.call_count == thor_runs
     model = load_config()["model"]
     assert {k: model.get(k) for k in expected_model} == expected_model
     assert get_env_value("OPENROUTER_API_KEY") == "sk-or-demo-not-a-real-key"

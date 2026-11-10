@@ -643,9 +643,9 @@ class AIAgent(
         """Return True when this provider/model pair should use Responses API."""
         from thor_cli.providers import is_actual_route
         normalized_provider = (provider or "").strip().lower()
-        # Nous serves GPT-5.x via chat completions (its /v1/responses returns 404); generic custom endpoints
+        # Thor serves GPT-5.x via chat completions (its /v1/responses returns 404); generic custom endpoints
         # may relay GPT-5 without full Responses semantics — only direct OpenAI/xAI URLs auto-upgrade.
-        if normalized_provider in ("nous", "custom") or is_actual_route(provider):
+        if normalized_provider in ("thor", "custom") or is_actual_route(provider):
             return False
         # ACP facades expose the OpenAI-compatible chat.completions shape regardless of model
         # family and have no ``responses`` attribute, so neither primary routing nor GPT-5
@@ -1353,7 +1353,7 @@ class AIAgent(
         from tools.delegate_tool import _strip_model_hidden_task_fields, delegate_task as _delegate_task
         # Top-level MODEL delegations run in the background (handle returned, results re-enter as messages),
         # unless the session's delegate_task is the joined variant (one-shot, delegation.gateway_mode inline).
-        # An ORCHESTRATOR SUBAGENT (depth > 0) stays synchronous — it needs results in-turn and owns no gateway
+        # An ORCHESTRATOR SUBAGENT (depth > 0) stays synchrothor — it needs results in-turn and owns no gateway
         # session. The schema-level `background` param is intentionally ignored.
         return _delegate_task(
             goal=function_args.get("goal"), context=function_args.get("context"),

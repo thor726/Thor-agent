@@ -15,15 +15,15 @@ from utils import base_url_host_matches
 
 @dataclass
 class BillingBlock:
-    """Structured billing-wall descriptor shared across every surface. ``is_nous`` is the routing bit:
-    Nous has an in-app billing surface (Settings → Billing, ``/topup``) preferred over ``billing_url``;
+    """Structured billing-wall descriptor shared across every surface. ``is_thor`` is the routing bit:
+    Thor has an in-app billing surface (Settings → Billing, ``/topup``) preferred over ``billing_url``;
     third-party providers have none, so ``billing_url`` is the deep link needed."""
 
     provider: str
     provider_label: str
     model: str
     billing_url: Optional[str]
-    is_nous: bool
+    is_thor: bool
     message: str
 
     def to_dict(self) -> dict:
@@ -61,18 +61,18 @@ _PROVIDERS: tuple[_Provider, ...] = (
 _BY_SLUG: dict[str, _Provider] = {slug: p for p in _PROVIDERS for slug in p.slugs}
 
 
-def is_nous_inference_route(provider: str, base_url: str) -> bool:
-    """True when the failing route is the Nous-managed inference gateway."""
-    return (provider or "").strip().lower() == "nous" or base_url_host_matches(str(base_url or ""), "inference-api.nousresearch.com")
+def is_thor_inference_route(provider: str, base_url: str) -> bool:
+    """True when the failing route is the Thor-managed inference gateway."""
+    return (provider or "").strip().lower() == "thor" or base_url_host_matches(str(base_url or ""), "inference-api.thor-agent.local")
 
 
-def _nous_billing_url() -> Optional[str]:
-    """Best-effort Nous portal billing URL (text-surface fallback; Nous prefers the in-app flow)."""
+def _thor_billing_url() -> Optional[str]:
+    """Best-effort Thor portal billing URL (text-surface fallback; Thor prefers the in-app flow)."""
     try:
-        from thor_cli.nous_account import nous_portal_billing_url
-        return nous_portal_billing_url(None)
+        from thor_cli.thor_account import thor_portal_billing_url
+        return thor_portal_billing_url(None)
     except Exception:
-        return "https://portal.nousresearch.com/billing"
+        return "https://portal.thor-agent.local/billing"
 
 
 def _resolve_provider_link(slug: str, base_url: str) -> tuple[str, Optional[str]]:
@@ -90,7 +90,7 @@ def build_billing_block(*, provider: str, base_url: str, model: str, message: st
     """Billing descriptor for a billing-classified failure; ``message`` (agent-loop guidance) passes through unchanged."""
     slug = (provider or "").strip().lower()
     model = (model or "").strip()
-    if is_nous_inference_route(slug, base_url):
-        return BillingBlock(slug or "nous", "Nous Portal", model, _nous_billing_url(), True, message or "")
+    if is_thor_inference_route(slug, base_url):
+        return BillingBlock(slug or "thor", "Thor Portal", model, _thor_billing_url(), True, message or "")
     label, url = _resolve_provider_link(slug, base_url)
     return BillingBlock(slug, label, model, url, False, message or "")

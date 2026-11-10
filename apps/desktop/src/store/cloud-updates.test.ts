@@ -17,13 +17,13 @@ afterEach(() => {
 
 describe('Thor Cloud owns updates', () => {
   it('native Desktop connected to a Cloud agent: only the backend is Cloud-owned', () => {
-    $connection.set(remote('https://lab.agents.nousresearch.com', 'cloud'))
+    $connection.set(remote('https://lab.agents.thor-agent.local', 'cloud'))
     expect($cloudOwnsUpdates.get()).toEqual({ backend: true, client: false })
     // The generic "Update Thor" command then updates this machine's app.
     expect(updateTargetFor($connection.get())).toBe('client')
 
     // A Cloud agent saved as a plain URL remote is still Cloud's.
-    $connection.set(remote('https://lab.agents.staging-nousresearch.com', 'url'))
+    $connection.set(remote('https://lab.agents.staging-thor-agent.local', 'url'))
     expect($cloudOwnsUpdates.get()).toEqual({ backend: true, client: false })
 
     $connection.set(remote('https://my-box.example.com', 'url'))
@@ -33,7 +33,7 @@ describe('Thor Cloud owns updates', () => {
 
   it('a Webapp tab served by a Cloud agent hides every update target', () => {
     document.documentElement.dataset.thorDesktopHost = 'browser'
-    vi.stubGlobal('location', new URL('https://lab--app.agents.nousresearch.com/'))
+    vi.stubGlobal('location', new URL('https://lab--app.agents.thor-agent.local/'))
     expect(cloudOwnsUpdates('client', null)).toBe(true)
     expect(cloudOwnsUpdates('backend', null)).toBe(true)
 

@@ -122,7 +122,7 @@ export const esOverrides = {
       showAllMatches: 'Mostrar todas las coincidencias',
       segmentNoMatch: (segment: string) => `No hay coincidencias en ${segment}, así que se muestran todas.`,
       freeTierNote: 'Las conexiones se quedan en este equipo hasta que inicies sesión.',
-      signInLine: 'Inicia sesión en Nous para usar las apps administradas.',
+      signInLine: 'Inicia sesión en Thor para usar las apps administradas.',
       signIn: 'Iniciar sesión',
       managedUnavailable: 'Las apps administradas aún no están disponibles para esta cuenta.',
       writeFailed: 'No se guardó ese cambio.',
@@ -130,7 +130,7 @@ export const esOverrides = {
       disconnectNoAccount:
         'Thor no tiene ninguna cuenta que desconectar aquí. Actualiza la página e inténtalo de nuevo.',
       disconnectRefused:
-        'Nous no pudo quitar este inicio de sesión ahora. Desactiva la app con el interruptor o inténtalo más tarde.'
+        'Thor no pudo quitar este inicio de sesión ahora. Desactiva la app con el interruptor o inténtalo más tarde.'
     },
     add: {
       action: 'Añadir el tuyo',
@@ -181,7 +181,7 @@ export const esOverrides = {
       turnOffLocal: 'Desactivar el servidor local',
       providedByPlugin: (plugin: string) => `Proporcionado por el plugin ${plugin}`,
       openPlugins: 'Abrir la pestaña Plugins',
-      nousLine: 'Las apps de Nous siguen a tu cuenta, no al perfil.',
+      thorLine: 'Las apps de Thor siguen a tu cuenta, no al perfil.',
       rulesReadOnly: 'Las reglas no se pueden cambiar ahora.',
       rulesAppOff: (name: string) => `Activa ${name} para cambiar sus herramientas.`,
       rulesSignIn: 'Inicia sesión para cambiar lo que Thor puede hacer aquí.',
@@ -239,7 +239,7 @@ export const esOverrides = {
       remove: 'Quitar',
       offTitle: (name: string) => `${name} está desactivado.`,
       offBody: 'Actívalo con el interruptor de arriba para leer las herramientas que incluye.',
-      signedOutTitle: 'Inicia sesión en Nous para leer la lista de herramientas.',
+      signedOutTitle: 'Inicia sesión en Thor para leer la lista de herramientas.',
       signedOutBody: 'Tus servidores en este equipo no se ven afectados.',
       conflictTitle: 'Alguien cambió esta regla mientras la editabas.',
       conflictBody: (theyOff: number, theyOn: number) => {
@@ -515,9 +515,9 @@ export const esOverrides = {
   },
   ...esNotices,
   sendDiagnostics: {
-    title: 'Enviar diagnóstico a Nous',
+    title: 'Enviar diagnóstico a Thor',
     privacyNotice:
-      'Esto sube un paquete de depuración a un almacenamiento interno de Nous (no a un sitio público). Incluye información del sistema (SO, versiones, proveedor y qué claves API están configuradas, nunca las claves en sí) y los registros completos del agente, del gateway y de la app de escritorio (hasta 512 KB cada uno), que probablemente contengan contenido de conversaciones, salidas de herramientas y rutas de archivos. Los secretos se ocultan antes de subirlo. Solo el personal de Nous y los moderadores autorizados de Discord pueden ver el paquete, que se elimina automáticamente a los 14 días.',
+      'Esto sube un paquete de depuración a un almacenamiento interno de Thor (no a un sitio público). Incluye información del sistema (SO, versiones, proveedor y qué claves API están configuradas, nunca las claves en sí) y los registros completos del agente, del gateway y de la app de escritorio (hasta 512 KB cada uno), que probablemente contengan contenido de conversaciones, salidas de herramientas y rutas de archivos. Los secretos se ocultan antes de subirlo. Solo el personal de Thor y los moderadores autorizados de Discord pueden ver el paquete, que se elimina automáticamente a los 14 días.',
     upload: 'Subir',
     uploading: 'Subiendo…',
     cancel: 'Cancelar',
@@ -529,11 +529,11 @@ export const esOverrides = {
       'Tu paquete se subió de forma privada. Comparte el enlace de abajo en tu hilo de soporte para que el equipo pueda ver tus registros.',
     failedTitle: 'Error al subir',
     failedHint:
-      'También puedes ejecutar `thor debug share --nous` desde una terminal, o `thor debug share --local` para mostrar el informe sin subirlo.',
+      'También puedes ejecutar `thor debug share --thor` desde una terminal, o `thor debug share --local` para mostrar el informe sin subirlo.',
     handoffLead: 'Continúa la conversación en:',
     links: {
       github: 'Issues de GitHub',
-      portal: 'Soporte de Nous Portal',
+      portal: 'Soporte de Thor Portal',
       discord: 'Discord'
     }
   },
@@ -846,7 +846,7 @@ export const esOverrides = {
           `${name} está instalado, pero necesita una clave para funcionar: ${vars}. Añádela ahora o las herramientas del plugin fallarán.`,
         verified: 'Verificado',
         unverified: 'Sin verificar',
-        reviewedByNous: 'Revisado por Nous.',
+        reviewedByThor: 'Revisado por Thor.',
         installsAndEnables: profile => `Se instala para ${profile} y se activa al momento.`,
         installsOnly: profile => `Se instala para ${profile}.`,
         advanced: 'Avanzado',
@@ -1734,7 +1734,7 @@ export const esOverrides = {
       cloudLoadingAgents: 'Cargando tus agentes…',
       cloudNoAgents: {
         before: 'No se encontraron agentes en esta cuenta. Crea uno en el ',
-        linkText: 'Portal de Nous',
+        linkText: 'Portal de Thor',
         after: ', y luego actualiza.'
       },
       cloudRefresh: 'Actualizar',
@@ -1844,7 +1844,7 @@ export const esOverrides = {
       sshErrHostKey:
         'La clave del host CAMBIÓ desde la última conexión. Confirma que sea un cambio esperado, ejecuta ssh-keygen -R <host> y vuelve a conectar.',
       sshErrNotInstalled:
-        'Thor no está instalado en el host remoto. Instálalo allí (curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh) o indica la ruta de Thor.',
+        'Thor no está instalado en el host remoto. Instálalo allí (curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh) o indica la ruta de Thor.',
       sshErrPlatform:
         'Plataforma remota no compatible. El modo SSH de Thor Desktop admite hosts remotos Linux, macOS y Windows.',
       sshErrTimeout: 'La conexión SSH agotó el tiempo de espera. Es posible que el host no responda o esté en reposo.',
@@ -1918,13 +1918,13 @@ export const esOverrides = {
       usageLabel: (label: string) => `Uso de ${label}`,
       freeTier: {
         signIn: 'Iniciar sesión',
-        title: 'Estás en el plan gratuito de Nous',
-        message: 'Inicia sesión con una cuenta de Nous para desbloquear más modelos y herramientas.',
+        title: 'Estás en el plan gratuito de Thor',
+        message: 'Inicia sesión con una cuenta de Thor para desbloquear más modelos y herramientas.',
         caption:
-          'Funciona con nous/welcome, con conectores incluidos. Al iniciar sesión conservas tus conectores y se añaden las herramientas que requieren cuenta y todos los demás modelos.',
-        name: 'Nous · plan gratuito',
+          'Funciona con thor/welcome, con conectores incluidos. Al iniciar sesión conservas tus conectores y se añaden las herramientas que requieren cuenta y todos los demás modelos.',
+        name: 'Thor · plan gratuito',
         footnote:
-          'El plan gratuito no tiene saldo ni nada que pagar. El pago y el uso aparecen al iniciar sesión con una cuenta de Nous.',
+          'El plan gratuito no tiene saldo ni nada que pagar. El pago y el uso aparecen al iniciar sesión con una cuenta de Thor.',
         plan: 'Plan gratuito',
         model: 'Modelo',
         connectors: 'Conectores',
@@ -2040,8 +2040,8 @@ export const esOverrides = {
       state: {
         notice: {
           loggedOut: {
-            title: 'Conecta tu cuenta de Nous',
-            message: 'Inicia sesión con tu cuenta de Nous para ver aquí tu saldo, plan y uso.',
+            title: 'Conecta tu cuenta de Thor',
+            message: 'Inicia sesión con tu cuenta de Thor para ver aquí tu saldo, plan y uso.',
             action: 'Iniciar sesión'
           },
           openPortal: 'Abrir el portal ↗',
@@ -2304,16 +2304,16 @@ export const esOverrides = {
       activeBackend: 'Activo',
       activeBackendHint: 'Este es tu backend activo',
       useBackend: 'Usar este backend',
-      nousIncluded: 'Incluido con una suscripción de Nous: inicia sesión con tu cuenta de Nous para activarlo.',
-      nousAuthNeededTitle: 'Inicia sesión con tu cuenta de Nous',
-      nousAuthNeededMessage: (provider: string) =>
-        `${provider} está guardado, pero solo funcionará cuando inicies sesión con tu cuenta de Nous.`,
-      nousAuthSignIn: 'Iniciar sesión',
-      nousAuthDoneTitle: 'Cuenta de Nous conectada',
-      nousAuthDoneMessage: 'Los backends de tu suscripción ya están activos.',
-      nousAuthFailed: 'No se completó el inicio de sesión en Nous',
-      nousAuthFailedMessage: 'Vuelve a intentarlo.',
-      nousAuthTryAgain: 'Reintentar',
+      thorIncluded: 'Incluido con una suscripción de Thor: inicia sesión con tu cuenta de Thor para activarlo.',
+      thorAuthNeededTitle: 'Inicia sesión con tu cuenta de Thor',
+      thorAuthNeededMessage: (provider: string) =>
+        `${provider} está guardado, pero solo funcionará cuando inicies sesión con tu cuenta de Thor.`,
+      thorAuthSignIn: 'Iniciar sesión',
+      thorAuthDoneTitle: 'Cuenta de Thor conectada',
+      thorAuthDoneMessage: 'Los backends de tu suscripción ya están activos.',
+      thorAuthFailed: 'No se completó el inicio de sesión en Thor',
+      thorAuthFailedMessage: 'Vuelve a intentarlo.',
+      thorAuthTryAgain: 'Reintentar',
       noApiKeyRequired: 'No se requiere clave API.',
       postSetupHint: step =>
         `Este backend necesita una instalación única (${step}). Se ejecuta en esta máquina y puede tardar unos minutos.`,
@@ -3007,8 +3007,8 @@ export const esOverrides = {
       qrAlt: (platform: string) => `Código QR del bot compartido de ${platform}`,
       managed: 'Gestionado por Team Gateway',
       managedNote: (platform: string) => `Team Gateway gestiona la mensajería en esta instancia, así que el gateway desactiva la conexión directa de ${platform} en cada inicio. Para usarla junto al relay, define GATEWAY_RELAY_ALLOW_DIRECT_PLATFORMS=true en el entorno del gateway (una conexión directa impide que la instancia escale a cero y puede entregar mensajes dos veces).`,
-      managedIntro: 'Las cuentas de este agente se vinculan desde Nous Portal.',
-      openPortal: 'Vincular cuentas en Nous Portal',
+      managedIntro: 'Las cuentas de este agente se vinculan desde Thor Portal.',
+      openPortal: 'Vincular cuentas en Thor Portal',
       noNewAccount: (platform: string) => `El código ya no está activo y no apareció ninguna cuenta nueva. Si tu cuenta de ${platform} no aparece, obtén un código nuevo e inténtalo otra vez.`
     },
     telegramQr: {
@@ -3882,8 +3882,8 @@ export const esOverrides = {
       '/palette': 'Abrir la paleta de comandos aproximada (también Ctrl+P)',
       '/usage':
         'Mostrar el uso de tokens y los límites de frecuencia; `reset` canjea un restablecimiento de límite de Codex acumulado',
-      '/subscription': 'Ver tu plan de Nous y cambiarlo en el navegador',
-      '/topup': 'Mostrar tu saldo de Nous y gestionar la facturación en el portal',
+      '/subscription': 'Ver tu plan de Thor y cambiarlo en el navegador',
+      '/topup': 'Mostrar tu saldo de Thor y gestionar la facturación en el portal',
       '/platform': 'Pausar, reanudar o listar una plataforma del gateway que falla',
       '/version': 'Mostrar la versión de Thor Agent',
       '/debug': 'Subir un informe de depuración (información del sistema + registros) y obtener enlaces para compartir',
@@ -4377,21 +4377,21 @@ export const esOverrides = {
   },
   onboarding: esOnboarding,
   freeTier: {
-    providerRowTitle: 'Nous · plan gratuito',
-    providerRowPitch: 'Inicia sesión con una cuenta de Nous para desbloquear más modelos y herramientas.',
+    providerRowTitle: 'Thor · plan gratuito',
+    providerRowPitch: 'Inicia sesión con una cuenta de Thor para desbloquear más modelos y herramientas.',
     readyTitle: 'Thor está listo.',
     readyCaption: 'Gratis · conectores incluidos',
     begin: 'Empezar',
-    signInInstead: 'Iniciar sesión con una cuenta de Nous',
+    signInInstead: 'Iniciar sesión con una cuenta de Thor',
     otherProviders: 'Otros proveedores',
-    stripTitle: 'Ya están disponibles la inferencia y los conectores gratuitos de Nous.',
-    stripBody: 'Abre el selector de modelos para probarlos o inicia sesión con una cuenta de Nous.',
+    stripTitle: 'Ya están disponibles la inferencia y los conectores gratuitos de Thor.',
+    stripBody: 'Abre el selector de modelos para probarlos o inicia sesión con una cuenta de Thor.',
     openModelPicker: 'Abrir selector de modelos',
     dismiss: 'Descartar',
-    providerName: 'Nous',
-    statusLabel: (model: string) => `Nous · ${model}`,
+    providerName: 'Thor',
+    statusLabel: (model: string) => `Thor · ${model}`,
     signIn: 'Iniciar sesión',
-    signInHeading: 'Inicia sesión con una cuenta de Nous para desbloquear más modelos y herramientas.',
+    signInHeading: 'Inicia sesión con una cuenta de Thor para desbloquear más modelos y herramientas.',
     settingUp: 'Configurando la inferencia gratuita…',
     finishInBrowser: 'Termina en tu navegador',
     doNotShare: 'No compartas este código.',
@@ -4411,39 +4411,39 @@ export const esOverrides = {
     tryAgain: 'Reintentar',
     didNotComplete: 'No se completó el inicio de sesión',
     timedOutHeading: 'Ese enlace de inicio de sesión caducó',
-    timedOutBody: 'Empieza de nuevo cuando quieras. Sigues en el servicio gratuito de Nous.',
+    timedOutBody: 'Empieza de nuevo cuando quieras. Sigues en el servicio gratuito de Thor.',
     errorBody: 'No se completó el inicio de sesión. Vuelve a intentarlo cuando quieras.',
     busyHeading: 'Ya casi está',
     busyBody: (wait: string) =>
-      `Thor no pudo terminar de iniciar tu sesión porque el servicio de Nous está ocupado. Vuelve a intentarlo en ${wait}. Mientras tanto, tu sesión sigue aquí.`,
+      `Thor no pudo terminar de iniciar tu sesión porque el servicio de Thor está ocupado. Vuelve a intentarlo en ${wait}. Mientras tanto, tu sesión sigue aquí.`,
     unreachableBody:
-      'Thor no pudo llegar al servicio de Nous para terminar de iniciar tu sesión. Comprueba tu conexión a internet y vuelve a intentarlo. Tu sesión sigue aquí.',
+      'Thor no pudo llegar al servicio de Thor para terminar de iniciar tu sesión. Comprueba tu conexión a internet y vuelve a intentarlo. Tu sesión sigue aquí.',
     alreadySignedInHeading: 'Ya has iniciado sesión.',
-    alreadySignedInBody: 'Este Thor ya tiene la sesión iniciada en una cuenta de Nous.',
+    alreadySignedInBody: 'Este Thor ya tiene la sesión iniciada en una cuenta de Thor.',
     offer: {
       heading: 'Sigue adelante con Thor',
-      body: 'Estás usando el uso gratuito. Si sigues usando Thor, empezarás a encontrarte con límites. Inicia sesión con una cuenta gratuita de Nous para tener un uso mayor.',
+      body: 'Estás usando el uso gratuito. Si sigues usando Thor, empezarás a encontrarte con límites. Inicia sesión con una cuenta gratuita de Thor para tener un uso mayor.',
       signIn: 'Iniciar sesión',
       notNow: 'Ahora no'
     },
     setupFailed: {
       gateClosed:
-        'Esta versión de Thor no puede iniciarse sin una cuenta de Nous. Inicia sesión o crea una: es gratis y solo lleva un minuto.',
+        'Esta versión de Thor no puede iniciarse sin una cuenta de Thor. Inicia sesión o crea una: es gratis y solo lleva un minuto.',
       paused:
         'El uso de Thor sin iniciar sesión está en pausa por un momento. Thor seguirá comprobándolo. Iniciar sesión es gratis y te permite empezar ahora mismo.',
       rateLimited: (wait: string) =>
         `Mucha gente está empezando ahora mismo, así que Thor volverá a intentarlo en ${wait}. Iniciar sesión es gratis y te ahorra la espera.`,
       unreachable:
-        'Thor no pudo llegar al servicio de Nous. Comprueba tu conexión a internet y pulsa Reintentar. O conecta otro proveedor por ahora.',
+        'Thor no pudo llegar al servicio de Thor. Comprueba tu conexión a internet y pulsa Reintentar. O conecta otro proveedor por ahora.',
       serverError:
-        'El servicio de Nous tuvo un fallo. Pulsa Reintentar en un momento o conecta otro proveedor por ahora.',
+        'El servicio de Thor tuvo un fallo. Pulsa Reintentar en un momento o conecta otro proveedor por ahora.',
       powRequired:
-        'El servidor de Nous pidió una prueba de trabajo, pero tu agente todavía no la implementa. Inicia sesión o crea una cuenta gratuita de Nous para continuar.',
+        'El servidor de Thor pidió una prueba de trabajo, pero tu agente todavía no la implementa. Inicia sesión o crea una cuenta gratuita de Thor para continuar.',
       locked:
-        'Esta sesión no puede continuar sin iniciar sesión. Inicia sesión o crea una cuenta gratuita de Nous para seguir.',
+        'Esta sesión no puede continuar sin iniciar sesión. Inicia sesión o crea una cuenta gratuita de Thor para seguir.',
       generic:
         'Thor no pudo configurar el acceso gratuito sin iniciar sesión. Iniciar sesión es gratis; también puedes conectar otro proveedor.',
-      signInBelow: 'Iniciar sesión es gratis. Elige Nous abajo.',
+      signInBelow: 'Iniciar sesión es gratis. Elige Thor abajo.',
       tryAgain: 'Reintentar',
       retrying: 'Reintentando…'
     }
@@ -4461,7 +4461,7 @@ export const esOverrides = {
     localDownloadsHeading: 'Local',
     noAuthenticatedProviders: 'No hay proveedores autenticados.',
     pro: 'Pro',
-    proNeedsSubscription: 'Los modelos Pro necesitan una suscripción de Nous de pago.',
+    proNeedsSubscription: 'Los modelos Pro necesitan una suscripción de Thor de pago.',
     free: 'Gratis',
     freeTier: 'Nivel gratis',
     priceTitle: 'Precio de entrada / salida por millón de tokens',
@@ -5015,11 +5015,11 @@ export const esOverrides = {
         },
         free_tier_disabled: {
           title: 'Inicia sesión para seguir chateando',
-          body: 'Inicia sesión con una cuenta de Nous para seguir chateando; es gratis.'
+          body: 'Inicia sesión con una cuenta de Thor para seguir chateando; es gratis.'
         },
         free_tier_rate_limited: {
           title: 'Cupo gratuito agotado',
-          body: 'Se renueva en breve. Inicia sesión con una cuenta de Nous para tener un cupo mayor; es gratis.'
+          body: 'Se renueva en breve. Inicia sesión con una cuenta de Thor para tener un cupo mayor; es gratis.'
         },
         free_tier_at_capacity: {
           title: 'El nivel gratuito está ocupado',
@@ -5027,11 +5027,11 @@ export const esOverrides = {
         },
         free_tier_model_not_free: {
           title: 'Este modelo requiere iniciar sesión',
-          body: 'Por ahora Thor usa el modelo gratuito. Inicia sesión con una cuenta de Nous para tener más modelos; es gratis.'
+          body: 'Por ahora Thor usa el modelo gratuito. Inicia sesión con una cuenta de Thor para tener más modelos; es gratis.'
         },
         free_tier_route: {
           title: 'Sin acceso al modelo gratuito',
-          body: 'Inicia sesión con una cuenta de Nous (es gratis) o revisa el ajuste NOUS_INFERENCE_BASE_URL.'
+          body: 'Inicia sesión con una cuenta de Thor (es gratis) o revisa el ajuste THOR_PORTAL_INFERENCE_BASE_URL.'
         },
         free_tier_outage: {
           title: 'El modelo gratuito tiene problemas',
@@ -5039,7 +5039,7 @@ export const esOverrides = {
         },
         free_tier_refused: {
           title: 'Inicia sesión para seguir chateando',
-          body: 'Iniciar sesión con una cuenta de Nous es gratis.'
+          body: 'Iniciar sesión con una cuenta de Thor es gratis.'
         },
         usage_window: {
           title: 'Uso incluido agotado',
@@ -5089,7 +5089,7 @@ export const esOverrides = {
       errorOpenThorFolderFailed: 'No se pudo abrir la carpeta de Thor',
       errorUpdateApiKey: 'Actualizar clave API',
       errorSignInAgain: (provider: string) => `Volver a iniciar sesión en ${provider}`,
-      errorSignInFreeTier: 'Iniciar sesión con una cuenta de Nous',
+      errorSignInFreeTier: 'Iniciar sesión con una cuenta de Thor',
       errorOauthExpired: (provider: string) =>
         `Tu sesión de ${provider} caducó o se revocó. Vuelve a iniciar sesión para seguir chateando.`,
       errorOpenLogs: 'Abrir registros',

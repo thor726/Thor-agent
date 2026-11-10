@@ -86,7 +86,7 @@ test('incomplete claims and persisted records are rejected', async () => {
   assert.deepEqual(parseBackendOwnership(store.value()), [ownershipEntry()])
 })
 
-test('failed persistence awaits asynchronous cleanup of the exact identity', async () => {
+test('failed persistence awaits asynchrothor cleanup of the exact identity', async () => {
   const cleanup = deferred()
   const stop = vi.fn(() => cleanup.promise)
   const expected = new Error('disk full')

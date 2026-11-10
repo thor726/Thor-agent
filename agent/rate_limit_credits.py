@@ -14,13 +14,13 @@ logger = logging.getLogger("run_agent")
 
 
 
-def _is_nous_agent(agent) -> bool:
-    """True for the Nous provider (or a route to a nousresearch.com host)."""
-    if (getattr(agent, "provider", "") or "").strip().lower() == "nous":
+def _is_thor_agent(agent) -> bool:
+    """True for the Thor provider (or a route to a thor-agent.local host)."""
+    if (getattr(agent, "provider", "") or "").strip().lower() == "thor":
         return True
     from utils import base_url_host_matches
     base_url = str(getattr(agent, "base_url", "") or "")
-    return bool(base_url) and base_url_host_matches(base_url, "nousresearch.com")
+    return bool(base_url) and base_url_host_matches(base_url, "thor-agent.local")
 
 def _response_headers(http_response: Any):
     """Headers of a response, or None when there is nothing to parse."""
@@ -58,8 +58,8 @@ class RateLimitCreditsMixin:
         """Return the last captured RateLimitState, or None."""
         return self._rate_limit_state
 
-    def _capture_nous_model_switch(self, http_response: Any) -> None:
-        """Record the Nous gateway's ``x-nous-model-switch`` header (a named account asked for the
+    def _capture_thor_model_switch(self, http_response: Any) -> None:
+        """Record the Thor gateway's ``x-thor-model-switch`` header (a named account asked for the
         free tier's model; the gateway served its backing model and named it). Applied between
         calls by ``thor_cli.anon_auth.apply_model_switch``. Fail-open."""
         headers = _response_headers(http_response)
@@ -78,7 +78,7 @@ class RateLimitCreditsMixin:
         self._capture_credits(http_response)
 
     def _capture_credits(self, http_response: Any, *, refused: bool = False) -> None:
-        """Parse x-nous-credits-* headers, cache CreditsState, fire threshold notices.
+        """Parse x-thor-credits-* headers, cache CreditsState, fire threshold notices.
 
         The PARSE is swallowed (miss → keep last-known); notice EVALUATION WARNS on failure so a
         depletion-notice bug cannot vanish silently. THOR_DEV_CREDITS_FIXTURE injects a chosen state instead.
@@ -114,13 +114,13 @@ class RateLimitCreditsMixin:
             return
         if state is None:
             if dev:
-                logger.info("credits ▸ response had no valid x-nous-credits-* headers "
-                            "(miss — producer off / non-Nous path / >TTL stale)")
+                logger.info("credits ▸ response had no valid x-thor-credits-* headers "
+                            "(miss — producer off / non-Thor path / >TTL stale)")
             return
 
-        if state.is_usage_window and not _is_nous_agent(self):
+        if state.is_usage_window and not _is_thor_agent(self):
             return  # window headers from any other upstream are ignored (no window UI, no Keep going button)
-        if state.is_usage_window and not any(k.lower() == "x-nous-credits-purchased-micros" for k in headers):
+        if state.is_usage_window and not any(k.lower() == "x-thor-credits-purchased-micros" for k in headers):
             # A refused request's headers omit the top-up balance: keep the last known one, not "no credits".
             prior = getattr(self, "_credits_state", None)
             if prior is not None:

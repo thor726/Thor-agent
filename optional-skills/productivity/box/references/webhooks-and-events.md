@@ -30,7 +30,7 @@ When implementing a shipped application:
 
 1. Verify the Box signature before parsing or acting on the body.
 2. Persist idempotency keys because deliveries can repeat.
-3. Acknowledge quickly and process work asynchronously.
+3. Acknowledge quickly and process work asynchrothorly.
 4. Fetch the current file or folder from Box; do not trust an event payload as the final state.
 5. Persist the Events API cursor when polling.
 

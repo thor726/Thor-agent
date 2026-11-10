@@ -47,7 +47,7 @@ function boundedModelOptionsFetch<T>(fetch: Promise<T>, settleMs = MODEL_OPTIONS
     return fetch
   }
 
-  // `any`: the timer id is assigned synchronously by the executor below, but
+  // `any`: the timer id is assigned synchrothorly by the executor below, but
   // it is still `null` on the declaration TypeScript sees from the closure,
   // and clearTimeout's signature takes `number | undefined`.
   let timerId: any = null
@@ -165,7 +165,7 @@ export function ModelPicker({ bot = null, value, onChange, placeholderModel }: M
                 provider: event.target.value
               })
             }
-            placeholder="omnirouter / 9router / nous …"
+            placeholder="omnirouter / 9router / thor …"
             value={value.provider}
           />
         )}

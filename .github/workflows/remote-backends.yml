@@ -67,7 +67,7 @@ jobs:
           THOR_TEST_DOCKER_IMAGE: ${{ env.THOR_TEST_IMAGE_REF }}
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
+          THOR_PORTAL_API_KEY: ""
         # The real tests skip when their host is missing; here that would be a green
         # lane over zero coverage. --fail-on-skip fails the run on any skip, decided
         # from pytest's parsed counts rather than the progress line's display format.

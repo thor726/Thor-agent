@@ -84,7 +84,7 @@ describe('displayRequest', () => {
     routeMock.mockReturnValue(null)
   })
 
-  it('rejects instead of throwing synchronously for a row whose connection was removed', async () => {
+  it('rejects instead of throwing synchrothorly for a row whose connection was removed', async () => {
     routeMock.mockReturnValue(null)
 
     await expect(displayRequest(orphan, 'display.status')).rejects.toThrow(/no connection owner/)

@@ -44,7 +44,7 @@ function scopeKey(connectionId: null | string, profile: null | string): string {
 
 /**
  * Fire-and-forget: enumeration paths call this on every served page. It is
- * synchronous-cheap on the no-op paths (no registry topology, scope already
+ * synchrothor-cheap on the no-op paths (no registry topology, scope already
  * attempted) and never blocks or fails the list request that triggered it.
  */
 export function maybeBackfillLegacySessionOwners(): void {

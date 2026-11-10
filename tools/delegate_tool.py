@@ -571,7 +571,7 @@ def delegate_task(
     credentials_cfg: Optional[dict[str, Any]] = None,
 ) -> str:
     """Spawn child agents (single ``goal`` or ``tasks=[...]`` batch) or control running ones. ``action``
-    list/steer/stop run synchronously and bypass the pause gate, depth limit and async dispatch. ``role`` is legacy
+    list/steer/stop run synchrothorly and bypass the pause gate, depth limit and async dispatch. ``role`` is legacy
     (per-task beats top-level; capability is depth-derived). Returns JSON with one results entry per task, or a
     dispatch handle when running in the background."""
     if parent_agent is None:
@@ -919,7 +919,7 @@ def _model_background_value(args: dict, parent_agent=None) -> bool:
     background — the model does not choose — for single tasks and fan-out batches alike (one async unit, one
     consolidated result); an orchestrator subagent (depth > 0) is the exception since it needs its workers' results
     within its own turn. The live path is ``run_agent._dispatch_delegate_task``; this mirrors it for the rare case
-    the intercept is bypassed. Direct Python callers keep the synchronous default."""
+    the intercept is bypassed. Direct Python callers keep the synchrothor default."""
     return not getattr(parent_agent, "_delegate_depth", 0) > 0
 
 _MODEL_HIDDEN_TASK_FIELDS = {"acp_command", "acp_args"}

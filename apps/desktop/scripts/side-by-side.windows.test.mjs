@@ -101,7 +101,7 @@ foreach ($asset in @(@('Square44x44Logo.png',44,44), @('Square150x150Logo.png',1
     identity: { token: 'ab12cd34ef56ab78', displayName: 'Thor sdk-preview',
       appId: 'ai.thor.channel.hab12cd34ef56ab78', appNamePascal: 'ThorChannelab12cd34ef56ab78',
       artifactNamePascal: 'ThorChannelab12cd34ef56ab78', cliName: 'thor-sdk-preview',
-      windowsExecutableName: 'ThorChannelab12cd34ef56ab78', msixAppIdWithOrg: 'NousResearch.ThorChannelab12cd34ef56ab78' },
+      windowsExecutableName: 'ThorChannelab12cd34ef56ab78', msixAppIdWithOrg: 'dwisetyabudi15581.ThorChannelab12cd34ef56ab78' },
     bundleEnv: {}, publicBase: 'https://example.invalid'
   })
   const cases = [

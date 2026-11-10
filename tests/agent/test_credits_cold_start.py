@@ -78,7 +78,7 @@ class _FakeAgent:
     the real policy against the latch (mirroring run_agent._emit_credits_notices,
     including the free-model suppression flag)."""
 
-    def __init__(self, provider="nous", model="", base_url="", session_id="session-1"):  # session_id may be None
+    def __init__(self, provider="thor", model="", base_url="", session_id="session-1"):  # session_id may be None
         from agent.credits_tracker import evaluate_credits_notices, is_free_tier_model
 
         self.provider = provider
@@ -158,7 +158,7 @@ def test_seed_is_idempotent():
     assert a.emitted == []
 
 
-def test_seed_skips_non_nous():
+def test_seed_skips_non_thor():
     from agent.credits_tracker import seed_credits_at_session_start
 
     a = _FakeAgent(provider="openrouter")
@@ -254,10 +254,10 @@ def test_agent_without_session_id_falls_back_to_prior_behavior(monkeypatch):
 
 # ── background seed: the pricing warm the free-model gate depends on ─────────
 
-_NOUS_BASE = "https://inference-api.nousresearch.com/v1"
+_THOR_PORTAL_BASE = "https://inference-api.thor-agent.local/v1"
 # One subscription-billed row, keyed on the pre-/v1 root the picker caches under.
 _SUBSCRIPTION_CATALOG = {
-    "https://inference-api.nousresearch.com": {
+    "https://inference-api.thor-agent.local": {
         "openai/gpt-5.6-luna": {
             "prompt": "0.0000002000", "completion": "0.0000012000", "billing_mode": "subscription",
         },
@@ -297,7 +297,7 @@ def _run_bg_seed(monkeypatch, agent, *, warm):
     import threading
 
     from agent import memory_provider
-    from thor_cli import nous_account
+    from thor_cli import thor_account
     from agent import credits_tracker
 
     release_worker = threading.Event()
@@ -314,9 +314,9 @@ def _run_bg_seed(monkeypatch, agent, *, warm):
         return thread
 
     monkeypatch.delenv("THOR_DEV_CREDITS", raising=False)  # fixtures would take the sync path
-    monkeypatch.setattr(credits_tracker, "_warm_nous_pricing_cache", _gated_warm)
+    monkeypatch.setattr(credits_tracker, "_warm_thor_pricing_cache", _gated_warm)
     monkeypatch.setattr(memory_provider, "spawn_context_thread", _capture_spawn)
-    monkeypatch.setattr(nous_account, "get_nous_portal_account_info", lambda *a, **kw: _DepletedAccount())
+    monkeypatch.setattr(thor_account, "get_thor_portal_account_info", lambda *a, **kw: _DepletedAccount())
     result = credits_tracker.seed_credits_at_session_start(agent)
     try:
         assert len(spawned) == 1
@@ -335,7 +335,7 @@ def test_bg_seed_warms_pricing_so_a_subscription_model_escapes_the_banner(monkey
     """The regression: a cold process peeks an EMPTY catalog, so a subscription-billed model — which
     spends no credits — drew the depleted banner at session open. The seed fills the catalog first."""
     models_pricing = _cold_pricing_cache(monkeypatch)
-    agent = _FakeAgent(model="openai/gpt-5.6-luna", base_url=_NOUS_BASE)
+    agent = _FakeAgent(model="openai/gpt-5.6-luna", base_url=_THOR_PORTAL_BASE)
 
     assert _run_bg_seed(
         monkeypatch, agent, warm=lambda: models_pricing._pricing_cache.update(_SUBSCRIPTION_CATALOG)
@@ -348,7 +348,7 @@ def test_bg_seed_without_the_warm_still_warns(monkeypatch):
     """Guard rail for the test above: the same account and model DO warn while the catalog stays
     cold, so the suppression is the warm's doing and not the model id's."""
     _cold_pricing_cache(monkeypatch)
-    agent = _FakeAgent(model="openai/gpt-5.6-luna", base_url=_NOUS_BASE)
+    agent = _FakeAgent(model="openai/gpt-5.6-luna", base_url=_THOR_PORTAL_BASE)
 
     _run_bg_seed(monkeypatch, agent, warm=lambda: None)
     assert agent.emitted == [(["credits.depleted"], [])]
@@ -358,7 +358,7 @@ def test_bg_seed_reruns_the_policy_when_a_header_beat_it(monkeypatch):
     """A live inference header can land while the warm is still in flight; it evaluates against the
     cold catalog and shows the banner. The seed must keep that state but re-run the policy."""
     models_pricing = _cold_pricing_cache(monkeypatch)
-    agent = _FakeAgent(model="openai/gpt-5.6-luna", base_url=_NOUS_BASE)
+    agent = _FakeAgent(model="openai/gpt-5.6-luna", base_url=_THOR_PORTAL_BASE)
     header_state = _state(paid_access=False)
 
     def _warm():
@@ -372,7 +372,7 @@ def test_bg_seed_reruns_the_policy_when_a_header_beat_it(monkeypatch):
     assert agent.emitted[-1] == ([], ["credits.depleted"])  # warm re-run: cleared, no "restored"
 
 
-# ── inference-header path: the catalog goes cold again after the Nous TTL ────
+# ── inference-header path: the catalog goes cold again after the Thor TTL ────
 
 
 def _mixin_agent(model="openai/gpt-5.6-luna"):
@@ -381,8 +381,8 @@ def _mixin_agent(model="openai/gpt-5.6-luna"):
     from agent.status_output import StatusOutputMixin
 
     class _Agent(RateLimitCreditsMixin, StatusOutputMixin):
-        provider = "nous"
-        base_url = _NOUS_BASE
+        provider = "thor"
+        base_url = _THOR_PORTAL_BASE
 
         def __init__(self):
             self.model = model
@@ -403,21 +403,21 @@ def _join_pricing_warm(agent):
 
 
 def test_header_after_ttl_expiry_rewarms_instead_of_flashing_the_banner(monkeypatch):
-    """The session-start warm is one-shot; a Nous catalog expires after _NOUS_CATALOG_TTL_SECONDS. A
+    """The session-start warm is one-shot; a Thor catalog expires after _THOR_PORTAL_CATALOG_TTL_SECONDS. A
     header landing after that saw a cold peek and brought the depleted banner back for a
     subscription-billed model. Now the cold peek starts a re-warm and the banner never shows."""
     from agent import credits_tracker
 
     models_pricing = _cold_pricing_cache(monkeypatch)
     models_pricing._cache_catalog(
-        _NOUS_BASE[:-3] + models_pricing._PRICING_AUTH_KEY_PREFIX + "abc",
-        _SUBSCRIPTION_CATALOG[_NOUS_BASE[:-3]], models_pricing._NOUS_CATALOG_TTL_SECONDS)
+        _THOR_PORTAL_BASE[:-3] + models_pricing._PRICING_AUTH_KEY_PREFIX + "abc",
+        _SUBSCRIPTION_CATALOG[_THOR_PORTAL_BASE[:-3]], models_pricing._THOR_PORTAL_CATALOG_TTL_SECONDS)
     agent = _mixin_agent()
     agent._emit_credits_notices()
     assert agent.shown == []  # warm catalog: suppressed
     models_pricing._pricing_cache_retry_after = {  # ...then the TTL passes
-        k: v - models_pricing._NOUS_CATALOG_TTL_SECONDS - 1 for k, v in models_pricing._pricing_cache_retry_after.items()}
-    monkeypatch.setattr(credits_tracker, "_warm_nous_pricing_cache",
+        k: v - models_pricing._THOR_PORTAL_CATALOG_TTL_SECONDS - 1 for k, v in models_pricing._pricing_cache_retry_after.items()}
+    monkeypatch.setattr(credits_tracker, "_warm_thor_pricing_cache",
                         lambda: models_pricing._pricing_cache.update(_SUBSCRIPTION_CATALOG))
 
     agent._emit_credits_notices()  # the next inference header
@@ -437,9 +437,9 @@ def test_header_on_a_cold_catalog_still_warns_when_the_warm_fails(monkeypatch):
 
     def _failed_fetch():
         warms.append(1)
-        models_pricing._cache_catalog(_NOUS_BASE[:-3] + models_pricing._PRICING_AUTH_KEY_PREFIX + "abc", {})
+        models_pricing._cache_catalog(_THOR_PORTAL_BASE[:-3] + models_pricing._PRICING_AUTH_KEY_PREFIX + "abc", {})
 
-    monkeypatch.setattr(credits_tracker, "_warm_nous_pricing_cache", _failed_fetch)
+    monkeypatch.setattr(credits_tracker, "_warm_thor_pricing_cache", _failed_fetch)
     agent = _mixin_agent()
 
     agent._emit_credits_notices()

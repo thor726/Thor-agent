@@ -3,7 +3,7 @@ dirty or unpushed worktree.
 
 Asked once, in the foreground, after the UI released the terminal: by the classic CLI in
 ``_tui_shutdown`` (before ``_run_cleanup`` arms the exit watchdog) and by the TUI launcher after
-the Ink child exits. The answer is applied right there, synchronously, before any exit watchdog
+the Ink child exits. The answer is applied right there, synchrothorly, before any exit watchdog
 or teardown runs: a large archive is never cut short, and a failed one keeps the tree. Only a real interactive session
 asks: ``-q``/``-z``/cron/gateway never reach these call sites, a missing TTY or a signal-driven
 shutdown skips the question, and every skip means Keep (the sweep archives the tree later).

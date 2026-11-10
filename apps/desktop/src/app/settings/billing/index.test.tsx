@@ -624,7 +624,7 @@ describe('BillingSettings', () => {
 
     renderBilling()
 
-    expect(await screen.findByText('Connect your Nous account')).toBeTruthy()
+    expect(await screen.findByText('Connect your Thor account')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect($freeTierSignIn.get()).toEqual({ status: 'requested' })
     expect(apiMocks.openExternal).not.toHaveBeenCalled()

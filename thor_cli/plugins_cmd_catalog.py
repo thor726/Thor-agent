@@ -139,9 +139,9 @@ def _adopt_legacy_sidecar(plugin_dir: Path, record: dict) -> Optional[dict]:
     return _write_catalog_block(plugin_dir, record, block)
 
 
-# Archived Nous handoff repos of providers that left core -> the catalog entry that superseded them: a URL
+# Archived Thor handoff repos of providers that left core -> the catalog entry that superseded them: a URL
 # install of one is adopted as that entry, so `update` re-pins it instead of pulling the archive forever.
-_HANDOFF_REPOS = {"github.com/nousresearch/thor-plugin-holographic": "holographic"}
+_HANDOFF_REPOS = {"github.com/dwisetyabudi15581/thor-plugin-holographic": "holographic"}
 
 
 def _adopt_handoff_install(plugin_dir: Path, record: dict) -> Optional[dict]:
@@ -206,7 +206,7 @@ def catalog_install_record(plugin_dir) -> Optional[dict]:
 LOGIN_BACKEND_TIERS = frozenset({"official", "verified"})
 LOGIN_BACKEND_RULE = ("password-manager login backends are accepted only from plugins bundled with Thor or "
                       "installed from the Thor plugin catalog at tier verified or official (published by the "
-                      "password-manager vendor itself or by Nous)")
+                      "password-manager vendor itself or by Thor)")
 _NON_CATALOG_SOURCES = {"project": "a project .thor/plugins directory", "entrypoint": "a pip entry point"}
 
 

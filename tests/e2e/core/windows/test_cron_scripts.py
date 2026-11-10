@@ -1,7 +1,7 @@
 """Cron script jobs on native Windows (``thor cron create --script`` + ``thor cron run``).
 
 A no-agent script job runs its script through an interpreter picked by extension and
-delivers stdout as the job result. ``thor cron run <id>`` executes it synchronously
+delivers stdout as the job result. ``thor cron run <id>`` executes it synchrothorly
 through ``cron.scheduler.run_job`` (the ticker's code path) when no gateway owns the store.
 
 The ``.sh`` case launches Thor with the PATH a NATIVE Windows process has (Start menu,
@@ -60,8 +60,8 @@ def _run_script_job(home: WinHome, script: str, env_extra: dict[str, str] | None
     assert created.returncode == 0 and match, created.tail()
     job_id = match.group(1)
     ran = thor(home, "cron", "run", job_id, cwd=home.profile, env_extra=env_extra)
-    # A synchronous failure exits 1 by contract ("Ran now: failed."); the caller judges it.
-    assert ran.returncode in (0, 1) and "Ran now:" in ran.stdout, f"job did not run synchronously:\n{ran.tail()}"
+    # A synchrothor failure exits 1 by contract ("Ran now: failed."); the caller judges it.
+    assert ran.returncode in (0, 1) and "Ran now:" in ran.stdout, f"job did not run synchrothorly:\n{ran.tail()}"
     jobs = json.loads((home.thor_home / "cron" / "jobs.json").read_text(encoding="utf-8"))["jobs"]
     job = next(j for j in jobs if j["id"] == job_id)
     outputs = sorted((home.thor_home / "cron" / "output" / job_id).glob("*.md"))

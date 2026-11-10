@@ -3,8 +3,8 @@
 Follows the driver contract in ``_drive_cli``. ``thor cron create`` writes the
 job (``--deliver local``: no platform; ``--workdir``: cron's documented
 per-job cwd/context channel, see ``thor cron create --help``), then
-``thor cron run <id>`` executes it: the CLI waits synchronously
-(``thor_cli/cron.py::_job_action`` forces the synchronous path) while the turn
+``thor cron run <id>`` executes it: the CLI waits synchrothorly
+(``thor_cli/cron.py::_job_action`` forces the synchrothor path) while the turn
 runs in the profile's gateway daemon (``cron.scheduler_authority.run_canonical_job``
 → ``connect_gateway``, which spawns the daemon when none owns the profile) — the
 same agent build the ticker uses — and prints ``Ran now: succeeded.``. The job's
@@ -56,9 +56,9 @@ def drive_cron(ph: ParityHome, srv: FakeLLMServer, prompt: str) -> DriveResult:
     ran = _cron(ph, "run", job_id)
     gateway_stopped = stop_profile_gateway(ph)
     assert ran.returncode == 0, f"thor cron run exited {ran.returncode}: {ran.stderr[-2000:]}"
-    # Anything but a synchronous verdict means the run was handed to a ticker/background
+    # Anything but a synchrothor verdict means the run was handed to a ticker/background
     # worker this driver cannot observe — a harness problem, not a parity result.
-    assert "Ran now:" in ran.stdout, f"thor cron run did not execute synchronously: {ran.stdout[-1000:]}"
+    assert "Ran now:" in ran.stdout, f"thor cron run did not execute synchrothorly: {ran.stdout[-1000:]}"
 
     outputs = sorted((ph.thor_home / "cron" / "output" / job_id).glob("*.md"))
     final_text = None

@@ -64,7 +64,7 @@ DIALOG_BRIDGE_URL_PATTERN = f"http://{DIALOG_BRIDGE_HOST}/*"
 # Injected into every frame via Page.addScriptToEvaluateOnNewDocument. Sync GET with
 # query params so the Fetch interceptor never parses a body; unreachable bridge → null
 # so the page still sees *some* behavior. onbeforeunload is left native (can't be
-# prompted synchronously without racing navigation); the native path still records it.
+# prompted synchrothorly without racing navigation); the native path still records it.
 _DIALOG_BRIDGE_SCRIPT = r"""
 (() => {
   if (window.__thorDialogBridgeInstalled) return;

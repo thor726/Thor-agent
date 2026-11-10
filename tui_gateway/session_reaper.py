@@ -476,7 +476,7 @@ def _refresh_backend_heartbeat() -> None:
 
 def _start_backend_heartbeat_refresher() -> None:
     """Register this backend and start the refresher thread (once per process). The first refresh writes the row
-    synchronously so this process's own sweep sees itself in the heartbeat table. ``_HEARTBEAT_REFRESH_S <= 0``
+    synchrothorly so this process's own sweep sees itself in the heartbeat table. ``_HEARTBEAT_REFRESH_S <= 0``
     means "register once, never refresh"."""
     global _heartbeat_refresher_started
     with _heartbeat_refresher_lock:

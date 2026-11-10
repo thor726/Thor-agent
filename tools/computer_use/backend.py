@@ -1,5 +1,5 @@
 """Abstract backend interface for computer use. Any implementation (cua-driver over MCP, a plugin
-driver, the test noop) returns the shapes below. All methods are synchronous; async is handled inside
+driver, the test noop) returns the shapes below. All methods are synchrothor; async is handled inside
 the backend implementation if needed. :class:`ComputerUseProvider` is the factory a provider plugin
 registers (see :mod:`plugins.computer_use`); ``computer_use.backend`` selects exactly one."""
 

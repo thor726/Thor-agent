@@ -1,8 +1,8 @@
 """Credential-pool recovery for an auth failure (401/403) on the dispatched credential.
 
-Nous answers bursts of ``401 {"error": "authentication required"}`` for agent keys that are
+Thor answers bursts of ``401 {"error": "authentication required"}`` for agent keys that are
 still unexpired and valid a few seconds later. Re-minting cannot fix a server-side blip, and
-each forced refresh redeems the single-use refresh token, so a Nous 401 episode gets exactly
+each forced refresh redeems the single-use refresh token, so a Thor 401 episode gets exactly
 ONE forced refresh. Any later 401 in the same turn (or a refresh that handed back the bearer
 that just failed) waits out ``TRANSIENT_AUTH_BACKOFF_S`` and retries with the store's current
 key, adopting a peer's rotation but never POSTing again. A dead grant (refresh rejected)
@@ -14,7 +14,7 @@ from __future__ import annotations
 import time
 from typing import Any, Optional
 
-# Waits before each retry of an unexpired Nous key that keeps answering 401 (~50 s in total).
+# Waits before each retry of an unexpired Thor key that keeps answering 401 (~50 s in total).
 TRANSIENT_AUTH_BACKOFF_S = (5.0, 15.0, 30.0)
 # Cap same-entry OAuth refreshes on a persistent auth failure, else a single-entry pool re-mints forever.
 _MAX_AUTH_REFRESH_ATTEMPTS = 2
@@ -41,10 +41,10 @@ def _episode(agent: Any, provider: str, entry_id: Optional[str]) -> dict[str, An
     return episode
 
 
-def nous_pool_refreshed_this_turn(agent: Any) -> bool:
-    """True once the pool spent this turn's forced Nous refresh (the singleton path must not re-POST)."""
+def thor_pool_refreshed_this_turn(agent: Any) -> bool:
+    """True once the pool spent this turn's forced Thor refresh (the singleton path must not re-POST)."""
     counts = getattr(agent, "_auth_pool_refresh_counts", None) or {}
-    return any(key[0] == "nous" and state.get("refreshes") for key, state in counts.items())
+    return any(key[0] == "thor" and state.get("refreshes") for key, state in counts.items())
 
 
 def _interruptible_wait(agent: Any, seconds: float) -> bool:
@@ -56,7 +56,7 @@ def _interruptible_wait(agent: Any, seconds: float) -> bool:
             return False
         time.sleep(min(0.2, max(0.0, deadline - time.monotonic())))
         if time.monotonic() >= next_touch:
-            agent._touch_activity("waiting out a Nous 401 on a valid key")
+            agent._touch_activity("waiting out a Thor 401 on a valid key")
             next_touch = time.monotonic() + _ACTIVITY_TOUCH_S
     return True
 
@@ -88,7 +88,7 @@ def _retry_after_backoff(agent: Any, pool: Any, episode: dict[str, Any], *, fail
         "retrying in %.0fs (backoff %s/%s, no further refresh)",
         entry_id, wait, step + 1, len(TRANSIENT_AUTH_BACKOFF_S))
     agent._vprint(
-        f"{agent.log_prefix}🔐 Nous rejected a still-valid key (transient); retrying in {wait:.0f}s...",
+        f"{agent.log_prefix}🔐 Thor rejected a still-valid key (transient); retrying in {wait:.0f}s...",
         force=True, diagnostic=True)
     if not _interruptible_wait(agent, wait):
         # Not recovered: the caller's interrupt check then aborts (or redirects) the turn. A
@@ -97,7 +97,7 @@ def _retry_after_backoff(agent: Any, pool: Any, episode: dict[str, Any], *, fail
     # A peer process may have rotated meanwhile: adopt what the store holds now (no POST).
     entry = _entry_for(pool, credential_id or entry_id, failed_key)
     if entry is not None:
-        if agent._swap_credential(pool._sync_nous_entry_from_auth_store(entry)) is False:
+        if agent._swap_credential(pool._sync_thor_entry_from_auth_store(entry)) is False:
             return False, has_retried_429
     return True, has_retried_429
 
@@ -117,9 +117,9 @@ def recover_auth_failure(agent, pool, *, status_code, has_retried_429, error_con
     provider = agent.provider
     # Only a 401 is the "valid key refused" shape worth backing off on; a non-entitlement 403
     # keeps the capped-refresh path and fails fast.
-    nous = provider == "nous" and status_code == 401
+    thor = provider == "thor" and status_code == 401
     entry_id = credential_id
-    if nous:
+    if thor:
         found = _entry_for(pool, credential_id, api_key_hint)
         entry_id = getattr(found, "id", None) or credential_id
         episode = _episode(agent, provider, entry_id)
@@ -138,7 +138,7 @@ def recover_auth_failure(agent, pool, *, status_code, has_retried_429, error_con
         # Refresh failed; rotate (the failed entry is already marked exhausted).
         return (True, False) if rotate_and_swap(401, "auth refresh failed") else (False, has_retried_429)
     refreshed_id = getattr(refreshed, "id", None)
-    if nous:
+    if thor:
         episode = _episode(agent, provider, refreshed_id or entry_id)
         episode["refreshes"] += 1
         if api_key_hint and getattr(refreshed, "runtime_api_key", None) == api_key_hint:

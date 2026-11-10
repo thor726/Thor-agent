@@ -104,7 +104,7 @@ function WebappSignInOverlay() {
 
   return (
     <BootFailureModal onDismiss={() => undefined}>
-      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-thor) bg-(--ui-chat-bubble-background) shadow-thor">
         <div className="flex items-start gap-3 px-5 py-4">
           <LogIn className="mt-0.5 size-5" />
           <div>
@@ -424,7 +424,7 @@ export function BootFailureOverlay() {
 
   let actions: RecoveryAction[]
   let hint: string
-  // The electron boot path flags a Nous Cloud backend-down (502/503/504) with
+  // The electron boot path flags a Thor Cloud backend-down (502/503/504) with
   // the structured isCloudBackendDown/statusCode it carries through boot
   // progress. When set, the recovery screen leads with the cloud-specific
   // guidance instead of the generic remote-failure copy (#85335).
@@ -444,7 +444,7 @@ export function BootFailureOverlay() {
     ]
     hint = copy.remoteSignInHint(label)
   } else if (cloudDown) {
-    // A Nous Cloud agent is down — the user cannot restart the managed
+    // A Thor Cloud agent is down — the user cannot restart the managed
     // instance and Repair is local-only. Lead with the paths that actually
     // resolve it: check the portal (status/instance controls), switch to the
     // local gateway, retry, or get support on Discord. Portal/Discord are
@@ -454,7 +454,7 @@ export function BootFailureOverlay() {
       {
         key: 'portal',
         label: copy.cloudDownCheckPortal,
-        onClick: () => openExternalLink('https://portal.nousresearch.com'),
+        onClick: () => openExternalLink('https://portal.thor-agent.local'),
         icon: <ExternalLink />
       },
       localAction,
@@ -462,7 +462,7 @@ export function BootFailureOverlay() {
       {
         key: 'discord',
         label: copy.cloudDownDiscord,
-        onClick: () => openExternalLink('https://discord.gg/NousResearch'),
+        onClick: () => openExternalLink('https://github.com/dwisetyabudi15581/Thor-agent'),
         variant: 'ghost'
       },
       { ...settingsAction, variant: 'ghost' }
@@ -506,7 +506,7 @@ export function BootFailureOverlay() {
   if (view === 'connect') {
     return (
       <BootFailureModal onDismiss={dismiss} title={copy.gatewaySettings}>
-        <div className="relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+        <div className="relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden rounded-xl border border-(--stroke-thor) bg-(--ui-chat-bubble-background) shadow-thor">
           <DialogCloseButton />
           {/* Subtle back affordance (projects/overlay idiom): muted → foreground
               on hover, no divider. */}
@@ -530,7 +530,7 @@ export function BootFailureOverlay() {
 
   return (
     <BootFailureModal onDismiss={dismiss}>
-      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-thor) bg-(--ui-chat-bubble-background) shadow-thor">
         <DialogCloseButton />
         <div className="flex items-start gap-3 px-5 py-4 pr-12">
           <ErrorIcon className="mt-0.5" size="1.25rem" />

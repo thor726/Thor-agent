@@ -689,7 +689,7 @@ from datetime import datetime
 
 from thor_cli.model_setup_flows import (
     _model_flow_openrouter,
-    _model_flow_nous,
+    _model_flow_thor,
     _model_flow_openai_codex,
     _model_flow_xai_oauth,
     _model_flow_qwen_oauth,
@@ -1009,7 +1009,7 @@ def _auth_store_logged_in(auth_file: Path, registry, strict_profile_scope: bool)
 
 
 def _has_any_provider_configured(*, strict_profile_scope: bool = False) -> bool:
-    """Check if at least one inference provider is usable. Never creates one: the Nous free tier
+    """Check if at least one inference provider is usable. Never creates one: the Thor free tier
     counts only once its identity exists, and the boot bootstrap (``thor_cli.free_tier_bootstrap``)
     creates it at boot (a first connector use can too); ``cmd_chat`` runs the bootstrap before asking.
 
@@ -1754,7 +1754,7 @@ cmd_dump = _forward_command("cmd_dump", "thor_cli.dump", "run_dump", doc='Dump s
 cmd_debug = _forward_command("cmd_debug", "thor_cli.debug", "run_debug", doc='Debug tools (share report, etc.).')
 cmd_skin = _forward_command("cmd_skin", "thor_cli.skin_cmd", "skin_command", doc='Skin management (list / use / set).')
 cmd_import = _forward_command("cmd_import", "thor_cli.backup", "run_import", forward_return=True, doc='Restore a Thor backup from a zip file.')
-cmd_dashboard_register = _forward_command("cmd_dashboard_register", "thor_cli.dashboard_register", "cmd_dashboard_register", doc='Register a self-hosted dashboard OAuth client with Nous Portal.')
+cmd_dashboard_register = _forward_command("cmd_dashboard_register", "thor_cli.dashboard_register", "cmd_dashboard_register", doc='Register a self-hosted dashboard OAuth client with Thor Portal.')
 cmd_webapp = _forward_command("cmd_webapp", "thor_cli.webapp_launcher", "cmd_webapp", forward_return=True, doc='Open the browser-hosted Desktop the gateway serves.')
 cmd_gateway_enroll = _forward_command("cmd_gateway_enroll", "thor_cli.gateway_enroll", "cmd_gateway_enroll", doc='Enroll a self-hosted gateway with a relay connector.')
 cmd_prompt_size = _forward_command("cmd_prompt_size", "thor_cli.prompt_size", "cmd_prompt_size", doc='Show a byte/char breakdown of the system prompt + tool schemas.')
@@ -1790,7 +1790,7 @@ _PROVIDER_MODEL_FLOWS = {
     "openrouter": lambda c, m, a: _model_flow_openrouter(c, m),
     "moa": lambda c, m, a: _model_flow_moa(c, m),
     "ai-gateway": lambda c, m, a: _model_flow_ai_gateway(c, m),
-    "nous": lambda c, m, a: _model_flow_nous(c, m, args=a),
+    "thor": lambda c, m, a: _model_flow_thor(c, m, args=a),
     "openai-codex": lambda c, m, a: _model_flow_openai_codex(c, m),
     "xai-oauth": lambda c, m, a: _model_flow_xai_oauth(c, m, args=a),
     "qwen-oauth": lambda c, m, a: _model_flow_qwen_oauth(c, m),
@@ -1858,7 +1858,7 @@ def _resolve_active_provider(config, model_cfg, effective_provider, custom_provi
             if exc.code == "no_provider_configured":
                 # The picker that is about to open IS the fix; a warning that says
                 # "run `thor model`" from inside `thor model` is circular.
-                print("No provider is set up yet — pick one below. (Nous Portal works without an API key.)")
+                print("No provider is set up yet — pick one below. (Thor Portal works without an API key.)")
             elif effective_provider == "auto":
                 print(f"Warning: {format_auth_error(exc)} Falling back to auto provider detection.")
             active = None  # no provider yet; default to first in list
@@ -2784,7 +2784,7 @@ def _prepare_agent_startup(args) -> None:
             from thor_cli.plugins import start_background_plugin_discovery
 
             # Daemon thread: ~150ms of manifest scanning overlaps the rest of
-            # startup. Every synchronous reader goes through discover_plugins(),
+            # startup. Every synchrothor reader goes through discover_plugins(),
             # which joins this thread first (incl. model_tools at import time).
             start_background_plugin_discovery()
         except Exception:

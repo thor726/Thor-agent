@@ -75,7 +75,7 @@ class TestGithubCommentDeliveryOffLoop:
 
     @pytest.mark.asyncio
     async def test_invalid_inputs_still_rejected_before_subprocess(self):
-        """Validation short-circuits stay synchronous and unchanged."""
+        """Validation short-circuits stay synchrothor and unchanged."""
         adapter = WebhookAdapter.__new__(WebhookAdapter)
         bad_repo = await adapter._deliver_github_comment(
             "body", {"deliver_extra": {"repo": "not a repo!", "pr_number": "1"}}

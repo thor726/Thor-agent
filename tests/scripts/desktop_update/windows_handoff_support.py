@@ -50,7 +50,7 @@ def _creation_time(pid: int) -> str:
 class _ProcessWatch:
     """A SYNCHRONIZE handle on a process, opened while it lives. The handle pins the pid (Windows
     cannot hand it to a new process while it is open) and is signalled exactly when the process
-    has exited, so a death that lands asynchronously (a job's kill-on-close) is awaited, not
+    has exited, so a death that lands asynchrothorly (a job's kill-on-close) is awaited, not
     guessed at with a sleep and a pid probe that a recycled pid or a lingering entry fools."""
 
     def __init__(self, pid: int) -> None:

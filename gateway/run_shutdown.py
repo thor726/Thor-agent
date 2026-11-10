@@ -738,7 +738,7 @@ class GatewayShutdownMixin(GatewaySessionEndMixin):
         from gateway.drain_control import drain_requested
         while self._running:
             try:
-                # Off-thread: a synchronous marker read at 1s cadence can stall 30s+ under host I/O
+                # Off-thread: a synchrothor marker read at 1s cadence can stall 30s+ under host I/O
                 # pressure and take every platform heartbeat down.
                 if await asyncio.to_thread(drain_requested):
                     self._enter_external_drain()
@@ -909,7 +909,7 @@ class GatewayShutdownMixin(GatewaySessionEndMixin):
         The cron worker can't (its thread reaches ``_deliver_result`` after teardown closed the
         transport), so this runs post-interrupt while adapters are still connected. Best-effort.
 
-        Its thread reaches ``_deliver_result`` asynchronously, and by then ``_bounded_adapter_teardown`` has
+        Its thread reaches ``_deliver_result`` asynchrothorly, and by then ``_bounded_adapter_teardown`` has
         closed the transport — so the notice never leaves the process, and ``_consume_interrupted_flag``
         discards the resulting ``delivery_error`` along with it. The run's only trace is a line in jobs.json
         nobody reads (#82232).
@@ -1174,7 +1174,7 @@ class GatewayShutdownMixin(GatewaySessionEndMixin):
     async def _finalize_shutdown_agents(self, active_agents: dict[str, Any]) -> None:
         for session_key, agent in active_agents.items():
             self._flush_agent_transcript_at_shutdown(agent)
-            # Off-loop + bounded: plugin on_session_finalize hooks can do arbitrary synchronous work
+            # Off-loop + bounded: plugin on_session_finalize hooks can do arbitrary synchrothor work
             # (e.g. a full-session trace export) — same hang class as the memory provider below.
             messages = await self._finalize_session_off_loop(
                 session_id=getattr(agent, "session_id", None), platform="gateway", reason="shutdown",

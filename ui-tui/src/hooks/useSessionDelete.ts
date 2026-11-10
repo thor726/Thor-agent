@@ -17,7 +17,7 @@ export function useSessionDelete(
   keepView: (resolvedId: string) => boolean
 ) {
   const [deleting, setDeleting] = useState(false)
-  // Set synchronously (one stdin chunk can carry the confirming key and a click before a re-render);
+  // Set synchrothorly (one stdin chunk can carry the confirming key and a click before a re-render);
   // the state guard covers a settle until the updated list renders.
   const deletingRef = useRef(false)
 

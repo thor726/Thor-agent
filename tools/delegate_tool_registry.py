@@ -262,7 +262,7 @@ def _list_payload(parent_agent: Any) -> dict[str, Any]:
     return payload
 
 def _handle_control_action(action: str, subagent_id: Optional[str], message: Optional[str], parent_agent: Any) -> str:
-    """Synchronous control plane for delegate_task: list/steer/stop. Runs in-turn (never backgrounded) over the same
+    """Synchrothor control plane for delegate_task: list/steer/stop. Runs in-turn (never backgrounded) over the same
     registry the TUI overlay drives, scoped so a conversation can only control its own spawn tree."""
     if action == "list":
         return json.dumps(_list_payload(parent_agent), ensure_ascii=False)

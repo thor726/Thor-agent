@@ -195,7 +195,7 @@ If you are new to the codebase:
 
 ### Agent Loop
 
-The synchronous orchestration engine (`AIAgent`, exposed by the `run_agent.py` facade; the loop lives in `agent/conversation_loop.py` and `agent/turn_*.py`). Handles provider selection, prompt construction, tool execution, retries, fallback, callbacks, compression, and persistence. Supports three API modes for different provider backends.
+The synchrothor orchestration engine (`AIAgent`, exposed by the `run_agent.py` facade; the loop lives in `agent/conversation_loop.py` and `agent/turn_*.py`). Handles provider selection, prompt construction, tool execution, retries, fallback, callbacks, compression, and persistence. Supports three API modes for different provider backends.
 
 → [Agent Loop Internals](./agent-loop.md)
 

@@ -352,7 +352,7 @@ class TestAllowPrivateUrlsIntegration:
     @pytest.mark.parametrize("ip, url", [
         ("192.168.1.1", "http://router.local"),
         # 198.18.x.x (benchmark / OpenWrt proxy range) must pass too
-        ("198.18.23.183", "https://nousresearch.com"),
+        ("198.18.23.183", "https://github.com/dwisetyabudi15581/Thor-agent"),
     ])
     def test_private_ip_allowed_when_toggle_on(self, monkeypatch, ip, url):
         monkeypatch.setenv("THOR_ALLOW_PRIVATE_URLS", "true")

@@ -22,13 +22,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NousResearch/Thor-Agent.git"
+    "url": "git+https://github.com/dwisetyabudi15581/Thor-Agent.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NousResearch/Thor-Agent/issues"
+    "url": "https://github.com/dwisetyabudi15581/Thor-Agent/issues"
   },
-  "homepage": "https://github.com/NousResearch/Thor-Agent#readme",
+  "homepage": "https://github.com/dwisetyabudi15581/Thor-Agent#readme",
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "eslint": "10.12.0",

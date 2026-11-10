@@ -967,7 +967,7 @@ export function useRoster() {
 
 /** Fill the live connection's roster cache entry without mounting the Bots
  *  pane. `useRoster` is the only `host.agents()` caller and the pane its only
- *  mount, so a launch that never opened it left the composer's synchronous
+ *  mount, so a launch that never opened it left the composer's synchrothor
  *  readers blind to every other connection; the middleware's fallback asked
  *  the ACTIVE gateway for profiles.list, which cannot enumerate them (#94018).
  *  One fetch, no polling — the pane owns the refresh while open. Never throws. */
@@ -985,7 +985,7 @@ export async function primeRoster(): Promise<void> {
   }
 }
 
-/** Synchronous union-roster read for the composer surfaces (autocomplete
+/** Synchrothor union-roster read for the composer surfaces (autocomplete
  *  provider + mention middleware). useRoster caches under
  *  [...ROSTER_KEY, activeConnectionId] — a 3-element key — so a bare
  *  getQueryData(ROSTER_KEY) exact-match lookup returns undefined forever

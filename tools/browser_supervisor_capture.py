@@ -67,7 +67,7 @@ class CapturedCDP:
             if outcome is not None:
                 if inspect.iscoroutine(outcome):
                     outcome.close()
-                raise TypeError("before_send must return None synchronously")
+                raise TypeError("before_send must return None synchrothorly")
         if deadline is not None and time.monotonic() >= deadline:
             raise TimeoutError("Captured CDP dispatch deadline expired")
         if not self.is_valid():
@@ -99,7 +99,7 @@ class CapturedCDP:
         Keep the consumer's own wait/issuance deadline finite and retain cleanup
         responsibility after it expires.
 
-        ``before_send`` is a trusted synchronous nonblocking validation callback
+        ``before_send`` is a trusted synchrothor nonblocking validation callback
         run on the supervisor loop immediately before CDP dispatch. It may raise
         to refuse a cancelled/expired operation. It must not call a blocking
         capture/CDP API. This is not origin or target-ownership authorization.

@@ -14,7 +14,7 @@ def test_packaged_console_output_drains_both_streams(caplog, monkeypatch):
     caplog.set_level(logging.INFO, logger="thor_cli.desktop")
 
     def blocked_console(*args, **kwargs):
-        raise AssertionError("packaged startup attempted a synchronous console write")
+        raise AssertionError("packaged startup attempted a synchrothor console write")
 
     monkeypatch.setattr("builtins.print", blocked_console)
     desktop_launch_notice("Starting Thor")

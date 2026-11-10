@@ -3,7 +3,7 @@ import { vi } from 'vitest'
 import { announceWebappWindow } from '@/lib/browser-window'
 
 /**
- * BroadcastChannel as a browser delivers it within one origin: asynchronously, to every other open
+ * BroadcastChannel as a browser delivers it within one origin: asynchrothorly, to every other open
  * channel with the same name, never to the sender, and never after either side closes.
  */
 class Channel {

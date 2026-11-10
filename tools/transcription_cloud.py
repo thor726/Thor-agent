@@ -2,7 +2,7 @@
 
 OpenAI-SDK-shaped backends (groq, openai, deepinfra), Mistral Voxtral, REST multipart
 backends (xAI, ElevenLabs), and OpenAI audio credential resolution (config > keyless
-local server > env > managed Nous gateway). Facade-owned state and helpers
+local server > env > managed Thor gateway). Facade-owned state and helpers
 (``_HAS_OPENAI``, ``_resolve_provider_key``, ``_resolve_stt_language``, ``_load_stt_config``)
 are read lazily from ``tools.transcription_tools``.
 """
@@ -413,13 +413,13 @@ def _direct_openai_credentials(cfg_api_key: str, cfg_base_url: str) -> Optional[
 
 def _resolve_openai_audio_client_config() -> tuple[str, str]:
     """``(api_key, base_url)`` for the OpenAI STT client, strict on the stored ``stt`` selection:
-    ``"nous"`` -> managed gateway ONLY (a direct OPENAI_API_KEY must NOT override it); any other
+    ``"thor"`` -> managed gateway ONLY (a direct OPENAI_API_KEY must NOT override it); any other
     stored provider -> direct credentials ONLY (no silent managed fallback); never-configured ->
     legacy ladder: direct credentials, then the managed gateway. Failures raise ValueError."""
     from tools.transcription_tools import _load_stt_config
     from tools.managed_tool_gateway import resolve_managed_tool_gateway
     from tools.tool_backend_helpers import (
-        NOUS_MANAGED_PROVIDER, managed_nous_tools_enabled, nous_tool_gateway_unavailable_message,
+        THOR_PORTAL_MANAGED_PROVIDER, managed_thor_tools_enabled, thor_tool_gateway_unavailable_message,
         read_selection, selection_error)
     openai_cfg = _load_stt_config().get("openai") or {}
     selected = read_selection("stt")
@@ -428,13 +428,13 @@ def _resolve_openai_audio_client_config() -> tuple[str, str]:
         gateway = resolve_managed_tool_gateway("openai-audio")
         if gateway is None:
             return None
-        return gateway.nous_user_token, urljoin(f"{gateway.gateway_origin.rstrip('/')}/", "v1")
+        return gateway.thor_user_token, urljoin(f"{gateway.gateway_origin.rstrip('/')}/", "v1")
 
-    if selected == NOUS_MANAGED_PROVIDER:
+    if selected == THOR_PORTAL_MANAGED_PROVIDER:
         managed = _managed()
         if managed is None:
-            raise ValueError(selection_error("stt", NOUS_MANAGED_PROVIDER,
-                                             "the Nous Tool Gateway is not available (not entitled or unreachable)"))
+            raise ValueError(selection_error("stt", THOR_PORTAL_MANAGED_PROVIDER,
+                                             "the Thor Tool Gateway is not available (not entitled or unreachable)"))
         return managed
     direct = _direct_openai_credentials(openai_cfg.get("api_key", ""), openai_cfg.get("base_url", ""))
     if direct is not None:
@@ -446,8 +446,8 @@ def _resolve_openai_audio_client_config() -> tuple[str, str]:
     managed = _managed()
     if managed is None:
         message = "Neither stt.openai.api_key in config nor VOICE_TOOLS_OPENAI_KEY/OPENAI_API_KEY is set"
-        if managed_nous_tools_enabled():
-            message += ". " + nous_tool_gateway_unavailable_message("managed OpenAI audio for transcription")
+        if managed_thor_tools_enabled():
+            message += ". " + thor_tool_gateway_unavailable_message("managed OpenAI audio for transcription")
         raise ValueError(message)
     return managed
 

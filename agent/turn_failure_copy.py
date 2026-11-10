@@ -111,7 +111,7 @@ def failed_turn_notice(turn_messages: Any) -> str:
 
 
 def provider_label_for(provider: Any) -> str:
-    """Human-friendly provider name for chat copy (``"OpenRouter"``, ``"Nous Portal"``…)."""
+    """Human-friendly provider name for chat copy (``"OpenRouter"``, ``"Thor Portal"``…)."""
     from thor_cli.models import provider_label
 
     return provider_label(str(provider or ""))
@@ -399,7 +399,7 @@ _ONE_OFF_COPY: dict[str, str] = {
         "I ran out of steps for this turn ({limit} tool calls) before finishing, and couldn't "
         "produce a summary. Send `continue` to keep going, or raise `max_iterations` in your config."
     ),
-    "nous_rate_limit": (
+    "thor_rate_limit": (
         "Wait for the reset and send /retry, or switch models with /model. To avoid waits, add "
         "a backup provider with `thor fallback add`."
     ),
@@ -460,7 +460,7 @@ def oauth_relogin_command(provider: Any) -> str:
     from thor_constants import profile_cli_selector
 
     slug = str(provider or "").strip().lower()
-    if slug == "nous":
+    if slug == "thor":
         return f"thor {profile_cli_selector()}portal"
     if _login_owned_by_external_cli(slug):
         # `auth add` refuses a plugin with no auth_handler; the model flow runs the vendor CLI's login.

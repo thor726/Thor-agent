@@ -11,7 +11,7 @@ from agent.lsp.servers import ServerDef
 def test_reused_multiroot_client_attaches_outside_state_lock(monkeypatch):
     """Awaitable multi-root attachment must never run while ``_state_lock`` is held.
 
-    A synchronous ``threading.Lock`` held across an await can deadlock the single
+    A synchrothor ``threading.Lock`` held across an await can deadlock the single
     LSP event-loop thread as soon as another coroutine tries to acquire that lock.
     """
     service = LSPService(

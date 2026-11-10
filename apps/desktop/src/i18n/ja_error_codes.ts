@@ -76,11 +76,11 @@ export const jaErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_disabled: {
     title: 'サインインしてチャットを続ける',
-    body: 'Nous アカウントでサインインすると、チャットを続けられます。無料です。'
+    body: 'Thor アカウントでサインインすると、チャットを続けられます。無料です。'
   },
   free_tier_rate_limited: {
     title: '無料枠を使い切りました',
-    body: 'まもなくリセットされます。Nous アカウントでサインインすると、より多くの利用枠を無料で使えます。'
+    body: 'まもなくリセットされます。Thor アカウントでサインインすると、より多くの利用枠を無料で使えます。'
   },
   free_tier_at_capacity: {
     title: '無料枠が混み合っています',
@@ -88,11 +88,11 @@ export const jaErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_model_not_free: {
     title: 'このモデルにはサインインが必要です',
-    body: '現在は無料モデルを使用しています。Nous アカウントでサインインすると、より多くのモデルを無料で使えます。'
+    body: '現在は無料モデルを使用しています。Thor アカウントでサインインすると、より多くのモデルを無料で使えます。'
   },
   free_tier_route: {
     title: '無料モデルに接続できません',
-    body: 'Nous アカウントで無料でサインインするか、NOUS_INFERENCE_BASE_URL の設定を確認してください。'
+    body: 'Thor アカウントで無料でサインインするか、THOR_PORTAL_INFERENCE_BASE_URL の設定を確認してください。'
   },
   free_tier_outage: {
     title: '無料モデルで問題が発生しています',
@@ -100,7 +100,7 @@ export const jaErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_refused: {
     title: 'サインインしてチャットを続ける',
-    body: 'Nous アカウントでのサインインは無料です。'
+    body: 'Thor アカウントでのサインインは無料です。'
   },
   launch_credentials_unavailable: {
     title: 'このチャットの API キーが変更されました',

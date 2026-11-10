@@ -83,7 +83,7 @@ async def _prewarm_profile_stores(runner, homes):
 
 def pin_launch_store():
     """Open the launch profile's state.db in the calling (worker) thread and hold one registry
-    reference, so the synchronous ``SessionStore`` open inside ``GatewayRunner()`` on the loop is a
+    reference, so the synchrothor ``SessionStore`` open inside ``GatewayRunner()`` on the loop is a
     registry hit instead of the schema setup. None when the open fails: the store's own open then
     reports and backs off exactly as before."""
     from thor_state_registry import acquire

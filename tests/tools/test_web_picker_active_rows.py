@@ -46,18 +46,18 @@ def test_row_active_iff_it_serves_a_capability(web, active, inactive):
     assert _is_provider_active(_row("parallel", web_tier="free"), tiered) is False
 
 
-def test_managed_row_active_for_a_nous_capability_pin(monkeypatch):
-    """``extract_backend: nous`` (Desktop "Use for Extract" on Nous Subscription): the managed row serves
+def test_managed_row_active_for_a_thor_capability_pin(monkeypatch):
+    """``extract_backend: thor`` (Desktop "Use for Extract" on Thor Subscription): the managed row serves
     extract and must be active alongside the BYOK row serving search; a vendor-only config leaves it off."""
     from thor_cli import tools_config
 
-    monkeypatch.setattr(tools_config, "get_nous_subscription_features", lambda *a, **k: types.SimpleNamespace(
-        features={"web": types.SimpleNamespace(managed_by_nous=True)}))
-    nous = _row("firecrawl", managed_nous_feature="web")
-    split = {"web": {"search_backend": "firecrawl", "extract_backend": "nous"}}
-    assert _is_provider_active(nous, split) is True
+    monkeypatch.setattr(tools_config, "get_thor_subscription_features", lambda *a, **k: types.SimpleNamespace(
+        features={"web": types.SimpleNamespace(managed_by_thor=True)}))
+    thor = _row("firecrawl", managed_thor_feature="web")
+    split = {"web": {"search_backend": "firecrawl", "extract_backend": "thor"}}
+    assert _is_provider_active(thor, split) is True
     assert _is_provider_active(_row("firecrawl"), split) is True
-    assert _is_provider_active(nous, {"web": {"search_backend": "firecrawl", "extract_backend": "tavily"}}) is False
+    assert _is_provider_active(thor, {"web": {"search_backend": "firecrawl", "extract_backend": "tavily"}}) is False
 
 
 def _web_rows():

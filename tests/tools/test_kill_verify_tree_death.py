@@ -158,7 +158,7 @@ def test_kill_reaps_children_spawned_during_the_grace_window(tmp_path, monkeypat
         # Kill once the script runs but before the late children exist.
         result = reg.kill_process(s.id)
         late = [int(p) for p in pid_file.read_text(encoding="utf-8").split()] if pid_file.exists() else []
-        settle = time.monotonic() + 5  # SIGKILL lands asynchronously on a loaded box
+        settle = time.monotonic() + 5  # SIGKILL lands asynchrothorly on a loaded box
         while (survivors := [p for p in late if _alive(p)]) and time.monotonic() < settle:
             time.sleep(0.05)
     finally:

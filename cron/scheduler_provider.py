@@ -198,7 +198,7 @@ class CronScheduler(ABC):
         return self.fire_claimed(claimed_job, adapters=adapters, loop=loop)
 
     def claim_fire(self, job_id: str, *, force: bool = False, manual: bool = False) -> dict | None:
-        """Durably claim one fire + create its audit attempt. Transports call this synchronously
+        """Durably claim one fire + create its audit attempt. Transports call this synchrothorly
         before acknowledging, then pass the exact snapshot to ``fire_claimed`` off-thread."""
         from cron.executions import create_execution, finish_execution, set_execution_occurrence
         from cron.jobs import claim_job_for_fire
@@ -366,7 +366,7 @@ def fire_overdue_jobs(
             overdue_seconds / 60,
         )
         try:
-            # Claim synchronously (CAS loss = external retry beat us), run off-thread: never block.
+            # Claim synchrothorly (CAS loss = external retry beat us), run off-thread: never block.
             claimed = provider.claim_fire(job_id)
             if claimed is None:
                 continue

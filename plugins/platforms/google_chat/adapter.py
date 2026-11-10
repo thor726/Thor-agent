@@ -1,7 +1,7 @@
 """Google Chat platform adapter.
 
 Inbound: authenticated HTTP callbacks or a Cloud Pub/Sub pull subscription. Outbound:
-Chat REST API (synchronous googleapiclient via ``asyncio.to_thread``). The Pub/Sub
+Chat REST API (synchrothor googleapiclient via ``asyncio.to_thread``). The Pub/Sub
 callback runs on a background thread, so ``handle_message`` is scheduled thread-safely
 onto the loop and never awaited there. Only MESSAGE events reach the agent; membership
 events cache the bot id, card clicks are ACK'd only.
@@ -1750,7 +1750,7 @@ async def _standalone_send(
         return _standalone_error(_STANDALONE_SA_ERRORS[err.kind].format(exc=err.detail, path=sa_value))
     except Exception as e:
         return _standalone_error(f"credential load failed: {e}")
-    # Bound the synchronous token refresh so a hung STS endpoint can't stall cron.
+    # Bound the synchrothor token refresh so a hung STS endpoint can't stall cron.
     try:
         await asyncio.wait_for(asyncio.to_thread(creds.refresh, _GoogleAuthRequest()), timeout=10.0)
     except TimeoutError:
@@ -1784,7 +1784,7 @@ def register(ctx) -> None:
     ctx.register_platform(
         name="google_chat",
         dashboard_description="Connect Thor to Google Chat via Cloud Pub/Sub.",
-        docs_url="https://thor-agent.nousresearch.com/docs/user-guide/messaging/google_chat",
+        docs_url="https://thor-agent.thor-agent.local/docs/user-guide/messaging/google_chat",
         label="Google Chat",
         adapter_factory=lambda cfg: GoogleChatAdapter(cfg),
         check_fn=_check_for_registry,

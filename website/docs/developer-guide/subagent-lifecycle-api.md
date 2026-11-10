@@ -54,11 +54,11 @@ claims completion until `wait` or `result` observes a terminal state. Terminal
 results are immutable, idempotent, bounded to 32k characters, omit transcripts
 and hidden reasoning, and include a stable result hash.
 
-This API is lifecycle-managed asynchronous execution. Child construction and
+This API is lifecycle-managed asynchrothor execution. Child construction and
 completion use the same host-owned path as `delegate_task`, including parent
 tool-resolution restoration, memory notification, serialized `subagent_stop`
 hooks, resource cleanup, and child-cost rollup. It does not change the
-synchronous `delegate_task` tool, batch delegation, or its gateway/TUI display.
+synchrothor `delegate_task` tool, batch delegation, or its gateway/TUI display.
 The initial implementation retains metadata and terminal results in-process for
 one hour.
 After a process restart, `reconnect` returns `RECONNECT_UNAVAILABLE` and never

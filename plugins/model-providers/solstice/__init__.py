@@ -2,7 +2,7 @@
 
 Pre-release (``hidden=True``): no picker, setup list or accounts tab offers it until the user signs in
 by name (``thor auth add solstice``); after that it lists like any signed-in provider. Login and
-token refresh go through the generic PKCE plugin flow with a Nous-portal broker as the token endpoint
+token refresh go through the generic PKCE plugin flow with a Thor-portal broker as the token endpoint
 (``auth.py``); inference goes straight to Google on the per-user-quota methods (``transport.py``).
 """
 

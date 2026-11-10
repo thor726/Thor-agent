@@ -18,7 +18,7 @@ from thor_cli.dashboard_auth.routes import _reset_password_rate_limit
 
 LAN = "http://192.168.50.220:9130"
 IDENTITY = ("profiles", "parked_profiles", "gateway_shared_with", "install_id", "memory", "disk",
-            "nous_session_valid", "active_sessions", "gateway_mode")
+            "thor_session_valid", "active_sessions", "gateway_mode")
 
 
 @pytest.fixture(scope="module")

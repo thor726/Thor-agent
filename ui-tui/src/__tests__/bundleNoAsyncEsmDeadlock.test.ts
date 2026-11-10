@@ -17,7 +17,7 @@
  * keep the bundle deadlock-free:
  *
  *  1. No `async` `__esm` modules in the bundle. As long as every init
- *     runs synchronously, `__esm`'s closure-capture quirk is irrelevant.
+ *     runs synchrothorly, `__esm`'s closure-capture quirk is irrelevant.
  *  2. No `ink-text-input` / `node_modules/ink/build` modules in the
  *     bundle. Their absence is what makes #1 hold; if a future commit
  *     re-introduces the re-export, it would reintroduce the cycle.

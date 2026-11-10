@@ -106,12 +106,12 @@ class TestFreeTierBeatsImplicitHostCredentials:
     """NS-829: a leftover ~/.aws profile must not pre-empt the welcome trial on a fresh install.
 
     A claimed trial on the desktop's local backend sits above the implicit Bedrock chain; explicit
-    intent still beats it; off the desktop backend a claimed guest never resolves to nous. The
+    intent still beats it; off the desktop backend a claimed guest never resolves to thor. The
     resolver never creates the identity."""
 
     def test_a_claimed_trial_on_the_desktop_backend_beats_the_bedrock_chain(self, portal, monkeypatch):
         _claimed_trial_with_aws(monkeypatch)
-        assert resolve_provider("auto") == "nous"
+        assert resolve_provider("auto") == "thor"
 
     @pytest.mark.parametrize("env_key, config_provider, expected", [
         ("OPENAI_API_KEY", None, "openai-api"),  # an exported key wins
@@ -130,13 +130,13 @@ class TestFreeTierBeatsImplicitHostCredentials:
         from tests.thor_cli.anon_portal import off_local_desktop
         _claimed_trial_with_aws(monkeypatch)
         off_local_desktop(monkeypatch)
-        assert resolve_provider("auto") == "nous"
+        assert resolve_provider("auto") == "thor"
 
     def test_skip_free_tier_answers_what_else_would_carry_inference(self, portal, monkeypatch):
         """With the free tier hidden, a claimed trial is not an answer and the ladder falls through
         to the next real rung."""
         _claimed_trial_with_aws(monkeypatch)
         monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: False)
-        assert resolve_provider("auto") == "nous"
+        assert resolve_provider("auto") == "thor"
         with pytest.raises(AuthError):
             resolve_provider("auto", skip_free_tier=True)

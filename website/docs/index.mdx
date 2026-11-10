@@ -2,7 +2,7 @@
 slug: /
 sidebar_position: 0
 title: "Thor Agent Documentation"
-description: "The self-improving AI agent built by Nous Research. A built-in learning loop that creates skills from experience, improves them during use, and remembers across sessions."
+description: "The self-improving AI agent built by Thor Agent. A built-in learning loop that creates skills from experience, improves them during use, and remembers across sessions."
 hide_table_of_contents: true
 displayed_sidebar: docs
 ---
@@ -10,13 +10,13 @@ displayed_sidebar: docs
 import Link from "@docusaurus/Link";
 
 <head>
-  <title>Thor Agent Docs (Official) | Nous Research</title>
-  <meta property="og:title" content="Thor Agent Docs (Official) | Nous Research" />
+  <title>Thor Agent Docs (Official) | Thor Agent</title>
+  <meta property="og:title" content="Thor Agent Docs (Official) | Thor Agent" />
 </head>
 
 # Thor Agent
 
-The self-improving AI agent built by [Nous Research](https://nousresearch.com). The only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, and builds a deepening model of who you are across sessions.
+The self-improving AI agent built by [Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent). The only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, and builds a deepening model of who you are across sessions.
 
 <div
   style={{
@@ -53,7 +53,7 @@ The self-improving AI agent built by [Nous Research](https://nousresearch.com). 
     Explore Bot Mode
   </Link>
   <a
-    href="https://thor-agent.nousresearch.com/"
+    href="https://thor-agent.thor-agent.local/"
     style={{
       display: "inline-block",
       padding: "0.6rem 1.2rem",
@@ -82,7 +82,7 @@ The self-improving AI agent built by [Nous Research](https://nousresearch.com). 
 
 ### Windows or macOS
 
-To easily install the command-line and desktop applications, [download the Thor Desktop installer](https://thor-agent.nousresearch.com/) from our website and run it.
+To easily install the command-line and desktop applications, [download the Thor Desktop installer](https://thor-agent.thor-agent.local/) from our website and run it.
 
 ### Without Thor Desktop:
 
@@ -93,7 +93,7 @@ For aarch64 Android devices, use the separate [Termux APT guide](./getting-start
 #### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
 #### Windows (native)
@@ -101,13 +101,13 @@ curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
 Run in powershell:
 
 ```powershell
-iex (irm https://thor-agent.nousresearch.com/install.ps1)
+iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)
 ```
 
 See the full **[Installation Guide](./getting-started/installation.md)** for what the installer does, installation ownership and data locations, and Windows-specific notes. For the complete platform support matrix, see **[Platform Support](./getting-started/platform-support.md)**.
 
 :::tip Fastest path to a working agent
-After installing, run `thor setup --portal` — one OAuth covers a model plus all four Tool Gateway tools (web search, image generation, TTS, browser). See [Nous Portal](./integrations/nous-portal.md).
+After installing, run `thor setup` — the wizard walks you through picking a model provider and pasting an API key in a couple of minutes.
 :::
 
 ## What is Thor Agent?
@@ -143,20 +143,14 @@ It's not a coding copilot tethered to an IDE or a chatbot wrapper around a singl
 - **A closed learning loop** — Agent-curated memory with periodic nudges, autonomous skill creation, skill self-improvement during use, FTS5 cross-session recall with LLM summarization, and [Honcho](https://github.com/plastic-labs/honcho) dialectic user modeling
 - **Runs anywhere, not just your laptop** — 6 built-in terminal backends (local, Docker, SSH, Daytona, Modal, Vercel Sandbox) plus plugin backends such as Singularity. Daytona and Modal offer serverless persistence — your environment hibernates when idle, costing nearly nothing
 - **Lives where you do** — CLI, Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost, Email, SMS, DingTalk, Feishu, WeCom, Weixin, QQ Bot, Yuanbao, BlueBubbles, Home Assistant, Microsoft Teams, Google Chat, and more — 20+ platforms from one gateway
-- **Built by model trainers** — Created by [Nous Research](https://nousresearch.com), the lab behind Thor, Nomos, and Psyche. Works with [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai), OpenAI, or any endpoint
+- **Built by model trainers** — Created by [Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent), the lab behind Thor, Nomos, and Psyche. Works with [Thor Portal](https://portal.thor-agent.local), [OpenRouter](https://openrouter.ai), OpenAI, or any endpoint
 - **Scheduled automations** — Built-in cron with delivery to any platform
 - **[Bot Mode](./user-guide/bot-mode.md)** — Build a durable team of specialist Bots that work together in group chats and through `@mentions`
 - **Delegates & parallelizes** — Spawn isolated subagents for parallel workstreams. Programmatic Tool Calling via `execute_code` collapses multi-step pipelines into single inference calls
 - **Open standard skills** — Compatible with [agentskills.io](https://agentskills.io). Skills are portable, shareable, and community-contributed via the Skills Hub
-- **Full web control** — Search, extract, browse, vision, image generation, TTS — one subscription via [Nous Portal](./integrations/nous-portal.md) bundles all of them
+- **Full web control** — Search, extract, browse, vision, image generation, TTS — pluggable web tool backends cover all of them
 - **MCP support** — Connect to any MCP server for extended tool capabilities
-- **Research-ready** — Batch processing, trajectory export, RL training with Atropos. Built by [Nous Research](https://nousresearch.com) — the lab behind Thor, Nomos, and Psyche models
-
-## For LLMs and coding agents
-
-Machine-readable entry points to this documentation:
-
-- **[`/llms.txt`](/llms.txt)** — curated index of every doc page with short descriptions. ~17 KB, safe to load into an LLM context.
+- **Research-ready** — Batch processing, trajectory export, RL training with Atropos. Built as an open-source project — see the [GitHub repo](https://github.com/dwisetyabudi15581/Thor-agent).txt`](/llms.txt)** — curated index of every doc page with short descriptions. ~17 KB, safe to load into an LLM context.
 - **[`/llms-full.txt`](/llms-full.txt)** — every doc page concatenated into a single markdown file for one-shot ingestion. ~1.8 MB.
 
 Both files also resolve at `/docs/llms.txt` and `/docs/llms-full.txt`. Generated fresh on every deploy.

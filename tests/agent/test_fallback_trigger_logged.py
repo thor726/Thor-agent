@@ -17,7 +17,7 @@ from agent.turn_retry_state import TurnRetryState
 def _agent(switches: bool) -> MagicMock:
     agent = MagicMock()
     agent.log_prefix, agent.quiet_mode, agent.api_mode = "", True, "chat_completions"
-    agent.provider, agent.model = "nous", "anthropic/claude-opus-5.5"
+    agent.provider, agent.model = "thor", "anthropic/claude-opus-5.5"
     agent._fallback_chain, agent._fallback_index = [{"provider": "custom", "model": "fb"}], 0
     agent._try_activate_fallback.return_value = switches
     return agent
@@ -66,22 +66,22 @@ def test_content_filter_stream_fallback_names_reason_and_logs(caplog):
     assert _switch_lines(caplog) == ["Content filter terminated the stream — switched to fallback"]
 
 
-def test_nous_rate_guard_fallback_logs(monkeypatch, caplog):
-    from agent import nous_rate_guard
-    from agent.turn_api_call import nous_rate_limit_guard
+def test_thor_rate_guard_fallback_logs(monkeypatch, caplog):
+    from agent import thor_rate_guard
+    from agent.turn_api_call import thor_rate_limit_guard
 
-    monkeypatch.setattr(nous_rate_guard, "nous_rate_limit_remaining", lambda **kw: 600)
+    monkeypatch.setattr(thor_rate_guard, "thor_rate_limit_remaining", lambda **kw: 600)
     monkeypatch.setattr("thor_cli.anon_auth.is_anonymous_agent", lambda agent: False)
     monkeypatch.setattr("thor_cli.anon_auth.apply_model_switch", lambda agent: None)
     monkeypatch.setattr("agent.conversation_loop._arm_fallback_restart", lambda *a: "sys")
     agent = _agent(switches=True)
     with caplog.at_level(logging.WARNING, logger="agent.conversation_loop"):
-        verdict = nous_rate_limit_guard(
+        verdict = thor_rate_limit_guard(
             agent, _retry=TurnRetryState(), api_messages=[], messages=[], conversation_history=[],
             active_system_prompt="system", retry_count=0, compression_attempts=0, api_call_count=0,
         )
     assert verdict.action == "break"
-    assert len(_switch_lines(caplog)) == 1 and _switch_lines(caplog)[0].startswith("Nous rate limit recorded")
+    assert len(_switch_lines(caplog)) == 1 and _switch_lines(caplog)[0].startswith("Thor rate limit recorded")
 
 
 def test_codex_app_server_fallback_logs_its_trigger(caplog):

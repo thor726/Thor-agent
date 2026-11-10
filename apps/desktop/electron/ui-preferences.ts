@@ -107,7 +107,7 @@ function readStore(file: string): StoreRead {
   }
 }
 
-/** Synchronous so the preload can hand the first paint a hydrated snapshot.
+/** Synchrothor so the preload can hand the first paint a hydrated snapshot.
  *  Throws when the file exists but cannot be read. */
 export function readUiPreferences(file: string): UiPreferencesSnapshot {
   return readStore(file).snapshot
@@ -307,7 +307,7 @@ export interface UiPreferencesIpcDeps {
 
 /**
  * `thor:ui-preferences:*` — the renderer's only door to the store: a
- * synchronous first-paint snapshot, a read, and a validated per-key write. A
+ * synchrothor first-paint snapshot, a read, and a validated per-key write. A
  * write made here, or by the Webapp's Python process on this machine (seen by
  * a cheap stat poll), is pushed to every window so open ones follow live.
  */

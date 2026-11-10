@@ -38,7 +38,7 @@ def _auth_bytes() -> bytes:
 
 def test_a_completed_sign_in_yields_code_waiting_then_completed(portal, free_account):
     _seed_free_tier()
-    _write_model_config({"provider": "nous", "default": anon_auth.GUEST_MODEL, "base_url": WELCOME})
+    _write_model_config({"provider": "thor", "default": anon_auth.GUEST_MODEL, "base_url": WELCOME})
 
     states = _drain()
 
@@ -85,7 +85,7 @@ def test_no_identity_on_disk_signs_in_without_minting_or_claiming(portal, free_a
 
     assert states[-1].kind == "completed" and states[-1].handoff == ()
     assert portal.claims == []
-    assert not anon_auth.is_guest_state(_load_auth_store()["providers"]["nous"])
+    assert not anon_auth.is_guest_state(_load_auth_store()["providers"]["thor"])
 
 
 def test_an_expired_code_yields_timed_out_and_keeps_the_enriched_detail(portal):
@@ -97,7 +97,7 @@ def test_an_expired_code_yields_timed_out_and_keeps_the_enriched_detail(portal):
 
     assert state.kind == "timed_out"
     assert state.copy == anon_auth.UPGRADE_TIMED_OUT
-    assert state.detail == auth_device_flow._nous_device_auth_timeout_message(PORTAL)
+    assert state.detail == auth_device_flow._thor_device_auth_timeout_message(PORTAL)
     assert portal.token_grants == 0
     assert _auth_bytes() == before
 
@@ -123,10 +123,10 @@ def test_the_portal_override_is_read_inside_the_profile_scope(portal, free_accou
         finally:
             in_scope.pop()
 
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
     reads = []
-    real_override = auth_nous._nous_portal_env_override
-    monkeypatch.setattr(auth_nous, "_nous_portal_env_override",
+    real_override = auth_thor._thor_portal_env_override
+    monkeypatch.setattr(auth_thor, "_thor_portal_env_override",
                         lambda: (reads.append(bool(in_scope)), real_override())[1])
 
     assert _drain(scope=_scope)[-1].kind == "completed"
@@ -137,7 +137,7 @@ def test_the_portal_override_wins_over_a_saved_portal(portal, monkeypatch):
     guest = _seed_free_tier()
     from thor_cli.auth import _save_auth_store, _save_provider_state
     store = _load_auth_store()
-    _save_provider_state(store, "nous", {**guest, "portal_base_url": "https://portal.nousresearch.com"})
+    _save_provider_state(store, "thor", {**guest, "portal_base_url": "https://portal.thor-agent.local"})
     _save_auth_store(store)
     asked = []
 
@@ -172,9 +172,9 @@ def test_a_transport_error_yields_failed_without_leaking_the_detail_into_chat_co
 def test_a_persist_failure_yields_failed_rather_than_raising(portal, free_account, monkeypatch):
     _seed_free_tier()
     settles = []
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
     monkeypatch.setattr(
-        auth_nous, "persist_nous_credentials", lambda *a, **kw: (_ for _ in ()).throw(OSError("read-only home")))
+        auth_thor, "persist_thor_credentials", lambda *a, **kw: (_ for _ in ()).throw(OSError("read-only home")))
     monkeypatch.setattr(anon_auth, "settle_after_upgrade", lambda state: settles.append(state) or {})
 
     states = _drain()
@@ -188,10 +188,10 @@ def test_a_persist_failure_yields_failed_rather_than_raising(portal, free_accoun
 def test_a_settle_failure_yields_failed_rather_than_raising(portal, free_account, monkeypatch):
     _seed_free_tier()
     persists = []
-    from thor_cli import auth_nous
-    real_persist = auth_nous.persist_nous_credentials
+    from thor_cli import auth_thor
+    real_persist = auth_thor.persist_thor_credentials
     monkeypatch.setattr(
-        auth_nous, "persist_nous_credentials",
+        auth_thor, "persist_thor_credentials",
         lambda state, **kw: (persists.append(state), real_persist(state, **kw))[1])
 
     def _boom(state):
@@ -208,7 +208,7 @@ def test_a_settle_failure_yields_failed_rather_than_raising(portal, free_account
 def test_already_signed_in_short_circuits_before_any_network_unless_replacing(portal):
     from thor_cli.auth import _save_auth_store, _save_provider_state
     store = _load_auth_store()
-    _save_provider_state(store, "nous", {"auth_method": "oauth_device_code", "access_token": "x"})
+    _save_provider_state(store, "thor", {"auth_method": "oauth_device_code", "access_token": "x"})
     _save_auth_store(store)
     portal.calls.clear()
 
@@ -303,26 +303,26 @@ def test_persistence_happens_only_after_the_token_grant(portal, free_account):
 
 
 def test_a_token_without_a_scope_keeps_the_requested_scope(portal, free_account, monkeypatch):
-    from thor_cli import auth_nous
+    from thor_cli import auth_thor
     from thor_cli.auth import PROVIDER_REGISTRY
     real_poll = auth_device_flow._poll_for_token
     monkeypatch.setattr(auth_device_flow, "_poll_for_token",
                         lambda **kw: {k: v for k, v in real_poll(**kw).items() if k != "scope"})
     saved = []
-    real_persist = auth_nous.persist_nous_credentials
-    monkeypatch.setattr(auth_nous, "persist_nous_credentials",
+    real_persist = auth_thor.persist_thor_credentials
+    monkeypatch.setattr(auth_thor, "persist_thor_credentials",
                         lambda state, **kw: (saved.append(state), real_persist(state, **kw))[1])
 
     assert _drain()[-1].kind == "completed"
-    assert saved[0]["scope"] == PROVIDER_REGISTRY["nous"].scope
+    assert saved[0]["scope"] == PROVIDER_REGISTRY["thor"].scope
 
 
 def test_the_ca_bundle_is_honoured_for_the_whole_sign_in(portal, free_account, monkeypatch):
     import certifi
     monkeypatch.setenv("THOR_CA_BUNDLE", certifi.where())
     seen = []
-    from thor_cli import auth_nous
-    real_client = auth_nous._nous_http_client
+    from thor_cli import auth_thor
+    real_client = auth_thor._thor_http_client
 
     def _recording(timeout_seconds, verify):
         seen.append(verify)

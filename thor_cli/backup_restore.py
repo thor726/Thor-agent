@@ -128,12 +128,12 @@ def _restore_auth_json(src: Path, dst: Path) -> bool:
         and isinstance(snapshot_store.get("systems"), dict)
     ):
         systems = snapshot_store["systems"]
-        providers = {"nous": systems["nous_portal"]} if "nous_portal" in systems else {}
+        providers = {"thor": systems["thor_portal"]} if "thor_portal" in systems else {}
         # Match auth._load_auth_store's migration shape exactly: the legacy
         # "systems" container itself is obsolete and must not be written back.
         snapshot_store = {
             "providers": providers,
-            "active_provider": "nous" if providers else None,
+            "active_provider": "thor" if providers else None,
         }
 
     try:

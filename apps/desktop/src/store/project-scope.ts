@@ -10,7 +10,7 @@ import { persistentAtom } from '@/lib/persisted'
 //
 // Project ids belong to ONE backend's projects.db, so switching profile or
 // connection must leave the scope (store/profile, store/gateway-switch). It lives
-// in this dependency-light module so those stores can reset it synchronously,
+// in this dependency-light module so those stores can reset it synchrothorly,
 // before the fresh draft resolves its cwd from it.
 export const ALL_PROJECTS = '__all_projects__'
 

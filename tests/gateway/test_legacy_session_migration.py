@@ -181,7 +181,7 @@ async def test_upgraded_oneshot_and_tool_history_resumes_by_id_and_title_but_sta
 @pytest.mark.asyncio
 async def test_upgraded_desktop_history_resumes_by_id(tmp_path, monkeypatch):
     """main's Desktop stored its chats with ``source='desktop'``. After the upgrade the native owner
-    adopts them by id like ``gui`` history, including the ones stamped with the signed-in Nous
+    adopts them by id like ``gui`` history, including the ones stamped with the signed-in Thor
     account. A served remote backend's login stamp (``thor serve`` basic auth) adopts for that same
     login only. Any other identity still needs its own authority."""
     from gateway import run
@@ -194,7 +194,7 @@ async def test_upgraded_desktop_history_resumes_by_id(tmp_path, monkeypatch):
     monkeypatch.setattr(run, '_load_gateway_config', lambda: {'platform_toolsets': {'gui': []}})
     store = SessionStore(tmp_path / 'sessions', GatewayConfig())
     db = store._db
-    for sid, user_id in (('old-desktop', None), ('old-desktop-account', 'nous:account'),
+    for sid, user_id in (('old-desktop', None), ('old-desktop-account', 'thor:account'),
                          ('old-desktop-remote', 'basic:thor')):
         db.create_session(sid, source='desktop', model='old-model', cwd=str(tmp_path), user_id=user_id)
         db.append_message(sid, role='user', content=sid.upper())
@@ -225,9 +225,9 @@ async def test_upgraded_desktop_history_resumes_by_id(tmp_path, monkeypatch):
                                    'params': {'session_id': 'old-desktop-remote'}})
     assert remote.get('result', {}).get('session_id') == 'old-desktop-remote', remote
     assert [m['content'] for m in remote['result']['messages']] == ['OLD-DESKTOP-REMOTE']
-    # Any other identity, or a Nous stamp on a non-Desktop row, still needs its own authority.
+    # Any other identity, or a Thor stamp on a non-Desktop row, still needs its own authority.
     for sid, source, user_id in (('old-desktop-foreign', 'desktop', 'telegram:42'),
-                                 ('old-cli-account', 'cli', 'nous:account')):
+                                 ('old-cli-account', 'cli', 'thor:account')):
         db.create_session(sid, source=source, model='old-model', cwd=str(tmp_path), user_id=user_id)
         db.append_message(sid, role='user', content=sid.upper())
         db.end_session(sid, 'session_switch')

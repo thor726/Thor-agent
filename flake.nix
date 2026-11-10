@@ -1,5 +1,5 @@
 {
-  description = "Thor Agent - AI agent framework by Nous Research";
+  description = "Thor Agent - AI agent framework by Thor Agent";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

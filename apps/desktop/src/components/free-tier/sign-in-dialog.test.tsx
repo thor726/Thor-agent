@@ -21,7 +21,7 @@ vi.mock('@/thor', async importOriginal => ({
   ...(await importOriginal<typeof ThorApi>()),
   pollOAuthSession: (providerId: string, sessionId: string) => pollOAuthSession(providerId, sessionId),
   getGlobalModelOptions: async () => ({ providers: [] }),
-  getNousHandoffStatus: async () => ({ lines: [], state: 'idle' }),
+  getThorHandoffStatus: async () => ({ lines: [], state: 'idle' }),
   startOAuthLogin: async () => ({
     expires_in: 900,
     flow: 'device_code' as const,
@@ -57,7 +57,7 @@ describe('FreeTierSignInDialog', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     pollOAuthSession.mockResolvedValueOnce({ session_id: 'session-1', status: 'pending' }).mockResolvedValue({
       account_email: 'someone@example.com',
-      model: 'Hermes-4-405B',
+      model: 'Thor-4-405B',
       reason: null,
       session_id: 'session-1',
       status: 'approved'
@@ -88,7 +88,7 @@ describe('FreeTierSignInDialog', () => {
     await waitFor(() => expect(screen.getByText('Signed in as')).toBeTruthy())
     expect(screen.getByText('someone@example.com')).toBeTruthy()
     expect(screen.getByText('Your account now carries inference and tools.')).toBeTruthy()
-    expect(screen.getByText('Hermes-4-405B')).toBeTruthy()
+    expect(screen.getByText('Thor-4-405B')).toBeTruthy()
   })
 
   describe('result screen', () => {

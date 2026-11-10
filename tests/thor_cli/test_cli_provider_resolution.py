@@ -131,10 +131,10 @@ def test_provider_flag_uses_named_custom_default_model(monkeypatch):
     monkeypatch.setitem(
         cli.CLI_CONFIG,
         "model",
-        {"default": "tencent/hy3:free", "provider": "nous"},
+        {"default": "tencent/hy3:free", "provider": "thor"},
     )
     config = {
-        "model": {"default": "tencent/hy3:free", "provider": "nous"},
+        "model": {"default": "tencent/hy3:free", "provider": "thor"},
         "providers": {
             "gmk-lan": {
                 "name": "GMK Local",
@@ -159,10 +159,10 @@ def test_explicit_model_wins_over_provider_default_model(monkeypatch):
     monkeypatch.setitem(
         cli.CLI_CONFIG,
         "model",
-        {"default": "tencent/hy3:free", "provider": "nous"},
+        {"default": "tencent/hy3:free", "provider": "thor"},
     )
     config = {
-        "model": {"default": "tencent/hy3:free", "provider": "nous"},
+        "model": {"default": "tencent/hy3:free", "provider": "thor"},
         "providers": {
             "gmk-lan": {
                 "name": "GMK Local",
@@ -241,7 +241,7 @@ def test_provider_flag_logs_when_custom_default_model_cannot_resolve(monkeypatch
     monkeypatch.setitem(
         cli.CLI_CONFIG,
         "model",
-        {"default": "tencent/hy3:free", "provider": "nous"},
+        {"default": "tencent/hy3:free", "provider": "thor"},
     )
 
     def _boom(_name):
@@ -441,7 +441,7 @@ def test_ensure_runtime_credentials_records_quota_vs_bad_key(monkeypatch, tmp_pa
 
 
 
-def test_model_flow_nous_does_not_restore_stale_custom_api_key(tmp_path, monkeypatch):
+def test_model_flow_thor_does_not_restore_stale_custom_api_key(tmp_path, monkeypatch):
     import thor_yaml as yaml
 
     config_home = tmp_path / "thor"
@@ -470,23 +470,23 @@ def test_model_flow_nous_does_not_restore_stale_custom_api_key(tmp_path, monkeyp
     monkeypatch.setattr(
         "thor_cli.auth.get_provider_auth_state",
         lambda provider: {
-            "access_token": "nous-token",
+            "access_token": "thor-token",
             "portal_base_url": "https://portal.example.com",
         },
     )
     monkeypatch.setattr(
-        "thor_cli.auth.resolve_nous_runtime_credentials",
+        "thor_cli.auth.resolve_thor_runtime_credentials",
         lambda *args, **kwargs: {
-            "base_url": "https://inference-api.nousresearch.com/v1",
-            "api_key": "nous-key",
+            "base_url": "https://inference-api.thor-agent.local/v1",
+            "api_key": "thor-key",
         },
     )
     monkeypatch.setattr(
-        "thor_cli.models.get_curated_nous_model_ids",
+        "thor_cli.models.get_curated_thor_model_ids",
         lambda: [selected_model],
     )
     monkeypatch.setattr("thor_cli.models_pricing.get_pricing_for_provider", lambda provider: {})
-    monkeypatch.setattr("thor_cli.models.check_nous_free_tier", lambda **kwargs: False)
+    monkeypatch.setattr("thor_cli.models.check_thor_free_tier", lambda **kwargs: False)
     monkeypatch.setattr(
         "thor_cli.models.union_with_portal_paid_recommendations",
         lambda model_ids, pricing, portal_url: (model_ids, pricing),
@@ -496,17 +496,17 @@ def test_model_flow_nous_does_not_restore_stale_custom_api_key(tmp_path, monkeyp
         lambda *args, **kwargs: selected_model,
     )
     monkeypatch.setattr(
-        "thor_cli.nous_subscription.prompt_enable_tool_gateway",
+        "thor_cli.thor_subscription.prompt_enable_tool_gateway",
         lambda config: None,
     )
 
-    thor_main._model_flow_nous(stale_config, current_model="glm-5.2")
+    thor_main._model_flow_thor(stale_config, current_model="glm-5.2")
 
     config = yaml.safe_load(config_path.read_text()) or {}
     model = config.get("model")
-    assert model["provider"] == "nous"
+    assert model["provider"] == "thor"
     assert model["default"] == selected_model
-    assert model["base_url"] == "https://inference-api.nousresearch.com/v1"
+    assert model["base_url"] == "https://inference-api.thor-agent.local/v1"
     assert "api_key" not in model
     assert "api_mode" not in model
 
@@ -749,16 +749,16 @@ def test_model_flow_custom_persists_selected_api_mode(monkeypatch):
     assert saved_env[key_env] == "test-key"
 
 
-def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
+def test_cmd_model_forwards_thor_login_tls_options(monkeypatch):
     monkeypatch.setattr(thor_main, "_require_tty", lambda *a: None)
     monkeypatch.setattr(
         "thor_cli.config.load_config",
-        lambda: {"model": {"default": "gpt-5", "provider": "nous"}},
+        lambda: {"model": {"default": "gpt-5", "provider": "thor"}},
     )
     monkeypatch.setattr("thor_cli.config.save_config", lambda cfg: None)
     monkeypatch.setattr("thor_cli.config.get_env_value", lambda key: "")
     monkeypatch.setattr("thor_cli.config.save_env_value", lambda key, value: None)
-    monkeypatch.setattr("thor_cli.auth.resolve_provider", lambda requested, **kwargs: "nous")
+    monkeypatch.setattr("thor_cli.auth.resolve_provider", lambda requested, **kwargs: "thor")
     monkeypatch.setattr("thor_cli.auth.get_provider_auth_state", lambda provider_id: None)
     monkeypatch.setattr(thor_main, "_prompt_provider_choice", lambda choices, **kwargs: 0)
     monkeypatch.setattr(thor_cli_main_provider_setup, "_prompt_provider_choice", lambda choices, **kwargs: 0)
@@ -775,12 +775,12 @@ def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
         captured["ca_bundle"] = login_args.ca_bundle
         captured["insecure"] = login_args.insecure
 
-    monkeypatch.setattr("thor_cli.auth._login_nous", _fake_login)
+    monkeypatch.setattr("thor_cli.auth._login_thor", _fake_login)
 
     thor_main.cmd_model(
         SimpleNamespace(
-            portal_url="https://portal.nousresearch.com",
-            inference_url="https://inference.nousresearch.com/v1",
+            portal_url="https://portal.thor-agent.local",
+            inference_url="https://inference.thor-agent.local/v1",
             client_id="thor-local",
             scope="openid profile",
             no_browser=True,
@@ -791,8 +791,8 @@ def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
     )
 
     assert captured == {
-        "portal_url": "https://portal.nousresearch.com",
-        "inference_url": "https://inference.nousresearch.com/v1",
+        "portal_url": "https://portal.thor-agent.local",
+        "inference_url": "https://inference.thor-agent.local/v1",
         "client_id": "thor-local",
         "scope": "openid profile",
         "no_browser": True,

@@ -261,7 +261,7 @@ async def write_mutation(authority, ref, params, editor_servers, *, principal_id
             # first attempt may have committed and then failed before publishing them.
             result = prepared
         else:
-            # The receipt transaction is synchronous SQLite: run it off the event loop so a large
+            # The receipt transaction is synchrothor SQLite: run it off the event loop so a large
             # state.db or a contended writer lock never stalls other clients (main 1769024ca3b).
             commit = partial(mutate_runtime_session, authority.db, **fields,
                              _prepared=prepared, _authorize_write=authorize_write)
@@ -285,7 +285,7 @@ async def write_mutation(authority, ref, params, editor_servers, *, principal_id
                 from gateway.session_mutation_compress import fire_post_compaction_hook
                 await fire_post_compaction_hook(authority, prepared, result)
     if operation == 'delete':
-        # After the synchronous projections (no yield before retirement), off the loop: the
+        # After the synchrothor projections (no yield before retirement), off the loop: the
         # retired-media owner check is a messages-table pass (exact retries repeat it too).
         from thor_state_media import collect_retired_media
         await asyncio.to_thread(collect_retired_media, authority.db)

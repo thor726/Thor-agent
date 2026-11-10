@@ -42,7 +42,7 @@ def pooled_home(tmp_path, monkeypatch):
     monkeypatch.setenv("THOR_HOME", str(home))
     # Only the pooled credential under test may authenticate anything.
     (home / "config.yaml").write_text(
-        "model:\n  provider: nous\n  default: test-model\nauth:\n  adopt_external_logins: false\n")
+        "model:\n  provider: thor\n  default: test-model\nauth:\n  adopt_external_logins: false\n")
 
     def write(provider: str, cooldown: str, model: str = "some-model") -> dict:
         entry = _pool_entry(provider, cooldown, model)

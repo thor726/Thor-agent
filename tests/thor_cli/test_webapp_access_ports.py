@@ -39,7 +39,7 @@ def machine(monkeypatch, tmp_path):
         return port not in listening
 
     monkeypatch.setattr(webapp_access, "_port_free", port_free, raising=False)
-    monkeypatch.setattr(webapp_access, "nous_signed_in", lambda: True)
+    monkeypatch.setattr(webapp_access, "thor_signed_in", lambda: True)
     monkeypatch.setattr(webapp_access, "lan_address", lambda: "192.168.1.50")
     monkeypatch.setenv("THOR_HOME", str(solo))
     return {"root": root, "solo": solo, "listening": listening, "probed": probed, "monkeypatch": monkeypatch}
@@ -138,9 +138,9 @@ def test_with_no_free_port_start_refuses_and_names_the_setting(machine):
 
 
 @pytest.mark.parametrize("mode, url", [("lan", None), ("public", "https://solo.example.test")])
-def test_a_start_refused_for_no_nous_account_saves_no_port(machine, mode, url):
-    machine["monkeypatch"].setattr(webapp_access, "nous_signed_in", lambda: False)
-    with pytest.raises(webapp_access.WebappAccessError, match="Sign in to your Nous account"):
+def test_a_start_refused_for_no_thor_account_saves_no_port(machine, mode, url):
+    machine["monkeypatch"].setattr(webapp_access, "thor_signed_in", lambda: False)
+    with pytest.raises(webapp_access.WebappAccessError, match="Sign in to your Thor account"):
         webapp_access.plan(mode, url)
     assert _webapp_block(machine["solo"]) == {} and machine["probed"] == []
 
@@ -177,7 +177,7 @@ def _start_in_a_process_of_its_own(home: str, first: bool, first_holds, second_s
 
     os.environ["THOR_HOME"] = home
     set_thor_home_override(Path(home))
-    webapp_access.nous_signed_in = lambda: True
+    webapp_access.thor_signed_in = lambda: True
     webapp_access.lan_address = lambda: "192.168.1.50"
     listening = {9121}
     try:

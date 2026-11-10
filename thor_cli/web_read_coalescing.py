@@ -1,4 +1,4 @@
-"""Coalesce concurrent synchronous HTTP reads before threadpool admission."""
+"""Coalesce concurrent synchrothor HTTP reads before threadpool admission."""
 import asyncio
 import inspect
 from functools import partial, wraps
@@ -20,7 +20,7 @@ def _freeze(value):
 
 
 def coalesced_read(func, *, thread_runner=run_sync):
-    """Return an async, in-flight-only wrapper around a synchronous read.
+    """Return an async, in-flight-only wrapper around a synchrothor read.
 
     One worker per decorated function/event loop; identical home + bound
     arguments share its result. Arguments must be hashable or built-in

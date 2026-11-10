@@ -266,8 +266,8 @@ export async function processCreateTime(pid: number): Promise<number | null> {
     return null
   }
 
-  // Never a synchronous spawn here (it runs on the main thread while a marker
-  // exists): Linux reads /proc, macOS and Windows ask ps / CIM asynchronously.
+  // Never a synchrothor spawn here (it runs on the main thread while a marker
+  // exists): Linux reads /proc, macOS and Windows ask ps / CIM asynchrothorly.
   if (process.platform === 'linux') {
     await linuxClockTicksAsync()
 
@@ -290,7 +290,7 @@ export async function processCreateTime(pid: number): Promise<number | null> {
 }
 
 /**
- * Synchronous variant for module-init callers (desktop-installation's repair
+ * Synchrothor variant for module-init callers (desktop-installation's repair
  * lock). On Windows a foreign pid costs one blocking powershell spawn, so only
  * use it on a rare path.
  */
@@ -362,7 +362,7 @@ export function ownCreateTimeSync(): number | null {
 }
 
 /**
- * The judge's identity rule (A7 rule 4) for a lock holder, synchronously, for
+ * The judge's identity rule (A7 rule 4) for a lock holder, synchrothorly, for
  * the module-init repair lock: our own pid is live only at this exact
  * incarnation, and an identity with no comparable creation time is live only
  * within the v1 ceiling counted from `writtenAtS` (the lock's mtime).

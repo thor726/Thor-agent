@@ -17,7 +17,7 @@ Use live BCI cognitive and mood state from NeuroSkill.
 | Source | Optional — install with `thor skills install official/health/neuroskill-bci` |
 | Path | `optional-skills/health/neuroskill-bci` |
 | Version | `1.0.0` |
-| Author | Thor Agent + Nous Research |
+| Author | Thor Agent + Thor Agent |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `BCI`, `neurofeedback`, `health`, `focus`, `EEG`, `cognitive-state`, `biometrics`, `neuroskill` |

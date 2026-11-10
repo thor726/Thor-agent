@@ -125,7 +125,7 @@ def test_dashboard_oauth_gate_engages_on_non_loopback_bind(
 ) -> None:
     """The s6 dashboard run script must NOT auto-add ``--insecure`` when the
     dashboard binds to ``0.0.0.0``. The OAuth auth gate engages on its own
-    when a ``DashboardAuthProvider`` is registered (the bundled nous
+    when a ``DashboardAuthProvider`` is registered (the bundled thor
     provider activates whenever ``THOR_DASHBOARD_OAUTH_CLIENT_ID`` is
     set).
 
@@ -140,7 +140,7 @@ def test_dashboard_oauth_gate_engages_on_non_loopback_bind(
     on:
 
     1. ``/api/auth/providers`` (publicly reachable through the gate so
-       the login page can bootstrap) returns 200 with ``nous`` in the
+       the login page can bootstrap) returns 200 with ``thor`` in the
        provider list — proves the bundled provider registered.
     2. ``/api/sessions`` (a gated route under both the legacy
        ``_SESSION_TOKEN`` middleware and the OAuth gate) returns 401
@@ -167,8 +167,8 @@ def test_dashboard_oauth_gate_engages_on_non_loopback_bind(
     )
     payload = json.loads(body)
     provider_names = [p.get("name") for p in payload.get("providers", [])]
-    assert "nous" in provider_names, (
-        "Bundled dashboard_auth/nous provider should register when "
+    assert "thor" in provider_names, (
+        "Bundled dashboard_auth/thor provider should register when "
         f"THOR_DASHBOARD_OAUTH_CLIENT_ID is set. Got: {payload!r}"
     )
 

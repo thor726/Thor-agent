@@ -5,7 +5,7 @@ import { useProfileScope } from "@/contexts/useProfileScope";
 import { useI18n } from "@/i18n";
 
 const DOCS_URL =
-  "https://thor-agent.nousresearch.com/docs/developer-guide/relay-shared-metrics";
+  "https://thor-agent.thor-agent.local/docs/developer-guide/relay-shared-metrics";
 const STORAGE_KEY = "sharedMetricsOfferDismissed";
 
 /**
@@ -89,13 +89,13 @@ export function SharedMetricsConsentBanner() {
             ? (t.app.sharedMetricsReaskBody ??
               'Asking once more: an earlier version could save "No thanks" before you saw this question.')
             : (t.app.sharedMetricsBody ??
-            "Shared metrics are bounded counters, never prompts, files, paths or error text. Sharing sends them to Nous once a day.")}{" "}
+            "Shared metrics are bounded counters, never prompts, files, paths or error text. Sharing sends them to Thor once a day.")}{" "}
         <a href={DOCS_URL} target="_blank" rel="noreferrer" className="underline">
           {t.app.sharedMetricsDetails ?? "Details"}
         </a>
       </span>
       <button type="button" disabled={saving} className={choice} onClick={() => answer(true, true)}>
-        {t.app.sharedMetricsShare ?? "Share with Nous"}
+        {t.app.sharedMetricsShare ?? "Share with Thor"}
       </button>
       <button type="button" disabled={saving} className={choice} onClick={() => answer(false, false)}>
         {t.app.sharedMetricsOff ?? "No thanks"}

@@ -2842,9 +2842,9 @@
    ]
   }
  },
- "base-url:nous": {
+ "base-url:thor": {
   "api_mode": "chat_completions",
-  "base_url": "https://inference-api.nousresearch.com/v1",
+  "base_url": "https://inference-api.thor-agent.local/v1",
   "high": {
    "extra_body": {
     "reasoning": {
@@ -7704,9 +7704,9 @@
    ]
   }
  },
- "nous": {
+ "thor": {
   "api_mode": "chat_completions",
-  "base_url": "https://inference-api.nousresearch.com/v1",
+  "base_url": "https://inference-api.thor-agent.local/v1",
   "high": {
    "extra_body": {
     "reasoning": {

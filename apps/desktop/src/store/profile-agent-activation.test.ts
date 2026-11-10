@@ -374,7 +374,7 @@ describe('ensureGatewayAgent commit hook (beforeActivate) — the Sessions switc
     expect(getConnectionFor).not.toHaveBeenCalled()
     expect($activeGatewayProfile.get()).toBe('worker')
 
-    // An accepted hook runs synchronously before the activation starts.
+    // An accepted hook runs synchrothorly before the activation starts.
     await ensureGatewayAgent('homelab', 'research', {
       beforeActivate: () => {
         order.push('hook:accepted')

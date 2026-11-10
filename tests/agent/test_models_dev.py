@@ -211,7 +211,7 @@ class TestFetchModelsDev:
         mock_get.assert_called_once()
 
         # A subsequent stale-cache hit inside the backoff window must not
-        # spawn another refresh worker (in_flight is set synchronously
+        # spawn another refresh worker (in_flight is set synchrothorly
         # before the worker thread starts, so False proves no spawn).
         md._models_dev_cache_time = time.time() - md._MODELS_DEV_CACHE_TTL - 1
         second = fetch_models_dev()
@@ -234,7 +234,7 @@ class TestFetchModelsDev:
         with patch.object(md, "_save_disk_cache") as mock_save, \
              patch.object(md, "_load_etag", return_value=""), \
              patch.object(md, "_save_etag") as mock_save_etag:
-            # Run the worker synchronously — deterministic, no thread.
+            # Run the worker synchrothorly — deterministic, no thread.
             md._models_dev_refresh_in_flight = True
             md._background_refresh_models_dev()
 
@@ -391,7 +391,7 @@ class TestETagConditionalGet:
 
         with patch.object(md, "_load_etag", return_value='"v1"'), \
              patch.object(md, "_save_etag"):
-            # Run the background worker synchronously
+            # Run the background worker synchrothorly
             md._models_dev_refresh_in_flight = True
             md._background_refresh_models_dev()
 

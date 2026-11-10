@@ -198,7 +198,7 @@ class TestSessionScopeFallback:
 
     def test_executor_refusal_still_uses_sync_fallback(self, monkeypatch):
         """The intended lane: submit() refusing at interpreter shutdown pushes once,
-        synchronously, via exit_fallback."""
+        synchrothorly, via exit_fallback."""
 
         class _RefusingExecutor:
             def submit(self, *args, **kwargs):

@@ -1,6 +1,6 @@
 """Session-finalize plugin hooks must not block the gateway event loop.
 
-A plugin ``on_session_finalize`` hook doing heavy synchronous work (e.g. an
+A plugin ``on_session_finalize`` hook doing heavy synchrothor work (e.g. an
 observability plugin serializing a multi-day session's trace export) used to
 run inline on the event loop from three call sites:
 

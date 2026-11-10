@@ -55,9 +55,9 @@ List the files in /home/user/projects and summarize the repo structure.
 
 Thor will discover the MCP server's tools and use them like any other tool.
 
-## Catalog: one-click install for Nous-approved MCPs
+## Catalog: one-click install for Thor-approved MCPs
 
-Thor ships a curated catalog of MCP servers that Nous staff has reviewed
+Thor ships a curated catalog of MCP servers that Thor staff has reviewed
 and merged. They're disabled by default — install only what you actually
 want.
 
@@ -106,7 +106,7 @@ github       installed (disabled)   GitHub repo + PR tools
 Hit `Enter` on a row to install (and walk through any required credentials),
 enable, disable, or uninstall. Catalog entries are stored under
 `optional-mcps/` in the thor-agent repo — presence in that directory means
-Nous approval. There is no community submission tier; entries are added by
+Thor approval. There is no community submission tier; entries are added by
 merging a PR.
 
 The third-party n8n bridge is no longer available for catalog installation.
@@ -194,7 +194,7 @@ reachable to refine.
 Installing a catalog entry runs whatever the manifest specifies — `git clone`,
 the entry's `bootstrap` commands (`pip install`, `npm install`, etc.), and
 ultimately the MCP server's own code. Manifests are gated by PR review into
-the thor-agent repo, so Nous has reviewed each entry before it shipped —
+the thor-agent repo, so Thor has reviewed each entry before it shipped —
 **but you should still read the manifest before installing**, especially the
 `source:` field's repository, the `install.bootstrap:` commands, and any
 `transport.command:` invocation.
@@ -1107,7 +1107,7 @@ thor plugins install mcp-serve
 }
 ```
 
-It used to be built in as `thor mcp serve`. An MCP client configured with `"args": ["mcp", "serve"]` changes them to `["mcp-serve"]`; the tool names and parameters are unchanged, and `thor mcp serve` now prints the new spelling and the install line. Tools, the `--tools` mode and its safety limits are documented in the [plugin's README](https://github.com/NousResearch/thor-official-plugins/tree/main/mcp-serve).
+It used to be built in as `thor mcp serve`. An MCP client configured with `"args": ["mcp", "serve"]` changes them to `["mcp-serve"]`; the tool names and parameters are unchanged, and `thor mcp serve` now prints the new spelling and the install line. Tools, the `--tools` mode and its safety limits are documented in the [plugin's README](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/mcp-serve).
 
 ## Related docs
 

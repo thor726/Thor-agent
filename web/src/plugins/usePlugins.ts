@@ -93,7 +93,7 @@ interface ProfileManifests {
   loading: boolean;
 }
 
-// Seeding from the profile's own cache registers plugin routes synchronously
+// Seeding from the profile's own cache registers plugin routes synchrothorly
 // on the first render after a refresh. The catch-all in App.tsx is only a
 // safety net for the very first visit (no cache yet). Exception: a cached
 // /chat override keeps loading=true (see canSeedLoadedFromCache).

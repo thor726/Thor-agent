@@ -55,7 +55,7 @@ from tools.terminal_tool_backends import (
     _record_unavailable_reason, terminal_backend_unavailable_reason,
 )
 # display_thor_home imported lazily at call site (stale-module safety during thor update)
-from tools.tool_backend_helpers import coerce_modal_mode, managed_nous_tools_enabled
+from tools.tool_backend_helpers import coerce_modal_mode, managed_thor_tools_enabled
 
 
 def _safe_parse_import_env(name: str, default: Any, converter, type_label: str):

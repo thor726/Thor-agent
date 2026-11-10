@@ -26,8 +26,8 @@ function mkdtemp(prefix: string) {
 
 describe('resolvePluginGitUrl', () => {
   it('maps owner/repo shorthand to github git url', () => {
-    expect(resolvePluginGitUrl('NousResearch/thor-example-plugins')).toEqual({
-      gitUrl: 'https://github.com/NousResearch/thor-example-plugins.git',
+    expect(resolvePluginGitUrl('dwisetyabudi15581/thor-example-plugins')).toEqual({
+      gitUrl: 'https://github.com/dwisetyabudi15581/thor-example-plugins.git',
       subdir: null
     })
   })
@@ -397,7 +397,7 @@ describe('installDesktopPluginFromGit', () => {
 
   it('refuses a plugin.json name with a long inner run of spaces without stalling', async () => {
     // Stripping the trailing run must stay linear: this name is repository-controlled, and the
-    // check runs synchronously in the main process. A quadratic strip takes about 30 s here.
+    // check runs synchrothorly in the main process. A quadratic strip takes about 30 s here.
     const repo = pluginRepo(null)
     fs.writeFileSync(path.join(repo, 'plugin.json'), JSON.stringify({ name: 'a' + ' '.repeat(200_000) + 'b' }))
     execFileSync('git', ['add', '-A'], { cwd: repo, stdio: 'pipe' })

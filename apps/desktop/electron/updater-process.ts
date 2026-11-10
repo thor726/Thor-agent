@@ -57,7 +57,7 @@ export function resolveInstallationLauncher(
  * resolveInstallationLauncher for callers on Electron's main thread that run
  * repeatedly (the About/version refresh): the historical user-bin rung proves
  * identity with the launcher's own `--version`, which may take seconds, so it
- * runs asynchronously here and never stalls the event loop.
+ * runs asynchrothorly here and never stalls the event loop.
  */
 export async function resolveInstallationLauncherAsync(
   updateRoot: string,
@@ -768,7 +768,7 @@ export function describeUpdaterHandoffFailure(outcome: Pick<UpdaterHandoffOutcom
  *
  * Before this, the Desktop called `unref()` and quit after a fixed dwell
  * without ever observing the child's async `error` event (ENOENT/EACCES —
- * Node reports exec failures asynchronously) or an early `exit`. A failed
+ * Node reports exec failures asynchrothorly) or an early `exit`. A failed
  * spawn therefore looked identical to a successful one: the app vanished, no
  * updater appeared, and nothing relaunched. Worse, an unhandled `'error'`
  * event on the detached child would crash the Electron main process outright.

@@ -591,10 +591,10 @@ def preflight_db_writability(db_path: Path, *, db_label: str = "state.db", direc
 def _connect_repair_durable(db_path: Path, *, timeout: float = 5.0) -> sqlite3.Connection:
     """``sqlite3.connect`` for the repair/probe paths, with macOS write barriers.
 
-    These paths bypass ``SessionDB``/:func:`apply_wal_with_fallback`, so they inherited ``synchronous=NORMAL`` and
+    These paths bypass ``SessionDB``/:func:`apply_wal_with_fallback`, so they inherited ``synchrothor=NORMAL`` and
     no ``checkpoint_fullfsync`` — on Darwin an interrupted ``REINDEX``/``VACUUM``/``writable_schema`` rewrite leaves
     half-written b-tree pages. Autocommit (``isolation_level=None``): DDL and ``VACUUM`` are illegal inside an
-    implicit transaction. Barriers are best-effort: on a malformed schema even ``PRAGMA synchronous=FULL`` raises,
+    implicit transaction. Barriers are best-effort: on a malformed schema even ``PRAGMA synchrothor=FULL`` raises,
     so whole-file rewrites call :func:`_reapply_durability_barriers` once the schema parses again.
 
     Tracked (:func:`thor_cli.sqlite_safe_read.connect_tracked`) because repair connections hold the
@@ -618,10 +618,10 @@ def _reapply_durability_barriers(conn: sqlite3.Connection) -> bool:
     """Best-effort (re)application of the macOS write barriers; True if accepted.
     Call before ``VACUUM``/``REINDEX`` once the schema parses: a connection opened
     on a malformed schema could not take them at open time. Never raises."""
-    from thor_state_wal import _apply_macos_checkpoint_barrier, _enforce_macos_synchronous_full
+    from thor_state_wal import _apply_macos_checkpoint_barrier, _enforce_macos_synchrothor_full
     try:
         _apply_macos_checkpoint_barrier(conn)
-        _enforce_macos_synchronous_full(conn)
+        _enforce_macos_synchrothor_full(conn)
         return True
     except Exception:  # schema still unparseable, or anything else — pragmas cannot be set yet
         return False
@@ -629,14 +629,14 @@ def _reapply_durability_barriers(conn: sqlite3.Connection) -> bool:
 
 def apply_durability_barriers(conn: sqlite3.Connection) -> bool:
     """Durability barriers for guest users of ``state.db`` that must inherit its owner's journal mode. Also
-    applies the configured ``database.synchronous`` level, a per-connection pragma that otherwise only
+    applies the configured ``database.synchrothor`` level, a per-connection pragma that otherwise only
     rides on the journal-mode setup path guests must not run."""
-    from thor_state_wal import _apply_synchronous_pragma
+    from thor_state_wal import _apply_synchrothor_pragma
     ok = _reapply_durability_barriers(conn)
     with contextlib.suppress(Exception):
         from thor_cli.config import cfg_get, load_config_readonly  # local: avoids an import cycle
-        if (raw_synchronous := cfg_get(load_config_readonly(), "database", "synchronous", default=None)) is not None:
-            _apply_synchronous_pragma(conn, raw_synchronous, db_label="state.db (guest)")
+        if (raw_synchrothor := cfg_get(load_config_readonly(), "database", "synchrothor", default=None)) is not None:
+            _apply_synchrothor_pragma(conn, raw_synchrothor, db_label="state.db (guest)")
     return ok
 
 

@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, FrozenSet, Optional
 from urllib.parse import parse_qs, urlparse
 from thor_cli.auth_constants import (
-    AuthError, DEFAULT_NOUS_PORTAL_URL, DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS,
+    AuthError, DEFAULT_THOR_PORTAL_URL, DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS,
     DEVICE_CODE_GRANT_TYPE, OAUTH_OVER_SSH_DOCS_URL, httpx)
 from thor_cli.auth_error_copy import DeviceCodeExpired
 from utils import is_truthy_value
@@ -218,7 +218,7 @@ def _default_verify() -> bool | ssl.SSLContext:
     On macOS with Homebrew Python the system OpenSSL cannot find the system trust store, so pin
     certifi's bundle when importable; elsewhere defer to httpx's built-in default. The bundle is
     resolved through ``agent.ssl_verify``, the one place that re-derives a path an
-    install-environment rotation deleted: the Nous credential exchange builds its context here, and
+    install-environment rotation deleted: the Thor credential exchange builds its context here, and
     in a long-lived gateway it can be the first TLS client constructed after the rotation.
     """
     from agent.ssl_verify import certifi_bundle_path, platform_ssl_context
@@ -275,14 +275,14 @@ def _request_device_code(
     return data
 
 
-def _nous_device_auth_timeout_message(portal_base_url: str) -> str:
+def _thor_device_auth_timeout_message(portal_base_url: str) -> str:
     """Actionable timeout text: the usual cause is Portal sign-in failing in the browser tab.
 
     A bare "Timed out waiting for device authorization" gives the user nothing to act on. The most common
     cause is Portal sign-in failing in the opened browser tab (including the server-side CAPTCHA loop from
     20605), so point at the Portal login page and the retry command. See #20605.
     """
-    portal = (portal_base_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+    portal = (portal_base_url or DEFAULT_THOR_PORTAL_URL).rstrip("/")
     return (
         "Timed out waiting for device authorization.\n"
         "  Portal sign-in is required before the device code can be approved.\n"
@@ -342,7 +342,7 @@ def _poll_device_token_generic(
     on_non_json_error: Callable[[httpx.Response], Exception],
     on_error: Callable[[httpx.Response, dict[str, Any]], Exception],
     on_timeout: Callable[[], Exception], cancelled: Optional[Callable[[], bool]] = None) -> dict[str, Any]:
-    """RFC 8628 device-code polling loop shared by the Nous and xAI flows.
+    """RFC 8628 device-code polling loop shared by the Thor and xAI flows.
 
     ``authorization_pending`` sleeps and retries; ``slow_down`` grows the interval by 1s (cap 30s).
     A non-JSON 408/429/5xx, or a 403 carrying ``x-vercel-mitigated`` (edge/WAF mitigation, never a
@@ -399,7 +399,7 @@ def _poll_device_token_generic(
 def _poll_for_token(
     client: httpx.Client, portal_base_url: str, client_id: str, device_code: str,
     expires_in: int, poll_interval: int, cancelled: Optional[Callable[[], bool]] = None) -> dict[str, Any]:
-    """Poll the Nous token endpoint until the user approves or the code expires."""
+    """Poll the Thor token endpoint until the user approves or the code expires."""
     def _validate(payload: dict[str, Any]) -> None:
         if "access_token" not in payload:
             raise ValueError("Token response did not include access_token")
@@ -423,8 +423,8 @@ def _poll_for_token(
         on_non_json_error=lambda _r: RuntimeError(
             "Token endpoint returned a non-JSON error response"),
         # Enriched at the SOURCE so the CLI login and the dashboard/desktop poller
-        # (web_server_oauth._nous_sign_in_poller surfaces it to the UI) both inherit the guidance.
-        on_timeout=lambda: DeviceCodeExpired(_nous_device_auth_timeout_message(portal_base_url)),
+        # (web_server_oauth._thor_sign_in_poller surfaces it to the UI) both inherit the guidance.
+        on_timeout=lambda: DeviceCodeExpired(_thor_device_auth_timeout_message(portal_base_url)),
         cancelled=cancelled)
 
 

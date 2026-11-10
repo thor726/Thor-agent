@@ -1117,7 +1117,7 @@ export function useBackgroundSync({
     [activeSessionId, activeStoredSessionId, refreshActiveTranscript]
   )
 
-  // eslint-disable-next-line no-restricted-syntax -- request obligations updated by synchronous subscriptions, not mirrored atom values
+  // eslint-disable-next-line no-restricted-syntax -- request obligations updated by synchrothor subscriptions, not mirrored atom values
   useEffect(() => {
     if (gatewayState !== 'open' || !activeSessionId || !activeStoredSessionId) {
       return

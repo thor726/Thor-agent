@@ -208,7 +208,7 @@ def _install_integrity_check_lease(conn: sqlite3.Connection, *, deadline_at: Opt
     Without ``deadline_at`` the handler always returns 0 -- it must never abort the verdict
     PRAGMA.  With ``deadline_at`` (a ``time.monotonic`` timestamp) it returns non-zero once
     that instant is reached, so SQLite raises ``OperationalError: interrupted`` and the
-    caller can bound the scan.  Synchronous by design: no checker worker thread can outlive
+    caller can bound the scan.  Synchrothor by design: no checker worker thread can outlive
     the check.
     """
     from thor_startup_watchdog import report_startup_progress

@@ -14,7 +14,7 @@ vi.mock('@/thor', async importOriginal => ({
   getGlobalModelOptions: async () => ({
     providers: [
       { free_tier: false, models: ['gpt-5.6-terra'], name: 'OpenAI OAuth (ChatGPT)', slug: 'openai' },
-      { models: ['deepseek/deepseek-v4-flash-0731'], name: 'Nous Portal', slug: 'nous' }
+      { models: ['deepseek/deepseek-v4-flash-0731'], name: 'Thor Portal', slug: 'thor' }
     ]
   })
 }))
@@ -30,8 +30,8 @@ vi.mock('@/components/model-picker', () => ({
     open: boolean
   }) =>
     open ? (
-      <button onClick={() => onSelect({ model: 'deepseek/deepseek-v4-flash-0731', provider: 'nous' })} type="button">
-        pick-nous-model
+      <button onClick={() => onSelect({ model: 'deepseek/deepseek-v4-flash-0731', provider: 'thor' })} type="button">
+        pick-thor-model
       </button>
     ) : null
 }))
@@ -89,7 +89,7 @@ describe('ConfirmingModelPanel model pick', () => {
           calls.push({ body, path })
 
           if (path === '/api/model/set') {
-            return { ok: true, provider: 'nous', model: 'deepseek/deepseek-v4-flash-0731' }
+            return { ok: true, provider: 'thor', model: 'deepseek/deepseek-v4-flash-0731' }
           }
 
           throw new Error(`unexpected api path: ${path}`)
@@ -104,15 +104,15 @@ describe('ConfirmingModelPanel model pick', () => {
     await screen.findByText('Pro')
 
     // The user signed in with OpenAI OAuth; the picker offers a deepseek
-    // model that only Nous Portal serves.
+    // model that only Thor Portal serves.
     fireEvent.click(screen.getByRole('button', { name: 'Change' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'pick-nous-model' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'pick-thor-model' }))
 
     await waitFor(() => expect(calls.some(c => c.path === '/api/model/set')).toBe(true))
 
     expect(calls.find(c => c.path === '/api/model/set')?.body).toMatchObject({
       scope: 'main',
-      provider: 'nous',
+      provider: 'thor',
       model: 'deepseek/deepseek-v4-flash-0731'
     })
 
@@ -120,8 +120,8 @@ describe('ConfirmingModelPanel model pick', () => {
     expect(flow.status).toBe('confirming_model')
 
     if (flow.status === 'confirming_model') {
-      expect(flow.providerSlug).toBe('nous')
-      expect(flow.label).toBe('Nous Portal')
+      expect(flow.providerSlug).toBe('thor')
+      expect(flow.label).toBe('Thor Portal')
     }
   })
 })

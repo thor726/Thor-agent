@@ -5,8 +5,8 @@ import { ExternalLink } from '@/lib/external-link'
 import { type ButterbarItem, useButterbar } from '@/store/butterbar'
 import { $freeTierStatus } from '@/store/free-tier'
 
-const TERMS_URL = 'https://portal.nousresearch.com/terms'
-const PRIVACY_URL = 'https://portal.nousresearch.com/privacy'
+const TERMS_URL = 'https://portal.thor-agent.local/terms'
+const PRIVACY_URL = 'https://portal.thor-agent.local/privacy'
 
 function TermsNotice() {
   const copy = useI18n().t.butterbar.legal

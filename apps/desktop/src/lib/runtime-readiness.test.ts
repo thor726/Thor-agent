@@ -69,13 +69,13 @@ describe('interpretRuntimeReadiness', () => {
       {
         setup: { provider_configured: false },
         setupError: null,
-        runtime: { error: 'No usable credentials found for nous.', ok: false },
+        runtime: { error: 'No usable credentials found for thor.', ok: false },
         runtimeError: null
       },
-      { requestedProvider: 'nous' }
+      { requestedProvider: 'thor' }
     )
 
-    expect(result.reason).toBe('No usable credentials found for nous.')
+    expect(result.reason).toBe('No usable credentials found for thor.')
   })
 
   it('uses explicit fallback when both checks are missing', () => {
@@ -110,9 +110,9 @@ describe('fetchRuntimeReadinessSignals', () => {
       throw new Error(`unexpected method: ${method}`)
     }
 
-    await fetchRuntimeReadinessSignals(requestGateway, 'nous')
+    await fetchRuntimeReadinessSignals(requestGateway, 'thor')
 
-    expect(calls).toEqual([{ method: 'setup.status' }, { method: 'setup.runtime_check', params: { provider: 'nous' } }])
+    expect(calls).toEqual([{ method: 'setup.status' }, { method: 'setup.runtime_check', params: { provider: 'thor' } }])
   })
 })
 

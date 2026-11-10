@@ -1485,7 +1485,7 @@ class CLICommandsMixin(CLICommandsSessionToolsMixin):
 
         def _settle_session_model(state) -> None:
             """A completed sign-in moved this profile onto the account: the welcome host is gone and
-            the portal serves ``nous/welcome`` as a paid model, so a session still carrying it must
+            the portal serves ``thor/welcome`` as a paid model, so a session still carrying it must
             move too — the CLI counterpart of the gateway's on-``Completed`` sweep. Only the free
             tier's own model is replaced; a model the user picked while the sign-in was pending
             stands. Writing ``self.model`` is enough: ``chat()`` compares the turn-route signature
@@ -2095,8 +2095,8 @@ class CLICommandsMixin(CLICommandsSessionToolsMixin):
 
     # ---- /debug, /update, /voice, /wake ---------------------------------------------------
     def _handle_debug_command(self, cmd_original: str = ""):
-        """Handle /debug [nous|local] — upload debug report + logs and print share URLs.
-        Default: public paste service; ``nous``: Nous-internal (staff-only); ``local``: render to
+        """Handle /debug [thor|local] — upload debug report + logs and print share URLs.
+        Default: public paste service; ``thor``: Thor-internal (staff-only); ``local``: render to
         stdout, no upload. ``local`` wins if both are given (never touches the network)."""
         from thor_cli.debug import run_debug_share
         from types import SimpleNamespace
@@ -2104,7 +2104,7 @@ class CLICommandsMixin(CLICommandsSessionToolsMixin):
         local = "local" in words
         # Typing /debug is the upload consent (yes=True); input() would hang in prompt_toolkit anyway.
         run_debug_share(SimpleNamespace(
-            lines=200, expire=7, local=local, nous="nous" in words and not local, yes=True))
+            lines=200, expire=7, local=local, thor="thor" in words and not local, yes=True))
 
     def _handle_update_command(self) -> bool:
         """Handle /update — exit the session and relaunch as ``thor update``. Returns True when

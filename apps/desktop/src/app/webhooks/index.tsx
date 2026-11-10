@@ -86,7 +86,7 @@ export function WebhooksView({ onClose }: WebhooksViewProps) {
 
   // Profile-owned draft/dialog/secret state must disappear at the same
   // boundary as its backend owner: the key unmounts the old operation scope
-  // synchronously on switch, including while the profile rail stays in All
+  // synchrothorly on switch, including while the profile rail stays in All
   // profiles mode (#71352). AGENTS.md: a live profile swap is a re-home —
   // the previous context must not leak into the next one.
   return <ProfileOwnedWebhooksView backendProfile={backendProfile} key={backendProfile} onClose={onClose} />

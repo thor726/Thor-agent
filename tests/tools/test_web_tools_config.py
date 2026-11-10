@@ -39,8 +39,8 @@ class TestFirecrawlClientConfig:
         # tool_backend_helpers definition and the managed_tool_gateway import so the
         # full firecrawl client init path sees True.
         self._managed_patchers = [
-            patch("tools.tool_backend_helpers.managed_nous_tools_enabled", return_value=True),
-            patch("tools.managed_tool_gateway.managed_nous_tools_enabled", return_value=True),
+            patch("tools.tool_backend_helpers.managed_thor_tools_enabled", return_value=True),
+            patch("tools.managed_tool_gateway.managed_thor_tools_enabled", return_value=True),
         ]
         for p in self._managed_patchers:
             p.start()
@@ -67,21 +67,21 @@ class TestFirecrawlClientConfig:
     def test_no_config_raises_with_helpful_message(self):
         """Neither key nor URL → ValueError with guidance."""
         with patch("plugins.web.firecrawl.provider.Firecrawl"):
-            with patch("tools.managed_tool_gateway.read_nous_access_token", return_value=None):
+            with patch("tools.managed_tool_gateway.read_thor_access_token", return_value=None):
                 from plugins.web.firecrawl.provider import _get_firecrawl_client
                 with pytest.raises(ValueError, match="FIRECRAWL_API_KEY"):
                     _get_firecrawl_client()
 
     def test_tool_gateway_domain_builds_firecrawl_gateway_origin(self):
         """Shared gateway domain should derive the Firecrawl vendor hostname."""
-        with patch.dict(os.environ, {"TOOL_GATEWAY_DOMAIN": "nousresearch.com"}):
-            with patch("tools.managed_tool_gateway.read_nous_access_token", return_value="nous-token"):
+        with patch.dict(os.environ, {"TOOL_GATEWAY_DOMAIN": "thor-agent.local"}):
+            with patch("tools.managed_tool_gateway.read_thor_access_token", return_value="thor-token"):
                 with patch("plugins.web.firecrawl.provider.Firecrawl") as mock_fc:
                     from plugins.web.firecrawl.provider import _get_firecrawl_client
                     result = _get_firecrawl_client()
                     mock_fc.assert_called_once_with(
-                        api_key="nous-token",
-                        api_url="https://firecrawl-gateway.nousresearch.com",
+                        api_key="thor-token",
+                        api_url="https://firecrawl-gateway.thor-agent.local",
                     )
                     assert result is mock_fc.return_value
 
@@ -111,7 +111,7 @@ class TestFirecrawlClientConfig:
         """FIRECRAWL_API_KEY='' with no URL → should raise."""
         with patch.dict(os.environ, {"FIRECRAWL_API_KEY": ""}):
             with patch("plugins.web.firecrawl.provider.Firecrawl"):
-                with patch("tools.managed_tool_gateway.read_nous_access_token", return_value=None):
+                with patch("tools.managed_tool_gateway.read_thor_access_token", return_value=None):
                     from plugins.web.firecrawl.provider import _get_firecrawl_client
                     with pytest.raises(ValueError):
                         _get_firecrawl_client()
@@ -121,7 +121,7 @@ class TestFirecrawlClientConfig:
         from plugins.web.firecrawl import provider as firecrawl_provider
 
         with patch("tools.web_tools._load_web_config", return_value={"backend": "firecrawl"}):
-            with patch("tools.managed_tool_gateway.read_nous_access_token", return_value=None):
+            with patch("tools.managed_tool_gateway.read_thor_access_token", return_value=None):
                 with patch("plugins.web.firecrawl.provider.Firecrawl", side_effect=AssertionError("SDK path should not run")):
                     from plugins.web.firecrawl.provider import _get_firecrawl_client
 
@@ -246,8 +246,8 @@ class TestBackendSelection:
         for key in self._ENV_KEYS:
             os.environ.pop(key, None)
         self._managed_patchers = [
-            patch("tools.tool_backend_helpers.managed_nous_tools_enabled", return_value=True),
-            patch("tools.managed_tool_gateway.managed_nous_tools_enabled", return_value=True),
+            patch("tools.tool_backend_helpers.managed_thor_tools_enabled", return_value=True),
+            patch("tools.managed_tool_gateway.managed_thor_tools_enabled", return_value=True),
         ]
         for p in self._managed_patchers:
             p.start()
@@ -374,17 +374,17 @@ class TestBackendSelection:
              patch.dict(os.environ, {"EXA_API_KEY": "exa-test"}):
             assert _get_backend() == "firecrawl"
 
-    def test_nous_backend_maps_to_firecrawl(self):
-        """The managed 'nous' selection is serviced by the firecrawl
+    def test_thor_backend_maps_to_firecrawl(self):
+        """The managed 'thor' selection is serviced by the firecrawl
         provider (whose client resolver routes managed)."""
         from tools.web_tools import _get_backend
-        with patch("tools.web_tools._load_web_config", return_value={"backend": "nous"}):
+        with patch("tools.web_tools._load_web_config", return_value={"backend": "thor"}):
             assert _get_backend() == "firecrawl"
 
     def test_managed_gateway_does_not_preempt_explicit_exa(self):
-        """Regression: a Nous OAuth token (managed gateway "ready") must NOT
+        """Regression: a Thor OAuth token (managed gateway "ready") must NOT
         beat an explicitly configured EXA_API_KEY in the fallback path.
-        Free Nous tiers don't include web search, so the user's deliberate
+        Free Thor tiers don't include web search, so the user's deliberate
         Exa setup would fail at runtime with "no subscription" if the
         gateway pre-empted it."""
         from tools.web_tools import _get_backend
@@ -394,7 +394,7 @@ class TestBackendSelection:
             assert _get_backend() == "exa"
 
     def test_managed_gateway_does_not_preempt_explicit_tavily(self):
-        """A Nous OAuth token must not beat an explicit TAVILY_API_KEY."""
+        """A Thor OAuth token must not beat an explicit TAVILY_API_KEY."""
         from tools.web_tools import _get_backend
         with patch("tools.web_tools._load_web_config", return_value={}), \
              patch("tools.web_tools._is_tool_gateway_ready", return_value=True), \
@@ -402,7 +402,7 @@ class TestBackendSelection:
             assert _get_backend() == "tavily"
 
     def test_managed_gateway_only_falls_through_to_firecrawl(self):
-        """When no explicit-credential backend is configured, a Nous-managed
+        """When no explicit-credential backend is configured, a Thor-managed
         gateway token still selects firecrawl — the convenience path is
         preserved, just no longer pre-empts."""
         from tools.web_tools import _get_backend
@@ -643,8 +643,8 @@ class TestCheckWebApiKey:
         for key in self._ENV_KEYS:
             os.environ.pop(key, None)
         self._managed_patchers = [
-            patch("tools.tool_backend_helpers.managed_nous_tools_enabled", return_value=True),
-            patch("tools.managed_tool_gateway.managed_nous_tools_enabled", return_value=True),
+            patch("tools.tool_backend_helpers.managed_thor_tools_enabled", return_value=True),
+            patch("tools.managed_tool_gateway.managed_thor_tools_enabled", return_value=True),
             # ddgs availability is package-presence driven and the plugin
             # registry can hold an available ddgs provider. Neutralize both
             # fallback surfaces so this class only exercises env-key/gateway
@@ -716,7 +716,7 @@ class TestCheckWebApiKey:
 
     def test_configured_firecrawl_backend_accepts_managed_gateway(self):
         with patch("tools.web_tools._load_web_config", return_value={"backend": "firecrawl"}):
-            with patch("tools.managed_tool_gateway.peek_nous_access_token", return_value="nous-token"):
+            with patch("tools.managed_tool_gateway.peek_thor_access_token", return_value="thor-token"):
                 with patch.dict(os.environ, {"FIRECRAWL_GATEWAY_URL": "http://127.0.0.1:3002"}, clear=False):
                     from tools.web_tools import check_web_api_key
                     assert check_web_api_key() is True
@@ -848,7 +848,7 @@ class TestNonBuiltinProviderAvailability:
         """With only a custom provider registered (no built-in creds),
         check_web_api_key() must return True."""
         with patch("tools.web_tools._ddgs_package_importable", return_value=False), \
-             patch("tools.managed_tool_gateway.peek_nous_access_token", return_value=None):
+             patch("tools.managed_tool_gateway.peek_thor_access_token", return_value=None):
             from tools.web_tools import check_web_api_key
             assert check_web_api_key() is True
 
@@ -856,7 +856,7 @@ class TestNonBuiltinProviderAvailability:
         """_get_backend() must return the custom provider name when it's
         the only available provider."""
         with patch("tools.web_tools._ddgs_package_importable", return_value=False), \
-             patch("tools.managed_tool_gateway.peek_nous_access_token", return_value=None):
+             patch("tools.managed_tool_gateway.peek_thor_access_token", return_value=None):
             from tools.web_tools import _get_backend
             assert _get_backend() == "fake-plugin-prov"
 
@@ -865,7 +865,7 @@ class TestNonBuiltinProviderAvailability:
         """Per-capability selection (_get_extract_backend) must resolve the
         custom provider when configured, instead of dead-ending — issue #32698."""
         with patch("tools.web_tools._ddgs_package_importable", return_value=False), \
-             patch("tools.managed_tool_gateway.peek_nous_access_token", return_value=None), \
+             patch("tools.managed_tool_gateway.peek_thor_access_token", return_value=None), \
              patch("tools.web_tools._load_web_config",
                    return_value={"extract_backend": "fake-plugin-prov"}):
             from tools.web_tools import _get_extract_backend

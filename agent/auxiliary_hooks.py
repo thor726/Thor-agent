@@ -237,7 +237,7 @@ def run_with_aux_hooks(
     call: Callable[[], Any], *, aux_task: str, metadata: dict[str, Any], client: Any,
     kwargs: dict[str, Any], provider: str, model: str, api_mode: str, streaming: bool = False,
 ) -> Any:
-    """Run one synchronous provider attempt between ``pre_auxiliary_call`` and
+    """Run one synchrothor provider attempt between ``pre_auxiliary_call`` and
     ``post_auxiliary_call``; the exception (if any) is reported in ``post`` and re-raised."""
     hooks = start_aux_call_hooks(aux_task=aux_task, metadata=metadata, client=client, kwargs=kwargs,
                            provider=provider, model=model, api_mode=api_mode, streaming=streaming)

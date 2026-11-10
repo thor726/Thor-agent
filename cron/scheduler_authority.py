@@ -136,7 +136,7 @@ def run_canonical_job(job, *, extra_prompt=None, cancel_event=None, execution_id
             except RuntimeError:
                 current = None
             if current is loop:
-                raise RuntimeError('cron synchronous execution must run off the owner event loop')
+                raise RuntimeError('cron synchrothor execution must run off the owner event loop')
             return asyncio.run_coroutine_threadsafe(
                 observe(lambda op, data: operation(authority, op, data)), loop).result()
         return asyncio.run(remote())

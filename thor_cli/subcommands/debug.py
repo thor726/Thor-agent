@@ -22,7 +22,7 @@ Examples:
     thor debug share --expire 30  Keep dpaste.com fallback pastes for 30 days
     thor debug share --local      Print report locally (no upload)
     thor debug share --no-redact  Disable upload-time secret redaction
-    thor debug share --nous       Upload to Nous-internal storage (private)
+    thor debug share --thor       Upload to Thor-internal storage (private)
     thor debug delete <url>       Delete a previously uploaded paste
 """)
     debug_sub = debug_parser.add_subparsers(dest="debug_command")
@@ -51,10 +51,10 @@ Examples:
             "with force=True before upload so credentials are not leaked "
             "into the public paste service.")
     share_parser.add_argument(
-        "--nous", action="store_true",
-        help="Upload the debug bundle to Nous-internal storage (AWS S3) instead "
+        "--thor", action="store_true",
+        help="Upload the debug bundle to Thor-internal storage (AWS S3) instead "
             "of a public paste service. The bundle is private — viewable only "
-            "by Nous staff (and allowlisted Discord mods) via a Google-login-"
+            "by Thor staff (and allowlisted Discord mods) via a Google-login-"
             "gated viewer — and auto-deletes after 14 days. Still force-redacts "
             "secrets unless --no-redact is also passed.")
     delete_parser = debug_sub.add_parser(

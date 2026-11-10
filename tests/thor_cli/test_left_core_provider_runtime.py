@@ -106,8 +106,8 @@ def test_an_auto_route_following_the_stored_active_provider_installs_it(tmp_path
 
 
 @pytest.mark.parametrize("config", [
-    "model:\n  provider: nous\ncron:\n  model_provider: copilot\n",
-    "model:\n  provider: nous\ndelegation:\n  backends:\n    model_map:\n      options:\n"
+    "model:\n  provider: thor\ncron:\n  model_provider: copilot\n",
+    "model:\n  provider: thor\ndelegation:\n  backends:\n    model_map:\n      options:\n"
     "        - name: fast\n          provider: copilot\n          model: gpt-5.4\n",
 ])
 def test_a_route_configured_outside_the_main_model_installs_when_resolved(tmp_path, monkeypatch, installs, config):
@@ -123,7 +123,7 @@ def test_doctor_installs_nothing_and_names_the_install(tmp_path, monkeypatch, in
     from types import SimpleNamespace
     from thor_cli import doctor
     from thor_cli.doctor_config import _check_config_file
-    home = _copilot_home(tmp_path, monkeypatch, "model:\n  provider: nous\nauxiliary:\n  vision:\n"
+    home = _copilot_home(tmp_path, monkeypatch, "model:\n  provider: thor\nauxiliary:\n  vision:\n"
                                                 "    provider: copilot\n    model: gpt-4.1\n")
     monkeypatch.setattr(doctor, "THOR_HOME", home)
     monkeypatch.setattr(doctor, "DOCTOR_CHECKS", ((None, _check_config_file),))
@@ -180,7 +180,7 @@ def test_doctor_in_a_terminal_front_end_leaves_kept_notices_for_the_next_agent(t
     from types import SimpleNamespace
     from thor_cli import doctor
     from thor_cli.doctor_config import _check_config_file
-    home = _copilot_home(tmp_path, monkeypatch, "model:\n  provider: nous\nauxiliary:\n  vision:\n"
+    home = _copilot_home(tmp_path, monkeypatch, "model:\n  provider: thor\nauxiliary:\n  vision:\n"
                                                 "    provider: copilot\n    model: gpt-4.1\n")
     lcm._queue_notice(home, "kept by the gateway's start")
     lcm.serve_notices_on_stderr()

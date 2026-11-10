@@ -221,7 +221,7 @@ function BuyScreen({ ctx, onPatch, s, t }: ScreenProps) {
   const [custom, setCustom] = useState('')
   const [error, setError] = useState<null | string>(null)
   const [checking, setChecking] = useState(false)
-  // Synchronous guard: double-Enter on "check again" must not stack re-fetches.
+  // Synchrothor guard: double-Enter on "check again" must not stack re-fetches.
   const checkingRef = useRef(false)
 
   const recheck = () => {
@@ -429,7 +429,7 @@ function ConfirmScreen({
   // rows: Pay $X now / Cancel
   const [sel, setSel] = useState(0)
   const [submitting, setSubmitting] = useState(false)
-  // Synchronous guard: two key events can both observe `submitting === false`
+  // Synchrothor guard: two key events can both observe `submitting === false`
   // before React commits the state update, double-firing the charge (and the
   // gateway mints a fresh idempotency key per call → two charges).
   const submittingRef = useRef(false)

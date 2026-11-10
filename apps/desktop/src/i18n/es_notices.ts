@@ -39,7 +39,7 @@ export const esNotices = {
     action: 'Mantener activo mientras trabaja'
   },
   billingBlock: {
-    titleNous: 'Sin créditos de Nous',
+    titleThor: 'Sin créditos de Thor',
     titleProvider: provider => `Sin créditos — ${provider}`,
     fallbackMessage: 'Tu cuenta se quedó sin créditos. Añade créditos para continuar.',
     openBilling: 'Abrir facturación',

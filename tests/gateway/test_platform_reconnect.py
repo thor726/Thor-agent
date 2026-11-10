@@ -676,7 +676,7 @@ class TestSpawnSupervised:
             assert is_delegated_child_context() is True
 
     @pytest.mark.asyncio
-    async def test_clean_synchronous_return_is_not_respawned(self):
+    async def test_clean_synchrothor_return_is_not_respawned(self):
         # A supervised coro that returns immediately (clean exit) must be
         # invoked EXACTLY ONCE — a clean return means deliberate shutdown or a
         # gated no-op watcher; respawning it would busy-spin the event loop.

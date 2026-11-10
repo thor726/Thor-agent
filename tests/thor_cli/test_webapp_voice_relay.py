@@ -1,7 +1,7 @@
 """The Webapp relays voice instead of handing its tab provider keys.
 
 ``/api/audio/voice-config`` lets native Desktop call STT/TTS providers itself. A browser tab cannot:
-a provider without CORS (the Nous tool gateway Thor Cloud routes speech through) refuses the
+a provider without CORS (the Thor tool gateway Thor Cloud routes speech through) refuses the
 tab's fetch, so dictation failed with "Failed to fetch", and the response put the keys in the page.
 On the Webapp surface both directions resolve to relay, with no key in the body; native surfaces
 keep client-direct.

@@ -16,7 +16,7 @@ def test_free_model_gets_flat_100_percent_discount():
     assert compute_sale_discount(
         "0", "0", {"prompt": "0.000002", "completion": "0.00001"}
     ) == (100, "0.000002", "0.00001")
-    # "0.0000000000" strings (Nous portal shape) count as free too.
+    # "0.0000000000" strings (Thor portal shape) count as free too.
     assert compute_sale_discount("0.0000000000", "0.0000000000", None) == (100, "", "")
 
 
@@ -63,7 +63,7 @@ def test_fetch_models_with_pricing_copies_nested_original(monkeypatch):
         lambda req, timeout=8.0: resp,
     )
 
-    # Nous Portal opts in via include_sale_original=True.
+    # Thor Portal opts in via include_sale_original=True.
     result = fetch_models_with_pricing(
         api_key="sk-test",
         base_url="https://example.test",
@@ -81,7 +81,7 @@ def test_fetch_models_with_pricing_copies_nested_original(monkeypatch):
     assert "original" not in result["free/model"]
 
 
-def test_fetch_models_with_pricing_copies_billing_mode_for_nous_only(monkeypatch):
+def test_fetch_models_with_pricing_copies_billing_mode_for_thor_only(monkeypatch):
     payload = {"data": [{"id": "a/b", "billing_mode": "subscription", "pricing": {"prompt": "0.000002", "completion": "0.00001"}}]}
     resp = MagicMock()
     resp.read.return_value = json.dumps(payload).encode()
@@ -98,20 +98,20 @@ def test_fetch_models_with_pricing_copies_billing_mode_for_nous_only(monkeypatch
 
 
 
-def test_resolve_nous_pricing_credentials_normalizes_either_suffix(monkeypatch):
+def test_resolve_thor_pricing_credentials_normalizes_either_suffix(monkeypatch):
     """``/v1`` on the override is optional and must not change the result."""
     monkeypatch.setattr(
-        "thor_cli.auth.resolve_nous_runtime_credentials", lambda: None
+        "thor_cli.auth.resolve_thor_runtime_credentials", lambda: None
     )
     for override in (
-        "https://stg-inference-api.nousresearch.com",
-        "https://stg-inference-api.nousresearch.com/",
-        "https://stg-inference-api.nousresearch.com/v1",
-        "https://stg-inference-api.nousresearch.com/v1/",
+        "https://stg-inference-api.thor-agent.local",
+        "https://stg-inference-api.thor-agent.local/",
+        "https://stg-inference-api.thor-agent.local/v1",
+        "https://stg-inference-api.thor-agent.local/v1/",
     ):
-        monkeypatch.setenv("NOUS_INFERENCE_BASE_URL", override)
-        assert models_pricing._resolve_nous_pricing_credentials()[1] == (
-            "https://stg-inference-api.nousresearch.com"
+        monkeypatch.setenv("THOR_PORTAL_INFERENCE_BASE_URL", override)
+        assert models_pricing._resolve_thor_pricing_credentials()[1] == (
+            "https://stg-inference-api.thor-agent.local"
         )
 
 
@@ -180,7 +180,7 @@ def test_a_successful_catalog_fetch_stays_cached(monkeypatch):
 
 
 
-def test_fetch_models_with_pricing_keeps_the_display_name_for_nous_only(monkeypatch):
+def test_fetch_models_with_pricing_keeps_the_display_name_for_thor_only(monkeypatch):
     """The limit card names a model the way the catalog does ("Model A"); a name equal to the id
     adds nothing and is dropped."""
     payload = {"data": [
@@ -194,6 +194,6 @@ def test_fetch_models_with_pricing_keeps_the_display_name_for_nous_only(monkeypa
     monkeypatch.setattr(models_mod, "_urlopen_model_catalog_request", lambda req, timeout=8.0: resp)
 
     fetch = lambda **kw: fetch_models_with_pricing(api_key="sk-test", base_url="https://example.test", force_refresh=True, **kw)
-    nous = fetch(include_sale_original=True)
-    assert nous["a/b"]["name"] == "A B Model" and "name" not in nous["c/d"]
+    thor = fetch(include_sale_original=True)
+    assert thor["a/b"]["name"] == "A B Model" and "name" not in thor["c/d"]
     assert "name" not in fetch()["a/b"]

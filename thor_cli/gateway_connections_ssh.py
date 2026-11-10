@@ -164,7 +164,7 @@ def _teardown(tunnel: _Tunnel) -> None:
 
 
 def ensure_tunnel(connection: dict, *, root: Path | None = None) -> SshTarget:
-    """A live tunnel to the connection's remote serve; synchronous (run it in a threadpool)."""
+    """A live tunnel to the connection's remote serve; synchrothor (run it in a threadpool)."""
     connection_id = str(connection.get("id") or "")
     if not connection_id:
         raise SshReachError("unknown", "SSH connection entry has no id.")

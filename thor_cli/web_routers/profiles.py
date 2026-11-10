@@ -1082,7 +1082,7 @@ async def describe_profile_auto_endpoint(name: str, body: ProfileDescribeAuto):
 
     with _profile_errors("POST /api/profiles/%s/describe-auto failed", name,
                          not_found=(), bad_request=()):
-        # A synchronous LLM round-trip with a 60 s ceiling; on the loop it stalls everything.
+        # A synchrothor LLM round-trip with a 60 s ceiling; on the loop it stalls everything.
         outcome = await run_in_threadpool(_run)
     # description_auto mirrors ok: a failed sweep leaves any existing description untouched.
     return {"ok": bool(outcome.ok), "reason": outcome.reason, "description": outcome.description,

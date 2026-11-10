@@ -2,13 +2,13 @@
 //
 // Flow: an error card (or any surface) calls requestSendDiagnostics() with
 // optional error context → the modal host renders the privacy notice → the
-// user explicitly clicks Upload → diagnostics.share_nous runs backend-side
-// (collect + force-redact + Nous-S3 upload) → the modal shows the private
-// view link plus the support handoff (GitHub Issues · Nous Portal Support ·
+// user explicitly clicks Upload → diagnostics.share_thor runs backend-side
+// (collect + force-redact + Thor-S3 upload) → the modal shows the private
+// view link plus the support handoff (GitHub Issues · Thor Portal Support ·
 // Discord).
 //
 // Consent is per-upload and explicit — no "always allow", mirroring the CLI's
-// `thor debug share --nous` confirmation contract. On a remote connection
+// `thor debug share --thor` confirmation contract. On a remote connection
 // the backend bundles ITS OWN logs (the runtime that owns the failure); the
 // local desktop.log is attached as a client-side extra so support sees both
 // halves in one bundle.
@@ -63,7 +63,7 @@ export function dismissSendDiagnostics(): void {
   $sendDiagnostics.set(null)
 }
 
-interface ShareNousResponse {
+interface ShareThorResponse {
   error?: string
   expires_at?: string
   ok: boolean
@@ -117,8 +117,8 @@ export async function confirmSendDiagnostics(): Promise<void> {
       return
     }
 
-    const response = await gateway.request<ShareNousResponse>(
-      'diagnostics.share_nous',
+    const response = await gateway.request<ShareThorResponse>(
+      'diagnostics.share_thor',
       {
         ...(current.errorContext ? { error_context: current.errorContext } : {}),
         ...(Object.keys(extraFiles).length ? { extra_files: extraFiles } : {})

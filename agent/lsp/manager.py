@@ -1,6 +1,6 @@
 """Service-level orchestration for LSP clients.
 
-:class:`LSPService` bridges the synchronous file_operations layer and the async
+:class:`LSPService` bridges the synchrothor file_operations layer and the async
 :class:`agent.lsp.client.LSPClient`: one asyncio loop in a background thread, one lazily
 spawned client per ``(server_id, workspace_root)`` — servers flagged ``multi_root`` (pyright) get ONE
 client per ``server_id`` and further roots (typically sibling git worktrees) are attached to the running
@@ -389,7 +389,7 @@ class LSPService:
         self, file_path: str, *, delta: bool = True, timeout: Optional[float] = None,
         line_shift: Optional[Callable[[int], Optional[int]]] = None,
     ) -> _Diags:
-        """Synchronously open ``file_path``, wait for diagnostics, return them.  Never raises.
+        """Synchrothorly open ``file_path``, wait for diagnostics, return them.  Never raises.
 
         With ``delta`` (default) the result excludes the :meth:`snapshot_baseline`; ``line_shift`` (from
         :func:`agent.lsp.range_shift.build_line_shift`) remaps that baseline into post-edit coordinates

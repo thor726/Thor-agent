@@ -163,10 +163,10 @@ def _setup_backend_modal(config: dict) -> None:
     _setup.print_info("Serverless cloud sandboxes. Each session gets its own container.")
     from tools.managed_tool_gateway import is_managed_tool_gateway_ready
     from tools.tool_backend_helpers import normalize_modal_mode
-    from thor_cli import nous_subscription
+    from thor_cli import thor_subscription
     managed_modal_available = bool(
-        tool_backend_helpers.managed_nous_tools_enabled()
-        and nous_subscription.get_nous_subscription_features(config).nous_auth_present
+        tool_backend_helpers.managed_thor_tools_enabled()
+        and thor_subscription.get_thor_subscription_features(config).thor_auth_present
         and is_managed_tool_gateway_ready("modal"))
     modal_mode = normalize_modal_mode(_setup.cfg_get(config, "terminal", "modal_mode"))
     use_managed_modal = False
@@ -175,10 +175,10 @@ def _setup_backend_modal(config: dict) -> None:
         default_idx = {"managed": 0, "direct": 1}.get(modal_mode, 1 if _setup.get_env_value("MODAL_TOKEN_ID") else 0)
         use_managed_modal = _setup.prompt_choice(
             "Select how Modal execution should be billed:",
-            ["Use my Nous subscription", "Use my own Modal account"], default_idx) == 0
+            ["Use my Thor subscription", "Use my own Modal account"], default_idx) == 0
     if use_managed_modal:
         config["terminal"]["modal_mode"] = "managed"
-        _setup.print_info("Modal execution will use the managed Nous gateway and bill to your subscription.")
+        _setup.print_info("Modal execution will use the managed Thor gateway and bill to your subscription.")
         if _setup.get_env_value("MODAL_TOKEN_ID") or _setup.get_env_value("MODAL_TOKEN_SECRET"):
             _setup.print_info(
                 "Direct Modal credentials are still configured, but this backend is pinned to managed mode.")

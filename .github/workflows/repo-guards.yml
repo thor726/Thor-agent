@@ -359,7 +359,7 @@ jobs:
       # ── Always: icon assets freshness ─────────────────────────────────────────────────────
 
       # The committed icon outputs must match what scripts/generate_icons.py renders from
-      # assets/nous-girl-*.svg + assets/backgrounds/*.svg. Regular builds and user installs consume
+      # assets/thor-mark-*.svg + assets/backgrounds/*.svg. Regular builds and user installs consume
       # the committed files and never render, so this is what keeps them honest. Fix a red run
       # with `node scripts/generate-icons.mjs` on a Thor runtime interpreter and commit.
       #

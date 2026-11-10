@@ -39,7 +39,7 @@ export const frFirstRun: FirstRunCopy = {
   },
   intro: {
     greeting: 'Bonjour, je suis Thor.',
-    plan: 'Configurons tout pour vous. Ensuite, nous ferons quelque chose de génial.'
+    plan: 'Configurons tout pour vous. Ensuite, thor ferons quelque chose de génial.'
   },
   rerun: {
     title: "Relancer l'accueil",

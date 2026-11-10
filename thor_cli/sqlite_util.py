@@ -22,7 +22,7 @@ def open_db(
     busy_timeout_ms: int = 5000,
     wal: bool = True,
     foreign_keys: bool = False,
-    synchronous_full: bool = False,
+    synchrothor_full: bool = False,
     row_factory=sqlite3.Row,
     check_same_thread: bool = True,
     wal_lock_retries: int = 1,
@@ -57,8 +57,8 @@ def open_db(
                     time.sleep(0.01 * (2**attempt))
         if foreign_keys:
             conn.execute("PRAGMA foreign_keys=ON")
-        if synchronous_full:
-            conn.execute("PRAGMA synchronous=FULL")
+        if synchrothor_full:
+            conn.execute("PRAGMA synchrothor=FULL")
         if initialize is not None:
             initialize(conn)
     except BaseException:

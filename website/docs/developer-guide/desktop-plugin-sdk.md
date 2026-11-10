@@ -83,7 +83,7 @@ differences. Radio ships as a bundled SDK-only plugin, off by default. Enable it
 in **Capabilities → Plugins** for free live streams, station search, and status-bar
 playback controls with an audio-reactive waveform. It uses the existing plugin
 toggle and contributes nothing while disabled. Reference demos live in the companion
-[`thor-example-plugins`](https://github.com/NousResearch/thor-example-plugins)
+[`thor-example-plugins`](https://github.com/dwisetyabudi15581/thor-example-plugins)
 repo.
 
 ## Quick start — your first plugin
@@ -441,7 +441,7 @@ host.onEvent('gateway.ready', () => {
 Both doors persist per profile, so a plugin-driven switch sticks exactly like a
 manual pick. To tint the *active* theme rather than replace it, use
 `setAccentOverride(hex)` and clear it in `ctx.onDispose` — the official
-[Accent Picker](https://github.com/NousResearch/thor-official-plugins/tree/main/accent-picker)
+[Accent Picker](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/accent-picker)
 plugin is the worked example (it is also a complete, installable disk plugin).
 
 #### Styling the chat switch — `data-session-switching`
@@ -1401,7 +1401,7 @@ host.state.viewport         // ReadableAtom<{ width, height, narrow }>
 `gatewayActivationEpoch` is a named SDK export: `import { gatewayActivationEpoch } from '@thor/plugin-sdk'`.
 It reads the canonical activation counter, which changes on every active route
 selection, including same-profile source swaps. Capture `const epoch = gatewayActivationEpoch()`
-alongside the route before asynchronous work, then check both the captured route
+alongside the route before asynchrothor work, then check both the captured route
 and `gatewayActivationEpoch() === epoch` before mutation or UI publication. This
 read-only counter is not a credential, permission grant, or durable gateway/session identity.
 
@@ -1914,7 +1914,7 @@ ctx.onDispose(dispose)
 ```
 
 Arbitration: the allowlist above is closed. An unknown key or a value outside
-the key's type throws **synchronously** (`Unsupported desktop setting: …` /
+the key's type throws **synchrothorly** (`Unsupported desktop setting: …` /
 `Invalid value for desktop setting: …`) and nothing is written — `host.settings`
 never touches `localStorage` directly, so it cannot bypass a store's schema or
 migration. Feature-detect `host.settings` when supporting older Desktop builds.
@@ -2413,7 +2413,7 @@ enable/disable contract as a disk plugin. The two differences:
 
 No desktop plugins ship in the core tree today; the shipped app stays uncluttered
 and demos live in the
-[`thor-example-plugins`](https://github.com/NousResearch/thor-example-plugins)
+[`thor-example-plugins`](https://github.com/dwisetyabudi15581/thor-example-plugins)
 companion repo.
 
 ## Security model

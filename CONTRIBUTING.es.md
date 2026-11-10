@@ -45,7 +45,7 @@ Las habilidades incluidas (en `skills/`) se envían con cada instalación de Tho
 
 Si tu habilidad es oficial y útil pero no universalmente necesaria (ej., una integración de servicio de pago, una dependencia pesada), ponla en **`optional-skills/`** — se envía con el repositorio pero no está activada por defecto. Los usuarios pueden descubrirla a través de `thor skills browse` (etiquetada como "oficial") e instalarla con `thor skills install` (sin advertencia de terceros, confianza integrada).
 
-Si tu habilidad es especializada, contribuida por la comunidad o de nicho, es mejor para un **Skills Hub** — súbela a un registro de habilidades y compártela en el [Discord de Nous Research](https://discord.gg/NousResearch). Los usuarios pueden instalarla con `thor skills install`.
+Si tu habilidad es especializada, contribuida por la comunidad o de nicho, es mejor para un **Skills Hub** — súbela a un registro de habilidades y compártela en el [Discord de Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent). Los usuarios pueden instalarla con `thor skills install`.
 
 ---
 
@@ -139,7 +139,7 @@ thor-agent/
 │   ├── main.py                   # Punto de entrada, análisis de argumentos, despacho de comandos
 │   ├── config.py                 # Gestión de configuración, migración, definiciones de variables de entorno
 │   ├── setup.py                  # Asistente de configuración interactivo
-│   ├── auth.py                   # Resolución de proveedor, OAuth, Nous Portal
+│   ├── auth.py                   # Resolución de proveedor, OAuth, Thor Portal
 │   ├── models.py                 # Listas de selección de modelos de OpenRouter
 │   ├── banner.py                 # Banner de bienvenida, arte ASCII
 │   ├── commands.py               # Registro central de comandos de barra (CommandDef), autocompletado, ayudantes del gateway
@@ -179,7 +179,7 @@ thor-agent/
 ├── skills/                   # Habilidades incluidas (copiadas a ~/.thor/skills/ en la instalación)
 ├── optional-skills/          # Habilidades opcionales oficiales (descubribles vía hub, no activadas por defecto)
 ├── tests/                    # Suite de tests
-├── website/                  # Sitio de documentación (thor-agent.nousresearch.com)
+├── website/                  # Sitio de documentación (thor-agent.thor-agent.local)
 │
 ├── cli-config.yaml.example   # Configuración de ejemplo (copiada a ~/.thor/config.yaml)
 └── AGENTS.md                 # Guía de desarrollo para asistentes de codificación IA
@@ -191,7 +191,7 @@ thor-agent/
 |------|-----------|
 | `~/.thor/config.yaml` | Configuración (modelo, terminal, toolsets, compresión, etc.) |
 | `~/.thor/.env` | Claves API y secretos |
-| `~/.thor/auth.json` | Credenciales OAuth (Nous Portal) |
+| `~/.thor/auth.json` | Credenciales OAuth (Thor Portal) |
 | `~/.thor/skills/` | Todas las habilidades activas (incluidas + instaladas desde hub + creadas por el agente) |
 | `~/.thor/memories/` | Memoria persistente (MEMORY.md, USER.md) |
 | `~/.thor/state.db` | Base de datos de sesiones SQLite |
@@ -576,7 +576,7 @@ test(tools): añadir tests unitarios para file_operations
 
 ## Comunidad
 
-- **Discord**: [discord.gg/NousResearch](https://discord.gg/NousResearch) — para preguntas, mostrar proyectos y compartir habilidades
+- **Discord**: [github.com/dwisetyabudi15581/Thor-agent](https://github.com/dwisetyabudi15581/Thor-agent) — para preguntas, mostrar proyectos y compartir habilidades
 - **GitHub Discussions**: Para propuestas de diseño y discusiones de arquitectura
 - **Skills Hub**: Sube habilidades especializadas a un registro y compártelas con la comunidad
 

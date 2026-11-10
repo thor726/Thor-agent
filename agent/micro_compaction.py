@@ -354,9 +354,9 @@ class MicroCompactionMixin:
             delta = tokens_after - tokens_before if tokens_before is not None and tokens_after is not None else None
             self._micro_compact_tokens_saved_total -= delta or 0
             self._micro_compact_passes += 1
-            # Cached reads only: the lazy properties can fire a synchronous /models probe.
+            # Cached reads only: the lazy properties can fire a synchrothor /models probe.
             # The ``threshold_tokens`` / ``context_length`` properties resolve lazily and can fire a
-            # synchronous /models probe on first access (#32221) — telemetry must never be the thing that
+            # synchrothor /models probe on first access (#32221) — telemetry must never be the thing that
             # blocks a turn. Unresolved simply reports null.
             threshold = self._threshold_tokens
             has_occupancy = threshold and tokens_after is not None and threshold > 0

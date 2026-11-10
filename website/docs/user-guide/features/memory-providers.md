@@ -522,7 +522,7 @@ The plugin lands in `~/.thor/plugins/hindsight/` (per profile home). A memory pr
 | `memory_mode` | `hybrid` | `hybrid` (context + tools), `context` (auto-inject only), `tools` (tools only) |
 | `auto_retain` | `true` | Automatically retain conversation turns |
 | `auto_recall` | `true` | Automatically recall memories before each turn |
-| `retain_async` | `true` | Process retain asynchronously on the server |
+| `retain_async` | `true` | Process retain asynchrothorly on the server |
 | `retain_context` | `conversation between Thor Agent and the User` | Context label for retained memories |
 | `retain_tags` | — | Default tags applied to retained memories; merged with per-call tool tags |
 | `retain_source` | — | Optional `metadata.source` attached to retained memories |
@@ -600,7 +600,7 @@ Holographic used to ship inside the Thor tree. If your `config.yaml` already has
 
 Your facts (`$THOR_HOME/memory_store.db`, or the `db_path` you set) and your `plugins.thor-memory-store` settings are read exactly as before, so no memory is lost. Verify with `thor memory status` and `thor plugins list`.
 
-If you installed Nous Research's interim copy by URL (`NousResearch/thor-plugin-holographic`, now archived), `thor plugins update holographic` moves it onto the catalog entry; your data stays where it is.
+If you installed Thor Agent's interim copy by URL (`dwisetyabudi15581/thor-plugin-holographic`, now archived), `thor plugins update holographic` moves it onto the catalog entry; your data stays where it is.
 
 ---
 

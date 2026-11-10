@@ -62,7 +62,7 @@ def _other_gateway(seen: dict) -> Starlette:
         body = await request.json()
         seen["refreshed_with"] = body
         return JSONResponse({"access_token": "fresh-access", "refresh_token": "fresh-refresh",
-                             "expires_at": int(time.time()) + 900, "provider": "nous", "user_id": "u1"})
+                             "expires_at": int(time.time()) + 900, "provider": "thor", "user_id": "u1"})
 
     return Starlette(routes=[
         Route("/api/profiles", echo), Route("/page", page), Route("/cached", cached),
@@ -199,7 +199,7 @@ def live_other(webapp, monkeypatch):
     async def refresh(request: Request):
         seen["refreshed_with"] = await request.json()
         return JSONResponse({"access_token": "fresh-access", "refresh_token": "fresh-refresh",
-                             "expires_at": int(time.time()) + 900, "provider": "nous", "user_id": "u1"})
+                             "expires_at": int(time.time()) + 900, "provider": "thor", "user_id": "u1"})
 
     app = Starlette(routes=[Route("/set", set_cookie), Route("/echo", set_cookie), Route("/api/profiles", profiles),
                             Route("/auth/native/refresh", refresh, methods=["POST"]),
@@ -236,11 +236,11 @@ def test_an_oauth_connection_sends_its_bearer_and_a_refused_one_earns_one_forced
         {"kind": "remote", "label": "Signed", "url": webapp.live_url.replace("127.0.0.1", "localhost"), "authMode": "oauth"})
     # Not near expiry: only the remote's 401 can say it is no longer good.
     gateway_connections.write_tokens(saved["id"], {"accessToken": "revoked-access", "refreshToken": "old-refresh",
-                                                   "expiresAt": int(time.time()) + 900, "provider": "nous", "userId": "u1"})
+                                                   "expiresAt": int(time.time()) + 900, "provider": "thor", "userId": "u1"})
     reached = webapp.browser.get(f"/api/relay/{saved['id']}/api/profiles")
     assert reached.status_code == 200, reached.text
     assert seen["bearers"] == ["Bearer revoked-access", "Bearer fresh-access"]
-    assert seen["refreshed_with"] == {"refresh_token": "old-refresh", "provider": "nous"}
+    assert seen["refreshed_with"] == {"refresh_token": "old-refresh", "provider": "thor"}
     assert gateway_connections.read_tokens(saved["id"])["accessToken"] == "fresh-access"
 
 

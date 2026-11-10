@@ -330,7 +330,7 @@ branch protection.
 | `pm-bundle.yml`, **PM Bundle** | `pull_request` on `pm/**` (not `*.md`), `scripts/bundles/**`, the Windows build deps, `uv.lock`, `pyproject.toml`, itself; `workflow_dispatch`; `workflow_call` (stable) | Stages and smoke-tests `thor pm bundle` on darwin-arm64, win32-x64, win32-arm64. Linux targets are commented out; there is no Intel macOS leg. | `gh workflow run pm-bundle.yml [-f ref=<sha>]` |
 | `termux-verify.yml`, **Termux verification** | `push: main` / `pull_request` on `scripts/termux/**`, `pm/**` (not `*.md`), `tests/scripts/test_termux*`, itself; `workflow_dispatch`; `workflow_call` (stable) | `contracts` and `tui` always run. `r2-provisioned` is skipped on PRs. `native-runtime` (arm64) runs only when R2 secrets exist or `release: true`. A release run fails loudly without R2. | `gh workflow run termux-verify.yml` |
 | `plugin-catalog-ci.yml`, **Plugin Catalog CI** | `pull_request` on `plugin-catalog/**` | `structural` (schema) and `pinned-source-validate` (the pinned SHA is reachable and the plugin passes `thor plugins validate`; inner steps skip when no entry file changed). | none |
-| `sandbox-image.yml`, **Sandbox desktop image** | `pull_request` on its Dockerfile and smoke script; `release: published`; `workflow_dispatch` (`publish`) | `build`+smoke on the upstream repo only. `publish`/`merge` (push `nousresearch/thor-sandbox:desktop`) only on `release` or a dispatch with `publish=true`. Never on `main` pushes. | `gh workflow run sandbox-image.yml -f publish=true` |
+| `sandbox-image.yml`, **Sandbox desktop image** | `pull_request` on its Dockerfile and smoke script; `release: published`; `workflow_dispatch` (`publish`) | `build`+smoke on the upstream repo only. `publish`/`merge` (push `thor-agent/thor-sandbox:desktop`) only on `release` or a dispatch with `publish=true`. Never on `main` pushes. | `gh workflow run sandbox-image.yml -f publish=true` |
 | `windows-bundle-sdk.yml`, **Windows bundle SDK** | `pull_request` on the Windows bundle and signing scripts plus their tests; `workflow_dispatch` | Runs the real Windows SDK downloader on cold Windows runners. | `gh workflow run windows-bundle-sdk.yml --ref <branch>` |
 
 ---
@@ -496,7 +496,7 @@ Re-smoke an already staged artifact without rebuilding:
 ```sh
 gh workflow run desktop-bundle-smoke.yml --ref <test-branch> \
   -f platform=win32 -f arch=x64 -f format=msix -f sha=<built commit> \
-  -f commit-build=true -f public-base=https://thor-assets.nousresearch.com/
+  -f commit-build=true -f public-base=https://thor-assets.thor-agent.local/
 ```
 
 ### Install & update E2E family

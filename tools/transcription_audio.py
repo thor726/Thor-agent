@@ -197,7 +197,7 @@ _CLOUD_TRIM_KEEP_MS_DEFAULT = 300  # how much of each pause survives the trim
 _CLOUD_TRIM_MIN_SAVING = 0.10  # use the trimmed file only when >=10% shorter
 _CLOUD_TRIM_MIN_RESULT_SECONDS = 0.3  # all-silence guard floor: never upload ~empty audio
 # Below this the trim can't pay for itself (several providers bill a 10s minimum)
-# and the encode would sit on the synchronous voice-note path.
+# and the encode would sit on the synchrothor voice-note path.
 _CLOUD_TRIM_MIN_INPUT_SECONDS = 12.0
 
 

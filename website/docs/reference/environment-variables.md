@@ -17,8 +17,8 @@ Thor reads environment variables from the process environment and, for user-mana
 | `FIREWORKS_API_KEY` | Fireworks AI API key ([app.fireworks.ai](https://app.fireworks.ai/settings/users/api-keys)). Configure endpoint overrides with `model.base_url` in `config.yaml`. |
 | `THOR_OPENROUTER_CACHE` | Enable OpenRouter response caching (`1`/`true`/`yes`/`on`). Overrides `openrouter.response_cache` in config.yaml. See [Response Caching](https://openrouter.ai/docs/guides/features/response-caching). |
 | `THOR_OPENROUTER_CACHE_TTL` | Cache TTL in seconds (1-86400). Overrides `openrouter.response_cache_ttl` in config.yaml. |
-| `NOUS_BASE_URL` | Override Nous Portal base URL (rarely needed; development/testing only) |
-| `NOUS_INFERENCE_BASE_URL` | Override Nous inference endpoint directly |
+| `THOR_PORTAL_BASE_URL` | Override Thor Portal base URL (rarely needed; development/testing only) |
+| `THOR_PORTAL_INFERENCE_BASE_URL` | Override Thor inference endpoint directly |
 | `AI_GATEWAY_API_KEY` | Vercel AI Gateway API key ([ai-gateway.vercel.sh](https://ai-gateway.vercel.sh)) |
 | `AI_GATEWAY_BASE_URL` | Override AI Gateway base URL (default: `https://ai-gateway.vercel.sh/v1`) |
 | `OPENAI_API_KEY` | OpenAI API key (`openai-api` provider), or the key for a custom OpenAI-compatible endpoint when `OPENAI_BASE_URL` is set; bound that way, it is sent only to that URL's exact origin (scheme, host and port), never to another port or to `http://` on the same host. Counts as an OpenRouter key only when it starts with `sk-or-`; put OpenRouter keys in `OPENROUTER_API_KEY` |
@@ -120,7 +120,7 @@ Thor reads environment variables from the process environment and, for user-mana
 | `THOR_LOCAL_STT_LANGUAGE` | Fallback STT language hint, used only when both the provider's own `language` and the global `stt.language` are empty. Command backends (`THOR_LOCAL_STT_COMMAND`, the local `whisper` CLI) may apply their own default (`en`) when no hint resolves. |
 | `THOR_HOME` | Select the configuration and user-data home. A literal `~` or `$VAR` in the value is expanded (fish does not expand `~` inside `VAR=~/…`), so it never resolves relative to the current directory. Defaults to `~/.thor` on POSIX and `%LOCALAPPDATA%\thor` on Windows; the official Docker image uses `/opt/data`. Profile/runtime context can select a more specific home. |
 | `THOR_CONFIG_BACKEND` | Select where the profile's `config.yaml` user layer is read and written. `file` (the default) is the local `config.yaml`; `remote` is [Remote Config](../user-guide/remote-config.md). Any other value, or a remote backend that cannot serve config, stops Thor at startup with an error instead of falling back to defaults. An explicitly empty value in a `.env` resets a stale shell value to `file`. Read from the launch environment, the launch home's `.env` and the managed `.env`, never from `config.yaml`. See [Config backend](../developer-guide/config-backend.md). |
-| `THOR_CONFIG_REMOTE_URL` | Base URL of the [Remote Config](../user-guide/remote-config.md) plane (default `https://config-config.nousresearch.com`; `https://` only, plain `http://` only to loopback, no user info). An env var because it is needed before any config can be read: it says where config comes from. |
+| `THOR_CONFIG_REMOTE_URL` | Base URL of the [Remote Config](../user-guide/remote-config.md) plane (default `https://config-config.thor-agent.local`; `https://` only, plain `http://` only to loopback, no user info). An env var because it is needed before any config can be read: it says where config comes from. |
 | `THOR_CONFIG_INSTANCE_ID` | This agent's id in the [Remote Config](../user-guide/remote-config.md) plane; required with `THOR_CONFIG_BACKEND=remote`. An env var because the plane needs it to serve the first config read. |
 | `THOR_DISABLE_WINDOWS_UTF8` | **Windows only.** Set to `1` to disable the UTF-8 stdio shim (`configure_windows_stdio()`) and fall back to the console's locale code page. Useful for bisecting encoding bugs; rarely the right setting in normal operation |
 | `THOR_KANBAN_HOME` | Override the shared Thor root that anchors the kanban board (db + workspaces + worker logs). Falls back to `get_default_thor_root()` (the parent of any active profile). Useful for tests and unusual deployments |
@@ -135,10 +135,10 @@ For native Anthropic auth, Thor prefers Claude Code's own credential files when 
 
 | Variable | Description |
 |----------|-------------|
-| `THOR_PORTAL_BASE_URL` | Override Nous Portal URL (for development/testing). Per-profile under multiplexing: set it in the served profile's `.env`. |
-| `NOUS_INFERENCE_BASE_URL` | Override Nous inference API URL. Also the only non-production host a Portal response may name: when the Portal's returned inference URL matches this override it is accepted and persisted instead of being healed to production. Per-profile under multiplexing. |
-| `THOR_NOUS_MIN_KEY_TTL_SECONDS` | Min agent key TTL before re-mint (default: 1800 = 30min) |
-| `THOR_NOUS_TIMEOUT_SECONDS` | HTTP timeout for Nous credential / token flows |
+| `THOR_PORTAL_BASE_URL` | Override Thor Portal URL (for development/testing). Per-profile under multiplexing: set it in the served profile's `.env`. |
+| `THOR_PORTAL_INFERENCE_BASE_URL` | Override Thor inference API URL. Also the only non-production host a Portal response may name: when the Portal's returned inference URL matches this override it is accepted and persisted instead of being healed to production. Per-profile under multiplexing. |
+| `THOR_THOR_PORTAL_MIN_KEY_TTL_SECONDS` | Min agent key TTL before re-mint (default: 1800 = 30min) |
+| `THOR_THOR_PORTAL_TIMEOUT_SECONDS` | HTTP timeout for Thor credential / token flows |
 | `THOR_DUMP_REQUESTS` | Dump API request payloads to log files (`true`/`false`) |
 | `THOR_PREFILL_MESSAGES_FILE` | Path to a JSON file of ephemeral prefill messages injected at API-call time |
 | `THOR_TIMEZONE` | IANA timezone override (for example `America/New_York`). On Linux/macOS it is also exported as `TZ` to `execute_code` children; on Windows those children keep the OS zone instead, because the Windows C runtime only understands POSIX-form `TZ` strings and mis-parses an IANA name into a wrong offset |
@@ -192,7 +192,7 @@ For native Anthropic auth, Thor prefers Claude Code's own credential files when 
 | `BRV_API_KEY` | ByteRover API key (optional, for cloud sync — local-first by default) ([app.byterover.dev](https://app.byterover.dev)) |
 | `SUPERMEMORY_API_KEY` | Semantic long-term memory with profile recall and session ingest ([supermemory.ai](https://supermemory.ai)) |
 | `DAYTONA_API_KEY` | Daytona cloud sandboxes ([daytona.io](https://daytona.io/)) |
-| `SPRITES_TOKEN` | Sprites cloud sandboxes, read by the [`sprites` plugin](https://github.com/NousResearch/thor-plugin-sprites) ([fly.io/sprites](https://fly.io/sprites)) |
+| `SPRITES_TOKEN` | Sprites cloud sandboxes, read by the [`sprites` plugin](https://github.com/dwisetyabudi15581/thor-plugin-sprites) ([fly.io/sprites](https://fly.io/sprites)) |
 | `VERCEL_TOKEN` | Vercel Sandbox access token ([vercel.com](https://vercel.com/)) |
 | `VERCEL_PROJECT_ID` | Vercel project ID (required with `VERCEL_TOKEN`) |
 | `VERCEL_TEAM_ID` | Vercel team ID (required with `VERCEL_TOKEN`) |
@@ -210,7 +210,7 @@ Secrets consumed by specific bundled / optional skills. Each is only needed if y
 
 ### Langfuse Observability
 
-Environment variables for the official [`langfuse`](https://github.com/NousResearch/thor-official-plugins/tree/main/langfuse) catalog plugin (formerly bundled as `observability/langfuse`). Set these in `~/.thor/.env`. The plugin must be installed (`thor plugins install langfuse`) before any of these take effect.
+Environment variables for the official [`langfuse`](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/langfuse) catalog plugin (formerly bundled as `observability/langfuse`). Set these in `~/.thor/.env`. The plugin must be installed (`thor plugins install langfuse`) before any of these take effect.
 
 | Variable | Description |
 |----------|-------------|
@@ -226,15 +226,15 @@ Environment variables for the official [`langfuse`](https://github.com/NousResea
 | `THOR_LANGFUSE_DEBUG` | `true` enables verbose plugin logging to `agent.log` |
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_BASE_URL` | Standard Langfuse SDK names. Accepted as fallbacks when the `THOR_LANGFUSE_*` equivalents are unset. |
 
-### Nous Tool Gateway
+### Thor Tool Gateway
 
-These variables configure the [Tool Gateway](../user-guide/features/tool-gateway.md) for paid Nous subscribers or self-hosted gateway deployments. Most users don't need to set these — the gateway is configured automatically via `thor model` or `thor tools`.
+These variables configure the [Tool Gateway](../user-guide/features/tool-gateway.md) for paid Thor subscribers or self-hosted gateway deployments. Most users don't need to set these — the gateway is configured automatically via `thor model` or `thor tools`.
 
 | Variable | Description |
 |----------|-------------|
-| `TOOL_GATEWAY_DOMAIN` | Base domain for Tool Gateway routing (default: `nousresearch.com`) |
+| `TOOL_GATEWAY_DOMAIN` | Base domain for Tool Gateway routing (default: `thor-agent.local`) |
 | `TOOL_GATEWAY_SCHEME` | HTTP or HTTPS scheme for gateway URLs (default: `https`) |
-| `TOOL_GATEWAY_USER_TOKEN` | Auth token for the Tool Gateway (normally auto-populated from Nous auth) |
+| `TOOL_GATEWAY_USER_TOKEN` | Auth token for the Tool Gateway (normally auto-populated from Thor auth) |
 | `FIRECRAWL_GATEWAY_URL` | Override URL for the Firecrawl gateway endpoint specifically |
 
 ## Terminal Backend
@@ -243,13 +243,13 @@ These variables configure the [Tool Gateway](../user-guide/features/tool-gateway
 |----------|-------------|
 | `TERMINAL_ENV` | Backend: `local`, `docker`, `ssh`, `modal`, `daytona`, `vercel_sandbox`, or a plugin backend (`singularity`, `sprites`) |
 | `THOR_DOCKER_BINARY` | Override the container binary Thor shells out to (e.g. `podman`, `/usr/local/bin/docker`). When unset, Thor auto-discovers `docker` or `podman` on `PATH`. Needed when both are installed and you want the non-default, or when the binary lives outside `PATH`. |
-| `TERMINAL_DOCKER_IMAGE` | Docker image (default: `nousresearch/thor-sandbox:desktop`) |
+| `TERMINAL_DOCKER_IMAGE` | Docker image (default: `thor-agent/thor-sandbox:desktop`) |
 | `TERMINAL_DOCKER_FORWARD_ENV` | JSON array of env var names to explicitly forward into Docker terminal sessions. Note: skill-declared `required_environment_variables` are forwarded automatically — you only need this for vars not declared by any skill. |
 | `TERMINAL_DOCKER_VOLUMES` | Additional Docker volume mounts (comma-separated `host:container` pairs) |
 | `TERMINAL_DOCKER_ENV` | JSON object of extra env vars to set inside Docker terminal sessions (e.g. `{"FOO":"bar"}`) |
 | `TERMINAL_DOCKER_EXTRA_ARGS` | JSON array of extra `docker run` arguments (e.g. `["--memory","4g"]`) |
 | `TERMINAL_DOCKER_MOUNT_CWD_TO_WORKSPACE` | Advanced opt-in: mount the launch cwd into Docker `/workspace` (`true`/`false`, default: `false`) |
-| `TERMINAL_SINGULARITY_IMAGE` | Singularity image or `.sif` path (read by the [`singularity` plugin](https://github.com/NousResearch/thor-official-plugins/tree/main/singularity)) |
+| `TERMINAL_SINGULARITY_IMAGE` | Singularity image or `.sif` path (read by the [`singularity` plugin](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/singularity)) |
 | `TERMINAL_MODAL_IMAGE` | Modal container image |
 | `TERMINAL_DAYTONA_IMAGE` | Daytona sandbox image |
 | `TERMINAL_VERCEL_RUNTIME` | Vercel Sandbox runtime (`node24`, `node22`, `python3.13`) |
@@ -562,7 +562,7 @@ These are set automatically by the Docker terminal backend when `proxy.enabled: 
 
 Auth for the [web dashboard](../user-guide/features/web-dashboard.md) and for connecting [Thor Desktop to a remote backend](../user-guide/features/web-dashboard.md#connecting-thor-desktop-to-a-remote-backend). Per the secrets-only convention, credentials belong in `~/.thor/.env`; the OAuth `client_id` is better set under `dashboard.oauth` in `config.yaml` (env wins when set).
 
-Three dashboard-auth providers ship in the box. For a remote Thor Desktop connection or any internet-facing dashboard, the recommended provider is **OAuth (Nous Portal)** — set `THOR_DASHBOARD_OAUTH_CLIENT_ID` (provision it with `thor dashboard register`). The bundled **username/password** provider (`THOR_DASHBOARD_BASIC_AUTH_*`) is the quickest option for a backend on a trusted LAN or behind a VPN, but is not suitable for direct public-internet exposure. To authenticate against your own identity provider, use the **self-hosted OIDC** provider (`THOR_DASHBOARD_OIDC_*`). Either way, a non-loopback bind (`thor dashboard --host 0.0.0.0`) engages the auth gate. See [Web Dashboard → Authentication](../user-guide/features/web-dashboard.md#authentication-gated-mode) for the full picture.
+Three dashboard-auth providers ship in the box. For a remote Thor Desktop connection or any internet-facing dashboard, the recommended provider is **OAuth (Thor Portal)** — set `THOR_DASHBOARD_OAUTH_CLIENT_ID` (provision it with `thor dashboard register`). The bundled **username/password** provider (`THOR_DASHBOARD_BASIC_AUTH_*`) is the quickest option for a backend on a trusted LAN or behind a VPN, but is not suitable for direct public-internet exposure. To authenticate against your own identity provider, use the **self-hosted OIDC** provider (`THOR_DASHBOARD_OIDC_*`). Either way, a non-loopback bind (`thor dashboard --host 0.0.0.0`) engages the auth gate. See [Web Dashboard → Authentication](../user-guide/features/web-dashboard.md#authentication-gated-mode) for the full picture.
 
 | Variable | Description |
 |----------|-------------|
@@ -571,7 +571,7 @@ Three dashboard-auth providers ship in the box. For a remote Thor Desktop connec
 | `THOR_DASHBOARD_BASIC_AUTH_PASSWORD_HASH` | scrypt password hash for the basic provider (preferred — no plaintext at rest). Compute with `python -c "from plugins.dashboard_auth.basic import hash_password; print(hash_password('PW'))"`. Overrides `dashboard.basic_auth.password_hash`. |
 | `THOR_DASHBOARD_BASIC_AUTH_SECRET` | HMAC key (32+ bytes, base64/hex/raw) signing the basic provider's stateless session tokens. Set explicitly so sessions survive restarts / span multiple workers; blank → random per-process (you'll be logged out on every restart). A value that still holds unexpanded shell text such as `$(openssl rand -base64 32)` is ignored with an error and a random per-process key is used instead. Overrides `dashboard.basic_auth.secret`. |
 | `THOR_DASHBOARD_BASIC_AUTH_TTL_SECONDS` | Access-token lifetime for the basic provider (default 12h). Overrides `dashboard.basic_auth.session_ttl_seconds`. |
-| `THOR_DASHBOARD_OAUTH_CLIENT_ID` | OAuth client id (`agent:{instance_id}`) for the gated/public dashboard, activating the Nous (`plugins/dashboard_auth/nous`) provider. Overrides `dashboard.oauth.client_id`. Provision it with `thor dashboard register`. |
+| `THOR_DASHBOARD_OAUTH_CLIENT_ID` | OAuth client id (`agent:{instance_id}`) for the gated/public dashboard, activating the Thor (`plugins/dashboard_auth/thor`) provider. Overrides `dashboard.oauth.client_id`. Provision it with `thor dashboard register`. |
 | `THOR_DASHBOARD_SESSION_TOKEN` | Per-process session token for the dashboard's sensitive `/api` routes, minted by the launcher that spawns `thor dashboard` (Desktop shell, link-style integrations). A value injected by the parent process is kept as-is: a `THOR_DASHBOARD_SESSION_TOKEN` line in `~/.thor/.env` does not replace it. Unset, the server mints a fresh token per start. |
 | `THOR_DASHBOARD_PUBLIC_URL` | Complete public URL the dashboard is reached at behind a reverse proxy. It controls OAuth callback construction, adds its exact hostname to the HTTP Host/WebSocket Origin guard, and requires the auth gate for non-loopback public hosts even when the backend binds to loopback. Overrides `dashboard.public_url`. |
 | `THOR_DASHBOARD_OIDC_ISSUER` | OIDC issuer URL for the bundled self-hosted OIDC provider (`plugins/dashboard_auth/self_hosted`). Required to activate it. Overrides `dashboard.oauth.self_hosted.issuer`. |

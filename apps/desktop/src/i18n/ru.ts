@@ -341,7 +341,7 @@ export const ruOverrides = {
   },
   settings: {
     memoryLayers: ruMemoryLayers,
-    // Window plans (Nous subscription with included usage). Other billing strings: overlay-gaps.json.
+    // Window plans (Thor subscription with included usage). Other billing strings: overlay-gaps.json.
     billing: {
       keepGoingOnCredits: {
         title: 'Продолжать за кредиты',
@@ -1102,7 +1102,7 @@ export const ruOverrides = {
       cloudLoadingAgents: 'Загрузка ваших агентов…',
       cloudNoAgents: {
         before: 'Агенты на этом аккаунте не найдены. Создайте агента в',
-        linkText: 'портале Nous',
+        linkText: 'портале Thor',
         after: ', затем обновите страницу.'
       },
       cloudRefresh: 'Обновить',
@@ -1209,7 +1209,7 @@ export const ruOverrides = {
       sshErrHostKey:
         'Ключ хоста ИЗМЕНИЛСЯ с последнего подключения. Убедитесь, что это ожидаемо, затем выполните ssh-keygen -R <host> и переподключитесь.',
       sshErrNotInstalled:
-        'Thor не установлен на удалённой машине. Установите его там (curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh) или задайте путь к Thor.',
+        'Thor не установлен на удалённой машине. Установите его там (curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh) или задайте путь к Thor.',
       sshErrPlatform:
         'Неподдерживаемая удалённая платформа. SSH-режим Thor Desktop поддерживает удалённые хосты Linux, macOS и Windows.',
       sshErrTimeout: 'SSH-соединение истекло. Хост может быть недоступен или «спит».',
@@ -1372,13 +1372,13 @@ export const ruOverrides = {
       activeBackend: 'Активен',
       activeBackendHint: 'Это ваш активный бэкенд',
       useBackend: 'Использовать этот бэкенд',
-      nousIncluded: 'Входит в подписку Nous — войдите в Nous Portal, чтобы активировать.',
-      nousAuthNeededTitle: 'Войдите в Nous Portal',
-      nousAuthNeededMessage: provider => `${provider} сохранён, но не активируется, пока вы не войдёте в Nous Portal.`,
-      nousAuthSignIn: 'Войти',
-      nousAuthDoneTitle: 'Nous Portal подключён',
-      nousAuthDoneMessage: 'Ваши бэкенды по подписке теперь активны.',
-      nousAuthFailed: 'Вход в Nous Portal не завершён',
+      thorIncluded: 'Входит в подписку Thor — войдите в Thor Portal, чтобы активировать.',
+      thorAuthNeededTitle: 'Войдите в Thor Portal',
+      thorAuthNeededMessage: provider => `${provider} сохранён, но не активируется, пока вы не войдёте в Thor Portal.`,
+      thorAuthSignIn: 'Войти',
+      thorAuthDoneTitle: 'Thor Portal подключён',
+      thorAuthDoneMessage: 'Ваши бэкенды по подписке теперь активны.',
+      thorAuthFailed: 'Вход в Thor Portal не завершён',
       noApiKeyRequired: 'API-ключ не требуется.',
       postSetupHint: step =>
         `Этому бэкенду нужна однократная установка (${step}). Выполняется на этой машине — может занять несколько минут.`,
@@ -1911,8 +1911,8 @@ export const ruOverrides = {
       qrAlt: (platform: string) => `QR-код общего бота ${platform}`,
       managed: 'Под управлением Team Gateway',
       managedNote: (platform: string) => `На этом экземпляре сообщения идут через Team Gateway, поэтому шлюз отключает прямое подключение ${platform} при каждом запуске. Чтобы использовать его вместе с ретранслятором, задайте GATEWAY_RELAY_ALLOW_DIRECT_PLATFORMS=true в окружении шлюза (прямое подключение не даёт экземпляру масштабироваться до нуля и может доставлять сообщения дважды).`,
-      managedIntro: 'Аккаунты этого агента привязываются в Nous Portal.',
-      openPortal: 'Привязать аккаунты в Nous Portal',
+      managedIntro: 'Аккаунты этого агента привязываются в Thor Portal.',
+      openPortal: 'Привязать аккаунты в Thor Portal',
       noNewAccount: (platform: string) => `Код больше не активен, и новый аккаунт не появился. Если вашего аккаунта ${platform} нет в списке, получите новый код и попробуйте снова.`
     },
     telegramQr: {
@@ -2675,8 +2675,8 @@ export const ruOverrides = {
       '/browser': 'Управлять браузером агента [connect|disconnect|status]',
       '/palette': 'Открыть палитру команд',
       '/usage': 'Показать расход токенов и лимиты; reset использует накопленный сброс лимита Codex',
-      '/subscription': 'Показать план Nous и изменить его в браузере',
-      '/topup': 'Показать баланс Nous и управлять оплатой',
+      '/subscription': 'Показать план Thor и изменить его в браузере',
+      '/topup': 'Показать баланс Thor и управлять оплатой',
       '/platform': 'Приостановить, возобновить или перечислить сбоящие платформы шлюза',
       '/version': 'Показать версию Thor Agent',
       '/debug': 'Загрузить отчёт отладки с данными системы и журналами и получить ссылку',
@@ -3138,7 +3138,7 @@ export const ruOverrides = {
     loadFailed: 'Не удалось загрузить модели',
     noAuthenticatedProviders: 'Нет провайдеров с аутентификацией.',
     pro: 'Pro',
-    proNeedsSubscription: 'Модели Pro требуют платной подписки Nous.',
+    proNeedsSubscription: 'Модели Pro требуют платной подписки Thor.',
     free: 'Free',
     freeTier: 'Бесплатный тариф',
     priceTitle: 'Цена вход / выход за миллион токенов',
@@ -3919,7 +3919,7 @@ export const ruOverrides = {
   freeTier: {
     offer: {
       heading: 'Продолжайте с Thor',
-      body: 'Вы пользуетесь бесплатным лимитом. Если продолжите работать с Thor, скоро начнёте упираться в ограничения. Войдите с бесплатной учётной записью Nous, чтобы получить больший лимит.',
+      body: 'Вы пользуетесь бесплатным лимитом. Если продолжите работать с Thor, скоро начнёте упираться в ограничения. Войдите с бесплатной учётной записью Thor, чтобы получить больший лимит.',
       signIn: 'Войти',
       notNow: 'Не сейчас'
     }

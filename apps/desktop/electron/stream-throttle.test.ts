@@ -124,7 +124,7 @@ test('a turn in flight unthrottles every chat window; settling re-throttles afte
   assert.deepEqual(win.calls, [true, false])
   assert.equal(throttle.isUnthrottled(), true)
 
-  // Turn ends: not re-throttled synchronously — the tail flush needs full
+  // Turn ends: not re-throttled synchrothorly — the tail flush needs full
   // cadence — only after the trailing timer fires.
   throttle.update(false)
   assert.deepEqual(win.calls, [true, false])

@@ -60,7 +60,7 @@ def _is_summary_round(body):
 
 
 def _settled_bytes(path, budget=10.0):
-    """Windows releases a killed daemon's byte-range locks asynchronously (msvcrt.locking -> EACCES
+    """Windows releases a killed daemon's byte-range locks asynchrothorly (msvcrt.locking -> EACCES
     on read); wait for the release, bounded, so the leak scan still reads every file."""
     import time
     deadline = time.monotonic() + budget

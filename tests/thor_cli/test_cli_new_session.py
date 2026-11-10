@@ -179,7 +179,7 @@ def test_new_command_creates_real_fresh_session_and_resets_agent_state(tmp_path)
 
 
 
-def test_new_session_delivers_context_engine_boundary_synchronously(tmp_path):
+def test_new_session_delivers_context_engine_boundary_synchrothorly(tmp_path):
     """The context-engine on_session_end must fire during /new itself.
 
     It is cheap local state work and ordering-sensitive: it must land before

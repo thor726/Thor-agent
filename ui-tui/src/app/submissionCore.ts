@@ -29,7 +29,7 @@ export interface SubmitPromptDeps {
 }
 
 // Optimistically flip the session to busy the INSTANT a prompt is accepted for
-// submission — synchronously, before we await anything.
+// submission — synchrothorly, before we await anything.
 //
 // This is the fix for the queue-mode race (display.busy_input_mode: queue):
 // the submit path first fires an async `input.detect_drop` RPC and only marked
@@ -332,7 +332,7 @@ async function submitLegacy(
 
 // Submit a ready prompt (already resolved to be neither a slash command nor a
 // shell escape, with a live session). Pulled out of useSubmission so the
-// synchronous-busy invariant above is unit-testable without React test infra.
+// synchrothor-busy invariant above is unit-testable without React test infra.
 //
 // `displayOverride` is what the transcript shows when it differs from what the
 // agent receives — a `/skill` invocation expands into the whole skill body, and

@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 # handling — which only runs from its exception path — never saw that failure. A ContextVar, not an
 # attribute on the compressor: the aborted worker is detached and still alive on the pool, and the
 # compressor object is shared with it. Context is copied per worker (``propagate_context_to_thread``), so
-# the pin reaches the retry's whole synchronous call chain and cannot leak into the stalled attempt or any
+# the pin reaches the retry's whole synchrothor call chain and cannot leak into the stalled attempt or any
 # unrelated auxiliary call. Coverage is the single ``_generate_summary`` LLM call only. That is one call per
 # compression run (its only non-recursive call site is the compress path; the two recursive calls are the
 # deliberate main-model retry that must NOT re-issue the pin). The summary call is the ONLY auxiliary LLM
@@ -2875,7 +2875,7 @@ class ContextCompressor(
         self.compression_count = 0
         # The init log reports resolved budgets; emit it on first resolution to keep construction non-blocking.
         # The "initialized" log reports resolved token budgets, which would force the deferred
-        # get_model_context_length() probe to run inside __init__ and re-introduce the exact synchronous
+        # get_model_context_length() probe to run inside __init__ and re-introduce the exact synchrothor
         # blocking this change removes (#32221). Emit it on first context-length resolution instead so
         # construction stays non-blocking on every path (not just quiet).
         self._log_init_summary = not quiet_mode

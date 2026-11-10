@@ -9,7 +9,7 @@ description: >
   channels/DMs and the Thor agent. Relay operations shell out to the
   buzz CLI binary (JSON in/out); verified inbound media uses Thor' bundled
   HTTP client.
-author: Nous Research
+author: Thor Agent
 # ``requires_env`` entries are surfaced in ``thor config`` UI via the
 # platform-plugin env var injector in ``thor_cli/config.py``.
 requires_env:

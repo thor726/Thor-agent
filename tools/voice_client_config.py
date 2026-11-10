@@ -131,7 +131,7 @@ def _resolve_stt_client_config() -> dict[str, Any]:
         return direct(STT_WIRE_OPENAI, getattr(tc, base, base), api_key,
                       section.get("model") or getattr(tc, default_model))
     if provider == "openai":
-        # Covers the Nous-managed selection too: the resolver returns the user's
+        # Covers the Thor-managed selection too: the resolver returns the user's
         # own gateway token + managed base URL — exactly what the client should use.
         try:
             api_key, base_url = tt._resolve_openai_audio_client_config()
@@ -180,7 +180,7 @@ def _resolve_tts_client_config() -> dict[str, Any]:
     min_len = SentenceChunker.from_config(tts_config).min_len
 
     if provider == "openai":
-        # Covers the direct-key, custom-base_url, and Nous-managed selections.
+        # Covers the direct-key, custom-base_url, and Thor-managed selections.
         try:
             api_key, base_url, is_managed = tts_tool_openai._resolve_openai_audio_client_config()
         except ValueError as exc:

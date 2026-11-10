@@ -35,12 +35,12 @@ let container: HTMLDivElement;
 let root: Root;
 
 const provider = {
-  cli_command: "thor login nous",
+  cli_command: "thor login thor",
   disconnectable: true,
-  docs_url: "https://example.com/nous",
+  docs_url: "https://example.com/thor",
   flow: "device_code" as const,
-  id: "nous",
-  name: "Nous Portal",
+  id: "thor",
+  name: "Thor Portal",
   status: { logged_in: false },
 };
 

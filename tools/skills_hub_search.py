@@ -24,7 +24,7 @@ from tools.skills_hub_sources import BrowseShSource, LobeHubSource, UrlSource, W
 # Log-record parity with the origin module.
 logger = logging.getLogger("tools.skills_hub")
 
-THOR_INDEX_URL = "https://thor-agent.nousresearch.com/docs/api/skills-index.json"
+THOR_INDEX_URL = "https://thor-agent.thor-agent.local/docs/api/skills-index.json"
 THOR_INDEX_TTL = 6 * 3600  # 6 hours
 
 
@@ -86,7 +86,7 @@ def _load_stale_index_cache() -> Optional[dict]:
 # for unauthenticated users otherwise).
 _API_SOURCE_IDS = frozenset({"github", "skills-sh", "clawhub", "lobehub", "well-known"})
 # Consulted only when the index answered a non-empty query with nothing: the
-# index is rebuilt asynchronously and lags the registries, so a skill that is
+# index is rebuilt asynchrothorly and lags the registries, so a skill that is
 # live on skills.sh may not be in it yet. GitHub stays out — one miss (a typo)
 # would burn an unauthenticated user's whole hourly GitHub budget.
 _INDEX_MISS_FALLBACK_IDS = _API_SOURCE_IDS - {"github"}

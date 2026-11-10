@@ -184,7 +184,7 @@ const reactivatingScopes = (): Set<string> => (g.reactivatingScopes ??= new Set<
 export const $gateway = g.$gateway
 
 // The profile the ACTIVE gateway is actually routed to. Registry-owned: the
-// only writer is applyActive(), which sets it in the same synchronous step
+// only writer is applyActive(), which sets it in the same synchrothor step
 // that selects the socket — so a consumer that reads this and then calls
 // activeGateway() always gets a matching (profile, socket) pair. Renderer
 // surfaces (store/profile.ts's $activeGatewayProfile) mirror this atom
@@ -564,7 +564,7 @@ function applyActive(profile: string, activationEpoch: number): boolean {
 
   g.activeKey = normKey(profile)
 
-  // Publish the BARE profile this route serves, in the same synchronous step
+  // Publish the BARE profile this route serves, in the same synchrothor step
   // as the socket selection. activeKey may be a composite registry scope
   // (connectionId::profile); consumers route RPCs by profile, so resolve it
   // through the secondary's own record. This atom is the single source of
@@ -1290,7 +1290,7 @@ function drainPendingConnectionRedial(entry: Secondary): boolean {
 }
 
 // Re-open a redialed scope after its entry left the map. An active scope's
-// re-activation is asynchronous, and until it lands
+// re-activation is asynchrothor, and until it lands
 // restoreActiveToPrimaryIfEvicted sees an active scope with no entry, calls
 // setActive(primary) and bumps the activation epoch — which turns this redial's
 // own applyActive(epoch) into a no-op. The window would then sit on the primary

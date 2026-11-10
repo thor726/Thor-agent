@@ -202,9 +202,9 @@ export const jaOverrides = {
   ...jaNotices,
 
   sendDiagnostics: {
-    title: 'Nous に診断情報を送信',
+    title: 'Thor に診断情報を送信',
     privacyNotice:
-      'デバッグバンドルを Nous 内部ストレージにアップロードします（公開ペーストではありません）。システム情報（OS、バージョン、プロバイダー、設定済み API キーの種類 — キー自体は含まれません）と、エージェント/ゲートウェイ/デスクトップの完全なログ（各最大 512 KB。会話内容、ツール出力、ファイルパスを含む可能性が高い）が含まれます。シークレットはアップロード前にマスクされます。閲覧できるのは Nous スタッフと許可された Discord モデレーターのみで、14 日後に自動削除されます。',
+      'デバッグバンドルを Thor 内部ストレージにアップロードします（公開ペーストではありません）。システム情報（OS、バージョン、プロバイダー、設定済み API キーの種類 — キー自体は含まれません）と、エージェント/ゲートウェイ/デスクトップの完全なログ（各最大 512 KB。会話内容、ツール出力、ファイルパスを含む可能性が高い）が含まれます。シークレットはアップロード前にマスクされます。閲覧できるのは Thor スタッフと許可された Discord モデレーターのみで、14 日後に自動削除されます。',
     upload: 'アップロード',
     uploading: 'アップロード中…',
     cancel: 'キャンセル',
@@ -216,11 +216,11 @@ export const jaOverrides = {
       'バンドルは非公開でアップロードされました。サポートスレッドで以下のリンクを共有すると、チームがログを確認できます。',
     failedTitle: 'アップロードに失敗しました',
     failedHint:
-      'ターミナルから `thor debug share --nous` を実行するか、`thor debug share --local` でアップロードせずにレポートを表示することもできます。',
+      'ターミナルから `thor debug share --thor` を実行するか、`thor debug share --local` でアップロードせずにレポートを表示することもできます。',
     handoffLead: '続きは次の場所で:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous Portal サポート',
+      portal: 'Thor Portal サポート',
       discord: 'Discord'
     }
   },
@@ -253,7 +253,7 @@ export const jaOverrides = {
 
   settings: {
     memoryLayers: jaMemoryLayers,
-    // Window plans (Nous subscription with included usage). Other billing strings: overlay-gaps.json.
+    // Window plans (Thor subscription with included usage). Other billing strings: overlay-gaps.json.
     billing: {
       keepGoingOnCredits: {
         title: 'クレジットで続行',
@@ -1103,7 +1103,7 @@ export const jaOverrides = {
       sshErrHostKey:
         '前回の接続以降、ホスト鍵が変更されています。想定どおりか確認し、ssh-keygen -R <host> を実行してから再接続してください。',
       sshErrNotInstalled:
-        'リモートホストに Thor がインストールされていません。リモートでインストールする（curl -fsSL https://thor-agent.nousresearch.com/install.sh | sh）か、Thor パスを設定してください。',
+        'リモートホストに Thor がインストールされていません。リモートでインストールする（curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh）か、Thor パスを設定してください。',
       sshErrPlatform:
         'サポートされていないリモートプラットフォームです。Thor Desktop の SSH モードは Linux、macOS、Windows のリモートホストに対応しています。',
       sshErrTimeout: 'SSH 接続がタイムアウトしました。ホストが到達不能、またはスリープ中の可能性があります。',
@@ -1250,14 +1250,14 @@ export const jaOverrides = {
       activeBackend: '使用中',
       activeBackendHint: 'これが現在アクティブなバックエンドです',
       useBackend: 'このバックエンドを使う',
-      nousIncluded: 'Nous サブスクリプションに含まれています。有効にするには Nous Portal にサインインしてください。',
-      nousAuthNeededTitle: 'Nous Portal にサインイン',
-      nousAuthNeededMessage: provider =>
-        `${provider} は保存されましたが、Nous Portal にサインインするまで有効になりません。`,
-      nousAuthSignIn: 'サインイン',
-      nousAuthDoneTitle: 'Nous Portal に接続しました',
-      nousAuthDoneMessage: 'サブスクリプションのバックエンドが有効になりました。',
-      nousAuthFailed: 'Nous Portal のサインインが完了しませんでした',
+      thorIncluded: 'Thor サブスクリプションに含まれています。有効にするには Thor Portal にサインインしてください。',
+      thorAuthNeededTitle: 'Thor Portal にサインイン',
+      thorAuthNeededMessage: provider =>
+        `${provider} は保存されましたが、Thor Portal にサインインするまで有効になりません。`,
+      thorAuthSignIn: 'サインイン',
+      thorAuthDoneTitle: 'Thor Portal に接続しました',
+      thorAuthDoneMessage: 'サブスクリプションのバックエンドが有効になりました。',
+      thorAuthFailed: 'Thor Portal のサインインが完了しませんでした',
       noApiKeyRequired: 'API キーは不要です。',
       postSetupHint: step =>
         `このバックエンドは一度だけインストールが必要です (${step})。このマシン上で実行され、数分かかる場合があります。`,
@@ -1649,8 +1649,8 @@ export const jaOverrides = {
       qrAlt: (platform: string) => `共有 ${platform} ボットの QR コード`,
       managed: 'Team Gateway が管理',
       managedNote: (platform: string) => `このインスタンスではメッセージを Team Gateway が扱うため、ゲートウェイは起動のたびに ${platform} の直接接続をオフにします。リレーと併用するには、ゲートウェイの環境に GATEWAY_RELAY_ALLOW_DIRECT_PLATFORMS=true を設定してください（直接接続があるとインスタンスがゼロまでスケールダウンできず、メッセージが二重に届くことがあります）。`,
-      managedIntro: 'このエージェントのアカウントは Nous Portal からリンクします。',
-      openPortal: 'Nous Portal でアカウントをリンク',
+      managedIntro: 'このエージェントのアカウントは Thor Portal からリンクします。',
+      openPortal: 'Thor Portal でアカウントをリンク',
       noNewAccount: (platform: string) => `コードは無効になり、新しいアカウントは表示されませんでした。${platform} アカウントが一覧にない場合は、新しいコードを取得してもう一度お試しください。`
     },
     telegramQr: {
@@ -2417,8 +2417,8 @@ export const jaOverrides = {
       '/browser': 'エージェントのブラウザーを管理 [connect|disconnect|status]',
       '/palette': 'コマンドパレットを開く',
       '/usage': 'このセッションのトークン使用量を表示',
-      '/subscription': 'Nous のプランを確認し、ブラウザーで変更',
-      '/topup': 'Nous の残高を表示し、請求を管理',
+      '/subscription': 'Thor のプランを確認し、ブラウザーで変更',
+      '/topup': 'Thor の残高を表示し、請求を管理',
       '/platform': '問題のあるゲートウェイプラットフォームを一時停止、再開、一覧表示',
       '/version': 'Thor Agent のバージョンを表示',
       '/debug': 'デバッグレポートを作成',
@@ -2895,7 +2895,7 @@ export const jaOverrides = {
     localDownloadsHeading: 'ローカル',
     noAuthenticatedProviders: '認証済みプロバイダーがありません。',
     pro: 'Pro',
-    proNeedsSubscription: 'Pro モデルには有料の Nous サブスクリプションが必要です。',
+    proNeedsSubscription: 'Pro モデルには有料の Thor サブスクリプションが必要です。',
     free: '無料',
     freeTier: '無料プラン',
     priceTitle: '100 万トークンあたりの入力/出力価格',
@@ -3829,7 +3829,7 @@ export const jaOverrides = {
   freeTier: {
     offer: {
       heading: 'Thor を使い続ける',
-      body: '現在は無料枠をご利用中です。Thor を使い続けると、いずれ上限に達します。無料の Nous アカウントでサインインすると、より多くの利用枠が使えます。',
+      body: '現在は無料枠をご利用中です。Thor を使い続けると、いずれ上限に達します。無料の Thor アカウントでサインインすると、より多くの利用枠が使えます。',
       signIn: 'サインイン',
       notNow: '今はしない'
     }

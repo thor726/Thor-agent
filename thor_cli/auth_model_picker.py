@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import subprocess
 from typing import Dict, List, Optional
-from thor_cli.auth_constants import DEFAULT_NOUS_PORTAL_URL
+from thor_cli.auth_constants import DEFAULT_THOR_PORTAL_URL
 
 logger = logging.getLogger("thor_cli.auth")
 
@@ -94,7 +94,7 @@ class _ModelPickerRows:
         self.levels = {}
         self.has_top_tier = False
         self.has_pricing = bool(pricing and any(pricing.get(m) for m in all_models))
-        # Leave room for a leading "★ " on sale rows (Nous only).
+        # Leave room for a leading "★ " on sale rows (Thor only).
         name_pad = 3 if sale_chrome else 2
         self.name_col = max((len(m) for m in all_models), default=0) + name_pad if self.has_pricing else 0
         # (inp, out, cache, pct|None, was_inp, was_out)
@@ -267,13 +267,13 @@ def _prompt_model_selection(
 
     With *pricing* (``{model_id: {prompt, completion}}``) a compact price column is shown; models in
     *unavailable_models* render grayed out and unselectable with an upgrade link to *portal_url*.
-    *usage* (``model_picker_usage.PickerUsage``, Nous only) swaps ``$/Mtok`` for plan gauges and the
+    *usage* (``model_picker_usage.PickerUsage``, Thor only) swaps ``$/Mtok`` for plan gauges and the
     gateway's per-model usage word on a usage-window plan.
     """
     from thor_cli.cli_output import line_input
     _unavailable = unavailable_models or []
-    # Sale chrome is Nous Portal-only, even if pricing.original is present for another provider.
-    sale_chrome = (confirm_provider or "").strip().lower() == "nous"
+    # Sale chrome is Thor Portal-only, even if pricing.original is present for another provider.
+    sale_chrome = (confirm_provider or "").strip().lower() == "thor"
 
     def _confirmed_selection(mid: str) -> Optional[str]:
         if not mid:
@@ -292,7 +292,7 @@ def _prompt_model_selection(
             return None
         return _confirmed_selection(custom) if custom else None
 
-    # All models for column-width computation (selectable + unavailable). Plan usage is Nous-only chrome.
+    # All models for column-width computation (selectable + unavailable). Plan usage is Thor-only chrome.
     window_usage = usage if sale_chrome else None
     ordered, sections, start = _picker_order(model_ids, current_model, window_usage)
 
@@ -303,7 +303,7 @@ def _prompt_model_selection(
     _RESET = "\033[0m"
 
     menu_title = rows.menu_title(title)
-    _upgrade_url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+    _upgrade_url = (portal_url or DEFAULT_THOR_PORTAL_URL).rstrip("/")
     n = len(ordered)
 
     # Try arrow-key menu first, fall back to number input.

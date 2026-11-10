@@ -7,7 +7,7 @@ from scripts.releases import r2, upload_summary
 from scripts.releases.r2_scope import R2Scope
 
 
-BASE = "https://thor-assets.nousresearch.com"
+BASE = "https://thor-assets.thor-agent.local"
 KEY = "releases/commit/" + "a" * 40 + "/ThorBundled-1.2.3-win-x64.msix"
 
 

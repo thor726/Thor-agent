@@ -113,7 +113,7 @@ describe('stale parent own-echo during deferred key-burst flush', () => {
     try {
       await tick()
 
-      // 1. Type "a", "b", "c". "a" commits synchronously (fast-append needs a
+      // 1. Type "a", "b", "c". "a" commits synchrothorly (fast-append needs a
       //    non-empty line); "b" and "c" ride the deferred 16ms key-burst path,
       //    so the parent still holds "a".
       for (const ch of ['a', 'b', 'c']) {

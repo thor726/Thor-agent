@@ -57,14 +57,14 @@ def _home(tmp_path: Path, *, env: str = "", config: str = "", auth: dict | None 
     ("delegation:\n  provider: copilot-acp\n", "", None, None),
     ("delegation:\n  fallback_providers:\n    - provider: copilot\n      model: gpt-5.4\n", "", None, None),
     ("moa:\n  presets:\n    mine:\n      reference_models:\n        - provider: copilot\n          model: gpt-5.4\n"
-     "      aggregator:\n        provider: nous\n        model: hermes-4\n", "", None, None),
+     "      aggregator:\n        provider: thor\n        model: thor-4\n", "", None, None),
     ("", "THOR_INFERENCE_PROVIDER=copilot\n", None, None),
     ("", "", {"active_provider": "copilot"}, None),
     ("", "", None, [{"id": "j1", "provider": "copilot", "model": "gpt-5.4"}]),
     ("cron:\n  model: gpt-5.4\n  model_provider: copilot\n", "", None, None),
     ("delegation:\n  backend: model_map\n  backends:\n    model_map:\n      options:\n        - name: fast\n"
      "          provider: copilot\n          model: gpt-5.4\n", "", None, None),
-    ("delegation:\n  backends:\n    model_map:\n      options:\n        - name: deep\n          provider: nous\n"
+    ("delegation:\n  backends:\n    model_map:\n      options:\n        - name: deep\n          provider: thor\n"
      "          fallback_providers:\n            - provider: github-copilot\n              model: gpt-5.4\n",
      "", None, None),
 ])
@@ -73,7 +73,7 @@ def test_copilot_in_use_is_any_provider_slot_naming_it(tmp_path, config, env, au
 
 
 @pytest.mark.parametrize(("config", "env", "auth"), [
-    ("model:\n  provider: nous\n", "GH_TOKEN=gho_x\nCOPILOT_GITHUB_TOKEN=gho_y\n", None),
+    ("model:\n  provider: thor\n", "GH_TOKEN=gho_x\nCOPILOT_GITHUB_TOKEN=gho_y\n", None),
     ("model:\n  provider: openrouter\n  default: github/copilot-like\n", "", None),
     ("", "", {"credential_pool": {"copilot": [{"source": "gh_cli", "access_token": "t"}]}}),
     ("model: copilot\n", "", None),  # a bare model string names a model, not a provider
@@ -88,7 +88,7 @@ def test_copilot_credentials_alone_are_not_use(tmp_path, config, env, auth):
 
 
 def test_process_env_provider_counts_only_for_the_launch_home(tmp_path, monkeypatch):
-    home = _home(tmp_path, config="model:\n  provider: nous\n")
+    home = _home(tmp_path, config="model:\n  provider: thor\n")
     monkeypatch.setenv("THOR_HOME", str(home))
     monkeypatch.setenv("THOR_INFERENCE_PROVIDER", "copilot")
     assert lcm.copilot_in_use(home) is False
@@ -106,7 +106,7 @@ _GH_ONLY = {"credential_pool": {"copilot": [{"source": "gh_cli", "label": "gh au
     ("model:\n  provider: copilot\n", "", {"credential_pool": {"copilot": [{"source": "manual:device_code"}]}},
      False),
     ("model:\n  provider: copilot-acp\n", "", None, False),  # the Copilot CLI keeps its own login
-    ("model:\n  provider: nous\n", "", _GH_ONLY, False),
+    ("model:\n  provider: thor\n", "", _GH_ONLY, False),
 ])
 def test_relogin_notice_only_for_a_copilot_home_without_a_token_the_plugin_reads(tmp_path, config, env, auth,
                                                                                   notice):
@@ -202,7 +202,7 @@ def test_runtime_resolution_installs_the_plugin_first_for_a_home_using_it(acme_r
     lcm.recover_for_provider("acme")
     assert len(calls) == 1
     lcm.recover_for_provider("openrouter")
-    (acme_row / "config.yaml").write_text("model:\n  provider: nous\n", encoding="utf-8")
+    (acme_row / "config.yaml").write_text("model:\n  provider: thor\n", encoding="utf-8")
     lcm.recover_for_provider("acme")  # requested, but this home never chose it: no install
     assert len(calls) == 1
     import providers

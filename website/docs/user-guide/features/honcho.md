@@ -97,7 +97,7 @@ Passes bail out early if the prior pass returned strong signal (long, structured
 
 ### Session-Start Prewarm
 
-On session init, Honcho fires a dialectic call in the background at the full configured `dialecticDepth` and hands the result directly to turn 1's context assembly. A single-pass prewarm on a cold peer often returns thin output — multi-pass depth runs the audit/reconcile cycle before the user ever speaks. If prewarm hasn't landed by turn 1, turn 1 falls back to a synchronous call with a bounded timeout.
+On session init, Honcho fires a dialectic call in the background at the full configured `dialecticDepth` and hands the result directly to turn 1's context assembly. A single-pass prewarm on a cold peer often returns thin output — multi-pass depth runs the audit/reconcile cycle before the user ever speaks. If prewarm hasn't landed by turn 1, turn 1 falls back to a synchrothor call with a bounded timeout.
 
 ### Query-Adaptive Reasoning Level
 
@@ -124,7 +124,7 @@ When pointing Thor at a self-hosted Honcho server, `thor honcho setup` (and `tho
 | `dialecticDynamic` | `true` | When `true`, model can override reasoning level per-call via tool param |
 | `dialecticMaxChars` | `600` | Max chars of dialectic result injected into system prompt |
 | `recallMode` | `'hybrid'` | `hybrid` (auto-inject + tools), `context` (inject only), `tools` (tools only) |
-| `initOnSessionStart` | `false` | `tools` mode only. `true` creates the Honcho session **synchronously at session start** so it is ready before the first tool call; `false` (default) defers it to the first `honcho_*` call. See the startup note below |
+| `initOnSessionStart` | `false` | `tools` mode only. `true` creates the Honcho session **synchrothorly at session start** so it is ready before the first tool call; `false` (default) defers it to the first `honcho_*` call. See the startup note below |
 | `timeout` | `null` (SDK default) | Seconds allowed for each Honcho SDK call (`requestTimeout` and the `HONCHO_TIMEOUT` env var are accepted too). Caps how long an unreachable server can hold a call, including the eager init above |
 | `writeFrequency` | `'async'` | When to flush messages: `async` (background thread), `turn` (sync), `session` (batch on end), or integer N |
 | `saveMessages` | `true` | Whether to persist messages to Honcho API |
@@ -169,7 +169,7 @@ Sessions created before title provenance was recorded retain legacy behavior: be
 
 In `tools` mode, the model is fully in control — it calls `honcho_reasoning` when it wants, at whatever `reasoning_level` it picks. Cadence and budget settings only apply to modes with auto-injection (`hybrid` and `context`).
 
-**Startup behaviour and `initOnSessionStart`.** In `hybrid` and `context` mode the session is created in a background thread and startup fails open if Honcho is slow or down. `tools` mode is different by design: with `initOnSessionStart: false` (the default) nothing touches Honcho until the first `honcho_*` tool call, and with `initOnSessionStart: true` the session is created **synchronously during agent construction** so a tool call on turn 1 never races a half-initialized session. That guarantee means startup waits for Honcho: if the server is unreachable, every SDK call in that eager path runs to its connection/`timeout` limit before the agent is ready, which on Desktop shows up as `request timed out: session.resume` / `prompt.submit` (the renderer gives up after 30 s). Keep `initOnSessionStart` at `false` on Desktop and whenever your Honcho is a local service that may not be running, and set `timeout` (seconds) in `honcho.json` to bound each call if you do enable it.
+**Startup behaviour and `initOnSessionStart`.** In `hybrid` and `context` mode the session is created in a background thread and startup fails open if Honcho is slow or down. `tools` mode is different by design: with `initOnSessionStart: false` (the default) nothing touches Honcho until the first `honcho_*` tool call, and with `initOnSessionStart: true` the session is created **synchrothorly during agent construction** so a tool call on turn 1 never races a half-initialized session. That guarantee means startup waits for Honcho: if the server is unreachable, every SDK call in that eager path runs to its connection/`timeout` limit before the agent is ready, which on Desktop shows up as `request timed out: session.resume` / `prompt.submit` (the renderer gives up after 30 s). Keep `initOnSessionStart` at `false` on Desktop and whenever your Honcho is a local service that may not be running, and set `timeout` (seconds) in `honcho.json` to bound each call if you do enable it.
 
 ## Gateway Identity Mapping
 

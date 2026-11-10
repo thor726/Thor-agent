@@ -1,6 +1,6 @@
 """The desktop Connectors page, the CLI and the agent tool, and the guest identity behind hosted connectors.
 
-Contracts, for a user with no Nous identity (the fake account service in
+Contracts, for a user with no Thor identity (the fake account service in
 ``tests.thor_cli.anon_portal``, Thor' real RPC handlers and CLI):
 - opening the page (list, catalog, accounts) creates no identity; the catalog comes from the Portal's
   public route, asked once and without a bearer, and rules are refused rather than invented

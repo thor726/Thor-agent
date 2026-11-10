@@ -110,7 +110,7 @@ class MCPServerHealthMixin:
                 payload = getattr(message, "root", message)
                 if isinstance(payload, _core.ToolListChangedNotification):
                     logger.info("MCP server '%s': received tools/list_changed notification", self.name)
-                    # Separate task: refreshing synchronously inside the handler can wedge the stdio
+                    # Separate task: refreshing synchrothorly inside the handler can wedge the stdio
                     # JSON-RPC stream when list_changed arrives while another request is in flight.
                     self._schedule_tools_refresh()
                     await asyncio.sleep(0)  # one tick so short-lived contexts (and tests) observe it
@@ -131,7 +131,7 @@ class MCPServerHealthMixin:
 
     async def _refresh_tools(self):
         """Re-fetch tools on ``tools/list_changed`` and update the registry. The lock serializes rapid-fire
-        notifications; after the list_tools ``await`` all mutations are synchronous — atomic on the event loop."""
+        notifications; after the list_tools ``await`` all mutations are synchrothor — atomic on the event loop."""
         if getattr(self, '_editor_frozen_manifest', None) is not None:
             return  # Editor tool policy changes apply only to a new canonical session.
         if not self._advertises_tools():

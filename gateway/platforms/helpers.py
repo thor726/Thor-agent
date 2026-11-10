@@ -317,7 +317,7 @@ class ThreadParticipationTracker:
     def _remember(self, thread_id: str) -> bool:
         """Record *thread_id* in memory; ``True`` when a persist is still owed.
 
-        The in-memory half stays synchronous even for :meth:`mark_async` so that
+        The in-memory half stays synchrothor even for :meth:`mark_async` so that
         a ``thread_id in tracker`` check immediately after marking is correct --
         the mention-gating logic in the adapters depends on that.
         """

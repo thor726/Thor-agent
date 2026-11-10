@@ -1,34 +1,7 @@
 name: Termux verification
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/termux/**'
-      - 'pm/**'
-      - '!pm/**/*.md'
-      - 'tests/scripts/test_termux*'
-      - '.github/workflows/termux-verify.yml'
-  pull_request:
-    paths:
-      - 'scripts/termux/**'
-      - 'pm/**'
-      - '!pm/**/*.md'
-      - 'tests/scripts/test_termux*'
-      - '.github/workflows/termux-verify.yml'
   workflow_dispatch:
-  workflow_call:
-    inputs:
-      commit:
-        description: Commit to test and build. Empty keeps the triggering commit.
-        type: string
-        default: ''
-      release:
-        description: 'Stable-release candidate run (ignored by the jobs; uniform callable surface).'
-        required: false
-        type: boolean
-        default: false
-
 permissions:
   contents: read
   actions: read
