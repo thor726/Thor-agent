@@ -1,0 +1,10 @@
+name: thor-output-enhancement
+repo: https://github.com/annipu/thor-output-enhancement
+sha: cf729a2cf80760300f3275684700563d994e0355
+subdir: plugin/thor-output-enhancement
+description: Display-only Markdown styling for Desktop assistant replies — theme-aware headings, emphasis and readable tables. Reply content is never modified.
+maintainer: ANNIPU
+tier: community
+category: desktop
+requires_thor: ">=0.22.6"
+version: "0.1.4"
