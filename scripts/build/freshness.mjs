@@ -164,6 +164,35 @@ function stampClock(prepared = {}) {
   return identity ? (identity.builtAt ?? null) : null
 }
 
+// ── Brand fingerprint ───────────────────────────────────────────────────────────
+// A receipt certifies "this output was compiled from these sources on this host",
+// which is not the same as "this output was compiled from THIS repository". A fork
+// or rebrand that reuses a checkout's dist directory (or an install whose product
+// was built before the rebrand landed) carries a receipt whose hashes still match
+// once the old sources are gone, so productCurrent certified a bundle that renders
+// the PREVIOUS brand — the TUI shows the old product name with no error anywhere.
+//
+// The brand is therefore part of provenance: the source's own product name is read
+// from the TUI theme (the one place a rebrand must edit) and recorded. A mismatch
+// is a stale product, exactly like a source change, so the next launch rebuilds.
+const brandSource = 'ui-tui/src/theme.ts'
+// Anchored to the declaration itself: the file also carries `name: string` on the
+// ThemeBrand interface and `name: branding.agent_name ?? …` at a use site, and an
+// unanchored `name:` match picks up whichever comes first.
+const brandPattern = /const BRAND:\s*ThemeBrand\s*=\s*\{[^}]*?\bname:\s*'([^']+)'/
+
+export function sourceBrand(source) {
+  let text
+  try {
+    text = readFileSync(join(source, brandSource), 'utf8')
+  } catch {
+    // No theme file (a product tree without sources): nothing to compare against.
+    return null
+  }
+  const match = brandPattern.exec(text)
+  return match ? match[1] : null
+}
+
 // Vite inlines every VITE_* variable into the renderer and NODE_ENV selects its mode (and the React
 // Compiler's dev output), so a renderer is a function of these as much as of its sources: a
 // VITE_PERF_PROBE=1 build must never be reused or certified for a plain one. An unset NODE_ENV is
@@ -199,7 +228,8 @@ export function recordProduct({ source, product, out, inputs, stampClock }) {
     throw new Error('Build inputs changed during compilation; retry the build')
   }
   writeFileSync(join(out, receiptName), JSON.stringify({
-    schema: 1, product, platform: process.platform, arch: process.arch, node: process.versions.node,
+    schema: 1, product, brand: sourceBrand(source), platform: process.platform, arch: process.arch,
+    node: process.versions.node,
     inputs, stampClock, outputHash: outputHash(out),
   }) + '\n')
 }
@@ -222,11 +252,22 @@ function hostReceipt(out, product) {
     && saved.node === process.versions.node ? saved : null
 }
 
+/** The receipt is from a DIFFERENT product line: a pre-rebrand (or fork) build whose
+ *  hashes happen to line up because the sources it was compiled from are gone. A
+ *  receipt with no recorded brand predates the fingerprint and cannot be vouched for
+ *  when the current source declares one, so it rebuilds once and records itself. */
+function foreignBrand(saved, source) {
+  const current = sourceBrand(source)
+  return current !== null && saved.brand !== current
+}
+
 export function productCurrent({ source, product, out, prepared }) {
   try {
     const saved = hostReceipt(out, product)
     const paths = saved && (prepared ?? preparedPaths(saved.inputs))
     return !!saved
+      // A receipt from another product line never certifies this one, whatever its hashes say.
+      && !foreignBrand(saved, source)
       // The pre-build gate, unlike recordProduct, must also see the clock. A restamp
       // that lands after the build (a racing write-build-stamp, or a second builder
       // that reached extraResources first) leaves dist baking one builtAt while the
