@@ -13,7 +13,6 @@ name: Sandbox desktop image
 
 on:
   workflow_dispatch:
-  workflow_dispatch:
     inputs:
       publish:
         description: Push to Docker Hub (rolls :desktop)
