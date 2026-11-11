@@ -243,10 +243,105 @@ export const defaultLargeTheme: DashboardTheme = {
   },
 };
 
+/**
+ * ThorHub — near-black canvas with a lime accent, matching the ThorHub
+ * gateway UI (`llm-gateway-express/public/style.css` `:root`).
+ *
+ * The dashboard's `midground` is BOTH the body text colour and the primary
+ * accent, so it must be the neutral gray ThorHub paints its copy with
+ * (`--text #e8e8e8`) — NOT the lime, which ThorHub reserves for accents
+ * (buttons, icons, prices). Lime arrives through `colorOverrides.primary` /
+ * `accent` / `ring` instead, so only interactive chrome goes green.
+ */
+export const thorhubTheme: DashboardTheme = {
+  name: "thorhub",
+  label: "ThorHub",
+  description: "Near-black canvas with lime accents — matches ThorHub",
+  palette: {
+    background: { hex: "#0a0a0a", alpha: 1 },
+    // Body text: ThorHub's --text (#e8e8e8), not the accent.
+    midground: { hex: "#e8e8e8", alpha: 1 },
+    foreground: { hex: "#ffffff", alpha: 0 },
+    warmGlow: "rgba(163, 230, 53, 0.16)",
+    noiseOpacity: 0.7,
+  },
+  typography: DEFAULT_TYPOGRAPHY,
+  layout: {
+    ...DEFAULT_LAYOUT,
+    radius: "6px",
+  },
+  colorOverrides: {
+    // Lime lives here only — accents, focus rings, primary buttons.
+    primary: "#a3e635",
+    primaryForeground: "#0a0a0a",
+    accent: "#a3e635",
+    accentForeground: "#0a0a0a",
+    ring: "#a3e635",
+    success: "#a3e635",
+    warning: "#f59e0b",
+    destructive: "#ef4444",
+    // Surfaces + neutral text scale from ThorHub:
+    // --card #141414, --card-hov #1a1a1a, --border #2a2a2a, --input-dk #17191d,
+    // --text-body #c2c6cc, --muted #8b929c.
+    card: "#141414",
+    cardForeground: "#e8e8e8",
+    popover: "#141414",
+    popoverForeground: "#e8e8e8",
+    secondary: "#1a1a1a",
+    secondaryForeground: "#e8e8e8",
+    muted: "#1a1a1a",
+    mutedForeground: "#8b929c",
+    border: "#2a2a2a",
+    input: "#17191d",
+  },
+  // Both paths sit under `/assets/`, which is in the dashboard's public-prefix
+  // allowlist (thor_cli/dashboard_auth/middleware.py `_GATE_PUBLIC_PREFIXES`),
+  // so the logo also renders on the sign-in page.
+  assets: {
+    logo: "/assets/thorhub-logo.svg",
+    crest: "/assets/thorhub-logo-full.svg",
+  },
+  // Details a 3-layer palette can't express: scrollbars, text selection, and
+  // ThorHub's neutral gray text scale (--text-body / --muted) kept out of the
+  // lime-tinted mixes the palette cascade would otherwise produce.
+  customCSS: `:root {
+  --thorhub-grad-card: linear-gradient(180deg, #161616, #121212);
+  --thorhub-grad-brand: linear-gradient(90deg, #a3e635, #65a30d);
+  --thorhub-lime-dim: #7aa62a;
+  --thorhub-line: #252a31;
+  --thorhub-text-body: #c2c6cc;
+  --thorhub-muted: #8b929c;
+}
+* {
+  scrollbar-color: #2a2a2a #0a0a0a;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: #0a0a0a; }
+*::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 6px;
+  border: 2px solid #0a0a0a;
+}
+*::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::selection {
+  background: rgba(163, 230, 53, 0.22);
+  color: #e8e8e8;
+}`,
+  terminalBackground: "#0a0a0a",
+  terminalForeground: "#e8e8e8",
+  seriesColors: {
+    inputTokenAccent: "#c2c6cc",
+    outputTokenAccent: "#a3e635",
+  },
+  swatchColors: ["#0a0a0a", "#a3e635", "#e8e8e8"],
+};
+
 export const BUILTIN_THEMES: Record<string, DashboardTheme> = {
   default: defaultTheme,
   "default-large": defaultLargeTheme,
   "thor-blue": thorBlueTheme,
+  thorhub: thorhubTheme,
   midnight: midnightTheme,
   ember: emberTheme,
   mono: monoTheme,

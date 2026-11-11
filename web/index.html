@@ -2,11 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <!-- ThorHub icon — lightning bolt on near-black, synced with llm-gateway-express.
+         Both paths below are in the dashboard's public-icon allowlist
+         (thor_cli/dashboard_auth/middleware.py), so they render on the sign-in
+         page too; /thorhub-*.svg are NOT allowlisted and would 302 to /login. -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
     />
+    <meta name="theme-color" content="#0a0a0a" />
     <title>Thor Agent - Dashboard</title>
   </head>
   <body>

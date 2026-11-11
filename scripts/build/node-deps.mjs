@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameS
 import { constants as osConstants } from 'node:os'
 import { basename, delimiter, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { parseArgs } from 'node:util'
+import { isDeepStrictEqual, parseArgs } from 'node:util'
 
 import { prepareElectronRuntime } from './electron-runtime.mjs'
 import { JOB_SIGNALS, lockCheckout } from './node-deps-lock.mjs'
@@ -205,7 +205,12 @@ function installedLockMatches(lockText, installedLock, selected) {
   if (!existsSync(installedLock)) return false
   const wanted = lockImporters(lockText)
   const installed = lockImporters(readFileSync(installedLock, 'utf8'))
-  const same = (a = {}, b = {}) => JSON.stringify(a) === JSON.stringify(b)
+  // Key ORDER is not part of an importer's identity: pnpm rewrites the record it installs and
+  // emits dependency keys in its own (generally sorted-by-name) order, which routinely differs
+  // from the hand-maintained source lockfile. Comparing raw JSON.stringify() made an otherwise
+  // byte-identical install look mismatched and aborted the Web UI build, restoring the old tree.
+  // Compare the deep-equal objects instead.
+  const same = (a = {}, b = {}) => isDeepStrictEqual(a, b)
   return ['.', ...selected].every(project => project in installed)
     && Object.entries(installed).every(([project, fields]) => project in wanted
       && same(fields.dependencies, wanted[project].dependencies)

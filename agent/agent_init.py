@@ -1944,22 +1944,22 @@ def _enforce_minimum_context(agent):
 
 
 def _warn_nonagentic_thor_model(agent):
-    # Thor Thor 3/4 are chat models, not tool-call-tuned. cli.py show_banner() already
-    # warns on the CLI, so skip platform=="cli"; non-quiet non-CLI surfaces still get it.
+    # Chat-only models (non tool-call-tuned) are usable, just unreliable for agent workflows.
+    # cli.py show_banner() already warns on the CLI, so skip platform=="cli"; non-quiet
+    # non-CLI surfaces still get it.
     if agent.quiet_mode or (agent.platform or "cli") == "cli":
         return
     with suppress(Exception):
         from thor_cli.model_switch import _check_thor_model_warning
-        _thor_warn = _check_thor_model_warning(agent.model or "")
-        if _thor_warn:
+        _th_warn = _check_thor_model_warning(agent.model or "")
+        if _th_warn:
             _user_msg = (
-                "⚠ Thor Agent Thor 3 & 4 models are NOT agentic — they "
-                "lack reliable tool-calling for agent workflows (delegation, "
-                "cron, proactive tools). Consider an agentic model instead "
-                "(Claude, GPT, Gemini, Qwen-Coder, etc.)."
+                "⚠ The selected model is not tool-call-tuned — agent workflows "
+                "(delegation, cron, proactive tools) may be unreliable. Consider an "
+                "agentic model instead."
             )
             agent._emit_warning(_user_msg)
-            _ra().logger.warning(_thor_warn)
+            _ra().logger.warning(_th_warn)
 
 
 def _inject_context_engine_tools(agent):

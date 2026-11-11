@@ -43,22 +43,25 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Thor Agent — Thor DS with the LENS_0 (Thor teal) palette applied
-   statically as the default dashboard theme. */
+/* Thor Agent — Thor DS with the ThorHub palette (near-black + lime)
+   applied statically as the default dashboard theme. */ 
 /* ------------------------------------------------------------------ */
 
 :root {
-  /* LENS_0 — from design-language/src/ui/components/overlays/index.tsx.
-     These are the defaults for the `default` (Thor Teal) dashboard theme;
-     ThemeProvider rewrites them as inline styles when a user switches themes. */
+  /* ThorHub — from llm-gateway-express/public/style.css `:root`:
+     --bg #0a0a0a with neutral-gray copy (--text #e8e8e8). These are the boot
+     defaults so the first paint is already ThorHub; ThemeProvider rewrites
+     them as inline styles when a user switches themes.
+     NOTE: --midground is the body TEXT colour here, not the accent — ThorHub
+     keeps lime for interactive chrome only (see colorOverrides in presets.ts). */
   --foreground: color-mix(in srgb, #ffffff 0%, transparent);
   --foreground-base: #ffffff;
   --foreground-alpha: 0;
-  --midground: color-mix(in srgb, #ffe6cb 100%, transparent);
-  --midground-base: #ffe6cb;
+  --midground: color-mix(in srgb, #e8e8e8 100%, transparent);
+  --midground-base: #e8e8e8;
   --midground-alpha: 1;
-  --background: color-mix(in srgb, #041c1c 100%, transparent);
-  --background-base: #041c1c;
+  --background: color-mix(in srgb, #0a0a0a 100%, transparent);
+  --background-base: #0a0a0a;
   --background-alpha: 1;
 
   /* Typography tokens — rewritten by ThemeProvider. Defaults match the
@@ -73,19 +76,19 @@
   --theme-letter-spacing: 0;
 
   /* Layout tokens. */
-  --radius: 0.5rem;
-  --theme-radius: 0.5rem;
+  --radius: 6px;
+  --theme-radius: 6px;
   --theme-spacing-mul: 1;
   --theme-density: comfortable;
 
   /* Data-series accents — consumed by Analytics + Models pages for the
      input-vs-output token visualisations (chart bars, table values,
-     legend swatches). Defaults are tuned for the Thor-teal LENS_0
-     look: cream input + emerald-400 output read as warm/cool against
-     the dark canvas. Themes override via ThemeProvider, which emits
-     these as `--series-input-token` / `--series-output-token`. */
-  --series-input-token: #ffe6cb;
-  --series-output-token: #34d399;
+     legend swatches). ThorHub reads neutral gray input against a lime
+     output, matching its --text-body #c2c6cc / --lime #a3e635 pair.
+     Themes override via ThemeProvider, which emits these as
+     `--series-input-token` / `--series-output-token`. */
+  --series-input-token: #c2c6cc;
+  --series-output-token: #a3e635;
 }
 
 /* Theme tokens cascade into the document root so every descendant inherits

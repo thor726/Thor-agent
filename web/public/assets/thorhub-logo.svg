@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="ThorHub">
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="#141414" stroke="#2a2a2a" stroke-width="2"/>
+  <!-- Petir Thor, aksen lime -->
+  <path d="M35 11 L20 35 L30 35 L26 53 L45 27 L34 27 Z"
+        fill="#a3e635" stroke="#bef264" stroke-width="1" stroke-linejoin="round"/>
+</svg>

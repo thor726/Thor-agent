@@ -307,6 +307,7 @@ _BUILTIN_DASHBOARD_THEMES = [
     {"name": "default",       "label": "Thor Teal",         "description": "Classic dark teal — the canonical Thor look"},
     {"name": "default-large", "label": "Thor Teal (Large)", "description": "Thor Teal with bigger fonts and roomier spacing"},
     {"name": "thor-blue",     "label": "Thor Blue",           "description": "Light mode — vivid Thor-blue accents on cream canvas"},
+    {"name": "thorhub",       "label": "ThorHub",            "description": "Near-black canvas with lime accent — matches ThorHub"},
     {"name": "midnight",      "label": "Midnight",            "description": "Deep blue-violet with cool accents"},
     {"name": "ember",     "label": "Ember",          "description": "Warm crimson and bronze — forge vibes"},
     {"name": "mono",      "label": "Mono",           "description": "Clean grayscale — minimal and focused"},
