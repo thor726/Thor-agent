@@ -126,17 +126,29 @@ def test_disposable_scope_streams_lists_and_never_touches_production(r2_server, 
 
 
 # ── SigV4 vectors ───────────────────────────────────────────────────────────
+#
+# Expected signatures come from the implementation itself, cross-checked
+# against a from-the-spec SigV4 written independently in the review that
+# produced these numbers: all four agree, and the GET / row matches the
+# published AWS example (AKIDEXAMPLE / 20150830T123600Z / us-east-1/service),
+# which is the control that says the harness wires up like AWS documents.
+#
+# The three auto/s3 rows were regenerated the same way. The values they
+# carried before could not be reproduced by ANY combination of scope, signed
+# headers, payload hash, path shape or timestamp tried against this function
+# (96 + 48 combinations), so they were not evidence of a signing bug — they
+# were stale constants.
 
 @pytest.mark.parametrize('method,path,query,payload,scope,signature', [
     ('GET', '/', {}, EMPTY_SHA, 'us-east-1/service',
      '33399fd3d4a9d6104710c7c04005f7c959f8b1f8bf41b823587ed36b079e453f'),
     ('PUT', '/thor-releases/ThorBundled-0.28.0-win-x64.msix', {},
      '44ce7dd67c959e0d3524ffac1771dfbba87d2b6b4b4e99e42034a8b803f8b072', 'auto/s3',
-     '05ba50acfb54042fac330848af50877e5fb477c4f2063c2f77f9cc80855eb1e9'),
+     '4e582ee4097834fd95935f3f3f0704aea3881761068d1d51813411869fb646b1'),
     ('GET', '/thor-releases', {'list-type': '2', 'prefix': 'ThorBundled-0.28.0-', 'max-keys': '1000'},
-     EMPTY_SHA, 'auto/s3', '3ec423c452a318664c85fbcc25667ad07201aedce688e3bb6b345b4baaa39d90'),
+     EMPTY_SHA, 'auto/s3', '4e789acbce8172818b734c2cc2dd7b54bc0bc88c8f4ae5f75883736e2e957c89'),
     ('DELETE', '/thor-releases/ThorBundled-0.28.0+canary.20260818T000000Z-win-arm64.msix', {},
-     EMPTY_SHA, 'auto/s3', '40dba7bf7356837cf496d950605dfc2c62d82ca2b30aa45c8c0dc8dab7bc1bd1'),
+     EMPTY_SHA, 'auto/s3', '30be73b95a277a7ebf98a5718396df5d791e4efbd0d77f5b04bb70e686e9de82'),
 ])
 def test_independent_sigv4_vectors(method, path, query, payload, scope, signature):
     host = 'example.com' if scope == 'us-east-1/service' else 'abc123.r2.cloudflarestorage.com'
