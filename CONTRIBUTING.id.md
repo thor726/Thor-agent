@@ -881,7 +881,9 @@ PowerShell 7 (`pwsh`) berjalan di Linux, jadi sebagian besar `install.ps1` bisa 
 tanpa mesin Windows. Pasang dengan:
 
 ```bash
+# no-tmp: ok — a human runs this on their own Linux box to install pwsh; not Thor code
 curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -o /tmp/ms.deb
+# no-tmp: ok — a human runs this on their own Linux box to install pwsh; not Thor code
 dpkg -i /tmp/ms.deb && apt-get update && apt-get install -y powershell
 ```
 

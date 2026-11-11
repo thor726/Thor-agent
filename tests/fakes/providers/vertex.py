@@ -715,10 +715,10 @@ __all__ = [
     "Say",
     "ServiceAccount",
     "TokenPolicy",
-    "thor_setup",
     "make_service_account",
     "make_tls_material",
     "signatures_on_wire",
+    "thor_setup",
     "validate_chat_body",
     "verify_jwt_assertion",
 ]

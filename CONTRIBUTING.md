@@ -949,7 +949,9 @@ PowerShell 7 (`pwsh`) runs on Linux, so most of `install.ps1` can be checked
 without a Windows machine. Install it with:
 
 ```bash
+# no-tmp: ok — a human runs this on their own Linux box to install pwsh; not Thor code
 curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -o /tmp/ms.deb
+# no-tmp: ok — a human runs this on their own Linux box to install pwsh; not Thor code
 dpkg -i /tmp/ms.deb && apt-get update && apt-get install -y powershell
 ```
 
