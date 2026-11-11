@@ -246,7 +246,7 @@ class TestFallbackChain:
     releases (opus 4.8, etc.) never reach the picker.
     """
 
-    PRIMARY = "https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/website/static/api/model-catalog.json"
+    PRIMARY = "https://thor-agent.thor-agent.local/docs/api/model-catalog.json"
     FALLBACK = (
         "https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent"
         "/main/website/static/api/model-catalog.json"
