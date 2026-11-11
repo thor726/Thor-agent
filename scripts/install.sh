@@ -673,8 +673,13 @@ chosen_channel() {
 # Forks and mirrors publish no official releases; they keep following their branch, as
 # thor_cli.update_channel.default_channel decides.
 is_official_repo() {
+    # The URL is lowercased but the repo path is not: the canonical URL carries
+    # capital letters (``.../Thor-agent.git``), so a literal mixed-case pattern
+    # can never match its own lowercased input — this returned false for the
+    # official repository itself, which silently turned the stable channel off
+    # and left every fresh install on main's tip. Match the path case-insensitively.
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
-        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)dwisetyabudi15581/Thor-agent(\.git)?/?$'
+        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)dwisetyabudi15581/thor-agent(\.git)?/?$'
 }
 
 # The latest published stable release (vX.Y.Z), the release `thor update` resolves for the

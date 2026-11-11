@@ -1025,7 +1025,10 @@ function Get-StableTarget([string]$Origin) {
     if ($Commit -or $Channel -ceq 'main') { return '' }
     if ($Channel -cne 'stable') {
         if ($Branch -cne 'main') { return '' }
-        if ($Origin -notmatch '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)dwisetyabudi15581/Thor-agent(\.git)?/?$') { return '' }
+        # The path is matched case-insensitively (-imatch): the canonical URL is
+        # ``.../Thor-agent.git``, and a case-sensitive pattern would reject the
+        # official repository itself and silently drop every install to main.
+        if ($Origin -notmatch '(?i)^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)dwisetyabudi15581/thor-agent(\.git)?/?$') { return '' }
     }
     $release = Get-LatestStableRelease $Origin
     if ($release) { return $release }
