@@ -339,3 +339,6 @@ infografico/
 /pm/.lock.json.lock
 
 apps/desktop/.dist-build*
+
+# Scratch scripts for the i18n translation batches (regenerable, not source).
+.i18n-work/
