@@ -342,3 +342,7 @@ apps/desktop/.dist-build*
 
 # Scratch scripts for the i18n translation batches (regenerable, not source).
 .i18n-work/
+
+# Scaffolding sementara verifikasi locale id (bukan kode produk)
+apps/desktop/src/i18n/__id_probe.ts
+apps/desktop/tsconfig.idprobe.json

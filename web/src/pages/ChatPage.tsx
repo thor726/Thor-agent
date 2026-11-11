@@ -67,6 +67,7 @@ import {
   normalizePtyMobileInput,
   shouldTreatInputAsMobileReplacement,
 } from "@/lib/pty-mobile-input";
+import { createMobileImeRescue } from "@/lib/pty-mobile-ime-rescue";
 import { computeKeyboardInset, keyboardRevealScrollDelta } from "@/lib/keyboard-inset";
 import {
   resolvePtyKeyboardShortcut,
@@ -795,6 +796,22 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
     const compositionForwarder = createPtyCompositionForwarder((data) => {
       sendComposedText(data);
     });
+    // Set once the PTY socket is open; the Android IME rescue below calls
+    // through it, so the guard can be built before `forwardPtyData` exists.
+    const forwardPtyDataRef: { current: (data: string) => void } = {
+      current: () => undefined,
+    };
+    // Rescues the Android IME commit types xterm.js 6.0.0 does not accept.
+    // Attached to the terminal's hidden textarea with the listeners below,
+    // and only on mobile-like user agents.
+    const mobileImeRescue = createMobileImeRescue({
+      onData: (data) => forwardPtyDataRef.current(data),
+      getValue: () => term.textarea?.value ?? "",
+      isComposing: () => term.textarea?.classList.contains("composition") === true,
+      isMobileLike:
+        typeof navigator !== "undefined" &&
+        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent),
+    });
     term.open(host);
 
     // IME composition guard (fixes #52111).
@@ -850,9 +867,20 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
 
       textarea.addEventListener("beforeinput", markReplacementInput, true);
       textarea.addEventListener("compositionend", markCompositionEnd, true);
+
+      // Android soft keyboards commit most typing as `insertCompositionText`
+      // or `insertReplacementText`, and xterm.js 6.0.0's `_inputEvent` accepts
+      // only `insertText` — those commits are dropped before they ever reach
+      // onData, and Android's non-composition commit fires no `compositionend`
+      // for the forwarder above to catch. Forward them here instead; the guard
+      // ignores `insertText` and open compositions, so a keystroke is never
+      // delivered twice. Mobile-only (#android-ime-dropped).
+      const imeRescueCleanup = mobileImeRescue.attach(textarea);
+
       mobileInputCleanup = () => {
         textarea.removeEventListener("beforeinput", markReplacementInput, true);
         textarea.removeEventListener("compositionend", markCompositionEnd, true);
+        imeRescueCleanup();
       };
     }
 
@@ -1515,6 +1543,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
       // must not consume the mobile replacement window intended for xterm's
       // normal onData path.
       sendComposedText = (data) => forwardPtyData(data, false);
+      forwardPtyDataRef.current = (data) => forwardPtyData(data);
       onDataDisposable = term.onData((data) => {
         if (!SGR_MOUSE_RE.test(data)) {
           compositionForwarder.noteTerminalData(data);
@@ -1527,6 +1556,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
         }
       });
 
+      // Android IME rescue is attached alongside the textarea listeners above.
       onResizeDisposable = term.onResize(({ cols, rows }) => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(`\x1b[RESIZE:${cols};${rows}]`);
