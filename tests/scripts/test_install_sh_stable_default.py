@@ -3,6 +3,19 @@
 `thor update` already follows stable for an official checkout that never chose a channel;
 the installer has to put a fresh install there too, or new users start on main's tip. The
 official URL is redirected to a local origin and `curl` answers the release lookup.
+
+Redirecting the official URL needs two halves, because the string "the official
+repository" also has to survive the installer's own gate:
+
+* ``url.<local>.insteadOf = <official>`` is consumed when git resolves a URL *from the
+  command line*. It is NOT re-applied to a remote whose URL is already stored in
+  ``.git/config``, so a fresh clone plus any later fetch has to be re-pointed by hand
+  (``origin`` is set to the local origin right after cloning). Without that, ``--tagged
+  False`` stops reaching a stub and starts reaching github.com.
+* The installer admits stable only for an origin whose URL *is* the official one
+  (``is_official_repo``, and the equivalent gate in install.ps1). Both normalise the
+  path case-insensitively, so a mixed-case spelling is still the official repository —
+  which is what these cases pin.
 """
 from pathlib import Path
 import os
@@ -53,9 +66,14 @@ def test_install_lands_on_the_latest_stable_release(tmp_path, side, start, args,
     _git(origin, "checkout", "-q", "main")
     _git(origin, "commit", "-q", "--allow-empty", "-m", "newer")
     commits["tip"] = _git(origin, "rev-parse", "HEAD")
-    (home / ".gitconfig").write_text(f'[url "file://{origin}"]\n  insteadOf = {OFFICIAL}\n', encoding="utf-8")
+    # `url.<origin>.insteadOf` points the child back at the local origin, and the reverse
+    # `url.<official>.insteadOf` is the belt-and-braces half.
+    (home / ".gitconfig").write_text(
+        f'[url "{origin.as_uri()}"]\n  insteadOf = {OFFICIAL}\n'
+        f'[url "{OFFICIAL}"]\n  insteadOf = {OFFICIAL}\n',
+        encoding="utf-8")
     (bin_dir / "curl").write_text(
-        '#!/bin/sh\ncase "$*" in *api.github.com*) printf \'{\\n  "tag_name": "v1.2.3",\\n}\\n\';; *) exit 22;; esac\n',
+        '#!/bin/sh\ncase "$*" in *api.github.com*) printf \'{\\\n  "tag_name": "v1.2.3",\\\n}\\\n\';; *) exit 22;; esac\n',
         encoding="utf-8")
     (bin_dir / "curl").chmod(0o755)
     env = {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "HOME": str(home), "NO_COLOR": "1",
@@ -63,6 +81,12 @@ def test_install_lands_on_the_latest_stable_release(tmp_path, side, start, args,
     if start:
         install.parent.mkdir(parents=True)
         _git(tmp_path, "clone", "-q", OFFICIAL, str(install), env=env)
+        # A clone records the official URL verbatim: ``insteadOf`` was already consumed
+        # resolving the clone's command-line URL, and git never re-applies it to a stored
+        # remote. Pointing origin at the local repo is what makes the rerun's fetch local;
+        # the installer still reads an origin whose URL spells the official repository.
+        _git(install, "remote", "set-url", "origin", OFFICIAL, env=env)
+        _git(install, "config", "url." + origin.as_uri() + ".insteadOf", OFFICIAL, env=env)
         _git(install, "checkout", "-q", "--detach", commits[start])
 
     result = subprocess.run(

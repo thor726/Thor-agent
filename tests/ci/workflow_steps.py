@@ -52,9 +52,17 @@ def _interpreter_dirs(root: Path) -> tuple[str, ...]:
     Steps call ``python3`` (Linux runners) or ``python`` (Windows runners); a
     Windows venv only ships ``python.exe``, so a missing name would otherwise
     hit an unrelated host interpreter on os.defpath, or none at all.
+
+    The shim directory is not ``bin`` on Windows: there the replay's ``bash``
+    (Git Bash) resolves ``python3`` through MSYS's own conversion, which only
+    consults ``PATH`` entries ending in ``/bin`` or ``/usr/bin``. A shim in
+    ``<temp>/bin`` is therefore invisible inside the replayed step — the step
+    ran against the host interpreter while this process's ``locate_command``
+    saw the shim and skipped creating it. Directory-style shims need no
+    executable bit on Windows, where ``os.access`` cannot report one.
     """
     interpreter = Path(sys.executable).parent
-    shims = root / "bin"
+    shims = root / ("Scripts" if os.name == "nt" else "bin")
     shims.mkdir()
     for name in ("python", "python3"):
         if not locate_command(name, LookupContext(path=str(interpreter))).found:
