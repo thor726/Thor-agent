@@ -13,6 +13,37 @@ name: PM Bundle
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to bundle (default: the triggering commit, github.sha)'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      release:
+        description: 'Stable-release candidate run (ignored by the jobs; uniform callable surface).'
+        required: false
+        type: boolean
+        default: false
+
+      ref:
+        description: 'Git ref to bundle (default: the triggering commit, github.sha)'
+        required: false
+        type: string
+        default: ''
+  pull_request:
+    paths:
+      - 'pm/**'
+      - '!pm/**/*.md'
+      - 'scripts/bundles/**'
+      - 'scripts/ci/desktop_build_cache.py'
+      - '.github/actions/desktop-build-cache/**'
+      - 'scripts/windows-build-deps.ps1'
+      - 'scripts/build/windows-deps.ps1'
+      - '.github/actions/setup-windows-build-deps/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - '.github/workflows/pm-bundle.yml'
 permissions:
   contents: read
 

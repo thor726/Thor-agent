@@ -39,6 +39,79 @@ name: Install & Update E2E
 
 on:
   workflow_dispatch:
+    inputs:
+      route:
+        description: 'Which legs to run: all = every OS; both/update/installer = the linux legs; windows-desktop / macos-desktop = that OS; bundled / windows-bundled / macos-bundled = the signed-bundle legs. Anything else selects legs by name (a leg or job name, or a fragment of one).'
+        required: false
+        type: string
+        default: all
+      windows-bundle-manifest:
+        description: 'HTTPS manifest pinning signed Windows OLD/NEW msixbundles; NEW must match this ref.'
+        type: string
+        default: ''
+      macos-bundle-manifest:
+        description: 'HTTPS manifest pinning signed macOS OLD/NEW app ZIPs; NEW must match this ref.'
+        type: string
+        default: ''
+      tag-count:
+        description: 'How many release tags to sample (newest, oldest, and a spread between).'
+        required: false
+        type: string
+        default: '3'
+      install-ref:
+        description: 'Optional exact release tag for a focused reproduction; overrides tag-count.'
+        required: false
+        type: string
+        default: ''
+  workflow_call:
+    # Reusable entry for the stable-release orchestrator. Same input names as
+    # workflow_dispatch; on a release run the caller dispatches on the exact
+    # candidate tag, so github.sha is the candidate commit throughout.
+    #
+    # route: which combinations to run (same choices as dispatch). The
+    # bundled routes require the matching bundle manifests, exactly like a
+    # manual dispatch — a source (non-bundle) release run passes route=all
+    # with empty manifests and gets the source install/update matrix only.
+    inputs:
+      commit:
+        description: Commit to test and build. Empty keeps the triggering commit.
+        type: string
+        default: ''
+      release:
+        description: 'Stable-release candidate run (informational; jobs behave as route=all with empty manifests).'
+        required: false
+        type: boolean
+        default: false
+      route:
+        description: 'Which legs to run: all = every OS; both/update/installer = the linux legs; windows-desktop / macos-desktop = that OS; bundled / windows-bundled / macos-bundled = the signed-bundle legs. Anything else selects legs by name (a leg or job name, or a fragment of one).'
+        required: false
+        type: string
+        default: all
+      windows-bundle-manifest:
+        description: 'HTTPS manifest pinning signed Windows OLD/NEW msixbundles; NEW must match this ref.'
+        required: false
+        type: string
+        default: ''
+      macos-bundle-manifest:
+        description: 'HTTPS manifest pinning signed macOS OLD/NEW app ZIPs; NEW must match this ref.'
+        required: false
+        type: string
+        default: ''
+      tag-count:
+        description: 'How many release tags to sample (newest, oldest, and a spread between).'
+        required: false
+        type: string
+        default: '3'
+      install-ref:
+        description: 'Optional exact release tag for a focused reproduction; overrides tag-count.'
+        required: false
+        type: string
+        default: ''
+      exclude-ref:
+        description: 'Exact release tag to EXCLUDE from the sampled OLD baselines (e.g. the candidate itself — testing an update from it would be a no-change test).'
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
 

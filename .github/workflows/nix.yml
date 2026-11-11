@@ -11,7 +11,25 @@ name: Nix flake check
 # fast required jobs beside it. A separate run reruns and cancels on its own.
 
 on:
-  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+    inputs:
+      commit:
+        description: Commit to test and build. Empty keeps the triggering commit.
+        type: string
+        default: ''
+      release:
+        description: 'Stable-release candidate run: force the flake-check lane regardless of the classifier.'
+        required: false
+        type: boolean
+        default: false
+      version:
+        description: 'Release version stamped into an isolated flake source tree.'
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
 
