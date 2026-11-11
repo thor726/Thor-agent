@@ -37,18 +37,18 @@ concurrency:
 
 jobs:
   test:
-    # Three 32-core slices instead of one box: on one runner the suite is ~10 min of
-    # nearly fully packed work, and a single bigger runner (96-core) scaled ~1.8x for
-    # 3x the price because files contend for the shared machine. Separate machines
-    # scale linearly. run_tests_parallel.py partitions from the checkout alone, so
-    # every slice agrees on the split without a planning job.
-    name: Run tests (${{ matrix.slice }}/3)
+    # Six slices on GitHub-hosted (2-core) runners. The suite was sized for
+    # 32-core Blacksmith boxes at three slices; on the standard runners it
+    # exceeded the 30-minute job timeout, so the split is doubled to keep each
+    # slice well under the cap. run_tests_parallel.py partitions from the
+    # checkout alone, so every slice agrees on the split without a planning job.
+    name: Run tests (${{ matrix.slice }}/6)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        slice: [1, 2, 3]
+        slice: [1, 2, 3, 4, 5, 6]
     steps:
       - name: Checkout code
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
@@ -114,9 +114,12 @@ jobs:
         # set is identical to the list the removed matrix job used to pass in.
         run: just test-all
         env:
-          THOR_TEST_SLICE: ${{ matrix.slice }}/3
+          THOR_TEST_SLICE: ${{ matrix.slice }}/6
           THOR_TEST_FORKSERVER: "1"
-          THOR_TEST_WORKERS: 32
+          # Sized for GitHub-hosted 2-core runners. The old 32 matched the
+          # 32-core Blacksmith boxes; forcing 32 subprocesses onto 2 cores
+          # oversubscribes the box and is slower than a few workers.
+          THOR_TEST_WORKERS: 4
           THOR_TEST_FILE_TIMEOUT: 600
           # Ensure tests don't accidentally call real APIs
           OPENROUTER_API_KEY: ""
