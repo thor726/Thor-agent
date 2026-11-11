@@ -10,14 +10,14 @@ import pytest
 
 from thor_cli.model_switch import (
     _check_thor_model_warning,
-    is_nous_thor_non_agentic,
+    is_non_agentic_chat_model,
 )
 
 
 def test_warning_helper_is_defined_and_callable():
     # The exact failure mode: attribute existed in call sites but not in the module.
     assert callable(_check_thor_model_warning)
-    assert callable(is_nous_thor_non_agentic)
+    assert callable(is_non_agentic_chat_model)
 
 
 @pytest.mark.parametrize("model", [

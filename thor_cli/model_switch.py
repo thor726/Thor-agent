@@ -33,8 +33,9 @@ _THOR_MODEL_WARNING = (
     "Non-agentic chat model selected: agent workflows (delegation, cron, proactive tools) "
     "require reliable tool-calling."
 )
-# Hermes 3/4 chat models (``hermes-3``, ``nousresearch/hermes-4-70b``, ``Nous-Hermes-3``, ...).
-# Deliberately narrow: a bare ``chat`` suffix (``deepseek-chat``, ``qwen-chat``) is a REAL agentic
+# Hermes 3/4 chat models (``hermes-3``, ``hermes-4-70b``, ``Nous-Hermes-3``, ...). The
+# vendor prefix is a provider namespace, not this product's identity. Deliberately
+# narrow: a bare ``chat`` suffix (``deepseek-chat``, ``qwen-chat``) is a REAL agentic
 # model on several providers, so it must never trigger this warning.
 _NON_AGENTIC_MODEL_RE = re.compile(
     r"hermes[\-_ ]?[34](?:[\-_.]|$)",
@@ -42,7 +43,7 @@ _NON_AGENTIC_MODEL_RE = re.compile(
 )
 
 
-def is_nous_thor_non_agentic(model_name: str) -> bool:
+def is_non_agentic_chat_model(model_name: str) -> bool:
     """True if *model_name* looks like a chat-only (non tool-call-tuned) model."""
     return bool(model_name and _NON_AGENTIC_MODEL_RE.search(model_name))
 
@@ -54,7 +55,7 @@ def _check_thor_model_warning(model_name: str) -> str:
     Must never raise — a missing definition here used to abort every model switch (#rebrand-6855af21).
     """
     try:
-        return _THOR_MODEL_WARNING if is_nous_thor_non_agentic(model_name) else ""
+        return _THOR_MODEL_WARNING if is_non_agentic_chat_model(model_name) else ""
     except Exception:  # never break a model switch over a cosmetic warning
         return ""
 
