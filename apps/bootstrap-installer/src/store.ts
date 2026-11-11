@@ -2,6 +2,8 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { atom, computed } from 'nanostores'
 
+import { detectLang, type Lang, persistLang } from './lib/i18n'
+
 /*
  * Bootstrap state store — single source of truth for installer screens.
  *
@@ -76,6 +78,16 @@ export const $mode = atom<AppMode>('install')
 export const $bootstrap = atom<BootstrapStateModel>(INITIAL)
 export const $logPath = atom<string | null>(null)
 export const $thorHome = atom<string | null>(null)
+
+/* Installer UI language, chosen in the pre-install menu (or auto-detected from
+ * the OS locale). Persisted so a retry/update run keeps the same language. */
+export const $lang = atom<Lang>(detectLang())
+
+/** Switch language and remember the choice across installer runs. */
+export function setLang(lang: Lang): void {
+  persistLang(lang)
+  $lang.set(lang)
+}
 
 export const $progress = computed($bootstrap, (b) => {
   const total = b.stageOrder.length

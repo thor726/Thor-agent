@@ -1,5 +1,7 @@
 # Contributing to Thor Agent
 
+> 🌐 **Bahasa Indonesia:** [CONTRIBUTING.id.md](CONTRIBUTING.id.md) — panduan ini tersedia dalam Bahasa Indonesia.
+
 Thank you for contributing to Thor Agent! This guide covers everything you need: setting up your dev environment, understanding the architecture, deciding what to build, and getting your PR merged.
 
 ---
@@ -818,7 +820,6 @@ that touches the OS, assume *any* platform can hit your code path.
    For process enumeration: PowerShell's `Get-CimInstance Win32_Process` is
    the modern replacement for `wmic process`. See
    `thor_cli/gateway.py::_scan_gateway_pids` for the pattern.
-   ```
 
 3. **File encoding.** Windows may save `.env` files in `cp1252`. Always
    handle encoding errors:
@@ -941,6 +942,35 @@ For several supported hosts, use one marker with multiple arguments, such as
 `@pytest.mark.platforms("linux", "macos")`. Do not stack host markers.
 Tests of pure functions that accept a platform as data need no host marker.
 See [AGENTS.md](AGENTS.md#dont-fake-the-host-os) for the complete contract.
+
+#### Checking `install.ps1` from Linux
+
+PowerShell 7 (`pwsh`) runs on Linux, so most of `install.ps1` can be checked
+without a Windows machine. Install it with:
+
+```bash
+curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -o /tmp/ms.deb
+dpkg -i /tmp/ms.deb && apt-get update && apt-get install -y powershell
+```
+
+What can be verified for real: syntax parsing through the AST
+(`[Parser]::ParseFile()`), the parameter list (`Get-Command`), the manifest
+(`-Manifest`, `-ShowResolvedPaths`, `-ProtocolVersion`), stage-title translation
+parity between `install.sh` and `install.ps1` under `THOR_INSTALL_LANG`, and
+internal functions via dot-sourcing (`. './scripts/install.ps1'`).
+
+What **cannot** be verified on Linux: anything calling `winreg`, `icacls`,
+`schtasks`, `Get-CimInstance`, or `%LOCALAPPDATA%`. Tests marked
+`@pytest.mark.platforms("windows")` still skip — correct behaviour.
+
+#### `AGENTS.md` size caps
+
+`scripts/ci/check_agents_md_size.py` enforces `ROOT_MAX_CHARS = 12_000` for the
+root `AGENTS.md` and `CHAIN_MAX_CHARS = 30_000` per directory chain (root plus
+every ancestor `AGENTS.md`). This is not style: the file loads as one
+project-context block into the LLM, and whatever exceeds the cap is truncated
+when it loads. Shrink the file (move long form into
+`website/docs/developer-guide/` or a sibling doc) instead of raising a cap.
 
 ---
 

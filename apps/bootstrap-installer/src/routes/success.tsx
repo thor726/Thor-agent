@@ -1,9 +1,11 @@
+import { useStore } from '@nanostores/react'
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { type CSSProperties } from 'react'
 
 import { HackeryButton } from '../components/hackery-button'
-import { launchThorDesktop } from '../store'
+import { translate } from '../lib/i18n'
+import { $lang, launchThorDesktop } from '../store'
 
 /*
  * Success screen. THOR AGENT wordmark stays as the visual anchor
@@ -19,6 +21,8 @@ import { launchThorDesktop } from '../store'
 export default function Success() {
   const [error, setError] = useState<string | null>(null)
   const [launching, setLaunching] = useState(false)
+  const lang = useStore($lang)
+  const t = (key: string, params?: Record<string, string | number>) => translate(lang, key, params)
 
   async function handleLaunch() {
     setError(null)
@@ -48,20 +52,20 @@ export default function Success() {
           }
         >
           <span>
-            <span>Thor is ready</span>
+            <span>{t('success.title')}</span>
           </span>
-          <span aria-hidden="true">Thor is ready</span>
+          <span aria-hidden="true">{t('success.title')}</span>
         </p>
 
         <p className="m-0 text-center text-base leading-normal tracking-tight text-muted-foreground">
-          You can launch from here, or any time from your terminal with{' '}
-          <code className="font-mono text-sm text-foreground/80">thor desktop</code>.
+          {t('success.desc')} {t('success.open_desktop')}{' '}
+          <code className="font-mono text-sm text-foreground/80">thor desktop</code>
         </p>
       </div>
 
       <HackeryButton
         disabled={launching}
-        label={launching ? 'Launching' : 'Launch'}
+        label={launching ? t('success.launching') : t('success.launch')}
         loading={launching}
         onClick={() => void handleLaunch()}
       />
@@ -70,7 +74,7 @@ export default function Success() {
         <div className="flex max-w-2xl items-start gap-2 text-sm" role="alert">
           <AlertCircle className="mt-0.5 shrink-0 text-destructive" size={16} />
           <div className="min-w-0">
-            <div className="font-medium text-destructive">Couldn&rsquo;t launch the desktop app</div>
+            <div className="font-medium text-destructive">{t('success.launch_failed_title')}</div>
             <div className="mt-0.5 text-muted-foreground">{error}</div>
           </div>
         </div>

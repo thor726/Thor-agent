@@ -19,12 +19,14 @@ Gunakan model apa pun yang Anda mau — OpenRouter, OpenAI, Anthropic, atau endp
 - [Apakah Perlu Docker?](#apakah-perlu-docker)
 - [Persyaratan Sistem](#persyaratan-sistem)
 - [Instalasi](#instalasi)
+- [Instalasi di Windows](#instalasi-di-windows)
 - [Cara Penggunaan](#cara-penggunaan)
 - [Otomatisasi dengan Cron](#otomatisasi-dengan-cron)
 - [Menjalankan di Banyak Platform (Gateway)](#menjalankan-di-banyak-platform-gateway)
 - [Menjalankan di Docker (Opsional)](#menjalankan-di-docker-opsional)
 - [Konfigurasi](#konfigurasi)
 - [Keamanan](#keamanan)
+- [Bahasa](#bahasa)
 - [Lisensi](#lisensi)
 
 ## Fitur Utama
@@ -55,31 +57,52 @@ Ketiga opsi tersebut **sudah disertakan** di repo ini (`Dockerfile`, direktori `
 
 | Kebutuhan | Keterangan |
 |---|---|
-| Sistem operasi | Linux, macOS, atau WSL2 (Windows native juga didukung untuk CLI) |
+| Sistem operasi | Linux, macOS, Windows 10/11, atau WSL2 |
 | Python | 3.11–3.14 (3.14 disarankan; installer menyediakannya otomatis) |
 | Node.js & pnpm | Untuk TUI dan gateway; dipasang otomatis oleh manajer paket bawaan (PM) |
 | Git (+ git-lfs) | Untuk kloning dan pembaruan |
 | Opsional | FFmpeg (media/suara), ripgrep (pencarian cepat) |
 
+Di Windows, Thor berjalan **native** (PowerShell) maupun di dalam WSL2 — keduanya didukung penuh. Lihat [Instalasi di Windows](#instalasi-di-windows).
+
 ## Instalasi
 
 ### Cara 1 — Installer satu baris (disarankan)
 
-Linux, macOS, WSL2:
+**Linux, macOS, WSL2:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
 ```
 
-Installer mengkloning repo, menyiapkan Python/uv, Node, pnpm, dan dependensi, lalu mengakhiri prosesnya dengan wizard `thor setup`. Lokasi bawaan: `~/.thor/thor-agent`. Data pengguna (konfigurasi, sesi, skill, memori) disimpan di `~/.thor/`.
+**Windows (PowerShell):**
 
-Untuk folder khusus:
+```powershell
+irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1 | iex
+```
+
+Installer mengkloning repo, menyiapkan Python/uv, Node, pnpm, dan dependensi, lalu mengakhiri prosesnya dengan wizard `thor setup`. Lokasi bawaan: `~/.thor/thor-agent` (Linux/macOS) atau `%LOCALAPPDATA%\thor\thor-agent` (Windows). Data pengguna (konfigurasi, sesi, skill, memori) disimpan di `~/.thor/` atau `%LOCALAPPDATA%\thor\`.
+
+Untuk folder khusus — Linux/macOS:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash -s -- --dir ~/thor
 ```
 
+Windows:
+
+```powershell
+# -InstallDir menentukan folder checkout; -ThorHome folder data
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1))) -InstallDir "$env:USERPROFILE\thor"
+```
+
+> `irm | iex` tidak bisa menerima argumen, jadi gunakan bentuk `scriptblock` di atas
+> bila Anda perlu flag tambahan. Cara lain: unduh skripnya dulu, lalu
+> `.\install.ps1 -InstallDir C:\thor`.
+
 ### Cara 2 — Manual dari source (untuk pengembangan)
+
+Linux, macOS, WSL2:
 
 ```bash
 git clone https://github.com/dwisetyabudi15581/Thor-agent.git
@@ -88,11 +111,127 @@ source ./activate        # menyiapkan Python 3.14, pnpm, dan dependensi (fish: a
 thor --version
 ```
 
-Skrip `activate` mendefinisikan perintah `thor` sebagai fungsi shell untuk checkout ini. Ulangi `source ./activate` di setiap shell baru. Untuk data terpisah dari produksi, set `export THOR_HOME=~/.thor-dev` sebelum menjalankan.
+Windows (PowerShell):
+
+```powershell
+git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+cd Thor-agent
+.\setup-thor.ps1         # menyiapkan lingkungan pm (uv, Python, tool store)
+.\activate.ps1           # memasukkan env pm ke sesi saat ini
+thor --version
+```
+
+Skrip `activate` (Unix) dan `activate.ps1` (Windows) mendefinisikan perintah `thor` sebagai fungsi shell untuk checkout ini. Ulangi `source ./activate` / `.\activate.ps1` di setiap shell baru. Untuk data terpisah dari produksi, set `THOR_HOME` (`export THOR_HOME=~/.thor-dev` di Unix, `$env:THOR_HOME="$env:USERPROFILE\.thor-dev"` di Windows) sebelum menjalankan.
 
 ### Cara 3 — Docker (opsional)
 
 Lihat bagian [Menjalankan di Docker (Opsional)](#menjalankan-di-docker-opsional).
+
+## Instalasi di Windows
+
+Thor mendukung Windows secara native. Bagian ini menjelaskan pilihan mode, flag installer, dan masalah yang umum muncul.
+
+### Native vs WSL2
+
+| | Windows native | WSL2 |
+|---|---|---|
+| CLI (`thor`) | ✅ | ✅ |
+| TUI/gateway | ✅ | ✅ |
+| Aplikasi desktop | ✅ (Electron, dibuild installer) | ❌ |
+| Tool berbasis Unix (mis. `bash`, `tmux`) | Terbatas | ✅ |
+| Akses ke berkas Windows | Native | Via `/mnt/c/...` |
+| Paling cocok untuk | Pemakaian sehari-hari + app desktop | Pengembangan yang butuh tool Linux |
+
+Aturan praktisnya: kalau Anda hanya memakai Thor sebagai agent + aplikasi desktop, pakai **native**. Kalau alur kerja Anda bergantung pada tool Linux, pakai **WSL2** — dan di dalam WSL2 ikuti langkah Linux/macOS biasa.
+
+### Menjalankan installer dengan flag
+
+Installer PowerShell menerima flag berikut:
+
+| Flag | Efek |
+|---|---|
+| `-InstallDir <path>` | Folder checkout (bawaan `%LOCALAPPDATA%\thor\thor-agent`) |
+| `-ThorHome <path>` | Folder data (bawaan `%LOCALAPPDATA%\thor`) |
+| `-Branch <name>` | Branch git yang dikloning (bawaan `main`) |
+| `-Commit <sha>` | Checkout commit tertentu, bukan ujung branch |
+| `-Channel stable\|main` | Saluran rilis: `stable` (bawaan) atau `main` |
+| `-NonInteractive` | Lewati stage yang butuh input (untuk otomasi/CI) |
+| `-SkipSetup` | Ejaan lama `-NonInteractive`, masih diterima |
+| `-Stage NAME` | Jalankan satu stage saja |
+| `-Manifest` | Cetak daftar stage sebagai JSON |
+| `-ProtocolVersion` | Cetak versi protokol installer, lalu keluar |
+| `-ShowResolvedPaths` | Tampilkan path yang akan dipakai (JSON), lalu keluar |
+| `-Json` | Keluaran dalam format JSON untuk konsumsi skrip |
+| `-IncludeDesktop` | Ikut membangun aplikasi desktop |
+| `-SkipBrowser` | Jangan pasang Chromium (diingat oleh `thor update`) |
+| `-SkipComputerUse` | Jangan pasang driver computer-use |
+
+> Tidak ada flag `-Help`. Untuk daftar parameter versi Anda gunakan
+> `Get-Help .\scripts\install.ps1 -Full`.
+
+Contoh pemasangan senyap (tanpa wizard, tanpa browser):
+
+```powershell
+.\scripts\install.ps1 -NonInteractive -SkipBrowser
+```
+
+Installer `irm ... | iex` tidak bisa menerima flag secara langsung. Bungkus
+scriptblock-nya agar argumen tetap sampai:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1))) -NonInteractive -SkipBrowser
+```
+
+Ganti saluran ke `main` (setiap commit) tanpa mengulang instalasi:
+
+```powershell
+thor update --set-channel main
+```
+
+### Setelah instalasi
+
+1. **Muat ulang PATH** — installer menambahkan folder `bin` ke PATH pengguna, tetapi shell yang sudah terbuka belum melihatnya. Buka PowerShell baru, atau jalankan:
+   ```powershell
+   $env:Path = [Environment]::GetEnvironmentVariable("Path","User") + ";" + $env:Path
+   ```
+2. **Verifikasi**: `thor --version`
+3. **Konfigurasi**: `thor setup`
+
+### Troubleshooting Windows
+
+| Gejala | Penyebab & solusi |
+|---|---|
+| `thor: command not found` setelah install | PATH belum dimuat ulang. Buka shell baru atau jalankan perintah di langkah 1 di atas. |
+| `irm ... \| iex` menolak argumen | Memang tidak bisa. Pakai bentuk `& ([scriptblock]::Create((irm ...))) -Flag ...` atau unduh skripnya lalu jalankan `.\install.ps1`. |
+| Instalasi gagal di tengah dengan error panjang berkas | Path mendekati batas `MAX_PATH` (260). Pakai `-ThorHome C:\thor` (path pendek), atau aktifkan Long Paths:
+    ```powershell
+    Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' LongPathsEnabled 1
+    ```
+    Butuh hak admin. Installer **tidak** mengubah kebijakan ini sendiri — ia hanya menyelesaikan path pendek 8.3 (`GetLongPathNameW`) supaya path yang dilaporkan akurat. |
+| Eksekusi skrip diblokir (`running scripts is disabled`) | Jalankan dengan `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1`. |
+| Antivirus/Defender menghapus berkas hasil build | Kecualikan folder data Thor (`%LOCALAPPDATA%\thor`) dan folder checkout dari real-time scanning. |
+| Build desktop gagal (`no Thor.exe ...`) | Stage `desktop` butuh Node/pnpm dan toolchain build. Pastikan `-IncludeDesktop` dipakai dengan ruang disk cukup dan antivirus tidak memblokir. |
+
+### Uninstall
+
+```powershell
+thor uninstall
+```
+
+Perintah ini menghapus instalasi (folder checkout) dan **mempertahankan data pengguna**
+di `%LOCALAPPDATA%\thor` supaya konfigurasi, sesi, dan skill tidak hilang. Mode lain:
+
+| Perintah | Efek |
+|---|---|
+| `thor uninstall` | Hapus instalasi, pertahankan data |
+| `thor uninstall --full` | Hapus semuanya, termasuk konfigurasi dan data |
+| `thor uninstall --data` | Hapus hanya data pengguna, kode tetap terpasang |
+| `thor uninstall --gui` | Hapus hanya aplikasi desktop, agent tetap utuh |
+| `thor uninstall --dry-run` | Tampilkan apa yang akan dihapus, tanpa mengubah apa pun |
+| `thor uninstall --yes` | Lewati prompt konfirmasi |
+
+> Tabel flag installer di atas mencerminkan `scripts/install.ps1` pada commit ini.
+> Jalankan `Get-Help .\scripts\install.ps1 -Full` untuk daftar parameter versi Anda.
 
 ## Cara Penggunaan
 
@@ -263,7 +402,31 @@ docker run -d \
 
 ## Bahasa
 
-README dan panduan repo ini berbahasa Indonesia. Antarmuka CLI mendukung banyak bahasa (Inggris, Jerman, Spanyol, Prancis, Korea, Jepang, Arab, Portugis, Rusia, Mandarin, dll.) melalui berkas locale di `locales/` — terjemahan Bahasa Indonesia (`locales/id.yaml`) belum tersedia dan kontribusi sangat diterima.
+Dokumentasi repo ini berbahasa **Indonesia**, dengan versi Inggris tetap tersedia:
+
+| Dokumen | Bahasa Indonesia | English |
+|---|---|---|
+| README | `README.md` (utama) | — |
+| Panduan kontribusi | `CONTRIBUTING.id.md` | `CONTRIBUTING.md` |
+| Kebijakan keamanan | `SECURITY.id.md` | `SECURITY.md` |
+
+Nama berkas `CONTRIBUTING.md`, `SECURITY.md`, dan `AGENTS.md` sengaja **tidak diubah** karena dirujuk oleh tooling: `nix/lib.nix`, `pyproject.toml`, template `.github/`, dan guard CI. Versi Indonesia ditambahkan berdampingan, bukan menggantikan.
+
+**`AGENTS.md` tetap berbahasa Inggris secara sengaja.** Berkas itu bukan dokumentasi manusia — ia dimuat sebagai project-context block ke LLM (`agent/coding_context.py`), dan ukurannya dibatasi keras: `ROOT_MAX_CHARS = 12_000` (saat ini 11.362) serta `CHAIN_MAX_CHARS = 30_000` per rantai direktori, dijaga oleh `scripts/ci/check_agents_md_size.py`. Karena teks Indonesia lebih panjang ~15–20% dari Inggris, menerjemahkannya akan melewati batas dan membuat isinya terpotong saat dimuat agent.
+
+Antarmuka Thor mendukung banyak bahasa lewat berkas locale di `locales/` — termasuk **Bahasa Indonesia (`locales/id.yaml`) yang sudah lengkap** (3.535 kunci, 0 kunci hilang), bersama Inggris, Jerman, Spanyol, Prancis, Korea, Jepang, Arab, Portugis, Rusia, Mandarin, dan lainnya.
+
+Ganti bahasa antarmuka:
+
+```bash
+thor config set display.language id
+```
+
+Saat instalasi, installer menampilkan pilihan bahasa terlebih dahulu (Inggris / Bahasa Indonesia) sebelum proses berjalan.
+
+Bahasa untuk jawaban model berbeda dari bahasa antarmuka — beri tahu saja modelnya di awal percakapan (mis. "jawab pakai Bahasa Indonesia").
+
+Ingin menambah bahasa baru? Letakkan `<kode>.yaml` di `<THOR_HOME>/locales/`, atau pasang language pack (`thor plugins install thor-lang-<kode>`). Kontribusi terjemahan sangat diterima — lihat [CONTRIBUTING.id.md](CONTRIBUTING.id.md).
 
 ## Lisensi
 

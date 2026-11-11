@@ -500,25 +500,51 @@ stage_names() {
 # "title|category|needs_user_input".
 products_record() {
     if [ "$INCLUDE_DESKTOP" = true ]; then
-        echo "Install command and app + desktop|runtime|false"
+        st "products.desktop" "Install command and app + desktop|runtime|false"
     else
-        echo "Install command and app|runtime|false"
+        st "products.app" "Install command and app|runtime|false"
     fi
+}
+
+# Installer UI language: the bootstrap window exports THOR_INSTALL_LANG before
+# driving this script; a CLI run leaves it unset and gets English. Ids match
+# lib/i18n.ts and agent/i18n.py so all three agree on the language set.
+INSTALL_LANG="${THOR_INSTALL_LANG:-en}"
+
+# st KEY ENGLISH — pick the translated stage title for the active language.
+# The English argument always carries the full "title|category|needs" record, so
+# a language with no entry (or a partial one) degrades to English instead of
+# printing an empty title.
+st() {
+    case "$INSTALL_LANG:$1" in
+        id:stage.prerequisites) echo "Prasyarat sistem|runtime|false" ;;
+        id:stage.repository)    echo "Unduh Thor Agent|runtime|false" ;;
+        id:stage.venv)          echo "Buat lingkungan Python|runtime|false" ;;
+        id:stage.python-deps)   echo "Pasang dependensi Python|runtime|false" ;;
+        id:stage.config)        echo "Siapkan konfigurasi dan skill|configuration|false" ;;
+        id:products.app)        echo "Pasang command dan aplikasi|runtime|false" ;;
+        id:products.desktop)    echo "Pasang command dan aplikasi + desktop|runtime|false" ;;
+        id:stage.setup)         echo "Konfigurasi kunci API dan pengaturan|configuration|true" ;;
+        id:stage.gateway)       echo "Konfigurasi layanan gateway|configuration|true" ;;
+        id:stage.desktop)       echo "Bangun aplikasi desktop|runtime|false" ;;
+        id:stage.complete)      echo "Selesaikan pemasangan|runtime|false" ;;
+        *)                      echo "$2" ;;
+    esac
 }
 
 # "$1" stage name -> its manifest record fields (title|category|needs_user_input).
 stage_record() {
     case "$1" in
-        prerequisites) echo "System prerequisites|runtime|false" ;;
-        repository)    echo "Download Thor Agent|runtime|false" ;;
-        venv)          echo "Create Python environment|runtime|false" ;;
-        python-deps)   echo "Install Python dependencies|runtime|false" ;;
-        config)        echo "Prepare config and skills|configuration|false" ;;
+        prerequisites) st "stage.prerequisites" "System prerequisites|runtime|false" ;;
+        repository)    st "stage.repository" "Download Thor Agent|runtime|false" ;;
+        venv)          st "stage.venv" "Create Python environment|runtime|false" ;;
+        python-deps)   st "stage.python-deps" "Install Python dependencies|runtime|false" ;;
+        config)        st "stage.config" "Prepare config and skills|configuration|false" ;;
         products)      products_record ;;
-        setup)         echo "Configure API keys and settings|configuration|true" ;;
-        gateway)       echo "Configure gateway service|configuration|true" ;;
-        desktop)       echo "Build desktop app|runtime|false" ;;
-        complete)      echo "Finish install|runtime|false" ;;
+        setup)         st "stage.setup" "Configure API keys and settings|configuration|true" ;;
+        gateway)       st "stage.gateway" "Configure gateway service|configuration|true" ;;
+        desktop)       st "stage.desktop" "Build desktop app|runtime|false" ;;
+        complete)      st "stage.complete" "Finish install|runtime|false" ;;
     esac
 }
 

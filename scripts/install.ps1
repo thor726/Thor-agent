@@ -876,21 +876,52 @@ function Emit-Frame([bool]$ok, [string]$name, [bool]$skipped, [string]$reason = 
     $frame | ConvertTo-Json -Compress | Write-Output
 }
 
-$ProductTitle = if ($IncludeDesktop) { "Install command and app + desktop" } else { "Install command and app" }
+# Installer UI language: the bootstrap window exports THOR_INSTALL_LANG before
+# driving this script; a CLI run leaves it unset and gets English. Ids match
+# lib/i18n.ts and agent/i18n.py so all three agree on the language set.
+$InstallLang = if ($env:THOR_INSTALL_LANG) { $env:THOR_INSTALL_LANG } else { "en" }
+
+# ST KEY ENGLISH -> the translated stage title for the active language, or the
+# English text when the language (or that key) has no entry. Keeping English as
+# the argument means a missing translation degrades to English, never to blank.
+function ST {
+    param([string]$Key, [string]$English)
+    $id = @{
+        "stage.prerequisites" = "Prasyarat sistem"
+        "stage.repository"    = "Unduh Thor Agent"
+        "stage.venv"          = "Buat lingkungan Python"
+        "stage.python-deps"   = "Pasang dependensi Python"
+        "stage.config"        = "Siapkan konfigurasi dan skill"
+        "products.app"        = "Pasang command dan aplikasi"
+        "products.desktop"    = "Pasang command dan aplikasi + desktop"
+        "stage.setup"         = "Konfigurasi kunci API dan pengaturan"
+        "stage.gateway"       = "Konfigurasi layanan gateway"
+        "stage.desktop"       = "Bangun aplikasi desktop"
+        "stage.complete"      = "Selesaikan pemasangan"
+    }
+    if ($InstallLang -eq "id" -and $id.ContainsKey($Key)) { return $id[$Key] }
+    return $English
+}
+
+$ProductTitle = if ($IncludeDesktop) {
+    ST "products.desktop" "Install command and app + desktop"
+} else {
+    ST "products.app" "Install command and app"
+}
 $Stages = @(
-    @{ name = "prerequisites"; title = "System prerequisites"; category = "runtime"; needs_user_input = $false },
-    @{ name = "repository"; title = "Download Thor Agent"; category = "runtime"; needs_user_input = $false },
-    @{ name = "venv"; title = "Create Python environment"; category = "runtime"; needs_user_input = $false },
-    @{ name = "python-deps"; title = "Install Python dependencies"; category = "runtime"; needs_user_input = $false },
-    @{ name = "config"; title = "Prepare config and skills"; category = "configuration"; needs_user_input = $false },
+    @{ name = "prerequisites"; title = (ST "stage.prerequisites" "System prerequisites"); category = "runtime"; needs_user_input = $false },
+    @{ name = "repository"; title = (ST "stage.repository" "Download Thor Agent"); category = "runtime"; needs_user_input = $false },
+    @{ name = "venv"; title = (ST "stage.venv" "Create Python environment"); category = "runtime"; needs_user_input = $false },
+    @{ name = "python-deps"; title = (ST "stage.python-deps" "Install Python dependencies"); category = "runtime"; needs_user_input = $false },
+    @{ name = "config"; title = (ST "stage.config" "Prepare config and skills"); category = "configuration"; needs_user_input = $false },
     # The shared completion tail -- the same call `thor update` makes -- so
     # the manifest and the run cannot disagree. -IncludeDesktop selects the
     # desktop product inside this stage instead of adding a second build stage.
     @{ name = "products"; title = $ProductTitle; category = "runtime"; needs_user_input = $false },
-    @{ name = "setup"; title = "Configure API keys and settings"; category = "configuration"; needs_user_input = $true },
-    @{ name = "gateway"; title = "Configure gateway service"; category = "configuration"; needs_user_input = $true }
+    @{ name = "setup"; title = (ST "stage.setup" "Configure API keys and settings"); category = "configuration"; needs_user_input = $true },
+    @{ name = "gateway"; title = (ST "stage.gateway" "Configure gateway service"); category = "configuration"; needs_user_input = $true }
 )
-$Stages += @{ name = "complete"; title = "Finish install"; category = "runtime"; needs_user_input = $false }
+$Stages += @{ name = "complete"; title = (ST "stage.complete" "Finish install"); category = "runtime"; needs_user_input = $false }
 function Stage-Prerequisites {
     if (-not (Ensure-Git)) {
         Fail "no pinned Git artifact for this Windows architecture" unsupported_platform

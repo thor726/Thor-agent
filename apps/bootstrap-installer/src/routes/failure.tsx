@@ -3,7 +3,9 @@ import { FileText, RefreshCw } from 'lucide-react'
 import { type CSSProperties } from 'react'
 
 import { Button } from '../components/button'
+import { translate } from '../lib/i18n'
 import {
+  $lang,
   $logPath,
   $mode,
   type BootstrapStateModel,
@@ -26,6 +28,8 @@ interface FailureProps {
 export default function Failure({ bootstrap }: FailureProps) {
   const logPath = useStore($logPath)
   const mode = useStore($mode)
+  const lang = useStore($lang)
+  const t = (key: string, params?: Record<string, string | number>) => translate(lang, key, params)
   const isUpdate = mode === 'update'
 
   return (
@@ -42,33 +46,33 @@ export default function Failure({ bootstrap }: FailureProps) {
           }
         >
           <span>
-            <span>{isUpdate ? 'Update didn\u2019t finish' : 'Install didn\u2019t finish'}</span>
+            <span>{isUpdate ? t('failure.title_update') : t('failure.title_install')}</span>
           </span>
-          <span aria-hidden="true">{isUpdate ? 'Update didn\u2019t finish' : 'Install didn\u2019t finish'}</span>
+          <span aria-hidden="true">
+            {isUpdate ? t('failure.title_update') : t('failure.title_install')}
+          </span>
         </p>
 
         <p className="m-0 mx-auto max-w-xl text-center text-sm leading-normal tracking-tight text-muted-foreground">
           {bootstrap.error ??
-            (isUpdate
-              ? 'Something went wrong during the update.'
-              : 'Something went wrong during installation.')}
+            (isUpdate ? t('failure.body_update') : t('failure.body_install'))}
         </p>
       </div>
 
       <div className="flex items-center gap-3">
         <Button className="gap-1.5" onClick={() => void (isUpdate ? startUpdate() : startInstall())}>
           <RefreshCw />
-          {isUpdate ? 'Retry update' : 'Retry install'}
+          {isUpdate ? t('failure.retry_update') : t('failure.retry_install')}
         </Button>
         <Button className="gap-1.5" onClick={() => void openLogDir()} variant="text">
           <FileText />
-          Open logs
+          {t('failure.open_logs')}
         </Button>
       </div>
 
       {logPath && (
         <p className="max-w-lg text-center text-xs text-muted-foreground/70">
-          Log: <code className="font-mono">{logPath}</code>
+          {t('failure.log_label')} <code className="font-mono">{logPath}</code>
         </p>
       )}
     </div>

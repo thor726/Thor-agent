@@ -1,5 +1,7 @@
 # Thor Agent Security Policy
 
+> 🌐 **Bahasa Indonesia:** [SECURITY.id.md](SECURITY.id.md) — dokumen ini tersedia dalam Bahasa Indonesia.
+
 This document describes Thor Agent's trust model, names the one
 security boundary the project treats as load-bearing, and defines the
 scope for vulnerability reports.

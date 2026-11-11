@@ -51,7 +51,7 @@ gateway:
   model:
     error_prefix: "Error: {error}"
     switched: Model diganti ke `{model}`
-    provider_label: "Provider: {provider}"
+    provider_label: "Penyedia: {provider}"
     context_label: "Konteks: {tokens} token"
     max_output_label: "Output maks: {tokens} token"
     cost_label: "Biaya: {cost}"
@@ -184,7 +184,7 @@ gateway:
     unknown_arg: "⚠️ Argumen tidak dikenal: `{arg}`\n\n**Opsi valid:** normal, fast, auto, cold, ultrafast, status"
     saved: "⚡ ✓ Priority Processing: **{label}** (disimpan ke config)\n_(berlaku pada pesan berikutnya)_"
     session_only: "⚡ ✓ Priority Processing: **{label}** (hanya sesi ini)"
-    label_fast: FAST
+    label_fast: CEPAT
     label_normal: NORMAL
     status_fast: fast
     status_normal: normal
@@ -242,8 +242,8 @@ gateway:
       completed: ✔ {head} selesai — {title}{handoff}
       review_requested: 👀 {head} siap direview — {title}{handoff}
       changes_default_reason: umpan balik reviewer memerlukan perubahan
-      reviewer_suffix: " — reviewer @{reviewer}"
-      implementer_suffix: " → implementer @{implementer}"
+      reviewer_suffix: " — peninjau @{reviewer}"
+      implementer_suffix: " → pelaksana @{implementer}"
       changes_requested: "🛑 {board_tag}Kanban {task_id} review meminta perubahan/BLOCK: {reason}{provenance}"
       triage: 🛑 {head} dialihkan ke TRIAGE — {why}{recurrences}{reason}
       triage_decision: butuh keputusan manusia
@@ -276,10 +276,10 @@ gateway:
     err_config_write: penulisan config gagal
   profile:
     header: 👤 **Profil:** `{profile}`
-    home: 📂 **Home:** `{home}`
+    home: "📂 **Beranda:** `{home}`"
     plain: "Profil: {profile}\nHome: {home}"
   reasoning:
-    level_default: medium (default)
+    level_default: sedang (bawaan)
     level_disabled: none (nonaktif)
     scope_session: override sesi
     scope_global: config global
@@ -299,10 +299,10 @@ gateway:
     set_global: "🧠 ✓ Reasoning effort diatur ke `{effort}` (disimpan ke config)\n_(berlaku pada pesan berikutnya)_"
     set_global_save_failed: "🧠 ✓ Reasoning effort diatur ke `{effort}` (hanya sesi ini — simpan config gagal)\n_(berlaku pada pesan berikutnya)_"
     set_session: "🧠 ✓ Reasoning effort diatur ke `{effort}` (hanya sesi ini — tambahkan `--global` untuk permanen)\n_(berlaku pada pesan berikutnya)_"
-    quote_label_discord: -# 💭 Reasoning
-    quote_label_md: "> 💭 **Reasoning:**"
+    quote_label_discord: "-# 💭 Penalaran"
+    quote_label_md: "> 💭 **Penalaran:**"
     more_lines: "\n_... ({count} baris lagi)_"
-    block: "💭 **Reasoning:**\n```\n{reasoning}\n```\n\n{response}"
+    block: "💭 **Penalaran:**\n```\n{reasoning}\n```\n\n{response}"
   reload_mcp:
     cancelled: 🟡 /reload-mcp dibatalkan. Tool MCP tidak berubah.
     always_followup: "ℹ️ Panggilan `/reload-mcp` selanjutnya akan berjalan tanpa konfirmasi. Aktifkan kembali lewat `approvals.mcp_reload_confirm: true` di config.yaml."
@@ -387,7 +387,7 @@ gateway:
     err_missing_platform: Platform logis tidak ada
     err_relay_unauthenticated: Relay tidak mengautentikasi target home logis ini
   context:
-    header: 🧠 **Context Window**
+    header: 🧠 **Jendela Konteks**
     model: "Model: `{model}`"
     window: "Window: {total} token"
     in_use: "Terpakai: {used} / {total} ({pct}%)"
@@ -398,27 +398,27 @@ gateway:
     compressions: "Kompresi sesi ini: {count}"
     last_savings: "Kompresi terakhir menghemat: {savings}% konteks"
     totals_header: Total sesi (kumulatif dari {calls} panggilan API)
-    totals_line: Input {input} · Output {output} · Reasoning {reasoning}
+    totals_line: "Masukan {input} · Keluaran {output} · Penalaran {reasoning}"
     total_billed: "Total ditagih: {total}"
     throughput_note: _Ini throughput, bukan ukuran konteks — setiap panggilan mengirim ulang window di atas._
     estimated: "Perkiraan konteks: ~{count} token di {messages} pesan"
     detail_after_first: _(Statistik kompresi dan throughput lengkap tersedia setelah respons agent pertama)_
     no_data: Belum ada data konteks. Kirim pesan untuk memulai sesi.
     category:
-      system_prompt: System prompt
+      system_prompt: Prompt sistem
       tool_definitions: Definisi tool
       rules: Aturan
       skills: Skill
       mcp: MCP
       subagent_definitions: Definisi subagent
-      memory: Memory
+      memory: Memori
       conversation: Percakapan
     category_header: Perkiraan pemakaian per kategori
     no_data_yet: "  (belum ada data — kirim pesan dulu)"
     free_space: Ruang bebas
     category_row: "{glyph} {label} ~{tokens} token ~{pct}%"
     toolset_row: "  {toolset} {count} tool ~{tokens} token"
-    not_available: n/a
+    not_available: t/a
     skill_row: "  indeks {name} ~{index_tokens}  SKILL.md {md_tokens} token"
     and_more: "  … dan {count} lagi"
     toolsets_title: Toolset menurut biaya skema (terbesar dulu)
@@ -438,7 +438,7 @@ gateway:
     matrix_scope_thread: "  thread_id: {thread_id}"
     matrix_scope_mode: "  session_scope: {scope}"
     matrix_scope_key: "  session_key: {session_key}"
-    session_id: "**Session ID:** `{session_id}`"
+    session_id: "**ID Sesi:** `{session_id}`"
     title: "**Judul:** {title}"
     created: "**Dibuat:** {timestamp}"
     last_activity: "**Aktivitas Terakhir:** {timestamp}"
@@ -517,13 +517,13 @@ gateway:
     reply_failed: "✗ Gagal mengirim respons ke proses update: {error}"
     reply_sent: ✓ `{label}` terkirim ke proses update.
     failed_notice: ❌ Update Thor gagal; versi sebelumnya masih berjalan. Jalankan `thor update` di host untuk melihat error lengkapnya, atau coba /update lagi nanti.
-    prompt_default: " (default: {default})"
+    prompt_default: " (bawaan: {default})"
     prompt: "⚡ **Update butuh input darimu:**\n\n{prompt}{default_hint}\n\nBalas `{prefix}approve` (ya) atau `{prefix}deny` (tidak), atau ketik jawabanmu langsung."
     finished: ✅ Update Thor selesai.
     timed_out: ❌ Update Thor timeout setelah 30 menit.
     finished_success: ✅ Update Thor berhasil diselesaikan.
     last_lines: "{msg}\n\nBaris terakhir:\n```\n{tail}\n```"
-    managed_action: update Thor Agent
+    managed_action: perbarui Thor Agent
     not_applicable: "✗ `thor update` tidak berlaku untuk instalasi ini ({method}).\nUpdate dengan: {command}"
   usage:
     rate_limits: ⏱️ **Rate Limit:** {state}
@@ -541,13 +541,13 @@ gateway:
     label_compressions: "Kompresi: {count}"
     breakdown_header: 🧩 **Rincian konteks** _(perkiraan)_
     breakdown_line: "• {label}: ~{count} ({pct}%)"
-    breakdown_cat_system_prompt: System prompt
+    breakdown_cat_system_prompt: Prompt sistem
     breakdown_cat_tool_definitions: Definisi tool
     breakdown_cat_rules: Aturan
     breakdown_cat_skills: Skill
     breakdown_cat_mcp: MCP
     breakdown_cat_subagent_definitions: Definisi subagent
-    breakdown_cat_memory: Memory
+    breakdown_cat_memory: Memori
     breakdown_cat_conversation: Percakapan
     header_session_info: 📊 **Info Sesi**
     label_messages: "Pesan: {count}"
@@ -814,7 +814,7 @@ gateway:
     auto_reset_notice: "◐ Sesi di-reset setelah dihentikan. Riwayat percakapan dibersihkan.\nPakai /resume untuk menjelajah dan memulihkan sesi sebelumnya.\n"
     auto_reset_context_exhausted: "\n\n🔄 Sesi di-reset otomatis — percakapan melewati ukuran konteks maksimum dan tidak bisa dipadatkan lagi. Pesanmu berikutnya akan memulai sesi baru."
     info_model: "◆ Model: `{model}`"
-    info_provider: "◆ Provider: {provider}"
+    info_provider: "◆ Penyedia: {provider}"
     info_context: "◆ Konteks: {tokens} token ({source})"
     info_acting_model: "◆ Model yang bertindak (ditagih untuk run ini): {provider}:{model}"
     info_endpoint: "◆ Endpoint: {url}"
@@ -1027,7 +1027,7 @@ platform:
       clarify_title: Thor butuh input darimu
       clarify_hint_buttons: Pilih salah satu di bawah, atau klik ✏️ Lainnya untuk mengetik jawaban kustom.
       clarify_hint_text: Balas di channel ini dengan jawabanmu.
-      default_hint: " (default: {default})"
+      default_hint: " (bawaan: {default})"
       update_title: Update Butuh Input Darimu
       expired_footer: ⏱ Prompt kedaluwarsa — tidak ada tindakan yang diambil
       already_answered: Sudah dijawab~
@@ -1224,7 +1224,7 @@ platform:
       cancel: ✗ Batal
       more_available: "{count} lagi tersedia — ketik `/model <nama>` langsung"
       title: Konfigurasi Model
-      provider_label: "Provider: {provider}"
+      provider_label: "Penyedia: {provider}"
       select_model: "Pilih model:"
       current_model: "Model saat ini: {model}"
       select_provider: "Pilih provider:"
@@ -1242,7 +1242,7 @@ platform:
       group_not_found: Grup tidak ditemukan.
       cancelled: Pemilihan model dibatalkan.
     prompt:
-      default_hint: " (default: {default})"
+      default_hint: " (bawaan: {default})"
       update_header: "Update butuh input darimu:"
       affirm: ✓ Ya
       negate: ✗ Tidak
@@ -1283,7 +1283,7 @@ platform:
       timed_out: ❌ {verb} timeout
       error: "❌ error {verb}: {error}"
       appended_by: — {label} oleh {user}
-    user_fallback: User
+    user_fallback: Pengguna
     install_hint: Jalankan `thor setup` untuk memasang dukungan Telegram.
   slack:
     approval:
@@ -1357,7 +1357,7 @@ platform:
       no_models: Tidak ada model terautentikasi yang tersedia untuk sesi ini.
       title: ⚙ **Konfigurasi Model**
       current_model: "Model saat ini: `{model}`"
-      provider: "Provider: {provider}"
+      provider: "Penyedia: {provider}"
       react_model: "Beri reaksi untuk memilih model:"
       react_choice: Beri reaksi untuk memilih.
       current_suffix: "{label} ← saat ini"
@@ -1499,11 +1499,11 @@ slash:
     session: Sesi
     configuration: Konfigurasi
     info: Info
-    tools_skills: Tools & Skills
+    tools_skills: Tool & Skill
     plugins: Plugin
     exit: Keluar
-    context: Context
-    background_automation: Background & Automation
+    context: Konteks
+    background_automation: Latar & Otomasi
   shared:
     usage_suffix: "{description} (penggunaan: /{name} {args_hint})"
     alias_for: "{description} (alias untuk /{name})"
@@ -1742,10 +1742,10 @@ cli:
     load_failed_label: Tidak bisa memuat billing
     not_logged_in: Belum login ke Thor Portal.
     run_portal_then: Jalankan `thor portal` untuk login, lalu {cmd}.
-    org_line: "Org: {org}"
-    org_line_role: "Org: {org} · {role}"
+    org_line: "Organisasi: {org}"
+    org_line_role: "Organisasi: {org} · {role}"
     bar_plan_label: paket
-    bar_topup_label: top-up
+    bar_topup_label: isi ulang
     bar_pct_used: " · {pct}% terpakai"
     bar_plan: "{label}[{bar}]  sisa ${remaining} dari ${total}{pct}"
     bar_topup: "{label}[{bar}]  ${remaining} · tidak pernah kedaluwarsa"
@@ -1767,7 +1767,7 @@ cli:
     stepup_stale: Remote Spending masih belum aktif untuk terminal ini — otorisasinya tidak diterima. Coba lagi, atau lakukan perubahan ini di portal.
     something_went_wrong: Ada yang tidak beres.
     under_five: di bawah $5
-    plan_free: Free
+    plan_free: Gratis
     renews_suffix: " · diperbarui {date}"
     plan_line: "Paket: {plan}{renews}"
     free_models_only_hint: "> Free · hanya model gratis. Jalankan /subscription untuk mengakses model berbayar."
@@ -1796,7 +1796,7 @@ cli:
     refill_when_low_generic: Isi ulang saat rendah — menagih kartumu otomatis saat saldo turun di bawah jumlah yang kamu set.
     choice_add_funds: Tambah dana
     desc_add_funds: satu kali tagihan, masuk ke saldomu hari ini
-    choice_auto_reload: Auto-reload
+    choice_auto_reload: Isi ulang otomatis
     desc_auto_reload: isi ulang otomatis saat saldomu menipis
     choice_monthly_limit: Batas bulanan
     desc_monthly_limit: tampilkan batas belanja bulanan (hanya lihat)
@@ -1886,7 +1886,7 @@ cli:
     resume_topup_title: Lanjutkan top-up-mu
     resume_topup_detail: "{amount} siap diselesaikan — tekan Enter untuk melanjutkan."
     resuming_topup: Melanjutkan top-up-mu — mengonfirmasi penyelesaian…
-    auto_reload: Auto-reload
+    auto_reload: Isi ulang otomatis
     auto_reload_hint: Otomatis menambah dana saat saldomu rendah.
     card_on_file: "Kartu tersimpan: {card}"
     no_saved_card_manage_portal: Tidak ada kartu tersimpan — kelola billing di portal.
@@ -2015,7 +2015,7 @@ cli:
   model:
     switched: "✓ Model diganti: {model}"
     acting_model: "Model yang dipakai (ditagih untuk run ini): {model}"
-    reasoning_effort: "Reasoning effort: {effort}"
+    reasoning_effort: "Tingkat penalaran: {effort}"
     reasoning_effort_saved: "Reasoning effort: {effort} (disimpan ke config)"
     saved: Disimpan ke config.yaml
     saved_global: Disimpan ke config.yaml (--global)
@@ -2050,7 +2050,7 @@ cli:
     could_not_load_config: "❌ tidak bisa memuat config: {error}"
     tip_reset_new_session: "Tips: `/reset` langsung memulai sesi baru."
   single_query:
-    query_label: "Query:"
+    query_label: "Kueri:"
     kanban_run_reclaimed: "kanban: run worker ini diambil kembali sebelum dimulai; keluar"
   shared:
     cancel: Batal
@@ -2064,21 +2064,21 @@ cli:
     label_no: tidak
     label_on: "on"
     label_off: "off"
-    label_on_upper: "ON"
-    label_off_upper: "OFF"
+    label_on_upper: "AKTIF"
+    label_off_upper: "MATI"
     label_value: "{label}: {value}"
     just_now: baru saja
     ago_seconds: "{seconds} detik lalu"
     ago_minutes: "{minutes} menit lalu"
     ago_hours: "{hours} jam lalu"
-    duration_s: "{seconds}s"
-    duration_m: "{minutes}m"
-    duration_ms: "{minutes}m {seconds}s"
-    duration_ms_compact: "{minutes}m{seconds}s"
+    duration_s: "{seconds}d"
+    duration_m: "{minutes}mnt"
+    duration_ms: "{minutes}m {seconds}d"
+    duration_ms_compact: "{minutes}m{seconds}d"
     duration_hm: "{hours}j {minutes}m"
     duration_hms: "{hours}j {minutes}m {seconds}s"
     duration_dhm: "{days}h {hours}j {minutes}m"
-    duration_m_rest: "{minutes}m {rest}"
+    duration_m_rest: "{minutes}mnt {rest}"
     duration_hm_rest: "{hours}j {minutes}m {rest}"
     no_active_agent: (._.) Tidak ada agent aktif -- kirim pesan dulu.
     n_more: "{count} lagi"
@@ -2114,12 +2114,12 @@ cli:
     picker_title_effort: ⚙ Model Picker — Reasoning effort untuk {model}
     picker_current_labeled: "{label}  ← saat ini"
     picker_effort_hint: Berlaku bersama pergantian model (cakupan sama) — Enter untuk memilih
-    picker_title_models: ⚙ Model Picker — {provider}
-    picker_provider_fallback: Provider
+    picker_title_models: "⚙ Pemilih Model — {provider}"
+    picker_provider_fallback: Penyedia
     picker_filter_hint: "Filter: {query}▏  ({shown}/{total} cocok — ketik untuk mempersempit, Backspace untuk menghapus)"
     picker_select_hint: Pilih model ({count} tersedia) — ketik untuk memfilter
     picker_empty: Tidak ada model yang terdaftar untuk provider ini. Pakai Kembali atau Batal.
-    palette_title: ⚙ Command Palette
+    palette_title: ⚙ Palet Perintah
     palette_filter_hint: "Filter: {query}▏  ({shown}/{total} cocok — Enter menyisipkan, Esc membatalkan)"
     palette_hint: Ketik untuk memfilter {total} command — ↑/↓ lalu Enter menyisipkan, Esc membatalkan
     palette_empty: (tidak ada command yang cocok)
@@ -2246,8 +2246,8 @@ cli:
     wake_status_title: Status Wake Word
     label_state: "  Status:      {state}"
     label_phrase: "  Frasa:       \"{phrase}\""
-    label_provider: "  Provider:    {provider}"
-    label_surface: "  Surface:     {surface}"
+    label_provider: "  Penyedia:     {provider}"
+    label_surface: "  Permukaan:    {surface}"
     label_new_session: "  Sesi baru:   {value}"
     mic_silent_warning: ⚠ Mikrofon hanya mengirim keheningan — listener tidak mendengar apa pun.
     mic_silent_macos_hint: "Di macOS: System Settings > Privacy & Security > Microphone — izinkan terminal/Thor-mu, lalu /wake off + /wake on."
@@ -2256,8 +2256,8 @@ cli:
     tts_no_provider: "Peringatan: Tidak ada provider TTS yang tersedia. Pasang edge-tts atau set API key."
     tts_status: TTS suara {status}.
     status_title: Status Mode Suara
-    label_mode: "  Mode:      {value}"
-    label_tts: "  TTS:       {value}"
+    label_mode: "  Mode:         {value}"
+    label_tts: "  TTS:          {value}"
     label_recording: "  Merekam:   {value}"
     label_record_key: "  Tombol rekam: {shortcut}"
     label_requirements: "Persyaratan:"
@@ -2297,7 +2297,7 @@ cli:
     more_queued: +{count} lagi
     transcript_unavailable: Transkrip langsung belum tersedia.
     control_pending: Mengirim…
-    steer_prompt: "Steer: "
+    steer_prompt: "Arahkan: "
     roster_empty: Tidak ada subagent hidup atau proses background. Hasilnya masuk ke percakapan.
     entry_gone: Entri ini sudah tidak hidup lagi.
     noun_process: proses
@@ -2307,8 +2307,8 @@ cli:
     footer_steering: Enter mengantrekan arahan · Esc membatalkan (tidak menghentikan)
     footer_steering_compact: Enter kirim · Esc batal
     footer_steer_key: " s steer"
-    footer_steer_key_long: " · s steer"
-    footer_detail_compact: PgUp/Dn ·{steer} x stop · Esc
+    footer_steer_key_long: " · s arahkan"
+    footer_detail_compact: "PgUp/Dn ·{steer} x hentikan · Esc"
     footer_roster_compact: ↑↓ · Enter ikuti · Ctrl+T tutup
     footer_detail: Esc daftar · PgUp/PgDn ikuti{steer} · x stop
     footer_roster: ↑/↓ pilih · Enter ikuti{steer} · x stop · q/Ctrl+T tutup
@@ -2452,7 +2452,7 @@ cli:
     rejected_empty: Steer ditolak (payload kosong).
     no_agent_queued: "Tidak ada agent yang jalan; diantrekan sebagai turn berikutnya: {preview}"
   title:
-    session_id: "Session ID: {session_id}"
+    session_id: "ID Sesi: {session_id}"
     current: "Judul: {title}"
     pending: "Judul (tertunda): {title}"
     none_set_usage: "Belum ada judul. Penggunaan: /title <judul sesimu>"
@@ -2466,7 +2466,7 @@ cli:
     removes_last_exchange: Ini menghapus pertukaran user/assistant terakhir dari riwayat.
     removes_last_turns: Ini menghapus {count} turn user terakhir dari riwayat.
   resume:
-    tool_calls_one: "[{count} tool call: {names}]"
+    tool_calls_one: "[{count} pemanggilan tool: {names}]"
     tool_calls_other: "[{count} tool call: {names}]"
     event_model_changed: model diganti
     event_delegation_completed: delegasi background selesai
@@ -2528,7 +2528,7 @@ cli:
     sending_after_interrupt_multi: "⚡ Mengirim {count} pesan setelah interrupt: '{preview}'"
     sending_after_interrupt: "⚡ Mengirim setelah interrupt: '{preview}'"
     delivering_leftover_steer: "⏩ Mengirim sisa /steer sebagai turn berikutnya: '{preview}'"
-    reasoning_label: Reasoning
+    reasoning_label: Penalaran
     reasoning_more_lines: "... ({count} baris lagi — /reasoning full untuk menampilkan)"
     billing_cta_thor: Jalankan [bold]/topup[/] untuk menambah kredit, atau [bold]/subscription[/] untuk mengubah paket.
     billing_cta_provider: Tambah kredit dengan {provider}
@@ -2549,14 +2549,14 @@ cli:
     status_tools_deferred: tool ditunda
     status_tools_count: "{count} tool"
     status_toolsets: "toolset: {toolsets}"
-    status_provider: "provider: {provider}"
+    status_provider: "penyedia: {provider}"
     status_auth: "auth: {source}"
     reasoning_display_suffix: " (tampilan: {state})"
     yolo_bypass_suffix: " (bypass YOLO aktif)"
     ctx_left_prefix: "sisa {percent}% · "
     ctx_tokens_used: "{left}{used} / {max} token terpakai"
     status_title: Status Thor CLI
-    label_reasoning: Reasoning
+    label_reasoning: Penalaran
     label_approvals: Persetujuan
     label_context: Konteks
     recent_intro: "(._.) Belum ada pesan di chat saat ini — ini sesi terakhir yang bisa kamu lanjutkan:"
@@ -2636,13 +2636,13 @@ cli:
     voice_tts_on: " | TTS aktif"
     voice_continuous: " | Kontinu"
     voice_mode_hint: 🎤 Mode suara{tts}{cont}  —  {shortcut} untuk merekam
-    goal_turns: ⊙ goal {used}/{max}
-    goal: ⊙ goal
+    goal_turns: "⊙ target {used}/{max}"
+    goal: ⊙ target
     ctx_pinned: " dipatok"
     ctx_fallback: " fallback"
     ctx_unknown: ctx --
     yolo_badge: ⚠ YOLO
-    stash_header_one: 📌 Stash ({count} item)
+    stash_header_one: "📌 Simpanan ({count} item)"
     stash_header_other: 📌 Stash ({count} item)
     stash_footer: ↑↓ Enter=pulihkan  D=hapus  Esc
     stash_footer_compact: ↑↓ ⏎ D Esc
@@ -2717,7 +2717,7 @@ cli:
       display_off: mati
       full_state_full: penuh
       full_state_clamped: dibatasi 10 baris
-      effort_line: "Reasoning effort:  {level}"
+      effort_line: "Tingkat penalaran:  {level}"
       display_line: "Tampilan reasoning: {display} ({full})"
       usage: "Penggunaan: /reasoning <none|minimal|low|medium|high|xhigh|max|ultra|show|hide|full|clamp> [--global]"
       display_saved: "✓ Tampilan reasoning: {headline} (tersimpan)"
@@ -2734,7 +2734,7 @@ cli:
       note: TUI akan memakai gaya baru ini pada render berikutnya.
     fast:
       not_supported: (._.) /fast hanya tersedia untuk model yang mendukung fast mode (OpenAI Priority Processing atau Anthropic Fast Mode).
-      feature_generic: Fast mode
+      feature_generic: Mode cepat
       feature_anthropic: Anthropic Fast Mode
       feature_openai: Priority Processing
       feature_ultrafast: OpenAI Ultrafast
@@ -2748,7 +2748,7 @@ cli:
       progress_drawing: ┊ menggambar {state}…
       describe_prompt: "(o_o) Deskripsikan pet-mu: "
       usage: "(o_o) Penggunaan: /hatch <deskripsi>  (mis. /hatch rubah siber mungil)"
-      default_name: Pet
+      default_name: Peliharaan
       designing: (o_o) Merancang '{concept}'… (butuh sekitar satu menit panggilan model gambar)
       base_failed: "(x_x) Gagal membuat tampilan dasar: {error}"
       no_base_draft: (x_x) Draft dasar tidak kembali — coba lagi.
@@ -2832,7 +2832,7 @@ cli:
       child_line: "└ anak {index}: {api_calls} panggilan api · {doing}"
       last_activity: " · aktivitas terakhir {seconds} dtk lalu"
       agent_running: "Agent: berjalan"
-      agent_idle: "Agent: idle"
+      agent_idle: "Agent: menganggur"
     journey:
       failed: "/journey gagal: {error}"
     paste:
@@ -2863,7 +2863,7 @@ cli:
       session_reset: Sesi di-reset. Konfigurasi tool baru sudah aktif.
     profile:
       profile: "Profil:  {profile}"
-      home: "Home:    {home}"
+      home: "Beranda: {home}"
     handoff:
       usage: "Penggunaan: /handoff <platform>"
       usage_detail_1: Mengalihkan sesi saat ini ke home channel platform tersebut.
@@ -2909,7 +2909,7 @@ cli:
       branch_session: "Sesi branch: {session_id}"
     worktree:
       active: "Worktree aktif: {path}"
-      branch: "Branch: {branch}"
+      branch: "Cabang: {branch}"
       none_active: Tidak ada worktree aktif untuk sesi ini.
       hint_new: /worktree new [nama] — buat satu dan pindahkan sesi ini ke sana
       hint_prune: /worktree prune      — bersihkan tree basi dan branch yang sudah di-merge
@@ -2985,7 +2985,7 @@ cli:
     blueprint:
       failed: "Command blueprint cron gagal: {error}"
     curator:
-      failed: "(._.) curator: {error}"
+      failed: "(._.) kurator: {error}"
     kanban:
       failed: "(._.) error kanban: {error}"
     memory:
@@ -3003,19 +3003,19 @@ cli:
       usage: "Penggunaan: /bg <prompt>\nContoh: /bg Ringkas berita HN teratas hari ini\n(Untuk pertanyaan sampingan soal percakapan ini, pakai /btw <pertanyaan>.)\nTugas berjalan di sesi terpisah dan hasilnya ditampilkan di sini setelah selesai."
       no_credentials: "(>_<) Tidak bisa memulai tugas background: tidak ada kredensial yang valid."
       started: "🔄 Tugas background #{number} dimulai: \"{preview}\""
-      task_id: "Task ID: {task_id}"
+      task_id: "ID Tugas: {task_id}"
       keep_chatting: Kamu bisa lanjut mengobrol — hasilnya akan muncul setelah selesai.
       label: "Tugas background #{number}"
       complete: "✅ Tugas background #{number} selesai"
       prompt: "Prompt: \"{preview}\""
-      title_suffix: "(background #{number})"
+      title_suffix: "(latar #{number})" #{number})"
       no_response: (Tidak ada respons yang dihasilkan)
     side_result:
       complete: "{label} selesai"
       failed: "❌ {label} gagal: {error}"
     login:
-      label: Sign-in
-      title_suffix: (sign-in)
+      label: Masuk
+      title_suffix: (masuk)
       no_result: (Tidak ada hasil)
     btw:
       usage: "Penggunaan: /btw <pertanyaan>\nContoh: /btw error itu ada di file mana?\nMenjawab pertanyaan cepat soal percakapan ini tanpa menghentikannya.\n(Untuk tugas background independen, pakai /bg <prompt>.)"
@@ -3036,7 +3036,7 @@ cli:
     browser:
       engine_not_in_use: "⚠ browser.engine bernilai 'lightpanda' tapi TIDAK dipakai: {reason}"
       engine_lightpanda: "Engine: Lightpanda — {reason} (tanpa screenshot)"
-      binary: "Binary: {path}"
+      binary: "Biner: {path}"
       binary_not_found: ⚠ binary lightpanda tidak ditemukan — {hint}
       scheme_missing: (tidak ada)
       unsupported_scheme: "⚠ Skema url browser tidak didukung: {scheme} (harus salah satu dari: http, https, ws, wss)"
@@ -3065,7 +3065,7 @@ cli:
       status_connected: "🌐 Browser: tersambung ke browser keluarga Chromium yang hidup via CDP"
       status_reachable: "Status: ✓ bisa dijangkau"
       status_unreachable: "Status: ⚠ tidak bisa dijangkau (browser mungkin tidak jalan)"
-      status_cloud: "🌐 Browser: {provider} (cloud)"
+      status_cloud: "🌐 Peramban: {provider} (cloud)"
       status_connect_hint: /browser connect      — sambungkan ke browser keluarga Chromium milikmu
       status_disconnect_hint: /browser disconnect   — kembali ke default
       usage: "Penggunaan: /browser connect|disconnect|status"
@@ -3142,12 +3142,12 @@ cli:
       usage: /timestamps [on|off|status]
       label: Timestamp pesan
     update:
-      managed_action: update Thor Agent
+      managed_action: perbarui Thor Agent
       choice_update: Update Sekarang
       choice_update_desc: keluar dari sesi saat ini dan update Thor Agent
       choice_cancel: Batal
       choice_cancel_desc: tetap di sesi saat ini
-      title: ⚡  Update Thor Agent
+      title: ⚡  Perbarui Thor Agent
       detail: Ini akan keluar dari sesi saat ini dan menjalankan `thor update`.
       cancelled: 🟡 /update dibatalkan.
       launching: ⚡ Menjalankan update...
@@ -3183,7 +3183,7 @@ cli:
     google_vertex_oauth: Google OAuth (Vertex AI)
     key_cmd_token: token key_cmd (command)
     minimax_oauth: MiniMax OAuth
-    token_provider: Token provider
+    token_provider: Penyedia token
     api_key_not_set: Belum diatur!
     value_not_set: belum diatur
     section_model: Model
@@ -3192,11 +3192,11 @@ cli:
     section_session: Sesi
     label_model: "Model:"
     label_base_url: "Base URL:"
-    label_api_key: "API Key:"
-    label_environment: "Environment:"
-    label_ssh_target: "SSH Target:"
+    label_api_key: "Kunci API:"
+    label_environment: "Lingkungan:"
+    label_ssh_target: "Target SSH:"
     label_working_dir: "Direktori Kerja:"
-    label_timeout: "Timeout:"
+    label_timeout: "Batas waktu:"
     label_max_turns: "Maks Turn:"
     label_toolsets: "Toolset:"
     label_verbose: "Verbose:"
@@ -3237,7 +3237,7 @@ cli:
     header: (^_^)? Command yang Tersedia
     section_session: Sesi
     section_configuration: Konfigurasi
-    section_tools_skills: Tools & Skills
+    section_tools_skills: Tool & Skill
     section_info: Info
     section_exit: Keluar
     section_context: Konteks
@@ -3334,7 +3334,7 @@ cli:
     label_model: "Model:"
     label_input_tokens: "Token input:"
     label_output_tokens: "Token output:"
-    label_reasoning_subset: "↳ Reasoning (subset):"
+    label_reasoning_subset: "↳ Penalaran (subset):"
     label_prompt_tokens_total: "Token prompt (total):"
     label_completion_tokens: "Token completion:"
     label_total_tokens: "Total token:"
@@ -3355,8 +3355,8 @@ cli:
   whoami:
     you_label: "Kamu:"
     you_value: cli (terminal lokal)
-    user_label: "User:"
-    tier_label: "Tier:"
+    user_label: "Pengguna:"
+    tier_label: "Tingkat:"
     tier_value: tanpa batasan
     slash_commands_label: "Slash command:"
     slash_commands_value: semua tersedia
@@ -3523,7 +3523,7 @@ display:
       deleted: dihapus
     label:
       skill: Skill
-      memory: Memory
+      memory: Memori
       user: Profil user
     summary_cli: "  💾 Tinjauan self-improvement: {summary}"
     summary_callback: "💾 Tinjauan self-improvement: {summary}"
