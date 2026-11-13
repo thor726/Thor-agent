@@ -239,7 +239,7 @@ def project_plugins_warning(policy):
 
 def create_local_session(authority, actor, params, *, trusted_policy=None, trusted_secrets=None, skills_prompt=None,
                          client_local=False):
-    """Stage, commit and publish a local session inline (synchrothor callers)."""
+    """Stage, commit and publish a local session inline (synchronous callers)."""
     from gateway.session_local_recovery import restore_local_session
     from thor_state_local import commit_local_session
     staged = stage_local_session(authority, actor, params, trusted_policy=trusted_policy,

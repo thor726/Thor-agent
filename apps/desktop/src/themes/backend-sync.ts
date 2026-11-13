@@ -26,7 +26,7 @@ import { skinToDesktopTheme } from './skin'
 import { type DesktopTheme, isValidTheme } from './types'
 
 // Cached so the boot-time paint (which runs before the gateway connects) can
-// resolve a persisted skin pick synchrothorly, like a built-in or a user
+// resolve a persisted skin pick synchronously, like a built-in or a user
 // install. Without it the stored name failed `resolveTheme` on every launch
 // and the app silently painted the default until the next `skin.changed`.
 const BACKEND_THEMES_KEY = 'thor-desktop-backend-themes-v1'

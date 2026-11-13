@@ -1829,7 +1829,9 @@ def test_oauth_system_prompt_sanitizer_preserves_docs_url():
     )
 
     system_text = "\n".join(block["text"] for block in kwargs["system"])
-    assert "Claude Code by Anthropic uses claude-code skills." in system_text
+    # The product-name rewrite covers both the product and its builder phrase; the slug
+    # rewrite stays prose-only so addresses (paths, hosts, repo slugs, mailboxes) survive.
+    assert "Claude Code by Claude Code uses claude-code skills." in system_text
     assert "https://thor-agent.thor-agent.local/docs" in system_text
     # Paths and repo slugs are addresses too: a subagent told to run
     # ``~/.thor/claude-code/venv/bin/python`` fails on a file that does not exist.

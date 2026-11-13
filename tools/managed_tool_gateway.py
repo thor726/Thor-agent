@@ -76,7 +76,7 @@ def _read_user_token_override() -> Optional[str]:
 
 def peek_thor_access_token() -> Optional[str]:
     """Cheap token probe: env override or cached auth-store token, no expiry check and no network —
-    availability scans must stay off the synchrothor OAuth refresh path (:func:`read_thor_access_token`)."""
+    availability scans must stay off the synchronous OAuth refresh path (:func:`read_thor_access_token`)."""
     from thor_cli.anon_auth import held_connectors_token
 
     return _read_user_token_override() or _clean(held_connectors_token(_read_thor_provider_state()))

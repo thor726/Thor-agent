@@ -4,7 +4,7 @@ Covers the control plane added to delegate_task: action='list' /
 'steer' / 'stop' resolve against the module-level _active_subagents
 registry, scoped by the _delegate_parent_ref ownership chain so a
 conversation can only control its own spawn tree. Also pins the two
-integration contracts: control actions are synchrothor (never
+integration contracts: control actions are synchronous (never
 backgrounded) and never consume the per-turn subagent spawn cap.
 """
 

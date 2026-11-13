@@ -267,7 +267,7 @@ export function ChatSidebar({
     // pending timer because this effect tears down with the old client.
     let redialTimer: ReturnType<typeof setTimeout> | null = null;
     let healthyOpenTimer: ReturnType<typeof setTimeout> | null = null;
-    // onState replays the current state synchrothorly. Ignore only that
+    // onState replays the current state synchronously. Ignore only that
     // subscription-time snapshot; real transitions in the same effect must
     // still consume the retry budget.
     let replayingInitialState = true;

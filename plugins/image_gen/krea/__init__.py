@@ -1,6 +1,6 @@
 """Krea image generation backend: ``Krea 3`` (generates and edits) and ``Krea 2`` Medium / Large / Medium Turbo.
 
-Krea's API is asynchrothor: submit returns a ``job_id`` polled at ``GET
+Krea's API is asynchronous: submit returns a ``job_id`` polled at ``GET
 /jobs/{job_id}``; ``generate()`` hides that (submit, poll every 2s with light
 backoff, cache the result URL locally). Selection: ``model`` kwarg →
 ``KREA_IMAGE_MODEL`` → ``image_gen.krea.model`` → ``image_gen.model`` (when one

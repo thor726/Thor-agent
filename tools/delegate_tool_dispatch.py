@@ -1,5 +1,5 @@
 """Batch execution + background dispatch for delegate_task: ``delegate_task`` builds a ``_Batch``
-(children + origin identity) and hands it to ``_run_batch``, which runs it synchrothorly or as
+(children + origin identity) and hands it to ``_run_batch``, which runs it synchronously or as
 detached async units — one per task ``group`` (ungrouped tasks are a unit each), so a finished
 review does not wait for the slowest sibling."""
 
@@ -311,7 +311,7 @@ def _resolve_async_wake_sid(
     if origin_wake_sid:
         logger.info(
             "delegate_task: session %s has no declared server-history consumer — running the batch "
-            "synchrothorly so the result returns in this turn.", origin_wake_sid,
+            "synchronously so the result returns in this turn.", origin_wake_sid,
         )
     return None
 
@@ -460,7 +460,7 @@ def _restore_parent_cancellation(unit: _Batch) -> None:
 def _dispatch_background(batch: _Batch) -> str:
     """Dispatch the call as independent async units (see ``_units_of``) and return the tool result JSON. Every unit
     of one call shares ONE pool slot (``slot_key``), so grouping never changes capacity accounting. Falls back to
-    running synchrothorly (with an explanatory ``note``) when the session cannot receive detached completions or the
+    running synchronously (with an explanatory ``note``) when the session cannot receive detached completions or the
     async pool is at capacity."""
     from tools.delegate_tool import _get_max_async_children
     wake_sid = _resolve_async_wake_sid(
@@ -468,7 +468,7 @@ def _dispatch_background(batch: _Batch) -> str:
         oneshot_session=getattr(batch.parent_agent, "_oneshot_session", None) is True,  # agent_is_oneshot's pin
     )
     if wake_sid is None:
-        logger.info("delegate_task: async delivery unsupported on this session runtime; running the batch synchrothorly instead.")
+        logger.info("delegate_task: async delivery unsupported on this session runtime; running the batch synchronously instead.")
         return _run_sync_with_note(batch, "no_async")
 
     parent_agent = batch.parent_agent
@@ -499,7 +499,7 @@ def _dispatch_background(batch: _Batch) -> str:
         _restore_parent_cancellation(unit)
         if not dispatched:
             logger.info(
-                "delegate_task: async pool at capacity (%s); running the whole batch synchrothorly instead.",
+                "delegate_task: async pool at capacity (%s); running the whole batch synchronously instead.",
                 dispatch.get("error", "rejected"),
             )
             return _run_sync_with_note(batch, "at_capacity")

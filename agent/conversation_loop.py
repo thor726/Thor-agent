@@ -1304,7 +1304,7 @@ def _redecorate_prompt_cache_for_provider(
         tools_for_api if tools_for_api is not None else getattr(agent, "tools", [])
     )
     if prepared is not None and getattr(agent, "provider", None) == "moa":
-        # Prepared MoA state is canonical: the synchrothor acting-aggregator
+        # Prepared MoA state is canonical: the synchronous acting-aggregator
         # sender owns its destination-local cache plan after it resolves the slot.
         completions = getattr(getattr(agent.client, "chat", None), "completions", None)
         rebase = getattr(completions, "rebase_prepared_request", None)

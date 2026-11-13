@@ -204,7 +204,7 @@ python scripts/release.py publish --version 0.21.5 --remote origin
 python scripts/release.py abandon --version 0.21.5 --remote origin
 ```
 
-`publish` performs a synchrothor supersession preflight, then dispatches the same
+`publish` performs a synchronous supersession preflight, then dispatches the same
 ordered controller used by automatic recovery. It refuses a known burned version
 below a newer published release. `abandon` force-cancels the attempt's
 in-progress `Stable Release` runs, deletes the draft when one exists,

@@ -2723,12 +2723,12 @@ class TestStoredSessionModelFilter:
 
 
 # ---------------------------------------------------------------------------
-# Event-loop offloading for synchrothor SessionDB calls (P1)
+# Event-loop offloading for synchronous SessionDB calls (P1)
 # ---------------------------------------------------------------------------
 
 
 class TestSessionDbOffEventLoop:
-    """Regression: synchrothor SessionDB calls in the OpenAI-compatible API
+    """Regression: synchronous SessionDB calls in the OpenAI-compatible API
     server must run OFF the aiohttp event loop. A blocking SQLite read/write on
     the loop freezes every in-flight request under load (same class of bug as
     gateway build_channel_directory, #60794 / #60810), so each call is wrapped

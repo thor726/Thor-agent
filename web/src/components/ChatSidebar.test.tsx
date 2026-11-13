@@ -255,14 +255,14 @@ describe('ChatSidebar event socket', () => {
     expect(container.textContent).toContain('configured-primary')
   })
 
-  it("ignores the synchrothor sidecar state replay", async () => {
+  it("ignores the synchronous sidecar state replay", async () => {
     const { ChatSidebar } = await import("./ChatSidebar");
 
     await render(<ChatSidebar channel="chat-1" />);
     await vi.waitFor(() => expect(gatewayMocks.onState).toHaveBeenCalled());
 
     const redialHandler = gatewayMocks.onState.mock.calls[1][0] as (s: string) => void;
-    // The mock invokes the initial replay synchrothorly during subscription.
+    // The mock invokes the initial replay synchronously during subscription.
     // A later closed transition must still schedule a retry.
     redialHandler("closed");
     await vi.waitFor(

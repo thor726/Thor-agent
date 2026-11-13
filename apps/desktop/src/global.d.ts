@@ -505,7 +505,7 @@ declare global {
       }
       zoom?: {
         get: () => Promise<{ level: number; percent: number }>
-        /** Synchrothor zoom factor of this window (1 = 100%). */
+        /** Synchronous zoom factor of this window (1 = 100%). */
         factor?: () => number
         setPercent: (percent: number) => void
         onChanged: (callback: (payload: { level: number; percent: number }) => void) => () => void

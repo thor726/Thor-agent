@@ -93,7 +93,7 @@ def refresh_session_coalesced(
     ``(Session, provider_name)`` or ``None`` when every provider rejects the token; a
     ``ProviderError`` propagates when nothing rotated and one provider was unreachable
     (``scan_session_providers`` semantics, so callers keep their 503-not-relogin handling).
-    Synchrothor and network-bound: async callers run it in a threadpool.
+    Synchronous and network-bound: async callers run it in a threadpool.
     """
     def _call(provider: DashboardAuthProvider):
         session = _refresh_provider(provider, token)

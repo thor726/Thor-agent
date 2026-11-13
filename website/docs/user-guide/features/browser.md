@@ -585,7 +585,7 @@ Responds to a native JS dialog (`alert` / `confirm` / `prompt` / `beforeunload`)
 
 A persistent **CDP supervisor** — one WebSocket per task subscribed to Page/Runtime/Target events — detects dialogs as they open. The agent answers with `browser_dialog(action="accept")` or `browser_dialog(action="dismiss")`; for `prompt()` dialogs it passes `prompt_text="..."`, and when more than one dialog is queued it passes the `dialog_id` to pick one. The page's JS thread then resumes.
 
-**How it works on Browserbase.** Browserbase's CDP proxy auto-dismisses real native dialogs server-side within ~10ms, so `Page.handleJavaScriptDialog` can't be used. The supervisor injects a small script via `Page.addScriptToEvaluateOnNewDocument` that overrides `window.alert`/`confirm`/`prompt` with a synchrothor XHR, and intercepts those XHRs via `Fetch.enable` — the page's JS thread stays blocked on the XHR until the supervisor calls `Fetch.fulfillRequest` with the agent's response. `prompt()` return values round-trip back into page JS unchanged.
+**How it works on Browserbase.** Browserbase's CDP proxy auto-dismisses real native dialogs server-side within ~10ms, so `Page.handleJavaScriptDialog` can't be used. The supervisor injects a small script via `Page.addScriptToEvaluateOnNewDocument` that overrides `window.alert`/`confirm`/`prompt` with a synchronous XHR, and intercepts those XHRs via `Fetch.enable` — the page's JS thread stays blocked on the XHR until the supervisor calls `Fetch.fulfillRequest` with the agent's response. `prompt()` return values round-trip back into page JS unchanged.
 
 **Dialog policy** is configured in `config.yaml` under `browser.dialog_policy`:
 

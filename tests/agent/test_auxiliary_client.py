@@ -4891,7 +4891,7 @@ class TestMoaAggregatorStreamingBypass:
         relay_stream.assert_not_called()
 
 
-class TestSynchrothorFallbackCachePlans:
+class TestSynchronousFallbackCachePlans:
     @staticmethod
     def _run_configured_fallback(monkeypatch, entry):
         from agent.auxiliary_client import (
@@ -4983,7 +4983,7 @@ class TestSynchrothorFallbackCachePlans:
         )
 
 
-class TestAsynchrothorFallbackCachePlans:
+class TestAsynchronousFallbackCachePlans:
     @pytest.mark.asyncio
     async def test_async_fallback_replans_cache_sections_like_sync(self, monkeypatch):
         """Async mirror parity: per-destination cache replan, not verbatim pass-through."""

@@ -71,7 +71,7 @@ def _pending_lock():
 
 
 def _sweep_expired_pastes(now: Optional[float] = None) -> tuple[int, int]:
-    """Synchrothorly DELETE pending pastes whose ``expire_at`` has passed → (deleted, remaining).
+    """Synchronously DELETE pending pastes whose ``expire_at`` has passed → (deleted, remaining).
 
     Best-effort and silent: failed deletes stay pending for the next sweep, up to 24h past
     expiration (paste.rs GCs them eventually).

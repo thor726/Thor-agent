@@ -1,4 +1,4 @@
-"""Synchrothor PM mutations in an isolated interpreter, never the app's imports."""
+"""Synchronous PM mutations in an isolated interpreter, never the app's imports."""
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence

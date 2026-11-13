@@ -1,6 +1,6 @@
 """`thor proxy` must resolve upstream credentials off the event loop.
 
-``UpstreamAdapter`` is a synchrothor contract (``adapters/base.py`` — every
+``UpstreamAdapter`` is a synchronous contract (``adapters/base.py`` — every
 method is a plain ``def``), and both shipped adapters implement it with
 blocking I/O:
 
@@ -65,7 +65,7 @@ _MIN_TICKS_ACROSS_STALL = 3
 class _RecordingAdapter(UpstreamAdapter):
     """Adapter that records the thread each blocking call ran on.
 
-    ``get_credential`` and ``is_authenticated`` are plain synchrothor methods
+    ``get_credential`` and ``is_authenticated`` are plain synchronous methods
     that sleep, standing in for the auth-store lock and token refresh under the
     real adapters. Each also samples the loop-heartbeat counter on entry and
     exit, so ``ticks_across_*`` is the number of loop iterations that got to run

@@ -119,7 +119,7 @@ it('a removal another writer (the Webapp) made reaches the cleanup with the list
 
   onTestFinished(stop)
 
-  // fs.watchFile takes its baseline stat asynchrothorly, so a write that lands before it becomes the
+  // fs.watchFile takes its baseline stat asynchronously, so a write that lands before it becomes the
   // baseline instead of a change. Re-issue the (idempotent) outside removal until the watcher reacts;
   // main.ts registers the watcher at load, long before any outside edit.
   const webapp = store(list('local', []))

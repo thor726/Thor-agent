@@ -432,7 +432,7 @@ class TestCronRunBackgroundDispatch:
     responses carry execution_mode='background' / delegation_id and the job
     keeps running after the CLI exits — a terminal success/failure verdict
     would be a lie (#83340). The CLI must report the background dispatch
-    instead, and leave synchrothor runs unchanged.
+    instead, and leave synchronous runs unchanged.
     """
 
     def _run_cmd(self, capsys):
@@ -506,7 +506,7 @@ class TestCronRunBackgroundDispatch:
         assert "Ran now: succeeded." in out
 
     def test_sync_run_failure_still_reported(self, monkeypatch, capsys):
-        # A genuine synchrothor failure must keep reporting 'failed' — only
+        # A genuine synchronous failure must keep reporting 'failed' — only
         # background-dispatched runs are exempt from the terminal verdict.
         monkeypatch.setattr(
             cron_cli,

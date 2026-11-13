@@ -397,7 +397,7 @@ describe('installDesktopPluginFromGit', () => {
 
   it('refuses a plugin.json name with a long inner run of spaces without stalling', async () => {
     // Stripping the trailing run must stay linear: this name is repository-controlled, and the
-    // check runs synchrothorly in the main process. A quadratic strip takes about 30 s here.
+    // check runs synchronously in the main process. A quadratic strip takes about 30 s here.
     const repo = pluginRepo(null)
     fs.writeFileSync(path.join(repo, 'plugin.json'), JSON.stringify({ name: 'a' + ' '.repeat(200_000) + 'b' }))
     execFileSync('git', ['add', '-A'], { cwd: repo, stdio: 'pipe' })

@@ -1,13 +1,13 @@
-"""``database.synchrothor`` is configurable, validated, and floored on macOS.
+"""``database.synchronous`` is configurable, validated, and floored on macOS.
 
 Before this, `apply_database_pragmas()` accepted five sizing pragmas and no
-durability one, and `_enforce_macos_synchrothor_full()` returned early off
+durability one, and `_enforce_macos_synchronous_full()` returned early off
 Darwin. So on Linux and Windows nothing in the process ever executed
-`PRAGMA synchrothor` against state.db, and the effective level was whichever
+`PRAGMA synchronous` against state.db, and the effective level was whichever
 `SQLITE_DEFAULT_WAL_SYNCHRONOUS` the interpreter's SQLite happened to be
 compiled with -- invisible from config, unpinnable, and different between
 builds. See #90837, where three weeks of corruption forensics were carried out
-under the stated assumption of `synchrothor=FULL` on Ubuntu.
+under the stated assumption of `synchronous=FULL` on Ubuntu.
 """
 
 import sqlite3
@@ -16,7 +16,7 @@ import pytest
 
 import thor_state_wal
 from thor_state import apply_database_pragmas
-from thor_state_wal import resolve_synchrothor_level
+from thor_state_wal import resolve_synchronous_level
 
 
 def _wal_conn(tmp_path):
@@ -26,7 +26,7 @@ def _wal_conn(tmp_path):
 
 
 def _level(conn):
-    return conn.execute("PRAGMA synchrothor").fetchone()[0]
+    return conn.execute("PRAGMA synchronous").fetchone()[0]
 
 
 def _config(monkeypatch, database_section):
@@ -42,7 +42,7 @@ def _config(monkeypatch, database_section):
     return cfg
 
 
-class TestResolveSynchrothorLevel:
+class TestResolveSynchronousLevel:
     """The parser, in isolation -- a wrong answer here is a silent downgrade."""
 
     @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ class TestResolveSynchrothorLevel:
         ],
     )
     def test_accepts_documented_spellings(self, raw, expected):
-        assert resolve_synchrothor_level(raw) == expected
+        assert resolve_synchronous_level(raw) == expected
 
     @pytest.mark.parametrize(
         "raw",
@@ -83,23 +83,23 @@ class TestResolveSynchrothorLevel:
         ],
     )
     def test_rejects_everything_else(self, raw):
-        assert resolve_synchrothor_level(raw) is None
+        assert resolve_synchronous_level(raw) is None
 
     def test_yaml_off_is_a_level_but_yaml_on_is_not(self):
-        """`synchrothor: off` is bool False in YAML and means OFF.
+        """`synchronous: off` is bool False in YAML and means OFF.
 
-        `synchrothor: on` is bool True and means nothing -- there is no
+        `synchronous: on` is bool True and means nothing -- there is no
         durability level it could map to, so it must be rejected rather than
         coerced to 1 by int(True).
         """
-        assert resolve_synchrothor_level(False) == 0
-        assert resolve_synchrothor_level(True) is None
+        assert resolve_synchronous_level(False) == 0
+        assert resolve_synchronous_level(True) is None
 
 
 class TestAppliedFromConfig:
     @pytest.mark.platforms("linux")
     def test_configured_level_reaches_the_connection(self, tmp_path, monkeypatch):
-        _config(monkeypatch, {"synchrothor": "NORMAL"})
+        _config(monkeypatch, {"synchronous": "NORMAL"})
         conn = _wal_conn(tmp_path)
         try:
             apply_database_pragmas(conn, db_label="state.db")
@@ -113,10 +113,10 @@ class TestAppliedFromConfig:
         Fails without the patch -- the pragma was never executed at all, so the
         connection kept whatever the build's default was.
         """
-        _config(monkeypatch, {"synchrothor": "FULL"})
+        _config(monkeypatch, {"synchronous": "FULL"})
         conn = _wal_conn(tmp_path)
         try:
-            conn.execute("PRAGMA synchrothor=0")
+            conn.execute("PRAGMA synchronous=0")
             assert _level(conn) == 0
             apply_database_pragmas(conn, db_label="state.db")
             assert _level(conn) == 2
@@ -128,7 +128,7 @@ class TestAppliedFromConfig:
         _config(monkeypatch, {"wal_autocheckpoint": 1000})
         conn = _wal_conn(tmp_path)
         try:
-            conn.execute("PRAGMA synchrothor=0")
+            conn.execute("PRAGMA synchronous=0")
             apply_database_pragmas(conn, db_label="state.db")
             assert _level(conn) == 0
             assert conn.execute("PRAGMA wal_autocheckpoint").fetchone()[0] == 1000
@@ -137,10 +137,10 @@ class TestAppliedFromConfig:
 
     def test_garbage_warns_and_changes_nothing(self, tmp_path, monkeypatch, caplog):
         """A typo must not fall through to a different durability level."""
-        _config(monkeypatch, {"synchrothor": "PARANOID"})
+        _config(monkeypatch, {"synchronous": "PARANOID"})
         conn = _wal_conn(tmp_path)
         try:
-            conn.execute("PRAGMA synchrothor=2")
+            conn.execute("PRAGMA synchronous=2")
             with caplog.at_level("WARNING"):
                 apply_database_pragmas(conn, db_label="state.db")
             assert _level(conn) == 2
@@ -152,7 +152,7 @@ class TestAppliedFromConfig:
         """Guardrail for #77630's five keys -- they share the same function."""
         _config(
             monkeypatch,
-            {"synchrothor": "FULL", "wal_autocheckpoint": 250, "mmap_size": 0},
+            {"synchronous": "FULL", "wal_autocheckpoint": 250, "mmap_size": 0},
         )
         conn = _wal_conn(tmp_path)
         try:
@@ -167,7 +167,7 @@ class TestAppliedFromConfig:
 class TestMacOSFloor:
     """#64355 enforced FULL on Darwin. Config must not be able to undo it.
 
-    `_enforce_macos_synchrothor_full()` runs inside `apply_wal_with_fallback()`,
+    `_enforce_macos_synchronous_full()` runs inside `apply_wal_with_fallback()`,
     which is earlier than `apply_database_pragmas()`, so without an explicit
     floor the config value would simply win by running last.
     """
@@ -176,10 +176,10 @@ class TestMacOSFloor:
     def test_lowering_below_full_is_refused_on_darwin(
         self, tmp_path, monkeypatch, caplog
     ):
-        _config(monkeypatch, {"synchrothor": "NORMAL"})
+        _config(monkeypatch, {"synchronous": "NORMAL"})
         conn = _wal_conn(tmp_path)
         try:
-            thor_state_wal._enforce_macos_synchrothor_full(conn)
+            thor_state_wal._enforce_macos_synchronous_full(conn)
             assert _level(conn) == 2
             with caplog.at_level("WARNING"):
                 apply_database_pragmas(conn, db_label="state.db")
@@ -190,7 +190,7 @@ class TestMacOSFloor:
     @pytest.mark.platforms("macos")
     def test_raising_above_full_is_allowed_on_darwin(self, tmp_path, monkeypatch):
         """The floor is a floor, not a pin -- EXTRA is strictly safer."""
-        _config(monkeypatch, {"synchrothor": "EXTRA"})
+        _config(monkeypatch, {"synchronous": "EXTRA"})
         conn = _wal_conn(tmp_path)
         try:
             apply_database_pragmas(conn, db_label="state.db")

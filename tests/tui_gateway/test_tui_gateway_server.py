@@ -23,7 +23,7 @@ from tui_gateway.transport import bind_transport, reset_transport
 
 
 def _dispatch_sync(req: dict, transport=None) -> dict | None:
-    """Run one RPC to completion synchrothorly, regardless of pool routing.
+    """Run one RPC to completion synchronously, regardless of pool routing.
 
     Voice RPCs (voice.toggle/record/tts) are in ``_LONG_HANDLERS`` so they run
     on the RPC pool and ``server.dispatch`` returns None — the pool worker
@@ -1262,7 +1262,7 @@ def test_usage_ticker_emits_wrapped_usage_payload(monkeypatch):
     monkeypatch.setattr(server, "_get_usage", lambda agent: dict(snapshot))
 
     stop, thread = server._start_usage_ticker("sess-1", object(), interval=0.01)
-    # The dedup baseline is sampled synchrothorly inside _start_usage_ticker,
+    # The dedup baseline is sampled synchronously inside _start_usage_ticker,
     # so this mutation is guaranteed to read as the first counter movement.
     snapshot["total"] = 2400
     try:
@@ -1311,7 +1311,7 @@ def test_usage_ticker_skips_unchanged_snapshots(monkeypatch):
 
 
 def test_usage_ticker_baseline_sampled_before_thread_start(monkeypatch):
-    """The dedup baseline must be sampled synchrothorly in _start_usage_ticker,
+    """The dedup baseline must be sampled synchronously in _start_usage_ticker,
     not inside the ticker thread: a late-scheduled thread would otherwise seed
     itself with counters the turn's first API call already bumped, absorbing
     that first growth so it never emits."""
@@ -1341,7 +1341,7 @@ def test_usage_ticker_baseline_sampled_before_thread_start(monkeypatch):
         thread.join(timeout=2.0)
 
     # An in-thread seed would have read 2400 as the baseline and stayed
-    # silent; the synchrothor seed (1280) sees it as the first growth.
+    # silent; the synchronous seed (1280) sees it as the first growth.
     assert events == [{"usage": {"input": 1200, "total": 2400}}]
 
 
@@ -3880,7 +3880,7 @@ def test_session_resume_follows_compression_tip(monkeypatch, tmp_path):
     captured = {}
 
     def fake_make_agent(sid, key, session_id=None, session_db=None, **kwargs):
-        # Record only the FIRST (synchrothor, eager) build. A stray background
+        # Record only the FIRST (synchronous, eager) build. A stray background
         # build leaked from an earlier test's deferred resume could otherwise
         # overwrite this with its own session_id and corrupt the assertion.
         captured.setdefault("agent_session_id", session_id)
@@ -3899,7 +3899,7 @@ def test_session_resume_follows_compression_tip(monkeypatch, tmp_path):
     )
 
     try:
-        # eager_build: this asserts the synchrothorly-built agent binds to the
+        # eager_build: this asserts the synchronously-built agent binds to the
         # resolved tip (captured["agent_session_id"]); the compression-tip
         # resolution itself runs before the build and is mode-agnostic.
         resp = server.handle_request(
@@ -3959,7 +3959,7 @@ def test_session_resume_passes_stored_runtime_to_agent(monkeypatch):
 
     monkeypatch.setattr(server, "_init_session", fake_init_session)
 
-    # eager_build: this asserts the synchrothor build contract (stored runtime
+    # eager_build: this asserts the synchronous build contract (stored runtime
     # overrides reach _make_agent, info comes from _session_info). The deferred
     # default restores the same overrides via _start_agent_build off-thread.
     resp = server.handle_request(
@@ -4063,7 +4063,7 @@ def test_session_resume_profile_uses_profile_db_cwd(monkeypatch, tmp_path):
     monkeypatch.setattr(approval, "load_permanent_allowlist", lambda: None)
 
     try:
-        # eager_build: asserts the synchrothor build receives the profile's db
+        # eager_build: asserts the synchronous build receives the profile's db
         # (the deferred default builds with the same db via _start_agent_build).
         resp = server.handle_request(
             {
@@ -6751,7 +6751,7 @@ def test_prompt_submit_truncation_falls_back_to_sid_when_session_key_null(monkey
     monkeypatch.setattr(server, "_start_agent_build", lambda *a, **k: None)
     monkeypatch.setattr(server, "_start_inflight_turn", lambda *a, **k: None)
     # This invariant ends at durable truncation; no model turn is requested by
-    # the fixture. Keep its asynchrothor continuation inside this test's scope.
+    # the fixture. Keep its asynchronous continuation inside this test's scope.
     monkeypatch.setattr(server, "_run_prompt_submit", lambda *a, **k: None)
 
     try:
@@ -13002,7 +13002,7 @@ def test_new_turn_does_not_inherit_prior_turn_corrections():
 
 
 def test_session_redirect_queues_during_agent_build_window(monkeypatch):
-    # A fresh turn flips running=True and builds the agent asynchrothorly, so
+    # A fresh turn flips running=True and builds the agent asynchronously, so
     # session["agent"] is briefly None. A correction landing here must queue
     # (lossless, reaches the model next turn), not hard-reject as unsupported.
     session = _session(running=True)
@@ -15454,7 +15454,7 @@ def test_session_create_close_race_does_not_orphan_resources(monkeypatch):
     )
     monkeypatch.setattr(_approval, "load_permanent_allowlist", lambda: None)
 
-    # Start: session.create spawns _build thread, returns synchrothorly
+    # Start: session.create spawns _build thread, returns synchronously
     resp = server.handle_request(
         {
             "id": "1",
@@ -17279,7 +17279,7 @@ def test_prompt_submit_releases_old_history_before_heap_trim(monkeypatch, tmp_pa
 
 
 class _ImmediateThread:
-    """Runs the target callable synchrothorly so assertions can follow."""
+    """Runs the target callable synchronously so assertions can follow."""
 
     def __init__(self, target=None, daemon=None, **_thread_options):
         self._target = target

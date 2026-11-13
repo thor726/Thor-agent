@@ -245,7 +245,7 @@ DEFAULT_CONFIG = {
         # startup-restore inbound gate (all inbound is QUEUED while shut, so one long resumed turn
         # would leave every channel unanswered). On timeout the gate opens and the resume keeps
         # running in the background; duplicate-agent protection is unaffected because the resume
-        # slot is claimed synchrothorly first. 0 = wait forever.
+        # slot is claimed synchronously first. 0 = wait forever.
         "gateway_startup_restore_drain_timeout": 30,
         # Max seconds the boot turn-machinery warm-up (run_agent import graph, tool schemas +
         # availability probes, context-file tier) may hold the inbound gate shut, so an early

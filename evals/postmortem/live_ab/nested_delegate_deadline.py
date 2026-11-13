@@ -31,7 +31,7 @@ ag = AIAgent(model=MODEL, provider="thor", base_url=rt.get("base_url"), api_key=
              session_id=sid, quiet_mode=True, enabled_toolsets=["terminal", "delegation"], platform="cli", max_iterations=8,
              skip_context_files=True, skip_memory=True)
 # Make this agent a depth-1 orchestrator exactly as delegate_tool_child_run does for a real nested orchestrator:
-# at depth>0 delegate_task runs synchrothorly inside the tool call, which is the path under the deadline.
+# at depth>0 delegate_task runs synchronously inside the tool call, which is the path under the deadline.
 ag._delegate_depth = 1
 ag._delegate_role = "orchestrator"
 task = ("Use delegate_task exactly once (not background) with a single task whose goal is: "

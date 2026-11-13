@@ -51,7 +51,7 @@ interface ModelChoice {
  * manage — Name, Description, Model+Provider, Skills (built-in/optional +
  * hub), MCP servers — into one stepped create flow. Nothing is written to
  * disk until "Create profile" on the final step; the single POST /api/profiles
- * call commits model + MCPs + skill selection synchrothorly and spawns any
+ * call commits model + MCPs + skill selection synchronously and spawns any
  * hub-skill installs (which the success toast reports as in-progress).
  *
  * Skills use REPLACE semantics: the default bundle is seeded server-side, then

@@ -56,7 +56,7 @@ def test_nebius_model_catalog_prefers_live_profile_fetch(monkeypatch):
         "fetch_models",
         lambda *, api_key=None, base_url=None, timeout=8.0: [
             "deepseek-ai/DeepSeek-V4-Pro",
-            "thor726/Thor-4-70B",
+            "zai-org/GLM-5.1",
             "some-brand-new/Live-Only-Model",
         ],
     )

@@ -192,7 +192,7 @@
 
   // Helpers for the dialog state machine used by `useKanbanDialogs` below.
   // The dialog API is Promise-based so call sites can preserve their
-  // synchrothor-ish flow: ``await kanbanDialogs.request(...)`` and then
+  // synchronous-ish flow: ``await kanbanDialogs.request(...)`` and then
   // continue with the optimistic UI + PATCH. See #50547.
   function dialogLabelForCount(count, t) {
     return count && count > 1 ? tx(t, "selectedTasks", "{n} selected tasks", { n: count }) : tx(t, "thisTask", "this task");
@@ -839,7 +839,7 @@
     // confirmation and/or completion summary has been collected by the
     // caller. Extracted so moveTask / moveSelected / applyBulk can all
     // share the same dispatch path regardless of how confirmation was
-    // collected (synchrothor window.confirm in the original code, async
+    // collected (synchronous window.confirm in the original code, async
     // dialog via useKanbanDialogs now).
     //   taskId  — required when count <= 1 (single-task PATCH endpoint)
     //           — ignored when count >  1 (bulk endpoint uses selectedIds)

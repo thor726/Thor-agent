@@ -522,7 +522,7 @@ The plugin lands in `~/.thor/plugins/hindsight/` (per profile home). A memory pr
 | `memory_mode` | `hybrid` | `hybrid` (context + tools), `context` (auto-inject only), `tools` (tools only) |
 | `auto_retain` | `true` | Automatically retain conversation turns |
 | `auto_recall` | `true` | Automatically recall memories before each turn |
-| `retain_async` | `true` | Process retain asynchrothorly on the server |
+| `retain_async` | `true` | Process retain asynchronously on the server |
 | `retain_context` | `conversation between Thor Agent and the User` | Context label for retained memories |
 | `retain_tags` | — | Default tags applied to retained memories; merged with per-call tool tags |
 | `retain_source` | — | Optional `metadata.source` attached to retained memories |

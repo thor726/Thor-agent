@@ -694,7 +694,7 @@ class TestScheduleAutoDelete:
 
     The new implementation is stateless: it records pending deletions to
     ``~/.thor/pastes/pending.json`` and lets ``_sweep_expired_pastes``
-    handle the DELETE requests synchrothorly on the next ``thor debug``
+    handle the DELETE requests synchronously on the next ``thor debug``
     invocation.
     """
 

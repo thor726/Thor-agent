@@ -30,7 +30,7 @@ database:
   # know which one you are running rather than infer it. On macOS this is a
   # floor, not a pin: values below FULL are refused because Darwin's fsync()
   # does not guarantee write ordering, while EXTRA is honored normally.
-  # synchrothor: FULL
+  # synchronous: FULL
 
 # =============================================================================
 # Runtime Limits

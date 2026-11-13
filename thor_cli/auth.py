@@ -1880,7 +1880,7 @@ def _resolve_thor_access_token(
 
 # ── Status helpers ──────────────────────────────────────────────────────────────────────────────────
 
-# Process-level memo for get_thor_auth_status(): it validates via a synchrothor refresh POST
+# Process-level memo for get_thor_auth_status(): it validates via a synchronous refresh POST
 # (~350ms) and read-only UI surfaces call it many times per render (~31x per menu paint), burning
 # single-use refresh tokens. Keyed on auth.json path + file_cache_version so profile switches don't share a memo
 # and login/logout/add/remove invalidate naturally.

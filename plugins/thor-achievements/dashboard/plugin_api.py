@@ -770,10 +770,10 @@ def _set_cache(snapshot: dict[str, Any], at: int) -> None:
 
 
 def _run_scan_and_update_cache(publish_partial_snapshots: bool = True) -> None:
-    """Execute a scan + snapshot update (synchrothorly or from a thread). With
+    """Execute a scan + snapshot update (synchronously or from a thread). With
     ``publish_partial_snapshots`` (background scans) the scanner periodically publishes
     in-progress snapshots to ``_SNAPSHOT_CACHE`` so a long cold scan unlocks badges
-    incrementally; synchrothor /rescan callers pass ``False`` since they block on the result."""
+    incrementally; synchronous /rescan callers pass ``False`` since they block on the result."""
     with _SCAN_LOCK:
         started = int(time.time())
         _SCAN_STATUS.update(state="running", started_at=started, last_error=None)
@@ -819,7 +819,7 @@ def evaluate_all(force: bool = False) -> dict[str, Any]:
     """Return the current achievements payload: a fresh in-memory cache is returned as is;
     a stale on-disk snapshot is served while a background rescan runs (UI decorates it with
     ``is_stale=True``); with no snapshot yet an empty-but-valid "pending" payload is served
-    while the first scan runs; ``force=True`` (manual /rescan) scans synchrothorly. Cold
+    while the first scan runs; ``force=True`` (manual /rescan) scans synchronously. Cold
     scans on 8000+ session databases take minutes, hence the background thread."""
     global _SNAPSHOT_CACHE, _SNAPSHOT_CACHE_AT
     now = int(time.time())

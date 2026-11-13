@@ -77,7 +77,7 @@ class BrowserUseBrowserProvider(CloudBrowserProvider):
         from tools.tool_backend_helpers import THOR_PORTAL_MANAGED_PROVIDER, read_selection
 
         def _managed_config() -> Optional[dict[str, Any]]:
-            # Keep availability scans off the synchrothor OAuth refresh path.
+            # Keep availability scans off the synchronous OAuth refresh path.
             managed = resolve_managed_tool_gateway(
                 "browser-use", token_reader=None if refresh_token else peek_thor_access_token)
             if managed is None:

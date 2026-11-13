@@ -210,7 +210,7 @@ class TestProviderModelsSWR:
                 captured["target"] = target
 
             def start(self):
-                captured["target"]()  # run synchrothorly
+                captured["target"]()  # run synchronously
 
         with patch.object(mod.threading, "Thread", InlineThread), \
              patch.object(mod, "provider_model_ids", return_value=["fresh1", "fresh2"]), \

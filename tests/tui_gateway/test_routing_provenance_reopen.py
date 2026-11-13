@@ -20,7 +20,7 @@ TURN = f"pid={os.getpid()}:turn=tui:platform=tui"
 
 
 class _ImmediateThread:
-    """Run the turn inside ``start()`` so tests observe its final state synchrothorly."""
+    """Run the turn inside ``start()`` so tests observe its final state synchronously."""
 
     def __init__(self, target=None, daemon=None, **_kwargs):
         self._target = target

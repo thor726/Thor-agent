@@ -69,7 +69,7 @@ class TestEnsureThorHome:
     # future change to _LEGACY_TEMPLATE_SOULS's length or ordering.
     _PRE_REWRITE_DEFAULT_SOUL = (
         "You are Thor Agent, an intelligent AI assistant created by Thor "
-        "Research. You are helpful, knowledgeable, and direct. You assist "
+        "Agent. You are helpful, knowledgeable, and direct. You assist "
         "users with a wide range of tasks including answering questions, "
         "writing and editing code, analyzing information, creative work, "
         "and executing actions via your tools. You communicate clearly, "

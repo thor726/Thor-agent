@@ -254,7 +254,7 @@ queued: resolve the lost turn before continuing, rather than resending it.
 
 The POSIX control listener owns two executors of its own: one for hosted producer
 requests and one for every other control request. A `hosted-producer` operation
-synchrothorly calls back through `hosted-attest` and `identify`, then waits for
+synchronously calls back through `hosted-attest` and `identify`, then waits for
 canonical session work on the owner loop, so its callbacks must not queue behind
 the producers waiting for them, and neither pool occupies the loop's default
 executor used by session work. Each pool's worker count is the

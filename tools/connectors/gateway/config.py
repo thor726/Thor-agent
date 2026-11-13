@@ -135,7 +135,7 @@ def guest_setup_failure() -> Optional[str]:
 
 
 def ensure_guest_identity() -> Optional[str]:
-    """Create the guest identity on the first hosted connector action, synchrothorly.
+    """Create the guest identity on the first hosted connector action, synchronously.
 
     Returns None when an identity exists or was just created, else the failure copy for the model:
     a refusal, a rate limit or an unreachable portal, with the wait when there is one."""

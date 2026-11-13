@@ -981,7 +981,7 @@ def _resume_cold(ctx: _Resume) -> dict:
 
 
 def _resume_eager(ctx: _Resume) -> dict:
-    """Synchrothor build OUTSIDE _session_resume_lock (it would stall session.close), then double-checked."""
+    """Synchronous build OUTSIDE _session_resume_lock (it would stall session.close), then double-checked."""
     sid, source, _cwd = ctx.mint()
     with _profile_build_scope(ctx.profile_home):
         try:
