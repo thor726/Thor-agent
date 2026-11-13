@@ -1688,15 +1688,21 @@ if ($script:IsDotSourced) {
 # The normalization prologue runs exactly once per real entry, before any
 # switch is honored, so every contract below sees long-form paths.
 # The store guard's refusal is a `throw` from inside the prologue, BEFORE any
-# try/catch exists: under -File an uncaught throw still exits non-zero, but
-# pwsh 7 can drop the message from redirected output (5.1 prints it), so the
-# user/test sees a silent failure. Catch here, print the reason on stderr,
-# and exit 1 explicitly — the exit code and the message both survive on every
-# host and every redirection shape.
+# try/catch exists: under -File an uncaught throw still exits non-zero, but the
+# message rides stderr, which no caller can capture reliably on every host
+# (pwsh 7 dropped the uncaught throw's text; a [Console]::Error.WriteLine line
+# reached pwsh 7 but not Windows PowerShell 5.1 — see
+# scripts/tests/test-install-ps1-longpath.ps1: three stderr capture mechanisms
+# verified empty on windows-latest while stdout always arrives). Catch here,
+# print the reason on stdout AND stderr, and exit 1 explicitly: the refusal
+# path prints no JSON, so stdout carries the machine-readable reason and
+# stderr keeps the human copy.
 try {
     Initialize-ResolvedPaths
 } catch {
-    [Console]::Error.WriteLine("$($_.Exception.Message)")
+    $prologueFailure = "$($_.Exception.Message)"
+    [Console]::Error.WriteLine($prologueFailure)
+    Write-Output $prologueFailure
     exit 1
 }
 
