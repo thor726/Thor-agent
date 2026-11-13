@@ -36,7 +36,7 @@ Thor Agent 可与任何兼容 OpenAI 的 API 配合使用。支持的提供商�
 **原生不支持。** Thor Agent 需要类 Unix 环境。在 Windows 上，请安装 [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) 并在其中运行 Thor。标准安装命令在 WSL2 中可完美运行：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 ### 我在 WSL2 中运行 Thor，如何控制 Windows 上的普通 Chrome？
@@ -210,7 +210,7 @@ source ~/.bashrc
 # 如果之前使用 sudo 安装，请先清理：
 sudo rm /usr/local/bin/thor
 # 然后重新运行标准安装程序
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 ---
@@ -735,7 +735,7 @@ skills:
 
 1. 在新机器上安装 Thor Agent：
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
    ```
 
 2. 在**源机器**上创建完整备份：
@@ -856,6 +856,6 @@ thor chat -q "hello" --model anthropic/claude-opus-4.7
 
 如果您的问题未在此处涵盖：
 
-1. **搜索现有 issue：** [GitHub Issues](https://github.com/dwisetyabudi15581/Thor-agent/issues)
+1. **搜索现有 issue：** [GitHub Issues](https://github.com/thor726/Thor-agent/issues)
 2. **向社区提问：** [Thor Agent Discord](https://discord.gg/thorresearch)
 3. **提交 bug 报告：** 请包含您的操作系统、Python 版本（`python3 --version`）、Thor 版本（`thor --version`）以及完整的错误信息

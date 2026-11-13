@@ -39,7 +39,7 @@ def machine_marker_files() -> tuple[str, ...]:
     filesystem virtualisation wrote under the package's LocalCache)."""
     if _WIN:
         return ("%LOCALAPPDATA%/Thor Agent/.machine",
-                "%LOCALAPPDATA%/Packages/dwisetyabudi15581*_*/LocalCache/Local/Thor Agent/.machine")
+                "%LOCALAPPDATA%/Packages/thor726*_*/LocalCache/Local/Thor Agent/.machine")
     if sys.platform == "darwin":
         return ("~/Library/Application Support/Thor Agent/.machine",)
     return ("$XDG_STATE_HOME/thor-research/.machine", "~/.local/state/thor-research/.machine")
@@ -50,7 +50,7 @@ def thor_home_globs() -> tuple[str, ...]:
     root, and the per-package roots of MSIX builds that ran with filesystem virtualisation."""
     if _WIN:
         return ("%LOCALAPPDATA%/thor*", "%USERPROFILE%/.thor",
-                "%LOCALAPPDATA%/Packages/dwisetyabudi15581*_*/LocalCache/Local/thor*")
+                "%LOCALAPPDATA%/Packages/thor726*_*/LocalCache/Local/thor*")
     return ("~/.thor*",)
 
 

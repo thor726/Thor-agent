@@ -14,7 +14,7 @@ from thor_cli.update_channel import STABLE_TAG_RE, is_canary_tag
 
 logger = logging.getLogger(__name__)
 _PUBLIC_BASE = "https://thor-assets.thor-agent.local"
-OFFICIAL_REPOSITORY = "dwisetyabudi15581/Thor-agent"
+OFFICIAL_REPOSITORY = "thor726/Thor-agent"
 _GITHUB_ORIGIN = re.compile(
     r"^(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)"
     r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?/?$", re.IGNORECASE,

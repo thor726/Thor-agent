@@ -60,13 +60,13 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
     return {"ok": True, "action": action, "message": message, "synced": synced}
 
 
-_OWN_REPO_PREFIXES = ("dwisetyabudi15581/Thor-agent/skills/", "skills-sh/dwisetyabudi15581/Thor-agent/")
+_OWN_REPO_PREFIXES = ("thor726/Thor-agent/skills/", "skills-sh/thor726/Thor-agent/")
 
 
 def bundled_skill_for_install(identifier: str) -> Optional[str]:
     """Bundled skill name an install identifier means, else None: a bare bundled name, or this
-    repo's own copy of one (``dwisetyabudi15581/Thor-agent/skills/<cat>/<name>``, which the Skills Hub
-    site hands out for built-ins, or its ``skills-sh/dwisetyabudi15581/Thor-agent/<name>`` mirror).
+    repo's own copy of one (``thor726/Thor-agent/skills/<cat>/<name>``, which the Skills Hub
+    site hands out for built-ins, or its ``skills-sh/thor726/Thor-agent/<name>`` mirror).
     Fetched from GitHub, that copy is scanned as a community skill and refused — every time."""
     ident = identifier.strip().strip("/")
     lowered = ident.lower()

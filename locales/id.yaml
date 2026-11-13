@@ -3847,7 +3847,7 @@ tips:
   t279: THOR_DEV=1 melewati deteksi mode container untuk pengembangan lokal.
   t280: Setiap MCP server punya toolset sendiri (mcp-servername) yang bisa dinyalakan terpisah lewat thor tools.
   t281: Placeholder MCP ${ENV_VAR} di config diresolusi saat server dijalankan — termasuk variabel dari ~/.thor/.env.
-  t282: Skill dari repo tepercaya (dwisetyabudi15581) mendapat level keamanan 'trusted'; skill komunitas mendapat pemindaian ekstra.
+  t282: Skill dari repo tepercaya (thor726) mendapat level keamanan 'trusted'; skill komunitas mendapat pemindaian ekstra.
   t283: Karantina skill di ~/.thor/skills/.hub/quarantine/ menahan skill yang menunggu peninjauan keamanan.
   t284: /steer <prompt> menyuntikkan catatan setelah tool call berikutnya — mengarahkan di tengah tugas tanpa menghentikannya.
   t285: /goal <teks> mengatur objektif Ralph-loop permanen — Thor otomatis melanjutkan turn demi turn sampai juri menyatakan selesai.

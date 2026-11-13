@@ -4,9 +4,9 @@ import { resolvePluginSourceLinks } from './plugin-source-urls'
 
 describe('resolvePluginSourceLinks', () => {
   it('maps owner/repo to github browse and clone urls', () => {
-    expect(resolvePluginSourceLinks('dwisetyabudi15581/thor-example-plugins')).toEqual({
-      gitUrl: 'https://github.com/dwisetyabudi15581/thor-example-plugins.git',
-      browseUrl: 'https://github.com/dwisetyabudi15581/thor-example-plugins',
+    expect(resolvePluginSourceLinks('thor726/thor-example-plugins')).toEqual({
+      gitUrl: 'https://github.com/thor726/thor-example-plugins.git',
+      browseUrl: 'https://github.com/thor726/thor-example-plugins',
       subdir: null
     })
   })

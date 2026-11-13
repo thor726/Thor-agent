@@ -81,7 +81,7 @@ def test_promotion_reuses_the_receipt_digest_without_rebuilding():
 
     promote_stable('rc.1-v1.2.3', digest, 'v1.2.3', run=run)
     create = next(argv for argv in calls if argv[3] == 'create')
-    assert create[-1] == f'dwisetyabudi15581/Thor-agent@{digest}'
+    assert create[-1] == f'thor726/Thor-agent@{digest}'
     assert all('build' not in argv for argv in calls)
 
     with pytest.raises(DockerReleaseError, match='versioned tag'):
@@ -106,16 +106,16 @@ def test_promotion_preserves_independent_desktop_digest():
         raise AssertionError(argv)
 
     promote_stable('rc.1-v1.2.3', slim, 'v1.2.3', run=run)
-    assert 'dwisetyabudi15581/Thor-agent:rc.1-v1.2.3-desktop' in inspected
+    assert 'thor726/Thor-agent:rc.1-v1.2.3-desktop' in inspected
     assert {tuple(cmd[4:]) for cmd in created} == {
-        ('-t', 'dwisetyabudi15581/Thor-agent:v1.2.3', '-t', 'dwisetyabudi15581/Thor-agent:stable',
-         '-t', 'dwisetyabudi15581/Thor-agent:latest', f'dwisetyabudi15581/Thor-agent@{slim}'),
-        ('-t', 'dwisetyabudi15581/Thor-agent:v1.2.3-desktop', '-t',
-         'dwisetyabudi15581/Thor-agent:stable-desktop', '-t',
-         'dwisetyabudi15581/Thor-agent:latest-desktop', f'dwisetyabudi15581/Thor-agent@{desktop}'),
+        ('-t', 'thor726/Thor-agent:v1.2.3', '-t', 'thor726/Thor-agent:stable',
+         '-t', 'thor726/Thor-agent:latest', f'thor726/Thor-agent@{slim}'),
+        ('-t', 'thor726/Thor-agent:v1.2.3-desktop', '-t',
+         'thor726/Thor-agent:stable-desktop', '-t',
+         'thor726/Thor-agent:latest-desktop', f'thor726/Thor-agent@{desktop}'),
     }
-    assert 'dwisetyabudi15581/Thor-agent:stable-desktop' in inspected
-    assert 'dwisetyabudi15581/Thor-agent:latest-desktop' in inspected
+    assert 'thor726/Thor-agent:stable-desktop' in inspected
+    assert 'thor726/Thor-agent:latest-desktop' in inspected
 
 
 def test_promotion_requires_desktop_version_before_moving_any_alias():
@@ -146,7 +146,7 @@ def test_published_digest_checks_desktop_tag():
         return 'sha256:' + ('e' if argv[4].endswith('-desktop') else 'd') * 64
 
     assert published_digest('v1.2.3', run=run) == 'sha256:' + 'd' * 64
-    assert inspected == ['dwisetyabudi15581/Thor-agent:v1.2.3',
-                         'dwisetyabudi15581/Thor-agent:v1.2.3-desktop']
+    assert inspected == ['thor726/Thor-agent:v1.2.3',
+                         'thor726/Thor-agent:v1.2.3-desktop']
     with pytest.raises(DockerReleaseError, match='desktop'):
         published_digest('v1.2.3', run=lambda argv: 'garbage' if argv[4].endswith('-desktop') else 'sha256:' + 'd' * 64)

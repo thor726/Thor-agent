@@ -2018,7 +2018,7 @@ DEFAULT_CONFIG = {
     # release. Default URL is served by the docs-site GitHub Pages deploy.
     "model_catalog": {
         "enabled": True,
-        "url": "https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/website/static/api/model-catalog.json",
+        "url": "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/static/api/model-catalog.json",
         # Disk cache TTL in minutes. The gateway refreshes in the background on this cadence; the
         # CLI refetches on the next /model or `thor model` once the cache is older. Network
         # failures silently use the stale cache. Legacy `ttl_hours` is honoured if set.
@@ -2665,7 +2665,7 @@ DEFAULT_CONFIG = {
         # Portal upstream serving the model is one where native is known clean. Native is the
         # better wire but on the OpenRouter-served path it re-writes the previous turn's cache on
         # 14-20% of consecutive calls in concurrent tool loops (measured 2026-09-06;
-        # dwisetyabudi15581/api#227), so chat is the default until that is fixed.
+        # thor726/api#227), so chat is the default until that is fixed.
         "anthropic_wire": "chat",
         # Thor free tier: with no other provider configured, Thor sets up a free Thor identity on
         # first use (inference on thor/welcome + connectors) and offers `/login` (terminal:

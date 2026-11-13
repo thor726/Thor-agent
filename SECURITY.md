@@ -8,7 +8,7 @@ scope for vulnerability reports.
 
 ## 1. Reporting a Vulnerability
 
-Report privately via [GitHub Security Advisories](https://github.com/dwisetyabudi15581/Thor-agent/security/advisories/new)
+Report privately via [GitHub Security Advisories](https://github.com/thor726/Thor-agent/security/advisories/new)
 or **security@thor-agent.local**. Do not open public issues for
 security vulnerabilities. **Thor Agent does not operate a bug
 bounty program.**

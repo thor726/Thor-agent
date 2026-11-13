@@ -5,8 +5,8 @@
 # Thor Agent ⚡
 
 <p align="center">
-  <a href="https://github.com/dwisetyabudi15581/Thor-agent"><img src="https://img.shields.io/badge/Repo-GitHub-FFBF00?style=for-the-badge&logo=github" alt="Repo GitHub"></a>
-  <a href="https://github.com/dwisetyabudi15581/Thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Lisensi-MIT-green?style=for-the-badge" alt="Lisensi: MIT"></a>
+  <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Repo-GitHub-FFBF00?style=for-the-badge&logo=github" alt="Repo GitHub"></a>
+  <a href="https://github.com/thor726/Thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Lisensi-MIT-green?style=for-the-badge" alt="Lisensi: MIT"></a>
 </p>
 
 **Agen AI yang menyempurnakan dirinya sendiri** — Thor Agent membuat *skill* dari pengalaman, memperbaikinya saat dipakai, mengingat percakapan lama, dan membangun pemahaman yang makin dalam tentang Anda di setiap sesi. Ia tidak terikat pada satu laptop: bicara dengannya dari Telegram sementara ia bekerja di VM cloud, atau jalankan langsung di terminal Anda.
@@ -72,13 +72,13 @@ Di Windows, Thor berjalan **native** (PowerShell) maupun di dalam WSL2 — kedua
 **Linux, macOS, WSL2:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1 | iex
 ```
 
 Installer mengkloning repo, menyiapkan Python/uv, Node, pnpm, dan dependensi, lalu mengakhiri prosesnya dengan wizard `thor setup`. Lokasi bawaan: `~/.thor/thor-agent` (Linux/macOS) atau `%LOCALAPPDATA%\thor\thor-agent` (Windows). Data pengguna (konfigurasi, sesi, skill, memori) disimpan di `~/.thor/` atau `%LOCALAPPDATA%\thor\`.
@@ -86,14 +86,14 @@ Installer mengkloning repo, menyiapkan Python/uv, Node, pnpm, dan dependensi, la
 Untuk folder khusus — Linux/macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash -s -- --dir ~/thor
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --dir ~/thor
 ```
 
 Windows:
 
 ```powershell
 # -InstallDir menentukan folder checkout; -ThorHome folder data
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1))) -InstallDir "$env:USERPROFILE\thor"
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1))) -InstallDir "$env:USERPROFILE\thor"
 ```
 
 > `irm | iex` tidak bisa menerima argumen, jadi gunakan bentuk `scriptblock` di atas
@@ -105,7 +105,7 @@ Windows:
 Linux, macOS, WSL2:
 
 ```bash
-git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+git clone https://github.com/thor726/Thor-agent.git
 cd Thor-agent
 source ./activate        # menyiapkan Python 3.14, pnpm, dan dependensi (fish: activate.fish)
 thor --version
@@ -114,7 +114,7 @@ thor --version
 Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+git clone https://github.com/thor726/Thor-agent.git
 cd Thor-agent
 .\setup-thor.ps1         # menyiapkan lingkungan pm (uv, Python, tool store)
 .\activate.ps1           # memasukkan env pm ke sesi saat ini
@@ -179,7 +179,7 @@ Installer `irm ... | iex` tidak bisa menerima flag secara langsung. Bungkus
 scriptblock-nya agar argumen tetap sampai:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1))) -NonInteractive -SkipBrowser
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1))) -NonInteractive -SkipBrowser
 ```
 
 Ganti saluran ke `main` (setiap commit) tanpa mengulang instalasi:
@@ -348,7 +348,7 @@ Sekarang Anda bisa mengobrol dengan Thor dari Telegram/Discord/Slack/WhatsApp/Si
 Bangun image dari source, lalu jalankan wizard setup:
 
 ```bash
-git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+git clone https://github.com/thor726/Thor-agent.git
 cd Thor-agent
 docker build -t thor-agent .
 

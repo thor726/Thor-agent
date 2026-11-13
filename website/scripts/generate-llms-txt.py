@@ -305,12 +305,12 @@ def emit_llms_index() -> str:
     )
     lines.append("")
     lines.append(
-        "Install: `curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/"
+        "Install: `curl -fsSL https://raw.githubusercontent.com/thor726/"
         "thor-agent/main/scripts/install.sh | bash`  "
         "(Linux, macOS, WSL2)"
     )
     lines.append("")
-    lines.append("Repo: https://github.com/dwisetyabudi15581/Thor-agent")
+    lines.append("Repo: https://github.com/thor726/Thor-agent")
     lines.append("")
 
     for section, items in SECTIONS:

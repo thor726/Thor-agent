@@ -60,7 +60,7 @@ test.beforeAll(async () => {
   const entry = {
     category: 'desktop',
     description: 'OKLCH accent colour picker for the status bar. Desktop-only.',
-    maintainer: 'dwisetyabudi15581',
+    maintainer: 'thor726',
     name: NAME,
     repo: pathToFileURL(repo).href,
     sha,

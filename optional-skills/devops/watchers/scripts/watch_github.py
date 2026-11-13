@@ -6,7 +6,7 @@ Usage (via cron with --no-agent):
     thor cron create thor-issues \\
       --schedule "*/5 * * * *" --no-agent \\
       --script "$THOR_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name thor-issues --repo dwisetyabudi15581/Thor-agent --scope issues"
+      --script-args "--name thor-issues --repo thor726/Thor-agent --scope issues"
 
 Set GITHUB_TOKEN (or GH_TOKEN) in the Thor .env file
 (``${THOR_HOME:-~/.thor}/.env``) to avoid the 60 req/hr

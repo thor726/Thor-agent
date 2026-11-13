@@ -26,10 +26,10 @@ Pencarian singkat sebelum Anda membangun menghemat waktu Anda dan menjaga antrea
 
 - **Cari di PR dan issue yang terbuka *maupun* yang sudah di-merge** untuk topik atau gejala error Anda — pemeriksaan duplikat di template PR baru menyala saat review, setelah Anda terlanjur mengerjakannya:
   ```bash
-  gh search issues --repo dwisetyabudi15581/Thor-agent "<kata kunci Anda>"
-  gh search prs --repo dwisetyabudi15581/Thor-agent --state all "<kata kunci Anda>"
+  gh search issues --repo thor726/Thor-agent "<kata kunci Anda>"
+  gh search prs --repo thor726/Thor-agent --state all "<kata kunci Anda>"
   ```
-  Atau gunakan web UI: [issues](https://github.com/dwisetyabudi15581/Thor-agent/issues?q=) · [PR (semua status)](https://github.com/dwisetyabudi15581/Thor-agent/pulls?q=is%3Apr).
+  Atau gunakan web UI: [issues](https://github.com/thor726/Thor-agent/issues?q=) · [PR (semua status)](https://github.com/thor726/Thor-agent/pulls?q=is%3Apr).
 - **Issue tracker bisa tertinggal dari kode.** Banyak fitur yang diminta sudah ada di dalam tree, jadi cari juga di source (`search_files`, atau grep editor Anda) untuk kemampuan tersebut sebelum mengusulkannya.
 - **Jika sudah ada PR terbuka yang menanganinya**, pertimbangkan meninjau atau menyempurnakan PR itu daripada membuka duplikat yang bersaing.
 - **Untuk pekerjaan yang lebih besar**, komentari issue-nya untuk menandakan Anda sedang mengerjakannya, agar orang lain tidak memulai hal yang sama.
@@ -65,7 +65,7 @@ Skill yang di-bundle (di `skills/`) ikut terkirim di setiap instalasi Thor. Skil
 
 Jika skill Anda resmi dan berguna tetapi tidak dibutuhkan semua orang (misalnya integrasi layanan berbayar, dependensi berat), letakkan di **`optional-skills/`** — ikut terkirim dengan repo tetapi tidak aktif secara bawaan. Pengguna dapat menemukannya lewat `thor skills browse` (berlabel "official") dan memasangnya dengan `thor skills install` (tanpa peringatan pihak ketiga, trust bawaan).
 
-Jika skill Anda khusus, kontribusi komunitas, atau niche, lebih cocok untuk **Skills Hub** — unggah ke registry skill dan bagikan di [Discord Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent). Pengguna dapat memasangnya dengan `thor skills install`.
+Jika skill Anda khusus, kontribusi komunitas, atau niche, lebih cocok untuk **Skills Hub** — unggah ke registry skill dan bagikan di [Discord Thor Agent](https://github.com/thor726/Thor-agent). Pengguna dapat memasangnya dengan `thor skills install`.
 
 ---
 
@@ -98,7 +98,7 @@ Terbitkan ini sebagai **repo plugin mandiri**:
 - Implementasikan ABC yang relevan dan gunakan jalur discovery plugin yang sudah ada (`~/.thor/plugins/`, `.thor/plugins/` di project, atau entry point pip) — lihat [Build a Thor Plugin](https://thor-agent.thor-agent.local/docs/guides/build-a-thor-plugin)
 - Daftarkan lifecycle hook (`pre_tool_call`, `post_tool_call`, `pre_llm_call`, `post_llm_call`, `on_session_start`, `on_session_end`), tool (`ctx.register_tool`), dan subcommand CLI (`ctx.register_cli_command`) melalui permukaan yang sudah kami ekspos — tidak perlu perubahan core
 - Jika plugin Anda membutuhkan kemampuan yang belum diekspos framework, itu adalah feature request untuk **memperluas permukaan plugin generik** (hook baru atau metode `ctx`) — jangan pernah membuat kasus khusus untuk plugin Anda di core
-- Promosikan di kanal `#plugins-skills-and-skins` di [Discord Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent) agar pengguna dapat menemukan dan memasangnya
+- Promosikan di kanal `#plugins-skills-and-skins` di [Discord Thor Agent](https://github.com/thor726/Thor-agent) agar pengguna dapat menemukan dan memasangnya
 
 Plugin produk pihak ketiga yang dibangun dengan baik bisa lolos review otomatis dan tetap ditutup karena alasan ini — ini keputusan penempatan, bukan penilaian atas kodenya. PR yang menambahkan direktori semacam itu di bawah `plugins/` akan ditutup dengan arahan untuk menerbitkannya sebagai repo tersendiri.
 
@@ -1036,7 +1036,7 @@ test(tools): add unit tests for file_operations
 
 ## Melaporkan Issue
 
-- Gunakan [GitHub Issues](https://github.com/dwisetyabudi15581/Thor-agent/issues)
+- Gunakan [GitHub Issues](https://github.com/thor726/Thor-agent/issues)
 - Sertakan: OS, versi Python, versi Thor (`thor --version`), traceback error lengkap
 - Sertakan langkah reproduksi
 - Periksa issue yang ada sebelum membuat duplikat
@@ -1046,7 +1046,7 @@ test(tools): add unit tests for file_operations
 
 ## Komunitas
 
-- **Discord**: [github.com/dwisetyabudi15581/Thor-agent](https://github.com/dwisetyabudi15581/Thor-agent) — untuk pertanyaan, memamerkan proyek, dan berbagi skill
+- **Discord**: [github.com/thor726/Thor-agent](https://github.com/thor726/Thor-agent) — untuk pertanyaan, memamerkan proyek, dan berbagi skill
 - **GitHub Discussions**: Untuk proposal desain dan diskusi arsitektur
 - **Skills Hub**: Unggah skill khusus ke registry dan bagikan ke komunitas
 

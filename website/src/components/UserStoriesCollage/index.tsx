@@ -295,14 +295,14 @@ export default function UserStoriesCollage(): React.JSX.Element {
       <div className={styles.footer}>
         Built something with Thor?{' '}
         <a
-          href="https://github.com/dwisetyabudi15581/Thor-agent/edit/main/website/src/data/userStories.json"
+          href="https://github.com/thor726/Thor-agent/edit/main/website/src/data/userStories.json"
           target="_blank"
           rel="noopener noreferrer"
         >
           Add your story to this page
         </a>{' '}
         by editing <code>userStories.json</code>, or post it in the{' '}
-        <a href="https://github.com/dwisetyabudi15581/Thor-agent" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/thor726/Thor-agent" target="_blank" rel="noopener noreferrer">
           Thor Agent Discord
         </a>{' '}
         and we&apos;ll pick it up.

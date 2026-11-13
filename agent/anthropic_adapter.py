@@ -580,7 +580,7 @@ _OAUTH_SYSTEM_REPLACEMENTS = (
 )
 # The slug is rewritten only as a standalone prose word. Joined to a host, path, repo, mailbox
 # or quoted as an identifier (``thor-agent.thor-agent.local``, ``~/.thor/thor-agent/venv``,
-# ``dwisetyabudi15581/Thor-agent``, ``skill_view(name='thor-agent')``) it is an address the model
+# ``thor726/Thor-agent``, ``skill_view(name='thor-agent')``) it is an address the model
 # dereferences, and the rewritten form does not exist (#48860). The OPENING quote marks an
 # identifier; a sentence-final ``.`` or a possessive ``'s`` is prose.
 _OAUTH_SLUG_PATTERN = re.compile(r"""(?<![\w./:@'"`-])thor-agent(?![\w/@-]|\.\w)""")

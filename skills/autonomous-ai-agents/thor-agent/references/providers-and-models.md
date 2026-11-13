@@ -27,7 +27,7 @@ Full docs: https://thor-agent.thor-agent.local/docs/integrations/providers
 | bedrock / vertex / azure-foundry | Cloud SDK / key | AWS SDK creds / Vertex ADC / `AZURE_FOUNDRY_API_KEY` |
 | custom | Config | `model.base_url` + `model.api_key` in config.yaml |
 
-GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `thor plugins install github-copilot`, then `thor auth add copilot` (https://github.com/dwisetyabudi15581/thor-labs-plugins/tree/main/github-copilot).
+GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `thor plugins install github-copilot`, then `thor auth add copilot` (https://github.com/thor726/thor-labs-plugins/tree/main/github-copilot).
 
 Multiple credentials per provider pool and rotate automatically (`thor auth`).
 Fallback chain when the primary fails: `thor fallback add|remove|list`.

@@ -434,7 +434,7 @@ def openrouter_asker(api_key: Optional[str] = None, model: str = OPENROUTER_JEV_
         body = json.dumps({"model": model, "state": state, "questions": questions}).encode()
         req = urllib.request.Request(url, data=body, headers={
             "Authorization": f"Bearer {key}", "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/dwisetyabudi15581/Thor-agent", "X-Title": "thor compaction eval",
+            "HTTP-Referer": "https://github.com/thor726/Thor-agent", "X-Title": "thor compaction eval",
         })
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:

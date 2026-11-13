@@ -28,7 +28,7 @@ def _valid_marker(tmp_path: Path) -> Path:
         "schema": 1,
         "deployment_kind": "image",
         "manager": "docker",
-        "image": "dwisetyabudi15581/Thor-agent",
+        "image": "thor726/Thor-agent",
         "version": "1.0.0",
         "revision": "a" * 40,
     }))
@@ -162,7 +162,7 @@ def test_refusal_receipt_written_as_refused(tmp_path, monkeypatch):
         UpdateRefusal(
             code="image-marker",
             message="msg",
-            update_command="docker pull dwisetyabudi15581/Thor-agent:latest",
+            update_command="docker pull thor726/Thor-agent:latest",
         )
     )
     receipts = list((tmp_path / "receipts").glob("*.json"))

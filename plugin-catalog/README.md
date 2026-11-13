@@ -208,7 +208,7 @@ capabilities:
   requires_env: []
 ```
 
-`tier` says who stands behind an entry. `official`: maintained by dwisetyabudi15581.
+`tier` says who stands behind an entry. `official`: maintained by thor726.
 `verified`: verified by the Thor team to come from the company that makes what
 the plugin integrates into Thor, and that company is well known or reputable.
 `community`: everything else. Only Thor maintainers set `official` or

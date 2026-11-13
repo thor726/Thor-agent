@@ -17,7 +17,7 @@ Usage::
 Output: ``website/static/api/model-catalog.json``
 
 Live URL (after ``deploy-site.yml`` runs on merge to main):
-``https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/website/static/api/model-catalog.json``
+``https://raw.githubusercontent.com/thor726/Thor-agent/main/website/static/api/model-catalog.json``
 """
 
 from __future__ import annotations

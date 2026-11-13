@@ -3849,7 +3849,7 @@ tips:
   t279: "THOR_DEV=1, yerel geliştirme için container modu algılamasını atlar."
   t280: "Her MCP sunucusu, thor tools ile bağımsız olarak açılıp kapatılabilen kendi araç setini (mcp-servername) alır."
   t281: "Yapılandırmadaki MCP ${ENV_VAR} yer tutucuları sunucu başlatılırken çözümlenir — ~/.thor/.env içindeki değişkenler dahil."
-  t282: "Güvenilir depolardan (dwisetyabudi15581) gelen skill'ler 'trusted' güvenlik düzeyi alır; topluluk skill'leri ek taramadan geçer."
+  t282: "Güvenilir depolardan (thor726) gelen skill'ler 'trusted' güvenlik düzeyi alır; topluluk skill'leri ek taramadan geçer."
   t283: "~/.thor/skills/.hub/quarantine/ konumundaki skill karantinası, güvenlik incelemesi bekleyen skill'leri tutar."
   t284: "/steer <prompt>, bir sonraki araç çağrısından sonra bir not enjekte eder — görev ortasında kesmeden yön verin."
   t285: "/goal <text>, kalıcı bir Ralph döngüsü hedefi belirler — bir hakem tamamlandı deyinceye dek Thor tur tur otomatik devam eder."

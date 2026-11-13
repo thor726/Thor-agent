@@ -339,7 +339,7 @@
         tier_part: tierPart,
         name: achievement.name,
       });
-      return tmpl + "\n\n@dwisetyabudi15581 · https://thor-agent.thor-agent.local";
+      return tmpl + "\n\n@thor726 · https://thor-agent.thor-agent.local";
     }
 
     function shareOnX() {

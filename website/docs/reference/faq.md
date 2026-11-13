@@ -211,7 +211,7 @@ source ~/.bashrc
 # If you previously installed with sudo, clean up:
 sudo rm /usr/local/bin/thor
 # Then re-run the standard installer
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 ---
@@ -802,7 +802,7 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 1. Install Thor Agent on the new machine:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
    ```
 
 2. On the **source machine**, create a full backup:
@@ -924,6 +924,6 @@ If using OpenRouter, make sure your API key has credits. A 400 from OpenRouter o
 
 If your issue isn't covered here:
 
-1. **Search existing issues:** [GitHub Issues](https://github.com/dwisetyabudi15581/Thor-agent/issues)
+1. **Search existing issues:** [GitHub Issues](https://github.com/thor726/Thor-agent/issues)
 2. **Ask the community:** [Thor Agent Discord](https://discord.gg/thorresearch)
 3. **File a bug report:** Include your OS, Python version (`python3 --version`), Thor version (`thor --version`), and the full error message

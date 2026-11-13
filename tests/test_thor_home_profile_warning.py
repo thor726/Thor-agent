@@ -1,6 +1,6 @@
 """Tests for get_thor_home() profile-mode fallback warning.
 
-Regression test for https://github.com/dwisetyabudi15581/Thor-agent/issues/18594.
+Regression test for https://github.com/thor726/Thor-agent/issues/18594.
 
 When THOR_HOME is unset but an active_profile file indicates a non-default
 profile is active, get_thor_home() should:

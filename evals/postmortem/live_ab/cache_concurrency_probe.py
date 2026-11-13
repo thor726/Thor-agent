@@ -11,7 +11,7 @@ A consecutive pair (call k, k+1) in one session is classified:
   collapse  cache_read(k+1) <  50% of cache_read(k) the whole conversation was re-written
   (pairs whose system sha changed are compaction/aux calls and are excluded)
 
-Results that motivated thor-agent #104284 / #104421 and dwisetyabudi15581/api#227 (2026-09-05/06,
+Results that motivated thor-agent #104284 / #104421 and thor726/api#227 (2026-09-05/06,
 Fable 5.1, 20 sessions x 6 calls unless noted):
   thor, native /v1/messages         13.9% stuck (4 runs 14-20%)     -> chat is the Thor default
   thor, /v1/chat/completions         0 / 320 pairs

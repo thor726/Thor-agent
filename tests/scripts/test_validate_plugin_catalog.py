@@ -19,11 +19,11 @@ SCRIPT = REPO_ROOT / "scripts" / "validate_plugin_catalog.py"
 
 VALID_ENTRY = {
     "name": "example-plugin",
-    "repo": "https://github.com/dwisetyabudi15581/thor-example-plugins",
+    "repo": "https://github.com/thor726/thor-example-plugins",
     "sha": "38fe0fb53eff98d477f807432e965429e665ca33",
     "subdir": "",
     "description": "One-line description.",
-    "maintainer": "dwisetyabudi15581",
+    "maintainer": "thor726",
     "tier": "official",
     "requires_thor": ">=0.19",
     "docs_url": "",

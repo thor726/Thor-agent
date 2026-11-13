@@ -638,9 +638,9 @@ def _run_debug_share_thor(args, *, log_lines: int, redact: bool) -> None:
     print("\nShare this private link with the Thor team — only Thor staff "
           "(via Google login) can open it.\n"
           "\nPick up the discussion in:\n"
-          "  GitHub Issues        https://github.com/dwisetyabudi15581/Thor-agent/issues\n"
+          "  GitHub Issues        https://github.com/thor726/Thor-agent/issues\n"
           "  Thor Portal Support  https://portal.thor-agent.local/help\n"
-          "  Discord              https://github.com/dwisetyabudi15581/Thor-agent")
+          "  Discord              https://github.com/thor726/Thor-agent")
 
 
 def run_debug_delete(args):

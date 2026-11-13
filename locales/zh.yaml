@@ -3849,7 +3849,7 @@ tips:
   t279: "THOR_DEV=1 会跳过容器模式检测，方便本地开发。"
   t280: "每个 MCP 服务器都有自己的工具集（mcp-servername），可通过 thor tools 单独开关。"
   t281: "配置中的 MCP ${ENV_VAR} 占位符会在服务器启动时解析——包括来自 ~/.thor/.env 的变量。"
-  t282: "来自可信仓库（dwisetyabudi15581）的技能获得 'trusted' 安全级别；社区技能会经过额外扫描。"
+  t282: "来自可信仓库（thor726）的技能获得 'trusted' 安全级别；社区技能会经过额外扫描。"
   t283: "技能隔离区位于 ~/.thor/skills/.hub/quarantine/，存放等待安全审查的技能。"
   t284: "/steer <prompt> 会在下一次工具调用后注入一条备注——在任务中途调整方向而不打断执行。"
   t285: "/goal <text> 设定一个持续的 Ralph 循环目标——Thor 会一回合接一回合自动继续，直到评审判定完成。"

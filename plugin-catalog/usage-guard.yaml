@@ -1,4 +1,4 @@
-# Catalog entry for dwisetyabudi15581/Thor-agent: plugin-catalog/usage-guard.yaml
+# Catalog entry for thor726/Thor-agent: plugin-catalog/usage-guard.yaml
 # Pinned to the release commit of v0.5.0. Bump sha and version together.
 name: usage-guard
 repo: https://github.com/mister-ideas/usage-guard

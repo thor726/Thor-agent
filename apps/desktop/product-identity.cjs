@@ -73,13 +73,13 @@ const identity = {
   artifactNamePascal: name.pascal,
   windowsExecutableName: kebabSuffix ? cliName : displayName,
   cliName,
-  msixAppIdWithOrg: `dwisetyabudi15581.${name.pascal}${pascalSuffix}`,
+  msixAppIdWithOrg: `thor726.${name.pascal}${pascalSuffix}`,
   ...(store
     ? {
         storeMsix: {
           // Partner Center publisher identity (the account's publisher ID) —
           // validated + re-signed by the Store on submission.
-          identityName: 'dwisetyabudi15581Inc.ThorAgent',
+          identityName: 'thor726Inc.ThorAgent',
           publisher: 'CN=EE6D86E4-606F-4E38-B940-AD7248C9D519',
           publisherDisplayName: 'Thor Agent Inc.'
         }

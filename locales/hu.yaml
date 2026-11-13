@@ -3866,7 +3866,7 @@ tips:
   t279: "A THOR_DEV=1 kikapcsolja a konténermód-felismerést helyi fejlesztéshez."
   t280: "Minden MCP-szerver saját eszközkészletet kap (mcp-szervernév), amely a thor tools paranccsal külön ki-be kapcsolható."
   t281: "Az MCP ${ENV_VAR} helyőrzők a konfigban a szerver indításakor oldódnak fel — a ~/.thor/.env változóival együtt."
-  t282: "A megbízható tárolókból (dwisetyabudi15581) származó skillek 'trusted' biztonsági szintet kapnak; a közösségi skilleket extra vizsgálat várja."
+  t282: "A megbízható tárolókból (thor726) származó skillek 'trusted' biztonsági szintet kapnak; a közösségi skilleket extra vizsgálat várja."
   t283: "A ~/.thor/skills/.hub/quarantine/ alatti skill-karantén a biztonsági felülvizsgálatra váró skilleket tárolja."
   t284: "A /steer <prompt> a következő eszközhívás után beszúr egy megjegyzést — így menet közben terelheted az irányt megszakítás nélkül."
   t285: "A /goal <text> állandó Ralph-loop célt állít be — a Thor körről körre automatikusan folytatja, amíg egy bíráló késznek nem ítéli."

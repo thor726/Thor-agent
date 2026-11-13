@@ -36,7 +36,7 @@ def mod():
 
 
 @pytest.mark.parametrize("directory,source,prefix", [
-    ("skills", "built-in", "dwisetyabudi15581/Thor-agent/skills"),
+    ("skills", "built-in", "thor726/Thor-agent/skills"),
     ("optional-skills", "optional", "official"),
 ])
 def test_local_skills_publish_exact_install_target(mod, tmp_path, monkeypatch, directory, source, prefix):

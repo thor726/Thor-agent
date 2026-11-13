@@ -29,7 +29,7 @@ _ORPHAN_RESCUE_REF_MAX_AGE_DAYS = 30
 _GIT_TEXT_KW = dict(capture_output=True, text=True, encoding="utf-8", errors="replace",
                    creationflags=windows_hide_flags())
 _BAR = "=" * 68
-_UPSTREAM_ADD_CMD = "git remote add upstream https://github.com/dwisetyabudi15581/Thor-agent.git"
+_UPSTREAM_ADD_CMD = "git remote add upstream https://github.com/thor726/Thor-agent.git"
 
 
 def _git_ok(git_cmd, args, cwd, **kw) -> bool:
@@ -272,12 +272,12 @@ def _print_parked_branch_kept_notice(current_branch: str, target_branch: str, un
 
 
 OFFICIAL_REPO_URLS = {
-    "https://github.com/dwisetyabudi15581/Thor-agent.git",
-    "git@github.com:dwisetyabudi15581/Thor-agent.git",
-    "https://github.com/dwisetyabudi15581/Thor-agent",
-    "git@github.com:dwisetyabudi15581/Thor-agent",
+    "https://github.com/thor726/Thor-agent.git",
+    "git@github.com:thor726/Thor-agent.git",
+    "https://github.com/thor726/Thor-agent",
+    "git@github.com:thor726/Thor-agent",
 }
-OFFICIAL_REPO_URL = "https://github.com/dwisetyabudi15581/Thor-agent.git"
+OFFICIAL_REPO_URL = "https://github.com/thor726/Thor-agent.git"
 SKIP_UPSTREAM_PROMPT_FILE = ".skip_upstream_prompt"
 
 
@@ -342,7 +342,7 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     from thor_cli.update_cmd import _add_upstream_remote, _mark_skip_upstream_prompt
     print(
         "\nℹ Your fork is not tracking the official Thor repository.\n"
-        "  This means you may miss updates from dwisetyabudi15581/Thor-agent.\n"
+        "  This means you may miss updates from thor726/Thor-agent.\n"
     )
     if assume_yes or (input_fn is None and not (sys.stdin.isatty() and sys.stdout.isatty())):
         print(f"  Skipping upstream setup (non-interactive run).\n  Add it later with: {_UPSTREAM_ADD_CMD}")
@@ -363,7 +363,7 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     if not _add_upstream_remote(git_cmd, cwd):
         print("  ✗ Failed to add upstream remote. Skipping upstream sync.")
         return False
-    print("  ✓ Added upstream: https://github.com/dwisetyabudi15581/Thor-agent.git")
+    print("  ✓ Added upstream: https://github.com/thor726/Thor-agent.git")
     return True
 
 
@@ -503,10 +503,10 @@ def _damaged_checkout_message(root: Path) -> str:
     would rebuild the default directory and leave a ``--dir`` install broken)."""
     if sys.platform == "win32":
         quoted = "'" + str(root).replace("'", "''") + "'"
-        repair = ("& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)))"
+        repair = ("& ([scriptblock]::Create((irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)))"
                   f" -InstallDir {quoted}")
     else:
-        repair = f"curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash -s -- --dir {shlex.quote(str(root))}"
+        repair = f"curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --dir {shlex.quote(str(root))}"
     return (f"✗ This Thor checkout's git data is damaged (git no longer recognizes {root / '.git'}),"
             " so it cannot be updated in place.\n"
             "  Run the installer again to repair it; it moves the damaged checkout aside and keeps"
@@ -550,7 +550,7 @@ _FETCH_FAILURE_RULES = (
     # key (or lack of one) was the cause (#82169).
     (lambda s: "Permission denied (publickey)" in s or "Host key verification failed" in s,
      "✗ SSH authentication failed — check your SSH key is added to GitHub, or switch"
-     " `origin` to HTTPS: `git remote set-url origin https://github.com/dwisetyabudi15581/Thor-agent.git`."),
+     " `origin` to HTTPS: `git remote set-url origin https://github.com/thor726/Thor-agent.git`."),
 )
 
 

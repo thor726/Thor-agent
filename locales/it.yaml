@@ -3849,7 +3849,7 @@ tips:
   t279: "THOR_DEV=1 salta il rilevamento della modalità container per lo sviluppo locale."
   t280: "Ogni server MCP ha il proprio toolset (mcp-servername) che può essere attivato o disattivato indipendentemente tramite thor tools."
   t281: "I segnaposto MCP ${ENV_VAR} nella configurazione vengono risolti all'avvio del server — incluse le variabili da ~/.thor/.env."
-  t282: "Le skill da repository fidati (dwisetyabudi15581) hanno il livello di sicurezza 'trusted'; le skill della community ricevono scansioni aggiuntive."
+  t282: "Le skill da repository fidati (thor726) hanno il livello di sicurezza 'trusted'; le skill della community ricevono scansioni aggiuntive."
   t283: "La quarantena delle skill in ~/.thor/skills/.hub/quarantine/ contiene le skill in attesa di revisione di sicurezza."
   t284: "/steer <prompt> inietta una nota dopo la prossima chiamata a uno strumento — correggi la direzione a metà attività senza interrompere."
   t285: "/goal <text> imposta un obiettivo permanente in stile Ralph-loop — Thor continua automaticamente turno dopo turno finché un giudice non dichiara fatto."

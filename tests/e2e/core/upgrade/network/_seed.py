@@ -8,7 +8,7 @@ own; each cell then publishes a NEW upstream commit (or a new release record), s
 a real fetch, checkout and rebuild, never the "already current" branch.
 
 After the seed the sandbox loses the ``insteadOf`` rewrite: the checkout's origin is the official
-``https://github.com/dwisetyabudi15581/Thor-agent.git`` again, and inside the namespace the only way
+``https://github.com/thor726/Thor-agent.git`` again, and inside the namespace the only way
 to reach it is the test's proxy, which routes ``github.com`` to a git smart-HTTP server over the
 same bare origin. The partial clone (``--filter=blob:none``) makes every lazy blob fetch of the
 checkout cross that proxy too.
@@ -36,7 +36,7 @@ from tests.e2e.core.upgrade import _install_helpers as I
 from tests.e2e.core.upgrade.network import _netedge as N
 
 ASSETS = "thor-assets.thor-agent.local"
-REPOSITORY = "dwisetyabudi15581/Thor-agent"
+REPOSITORY = "thor726/Thor-agent"
 # Hosts a correctly isolated update must never reach directly; with the proxy they appear in
 # the proxy log as "refused" (the proxy has no route for them).
 PUBLIC_INDEXES = ("pypi.org", "files.pythonhosted.org", "registry.npmjs.org")
@@ -209,8 +209,8 @@ def seed_install(root: Path, release: str | None = None) -> Installed:
     # From here on the checkout talks to the official URL, which only the proxy can serve.
     (sb.home / ".gitconfig").write_text("", encoding="utf-8")
     gitroot = root / "gitroot"
-    (gitroot / "dwisetyabudi15581").mkdir(parents=True, exist_ok=True)
-    (gitroot / "dwisetyabudi15581" / "thor-agent.git").symlink_to(origin)
+    (gitroot / "thor726").mkdir(parents=True, exist_ok=True)
+    (gitroot / "thor726" / "thor-agent.git").symlink_to(origin)
     ca = N.TestCA(root / "corporate-ca")
     inst = Installed(root, sb, origin, gitroot, ca, ca.os_trust_store(root / "corporate-ca" / "etc-ssl-certs"))
     assert_isolated(inst)
@@ -252,7 +252,7 @@ def _identity(name: str, token: str) -> dict:
     pascal = f"ThorChannel{token}"
     return {"token": token, "displayName": f"Thor {name}", "appId": f"ai.thor.channel.h{token}",
             "appNamePascal": pascal, "artifactNamePascal": pascal, "cliName": f"thor-{name}",
-            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"dwisetyabudi15581.{pascal}"}
+            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"thor726.{pascal}"}
 
 
 GITHUB_API = "api.github.com"

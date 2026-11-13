@@ -13,7 +13,7 @@ import urllib.request
 
 DEFAULT_UA = (
     "thor-osint-investigation/0.2 "
-    "(+https://github.com/dwisetyabudi15581/Thor-agent; "
+    "(+https://github.com/thor726/Thor-agent; "
     "set THOR_OSINT_UA env var to identify yourself per "
     "Wikimedia / SEC fair-use guidance)"
 )

@@ -462,7 +462,7 @@ export function BootFailureOverlay() {
       {
         key: 'discord',
         label: copy.cloudDownDiscord,
-        onClick: () => openExternalLink('https://github.com/dwisetyabudi15581/Thor-agent'),
+        onClick: () => openExternalLink('https://github.com/thor726/Thor-agent'),
         variant: 'ghost'
       },
       { ...settingsAction, variant: 'ghost' }

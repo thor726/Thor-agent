@@ -185,7 +185,7 @@ You can set `providers.<id>.request_timeout_seconds` for a provider-wide request
 
 You can also set `providers.<id>.stale_timeout_seconds` for the non-streaming stale-call detector, plus `providers.<id>.models.<model>.stale_timeout_seconds` for a model-specific override. This wins over the legacy `THOR_API_CALL_STALE_TIMEOUT` env var. The same key is the streaming stale-stream deadline: an explicit value is used as-is — the implicit context-size tiers (240s above 50k tokens, 300s above 100k) and the reasoning-model floors apply only to the 180s default, so an explicit value can shorten how long a hung stream is tolerated.
 
-Leaving these unset keeps the legacy defaults (`THOR_API_TIMEOUT=1800`s, `THOR_API_CALL_STALE_TIMEOUT=90`s, native Anthropic 900s). The non-streaming stale detector is auto-disabled for local endpoints when left implicit and can scale upward for very large contexts. On AWS Bedrock (`providers.bedrock`), the resolved request timeout is the socket read timeout of the boto3 Converse client (`bedrock_converse`) and of the AnthropicBedrock SDK client, picked per request for the active model so a `/model` switch or fallback uses that model's value. The connect timeout stays fixed (botocore's 60s on Converse, 10s on AnthropicBedrock), and a read timeout bounds each socket read, not the whole call. Unset keeps botocore's 60s read on Converse and 900s on AnthropicBedrock. See the commented example in [`cli-config.yaml.example`](https://github.com/dwisetyabudi15581/Thor-agent/blob/main/cli-config.yaml.example).
+Leaving these unset keeps the legacy defaults (`THOR_API_TIMEOUT=1800`s, `THOR_API_CALL_STALE_TIMEOUT=90`s, native Anthropic 900s). The non-streaming stale detector is auto-disabled for local endpoints when left implicit and can scale upward for very large contexts. On AWS Bedrock (`providers.bedrock`), the resolved request timeout is the socket read timeout of the boto3 Converse client (`bedrock_converse`) and of the AnthropicBedrock SDK client, picked per request for the active model so a `/model` switch or fallback uses that model's value. The connect timeout stays fixed (botocore's 60s on Converse, 10s on AnthropicBedrock), and a read timeout bounds each socket read, not the whole call. Unset keeps botocore's 60s read on Converse and 900s on AnthropicBedrock. See the commented example in [`cli-config.yaml.example`](https://github.com/thor726/Thor-agent/blob/main/cli-config.yaml.example).
 
 ## Update Behavior
 
@@ -631,7 +631,7 @@ OIDC tokens are short-lived and should not be used as the documented deployment 
 
 ### Singularity/Apptainer Backend
 
-Runs commands in a [Singularity/Apptainer](https://apptainer.org) container. Designed for HPC clusters and shared machines where Docker isn't available. It is the official [`singularity` plugin](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/singularity) (formerly built into core; `thor update` installs it for profiles that already use it):
+Runs commands in a [Singularity/Apptainer](https://apptainer.org) container. Designed for HPC clusters and shared machines where Docker isn't available. It is the official [`singularity` plugin](https://github.com/thor726/thor-official-plugins/tree/main/singularity) (formerly built into core; `thor update` installs it for profiles that already use it):
 
 ```bash
 thor plugins install singularity
@@ -656,10 +656,10 @@ terminal:
 
 ### Sprites Backend
 
-Runs commands in a [Sprite](https://fly.io/sprites), a stateful cloud sandbox on Fly.io with checkpoint and restore. It is the [`sprites` plugin](https://github.com/dwisetyabudi15581/thor-plugin-sprites); install it, then select it:
+Runs commands in a [Sprite](https://fly.io/sprites), a stateful cloud sandbox on Fly.io with checkpoint and restore. It is the [`sprites` plugin](https://github.com/thor726/thor-plugin-sprites); install it, then select it:
 
 ```bash
-thor plugins install dwisetyabudi15581/thor-plugin-sprites --enable
+thor plugins install thor726/thor-plugin-sprites --enable
 thor config set terminal.backend sprites
 ```
 
@@ -677,7 +677,7 @@ terminal:
 
 **Sharing:** Gateway and WebUI sessions each get their own Sprite, `delegate_task` subagents share their parent's, and flows without a session (CLI, cron) share the profile's default Sprite.
 
-**Optional settings** live under `plugins.entries.sprites.settings` (also editable in the Plugins hub): `name_prefix` (replace `thor-` in every Sprite name), `scope` (`session` or `instance`, one Sprite per profile), and `image`, `max_cpus`, `max_ram_gb`, `max_disk_gb` for newly created Sprites. An invalid value stops the backend from starting, and `thor doctor` names it. See the [plugin README](https://github.com/dwisetyabudi15581/thor-plugin-sprites#settings).
+**Optional settings** live under `plugins.entries.sprites.settings` (also editable in the Plugins hub): `name_prefix` (replace `thor-` in every Sprite name), `scope` (`session` or `instance`, one Sprite per profile), and `image`, `max_cpus`, `max_ram_gb`, `max_disk_gb` for newly created Sprites. An invalid value stops the backend from starting, and `thor doctor` names it. See the [plugin README](https://github.com/thor726/thor-plugin-sprites#settings).
 
 ### Common Terminal Backend Issues
 

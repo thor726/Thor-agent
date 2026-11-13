@@ -117,7 +117,7 @@ describe('detectEmbed — Twitter/X', () => {
 describe('detectEmbed — non-matches', () => {
   it.each([
     'https://example.com/watch?v=dQw4w9WgXcQ',
-    'https://github.com/dwisetyabudi15581/thor',
+    'https://github.com/thor726/thor',
     'not-a-url',
     'ftp://youtube.com/watch?v=dQw4w9WgXcQ',
     'mailto:someone@youtube.com'

@@ -204,7 +204,7 @@ async function locateThor(ssh, remoteThorPath) {
     //   - version checking: `<python> --version` printed "Python x.y.z" instead of
     //     the Thor version, and
     //   - capability probing: `<python> serve --help` failed entirely.
-    // See https://github.com/dwisetyabudi15581/Thor-agent/issues/74411
+    // See https://github.com/thor726/Thor-agent/issues/74411
     return candidate
   }
 
@@ -264,7 +264,7 @@ async function locateThor(ssh, remoteThorPath) {
 
   const err: any = new Error(
     'Thor is not installed on the remote host (could not find a `thor` executable). ' +
-      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh  ' +
+      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | sh  ' +
       '— or set the Thor path explicitly in the SSH connection settings.'
   )
 

@@ -144,7 +144,7 @@ TERMINAL_SSH_KEY=~/.ssh/id_rsa
 
 ### Singularity/Apptainer
 
-An official plugin ([`singularity`](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/singularity)), formerly built in; `thor update` installs it for profiles that already use it.
+An official plugin ([`singularity`](https://github.com/thor726/thor-official-plugins/tree/main/singularity)), formerly built in; `thor update` installs it for profiles that already use it.
 
 ```bash
 thor plugins install singularity
@@ -159,10 +159,10 @@ thor config set terminal.singularity_image ~/python.sif
 
 ### Sprites
 
-A plugin ([`sprites`](https://github.com/dwisetyabudi15581/thor-plugin-sprites)) that runs commands in a stateful [Sprite](https://fly.io/sprites) on Fly.io. See [Sprites Backend](../configuration.md#sprites-backend).
+A plugin ([`sprites`](https://github.com/thor726/thor-plugin-sprites)) that runs commands in a stateful [Sprite](https://fly.io/sprites) on Fly.io. See [Sprites Backend](../configuration.md#sprites-backend).
 
 ```bash
-thor plugins install dwisetyabudi15581/thor-plugin-sprites --enable
+thor plugins install thor726/thor-plugin-sprites --enable
 thor config set terminal.backend sprites
 # Add SPRITES_TOKEN to ~/.thor/.env
 ```

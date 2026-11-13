@@ -217,7 +217,7 @@ Profiles that already use `copilot` or `copilot-acp` (main model, fallback, auxi
 
 Sign in with `thor auth add copilot` (device-code login), or set `COPILOT_GITHUB_TOKEN`, `GH_TOKEN` or `GITHUB_TOKEN`. Logins made with the `gh` CLI or the Copilot CLI are no longer read: if you relied on them, run `thor auth add copilot`.
 
-Setup, models and environment variables: [github-copilot plugin docs](https://github.com/dwisetyabudi15581/thor-labs-plugins/tree/main/github-copilot).
+Setup, models and environment variables: [github-copilot plugin docs](https://github.com/thor726/thor-labs-plugins/tree/main/github-copilot).
 
 ### First-Class API-Key Providers
 

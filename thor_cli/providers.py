@@ -437,7 +437,7 @@ def thor_api_mode(model: str = "") -> str:
     native route re-wrote the previous turn on 14-20% of consecutive calls (4 runs; the cache read
     stopped at the prior breakpoint with byte-identical prefixes), chat/completions 0 of 320 pairs.
     That is 15-20% of a fan-out's cache-write bill. The cause is inside the portal's native route
-    (dwisetyabudi15581/api#227 carries the diagnostics); flip the default back to ``native`` when it is
+    (thor726/api#227 carries the diagnostics); flip the default back to ``native`` when it is
     fixed. Cost of ``chat``: prior-turn thinking travels as OpenAI-style reasoning fields instead of
     signed native blocks, and cache_control scopes are translated by the portal's adapter.
     Empty/unknown model defaults to ``chat_completions`` (the historical Thor transport)."""

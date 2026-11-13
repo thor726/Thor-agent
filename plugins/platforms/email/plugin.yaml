@@ -6,7 +6,7 @@ description: >
   Email gateway adapter for Thor Agent. Polls an IMAP mailbox for inbound
   messages and replies over SMTP, relaying email threads to and from the
   Thor agent.
-author: dwisetyabudi15581
+author: thor726
 requires_env:
   - name: EMAIL_ADDRESS
     description: "Email account address"

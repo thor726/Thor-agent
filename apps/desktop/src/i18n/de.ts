@@ -1850,7 +1850,7 @@ export const deOverrides = {
       sshErrHostKey:
         'Der Host-Key hat sich seit Ihrer letzten Verbindung GEÄNDERT. Prüfen Sie, ob das erwartet ist, führen Sie dann ssh-keygen -R <host> aus und verbinden Sie sich erneut.',
       sshErrNotInstalled:
-        'Thor ist auf dem Remote-Host nicht installiert. Installieren Sie es dort (curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh) oder legen Sie den Thor-Pfad fest.',
+        'Thor ist auf dem Remote-Host nicht installiert. Installieren Sie es dort (curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | sh) oder legen Sie den Thor-Pfad fest.',
       sshErrPlatform:
         'Nicht unterstützte Remote-Plattform. Der Desktop-SSH-Modus von Thor unterstützt Linux-, macOS- und Windows-Remote-Hosts.',
       sshErrTimeout: 'SSH-Verbindung ist ausgelaufen. Der Host ist möglicherweise nicht erreichbar oder schläft.',

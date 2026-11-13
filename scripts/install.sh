@@ -20,7 +20,7 @@ set -u
 # hygiene can't break the locked sync the way it used to before pm owned it.
 export UV_NO_CONFIG=1
 
-REPO_URL="${THOR_REPO_URL:-https://github.com/dwisetyabudi15581/Thor-agent.git}"
+REPO_URL="${THOR_REPO_URL:-https://github.com/thor726/Thor-agent.git}"
 BRANCH="main"
 INSTALL_COMMIT=""
 # The update channel to install: stable (the latest published release, the default for the
@@ -679,7 +679,7 @@ is_official_repo() {
     # official repository itself, which silently turned the stable channel off
     # and left every fresh install on main's tip. Match the path case-insensitively.
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
-        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)dwisetyabudi15581/thor-agent(\.git)?/?$'
+        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)thor726/thor-agent(\.git)?/?$'
 }
 
 # The latest published stable release (vX.Y.Z), the release `thor update` resolves for the
@@ -689,11 +689,11 @@ is_official_repo() {
 latest_stable_release() {
     local tag
     tag="$(curl -fsSL --connect-timeout 5 --max-time 20 -H 'Accept: application/vnd.github+json' \
-        https://api.github.com/repos/dwisetyabudi15581/Thor-agent/releases/latest 2>/dev/null \
+        https://api.github.com/repos/thor726/Thor-agent/releases/latest 2>/dev/null \
         | sed -n 's/^[[:space:]]*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
     if ! valid_stable_tag "$tag"; then
         tag="$(curl -fsSI --connect-timeout 5 --max-time 20 \
-            https://github.com/dwisetyabudi15581/Thor-agent/releases/latest 2>/dev/null \
+            https://github.com/thor726/Thor-agent/releases/latest 2>/dev/null \
             | tr -d '\r' | sed -n 's#^[Ll]ocation:.*/releases/tag/\([^/]*\)$#\1#p' | tail -n 1)"
     fi
     if ! valid_stable_tag "$tag"; then

@@ -26,8 +26,8 @@ from pathlib import Path
 
 from tests.e2e.core.upgrade import _helpers as H
 
-OFFICIAL_HTTPS = "https://github.com/dwisetyabudi15581/Thor-agent.git"
-OFFICIAL_SSH = "git@github.com:dwisetyabudi15581/Thor-agent.git"
+OFFICIAL_HTTPS = "https://github.com/thor726/Thor-agent.git"
+OFFICIAL_SSH = "git@github.com:thor726/Thor-agent.git"
 TRACEBACK = "Traceback (most recent call last)"
 FAKE_KEY = "sk-fake-e2e-install-update"
 

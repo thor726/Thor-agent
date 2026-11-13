@@ -200,7 +200,7 @@ the thor-agent repo, so Thor has reviewed each entry before it shipped —
 `transport.command:` invocation.
 
 Manifests live at
-[`optional-mcps/<name>/manifest.yaml`](https://github.com/dwisetyabudi15581/Thor-agent/tree/main/optional-mcps)
+[`optional-mcps/<name>/manifest.yaml`](https://github.com/thor726/Thor-agent/tree/main/optional-mcps)
 on GitHub. The picker also prints the manifest's `source:` URL at install
 time so you can quickly verify the upstream repo. The web dashboard's MCP
 page surfaces the same detail per catalog entry — transport, auth type, the
@@ -286,7 +286,7 @@ MCPs are never auto-updated. Re-run `thor mcp install <name>` to refresh
 after a Thor update if a manifest version changed.
 
 To add an MCP to the catalog, open a PR against
-[`optional-mcps/`](https://github.com/dwisetyabudi15581/Thor-agent/tree/main/optional-mcps).
+[`optional-mcps/`](https://github.com/thor726/Thor-agent/tree/main/optional-mcps).
 
 ### Suggestion metadata (`suggest:`)
 
@@ -1107,7 +1107,7 @@ thor plugins install mcp-serve
 }
 ```
 
-It used to be built in as `thor mcp serve`. An MCP client configured with `"args": ["mcp", "serve"]` changes them to `["mcp-serve"]`; the tool names and parameters are unchanged, and `thor mcp serve` now prints the new spelling and the install line. Tools, the `--tools` mode and its safety limits are documented in the [plugin's README](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/mcp-serve).
+It used to be built in as `thor mcp serve`. An MCP client configured with `"args": ["mcp", "serve"]` changes them to `["mcp-serve"]`; the tool names and parameters are unchanged, and `thor mcp serve` now prints the new spelling and the install line. Tools, the `--tools` mode and its safety limits are documented in the [plugin's README](https://github.com/thor726/thor-official-plugins/tree/main/mcp-serve).
 
 ## Related docs
 

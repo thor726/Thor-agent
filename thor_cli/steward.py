@@ -90,7 +90,7 @@ _STEWARD_UNINSTALL_MESSAGES = {
         "✗ This Thor runs from a Docker image.\n"
         "\n"
         "There is no code to uninstall — remove the container and image:\n"
-        "  docker rm <container> && docker rmi dwisetyabudi15581/Thor-agent\n"
+        "  docker rm <container> && docker rmi thor726/Thor-agent\n"
         "\n" +
         _STEWARD_DELETE_DATA_PREAMBLE +
         _STEWARD_DELETE_DATA_CLI

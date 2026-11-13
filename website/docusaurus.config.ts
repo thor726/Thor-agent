@@ -11,7 +11,7 @@ const config: Config = {
   url: 'https://thor-agent.thor-agent.local',
   baseUrl: '/docs/',
 
-  organizationName: 'dwisetyabudi15581',
+  organizationName: 'thor726',
   projectName: 'thor-agent',
 
   onBrokenLinks: 'warn',
@@ -83,7 +83,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',  // Docs at the root of /docs/
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/dwisetyabudi15581/Thor-agent/edit/main/website/',
+          editUrl: 'https://github.com/thor726/Thor-agent/edit/main/website/',
           // Relative `.md` links (readable on GitHub, #114428) must also resolve
           // across the zh-Hans fallback boundary; see src/remark/relativeDocLinks.js.
           beforeDefaultRemarkPlugins: [[relativeDocLinks, {siteDir: __dirname}]],
@@ -161,12 +161,12 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://github.com/dwisetyabudi15581/Thor-agent',
+          href: 'https://github.com/thor726/Thor-agent',
           label: 'GitHub',
           position: 'right',
         },
         {
-          href: 'https://github.com/dwisetyabudi15581/Thor-agent',
+          href: 'https://github.com/thor726/Thor-agent',
           label: 'Discord',
           position: 'right',
         },
@@ -187,8 +187,8 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            { label: 'Discord', href: 'https://github.com/dwisetyabudi15581/Thor-agent' },
-            { label: 'GitHub Issues', href: 'https://github.com/dwisetyabudi15581/Thor-agent/issues' },
+            { label: 'Discord', href: 'https://github.com/thor726/Thor-agent' },
+            { label: 'GitHub Issues', href: 'https://github.com/thor726/Thor-agent/issues' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
         },
@@ -196,12 +196,12 @@ const config: Config = {
           title: 'More',
           items: [
             { label: 'Desktop Download', href: 'https://thor-agent.thor-agent.local/' },
-            { label: 'GitHub', href: 'https://github.com/dwisetyabudi15581/Thor-agent' },
-            { label: 'Thor Agent', href: 'https://github.com/dwisetyabudi15581/Thor-agent' },
+            { label: 'GitHub', href: 'https://github.com/thor726/Thor-agent' },
+            { label: 'Thor Agent', href: 'https://github.com/thor726/Thor-agent' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://github.com/dwisetyabudi15581/Thor-agent">Thor Agent</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Built by <a href="https://github.com/thor726/Thor-agent">Thor Agent</a> · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

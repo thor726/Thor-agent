@@ -110,11 +110,11 @@ page is for built-in Thor core development, not the usual user/custom-tool path.
 
 ### "I want to train models"
 
-Use reinforcement learning to fine-tune model behavior with Thor Agent's RL training pipeline (powered by [Atropos](https://github.com/dwisetyabudi15581/atropos)).
+Use reinforcement learning to fine-tune model behavior with Thor Agent's RL training pipeline (powered by [Atropos](https://github.com/thor726/atropos)).
 
 1. [Quickstart](./quickstart.md)
 2. [Configuration](../user-guide/configuration.md)
-3. [Atropos RL Environments](https://github.com/dwisetyabudi15581/atropos) (external)
+3. [Atropos RL Environments](https://github.com/thor726/atropos) (external)
 4. [Provider Routing](../user-guide/features/provider-routing.md)
 5. [Architecture](../developer-guide/architecture.md)
 

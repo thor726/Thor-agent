@@ -63,17 +63,17 @@ No clone needed. Nix fetches, builds, and runs everything:
 
 ```bash
 # Run the desktop app
-nix run github:dwisetyabudi15581/Thor-agent#desktop
+nix run github:thor726/Thor-agent#desktop
 
 # Or install persistently
-nix profile install github:dwisetyabudi15581/Thor-agent#desktop
+nix profile install github:thor726/Thor-agent#desktop
 
 # run the tui
-nix run github:dwisetyabudi15581/Thor-agent -- setup
-nix run github:dwisetyabudi15581/Thor-agent -- --tui
+nix run github:thor726/Thor-agent -- setup
+nix run github:thor726/Thor-agent -- --tui
 
 # or install it in your profile
-nix profile install github:dwisetyabudi15581/Thor-agent
+nix profile install github:thor726/Thor-agent
 thor setup
 thor --tui
 ```
@@ -91,7 +91,7 @@ The `default` package adds ~700 MB to the closure. If you only need messaging pl
 <summary><strong>Running from a local clone</strong></summary>
 
 ```bash
-git clone https://github.com/dwisetyabudi15581/Thor-agent.git
+git clone https://github.com/thor726/Thor-agent.git
 cd thor-agent
 nix develop
 thor-checkout setup
@@ -116,7 +116,7 @@ This module needs NixOS. Thor is an agent for one person. If you want an agent f
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    thor-agent.url = "github:dwisetyabudi15581/Thor-agent";
+    thor-agent.url = "github:thor726/Thor-agent";
   };
 
   outputs = { nixpkgs, thor-agent, ... }: {
@@ -637,7 +637,7 @@ The option set is the same set that the NixOS module uses. It is `services.thor-
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    thor-agent.url = "github:dwisetyabudi15581/Thor-agent";
+    thor-agent.url = "github:thor726/Thor-agent";
   };
 }
 ```
@@ -901,7 +901,7 @@ External flakes can override the package directly:
 
 ```nix
 {
-  inputs.thor-agent.url = "github:dwisetyabudi15581/Thor-agent";
+  inputs.thor-agent.url = "github:thor726/Thor-agent";
   outputs = { thor-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ thor-agent.overlays.default ];
     # Then:

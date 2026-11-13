@@ -3849,7 +3849,7 @@ tips:
   t279: "THOR_DEV=1 omseil houermodus-bespeuring vir plaaslike ontwikkeling."
   t280: "Elke MCP-bediener kry sy eie gereedskapstel (mcp-servername) wat onafhanklik via thor tools aan- of afgeskakel kan word."
   t281: "MCP ${ENV_VAR}-plekhouers in die konfigurasie word by bedienerbegin opgelos — insluitend veranderlikes uit ~/.thor/.env."
-  t282: "Vaardighede uit vertroude bewaarplekke (dwisetyabudi15581) kry 'n 'trusted'-sekuriteitsvlak; gemeenskapsvaardighede kry ekstra skandering."
+  t282: "Vaardighede uit vertroude bewaarplekke (thor726) kry 'n 'trusted'-sekuriteitsvlak; gemeenskapsvaardighede kry ekstra skandering."
   t283: "Die vaardigheidskwarantyn by ~/.thor/skills/.hub/quarantine/ hou vaardighede wat op sekuriteitshersiening wag."
   t284: "/steer <prompt> voeg 'n nota na die volgende gereedskapsoproep in — stuur die rigting middel in 'n taak sonder om te onderbreek."
   t285: "/goal <text> stel 'n staande Ralph-lus-doelwit — Thor gaan outomaties beurt na beurt voort totdat 'n beoordelaar sê dit is klaar."

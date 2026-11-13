@@ -7,7 +7,7 @@ dropping the venv dir the process environment put there — so the snapshot
 to the system interpreter (#56634). These tests read the snapshot back from a
 real ``LocalEnvironment`` instead of asserting on injected markers.
 
-See: https://github.com/dwisetyabudi15581/Thor-agent/issues/56634
+See: https://github.com/thor726/Thor-agent/issues/56634
 """
 
 import pathlib

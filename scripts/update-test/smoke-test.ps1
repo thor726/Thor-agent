@@ -39,7 +39,7 @@ function Find-RealPython {
   $wa = Join-Path $env:ProgramFiles 'WindowsApps'
   if (Test-Path -LiteralPath $wa) {
     $cands += Get-ChildItem -LiteralPath $wa -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -like 'dwisetyabudi15581.Thor*' } |
+      Where-Object { $_.Name -like 'thor726.Thor*' } |
       ForEach-Object {
         Get-ChildItem -LiteralPath (Join-Path $_.FullName 'app\resources\agent-payload\tools') -Directory -ErrorAction SilentlyContinue |
           Where-Object { $_.Name -like 'python-*' } | ForEach-Object { Join-Path $_.FullName 'python.exe' }
@@ -194,7 +194,7 @@ con.close()
   Set-Content -LiteralPath (Join-Path $Install 'module_name.py') -Value 'print(1)'
   & git -C $Install add -A | Out-Null
   & git -C $Install -c commit.gpgsign=false commit -qm initial | Out-Null
-  & git -C $Install remote add origin https://github.com/dwisetyabudi15581/Thor-agent.git
+  & git -C $Install remote add origin https://github.com/thor726/Thor-agent.git
   New-Item -ItemType Directory -Force -Path (Join-Path $Install '.thor\bin'), (Join-Path $Install '.thor-runtime\python') | Out-Null
   Set-Content -LiteralPath (Join-Path $Install '.thor\bin\thor.cmd') -Value "@echo off`r`necho thor 0.0.0"
   Set-Content -LiteralPath (Join-Path $Install '.thor-runtime\python\interpreter.bin') -Value 'big'
@@ -252,7 +252,7 @@ try {
   $getUrl = (& git -C $Install remote get-url origin | Out-String).Trim()
   Check 'remote get-url resolves to -Source' ($getUrl -eq $Install)
   $configured = (& git -C $Install config --get remote.origin.url | Out-String).Trim()
-  Check 'config --get remote.origin.url stays official' ($configured -match 'dwisetyabudi15581')
+  Check 'config --get remote.origin.url stays official' ($configured -match 'thor726')
 
   Write-Host "`n--- pre changed nothing else ---"
   Check 'checkout untouched by pre' (((& git -C $Install rev-parse HEAD | Out-String).Trim()) -eq $HeadSha)
@@ -285,13 +285,13 @@ try {
   Check 'PM store restored' (Test-Path -LiteralPath (Join-Path $Install '.thor-runtime\python\interpreter.bin'))
   Check 'checkout restored' (Test-Path -LiteralPath (Join-Path $Install '.git'))
   Check 'checkout HEAD restored' (((& git -C $Install rev-parse HEAD | Out-String).Trim()) -eq $HeadSha)
-  Check 'origin remote restored' (((& git -C $Install config --get remote.origin.url | Out-String).Trim()) -eq 'https://github.com/dwisetyabudi15581/Thor-agent.git')
+  Check 'origin remote restored' (((& git -C $Install config --get remote.origin.url | Out-String).Trim()) -eq 'https://github.com/thor726/Thor-agent.git')
   Check 'userData connection.json restored' (Test-Path -LiteralPath (Join-Path $env:THOR_DESKTOP_USER_DATA_DIR 'connection.json'))
   $cfg2 = (& git -C $Install config --local --get-regexp 'insteadOf' 2>$null | Out-String)
   if (-not $cfg2) { $cfg2 = '' }
   Check 'no stale insteadOf left in the checkout' ((([regex]::Matches($cfg2, 'insteadOf', 'IgnoreCase')).Count) -eq 0)
   Check 'upstream-prompt marker removed' (-not (Test-Path -LiteralPath (Join-Path $H '.skip_upstream_prompt')))
-  Check 'origin resolves officially again' (((& git -C $Install remote get-url origin | Out-String).Trim()) -match 'dwisetyabudi15581')
+  Check 'origin resolves officially again' (((& git -C $Install remote get-url origin | Out-String).Trim()) -match 'thor726')
   Check 'bin shim restored' (Test-Path -LiteralPath (Join-Path $H 'bin\thor.cmd'))
   Check 'post deleted the snapshot' (-not (Get-CimInstance Win32_ShadowCopy | Where-Object { $ShadowIds -contains $_.ID }))
   Check 'post removed its mount link' (-not (Test-Path -LiteralPath (Join-Path $Snap 'vss-C')))

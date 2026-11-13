@@ -15,7 +15,7 @@ GIT_SHA = re.compile(r"[a-f0-9]{40}")
 from thor_cli.update_channel import STABLE_TAG_RE
 from scripts.releases.versioning import parse_attempt_ref
 ARCHES = ("amd64", "arm64")
-IMAGE = "dwisetyabudi15581/Thor-agent"
+IMAGE = "thor726/Thor-agent"
 
 class DockerReleaseError(ValueError):
     """Raised when a phase/manifest violates the staged-release contract."""

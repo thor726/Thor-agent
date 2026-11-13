@@ -1856,7 +1856,7 @@ export const frOverrides = {
       sshErrHostKey:
         "La clé de l'hôte a changé depuis votre dernière connexion. Vérifiez que ce changement est attendu, puis exécutez ssh-keygen -R <host> et reconnectez-vous.",
       sshErrNotInstalled:
-        "Thor n'est pas installé sur l'hôte distant. Installez-le là-bas (curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | sh) ou définissez le chemin Thor.",
+        "Thor n'est pas installé sur l'hôte distant. Installez-le là-bas (curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | sh) ou définissez le chemin Thor.",
       sshErrPlatform:
         'Plateforme distante non prise en charge. Le mode SSH de Thor Desktop supporte les hôtes distants Linux, macOS et Windows.',
       sshErrTimeout: "Expiration de la connexion SSH. L'hôte peut être inaccessible ou en veille.",

@@ -21,7 +21,7 @@ test.each([['repository', true, true], ['missing repository', false, true], ['no
     try {
       /** @type {import('app-builder-lib').Metadata} */
       const metadata = { name: 'fixture', version: '1.0.0', description: 'fixture', author: 'Fixture' }
-      if (repository) metadata.repository = 'https://github.com/dwisetyabudi15581/Thor-agent'
+      if (repository) metadata.repository = 'https://github.com/thor726/Thor-agent'
       fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(metadata))
       const info = new Packager({ projectDir: root, config: {} })
       await info.validateConfig()
@@ -32,9 +32,9 @@ test.each([['repository', true, true], ['missing repository', false, true], ['no
         await assert.rejects(getPublishConfigs(packager, null, null, true), /Cannot detect repository/)
       } else {
         const repositoryInfo = await packager.repositoryInfo
-        assert.equal(repositoryInfo.user, 'dwisetyabudi15581')
+        assert.equal(repositoryInfo.user, 'thor726')
         assert.equal(repositoryInfo.project, 'thor-agent')
-        assert.deepEqual(await getPublishConfigs(packager, null, null, true), [{ owner: 'dwisetyabudi15581', repo: 'thor-agent', provider: 'github' }])
+        assert.deepEqual(await getPublishConfigs(packager, null, null, true), [{ owner: 'thor726', repo: 'thor-agent', provider: 'github' }])
       }
     } finally { fs.rmSync(root, { recursive: true, force: true }) }
   }

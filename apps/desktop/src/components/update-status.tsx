@@ -25,7 +25,7 @@ import {
   type UpdateTarget
 } from '@/store/updates'
 
-const RELEASE_NOTES_URL = 'https://github.com/dwisetyabudi15581/Thor-agent/releases'
+const RELEASE_NOTES_URL = 'https://github.com/thor726/Thor-agent/releases'
 const INSTALLER_URL = 'https://thor-agent.thor-agent.local/'
 
 export type UpdateStatusTone = 'idle' | 'available' | 'error' | 'unsupported'

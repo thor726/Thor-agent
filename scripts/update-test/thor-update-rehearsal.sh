@@ -29,8 +29,8 @@
 
 set -euo pipefail
 
-OFFICIAL_HTTPS="https://github.com/dwisetyabudi15581/Thor-agent.git"
-OFFICIAL_SSH="git@github.com:dwisetyabudi15581/Thor-agent.git"
+OFFICIAL_HTTPS="https://github.com/thor726/Thor-agent.git"
+OFFICIAL_SSH="git@github.com:thor726/Thor-agent.git"
 DEFAULT_SOURCE="https://github.com/ethernet8023/thor-agent.git"
 
 SUBCMD=""

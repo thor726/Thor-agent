@@ -3849,7 +3849,7 @@ tips:
   t279: "Seachnaíonn THOR_DEV=1 brath an mhóid coimeádáin le haghaidh forbartha áitiúla."
   t280: "Faigheann gach freastalaí MCP a thacar uirlisí féin (mcp-servername) is féidir a scoránú go neamhspleách trí thor tools."
   t281: "Réitítear ionadchoinneálaithe ${ENV_VAR} MCP sa chumraíocht nuair a sceitear an freastalaí — lena n-áirítear athróga ó ~/.thor/.env."
-  t282: "Faigheann scileanna ó stórtha iontaofa (dwisetyabudi15581) leibhéal slándála 'trusted'; faigheann scileanna pobail scanadh breise."
+  t282: "Faigheann scileanna ó stórtha iontaofa (thor726) leibhéal slándála 'trusted'; faigheann scileanna pobail scanadh breise."
   t283: "Coinníonn coraintín na scileanna ag ~/.thor/skills/.hub/quarantine/ scileanna atá ag fanacht le hathbhreithniú slándála."
   t284: "Instealann /steer <leid> nóta tar éis an chéad ghlao uirlise eile — tabhair sá sa treo i lár taisc gan cur isteach."
   t285: "Socraíonn /goal <text> cuspóir seasta lúb Ralph — leanann Thor ar aghaidh go huathoibríoch seal i ndiaidh seala go dtí go ndeir moltóir go bhfuil sé déanta."

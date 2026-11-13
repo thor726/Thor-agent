@@ -172,7 +172,7 @@ _IMAGE_API_INTS = (
 _ATTRIBUTION_HEADERS = {
     "Content-Type": "application/json",
     # OpenRouter attribution headers (harmless against Thor Portal).
-    "HTTP-Referer": "https://github.com/dwisetyabudi15581/Thor-agent",
+    "HTTP-Referer": "https://github.com/thor726/Thor-agent",
     "X-Title": "Thor Agent",
 }
 

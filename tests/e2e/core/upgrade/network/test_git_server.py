@@ -25,7 +25,7 @@ def test_blobless_checkout_fetches_its_blobs_in_one_gzipped_request(tmp_path):
         (src / f"f{i}.txt").write_text(f"{i}\n", encoding="utf-8")
     _git("add", ".", cwd=src)
     _git("-c", "user.name=e2e", "-c", "user.email=e2e@example.invalid", "commit", "-qm", "files", cwd=src)
-    bare = tmp_path / "forge" / "dwisetyabudi15581" / "thor-agent.git"
+    bare = tmp_path / "forge" / "thor726" / "thor-agent.git"
     bare.parent.mkdir(parents=True)
     _git("clone", "-q", "--bare", str(src), str(bare), cwd=tmp_path)
     _git("config", "uploadpack.allowFilter", "true", cwd=bare)
@@ -38,7 +38,7 @@ def test_blobless_checkout_fetches_its_blobs_in_one_gzipped_request(tmp_path):
 
     site = N.HttpSite(recording_app)
     try:
-        cp = subprocess.run(["git", "clone", "-q", "--filter=blob:none", f"{site.url}/dwisetyabudi15581/Thor-agent.git",
+        cp = subprocess.run(["git", "clone", "-q", "--filter=blob:none", f"{site.url}/thor726/Thor-agent.git",
                              str(tmp_path / "checkout")], capture_output=True, text=True, timeout=300, check=False)
     finally:
         site.close()

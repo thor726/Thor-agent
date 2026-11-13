@@ -70,7 +70,7 @@ class TestCollectInventory:
         monkeypatch.setattr("thor_cli.config.detect_install_method", lambda *a, **k: "docker")
         monkeypatch.setattr(
             "thor_cli.config.recommended_update_command_for_method",
-            lambda m: "docker pull dwisetyabudi15581/Thor-agent:latest",
+            lambda m: "docker pull thor726/Thor-agent:latest",
         )
         plan = ui.collect_runtime_inventory()
         assert plan.install_method == "docker"

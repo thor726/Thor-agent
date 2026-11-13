@@ -58,7 +58,7 @@ from scripts.releases.desktop_targets import TARGETS as DESKTOP_TARGETS
 
 MARKER = "<!-- THOR_BUILDS_TABLE -->"
 END_MARKER = "<!-- /THOR_BUILDS_TABLE -->"
-DEFAULT_REPO = "dwisetyabudi15581/Thor-agent"
+DEFAULT_REPO = "thor726/Thor-agent"
 
 # Asset name shapes (electron-builder artifactName in
 # apps/desktop/electron-builder.config.cjs):

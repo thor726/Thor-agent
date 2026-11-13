@@ -3963,7 +3963,7 @@ tips:
   t279: "THOR_DEV=1 bypasses container mode detection for local development."
   t280: "Each MCP server gets its own toolset (mcp-servername) that can be toggled independently via thor tools."
   t281: "MCP ${ENV_VAR} placeholders in config are resolved at server spawn — including vars from ~/.thor/.env."
-  t282: "Skills from trusted repos (dwisetyabudi15581) get a 'trusted' security level; community skills get extra scanning."
+  t282: "Skills from trusted repos (thor726) get a 'trusted' security level; community skills get extra scanning."
   t283: "The skills quarantine at ~/.thor/skills/.hub/quarantine/ holds skills pending security review."
   t284: "/steer <prompt> injects a note after the next tool call — nudge direction mid-task without interrupting."
   t285: "/goal <text> sets a standing Ralph-loop objective — Thor auto-continues turn after turn until a judge says done."

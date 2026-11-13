@@ -229,8 +229,8 @@ On Windows, a Desktop reopened during packaging is stopped again immediately bef
 
 Run the installer again to repair it. It moves the damaged checkout aside as `thor-agent.broken-<timestamp>` (nothing is deleted) and clones fresh; your config, sessions and other data live outside the checkout and are kept. The error prints the exact command for your checkout. For the default location it is:
 
-- Linux / macOS / WSL2: `curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash`
-- Windows (PowerShell): `iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)`
+- Linux / macOS / WSL2: `curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash`
+- Windows (PowerShell): `iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)`
 
 A checkout installed somewhere else needs its directory passed again (`bash -s -- --dir <path>` on Linux/macOS, `-InstallDir <path>` on Windows), as in the printed command; without it the installer repairs the default location instead.
 
@@ -539,7 +539,7 @@ A few situations stop with a message rather than carry on, because carrying on c
 thor --version
 ```
 
-Compare against the latest release at the [GitHub releases page](https://github.com/dwisetyabudi15581/Thor-agent/releases).
+Compare against the latest release at the [GitHub releases page](https://github.com/thor726/Thor-agent/releases).
 
 ### Updating from Messaging Platforms
 
@@ -597,7 +597,7 @@ What this means outside `thor update`:
 
 ### Image-managed installs (Docker): the provenance marker
 
-Published Docker images bake a small read-only marker (`/etc/thor/image-provenance.json`) that authoritatively identifies the filesystem as image-managed. `thor update`, `thor update --check`, and the dashboard's Update button all consult it before touching anything: on an image-managed install they refuse cleanly (exit code 2), print the actual update command (`docker pull dwisetyabudi15581/Thor-agent:latest`), and write a `refused` receipt so fleet tooling can see the attempt happened. The marker wins even when a source checkout is bind-mounted into the container — the refusal is based on what the running filesystem *is*, not what it looks like. A damaged marker still refuses (fail-closed). Nix- and apt-managed installs refuse through the same gate using the existing detection.
+Published Docker images bake a small read-only marker (`/etc/thor/image-provenance.json`) that authoritatively identifies the filesystem as image-managed. `thor update`, `thor update --check`, and the dashboard's Update button all consult it before touching anything: on an image-managed install they refuse cleanly (exit code 2), print the actual update command (`docker pull thor726/Thor-agent:latest`), and write a `refused` receipt so fleet tooling can see the attempt happened. The marker wins even when a source checkout is bind-mounted into the container — the refusal is based on what the running filesystem *is*, not what it looks like. A damaged marker still refuses (fail-closed). Nix- and apt-managed installs refuse through the same gate using the existing detection.
 
 ### Note for Nix users
 

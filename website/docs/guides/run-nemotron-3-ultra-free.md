@@ -49,16 +49,16 @@ Prefer the terminal?
 On macOS/Linux/WSL2/Android, run
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 On Windows, run
 
 ```powershell
-iex (irm https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.ps1)
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
 ```
 
-Prefer to review first? Download [`install.sh`](https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent/main/scripts/install.sh), inspect it, then run it.
+Prefer to review first? Download [`install.sh`](https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh), inspect it, then run it.
 
 After it finishes, reload your shell:
 

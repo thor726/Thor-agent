@@ -110,7 +110,7 @@ function channelRecord(channel: 'stable' | 'canary', sequence: number): FixtureR
   return {
     schema: 1,
     name: channel,
-    repository: 'dwisetyabudi15581/Thor-agent',
+    repository: 'thor726/Thor-agent',
     policy: channel === 'stable' ? 'stable-release' : 'canary-release',
     state: 'active',
     revision: 1,
@@ -121,7 +121,7 @@ function channelRecord(channel: 'stable' | 'canary', sequence: number): FixtureR
       appNamePascal: 'Thor',
       artifactNamePascal: 'Thor',
       appId: 'chat.thor.thor',
-      msixAppIdWithOrg: 'dwisetyabudi15581.Thor',
+      msixAppIdWithOrg: 'thor726.Thor',
       cliName: 'thor',
       windowsExecutableName: 'thor'
     },
@@ -147,7 +147,7 @@ function buildManifest(
     appNamePascal: 'Thor',
     artifactNamePascal: 'Thor',
     appId: 'chat.thor.thor',
-    msixAppIdWithOrg: 'dwisetyabudi15581.Thor',
+    msixAppIdWithOrg: 'thor726.Thor',
     cliName: 'thor',
     windowsExecutableName: 'thor'
   }
@@ -160,7 +160,7 @@ function buildManifest(
       schema: 1,
       buildId: id,
       channel,
-      repository: 'dwisetyabudi15581/Thor-agent',
+      repository: 'thor726/Thor-agent',
       commit: sha,
       sourceVersion: tag.replace(/^v/, '').split('+')[0],
       releaseTag: tag,
@@ -258,16 +258,16 @@ it('carries each install channel from Python publication checks into the source 
         })
       )
       responses.set(`/${manifestKey(channel)}`, body)
-      responses.set(`/repos/dwisetyabudi15581/Thor-agent/releases/tags/${tags[channel]}`, {
+      responses.set(`/repos/thor726/Thor-agent/releases/tags/${tags[channel]}`, {
         tag_name: tags[channel],
         draft: false,
         prerelease: channel === 'canary'
       })
-      responses.set(`/repos/dwisetyabudi15581/Thor-agent/commits/${tags[channel]}`, { sha })
+      responses.set(`/repos/thor726/Thor-agent/commits/${tags[channel]}`, { sha })
     }
 
     // Stable IS the latest published GitHub release; no R2 record is consulted for it.
-    responses.set('/repos/dwisetyabudi15581/Thor-agent/releases/latest', {
+    responses.set('/repos/thor726/Thor-agent/releases/latest', {
       tag_name: tags.stable,
       draft: false,
       prerelease: false

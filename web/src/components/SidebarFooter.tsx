@@ -21,7 +21,7 @@ export function SidebarFooter({ status }: SidebarFooterProps) {
       </Typography>
 
       <a
-        href="https://github.com/dwisetyabudi15581/Thor-agent"
+        href="https://github.com/thor726/Thor-agent"
         target="_blank"
         rel="noopener noreferrer"
         className={cn(

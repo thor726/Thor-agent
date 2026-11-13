@@ -153,7 +153,7 @@ export function makeThorCloudBackendDownError(baseUrl: string, error: unknown): 
       `(HTTP ${serverError.statusCode}: server-side fault). ` +
       'Check https://portal.thor-agent.local for backend status, ' +
       'or switch to Local mode in Settings → Gateway. ' +
-      'You can also reach out on Discord at github.com/dwisetyabudi15581/Thor-agent ' +
+      'You can also reach out on Discord at github.com/thor726/Thor-agent ' +
       'for immediate assistance. ' +
       `Original detail: ${detail}`
   ) as any

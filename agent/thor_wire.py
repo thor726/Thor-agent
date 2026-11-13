@@ -4,7 +4,7 @@ Portal serves Claude two ways and Thor cannot tell which from the request: an Op
 passthrough (today, for every ``anthropic/*`` id) or GMI/Vertex (planned once GMI is back). The
 native Messages wire is the better transport, but on the OpenRouter path it re-writes the previous
 turn's prompt cache on 14-20% of consecutive calls in concurrent tool loops (measured 2026-09-06;
-dwisetyabudi15581/api#227), so the session must ride chat/completions there. On GMI that is untested,
+thor726/api#227), so the session must ride chat/completions there. On GMI that is untested,
 and until it is measured ``auto`` never promotes to native.
 
 The upstream IS visible in the first RESPONSE: OpenRouter stamps ``provider`` (chat wire) and

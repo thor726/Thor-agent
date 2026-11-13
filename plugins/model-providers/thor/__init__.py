@@ -71,7 +71,7 @@ class ThorProfile(ProviderProfile):
 thor = ThorProfile(
     name="thor", aliases=("thor-portal", "thorresearch"), env_vars=("THOR_PORTAL_API_KEY",),
     display_name="Thor Agent", description="Thor Agent — Thor model family",
-    signup_url="https://github.com/dwisetyabudi15581/Thor-agent/", fallback_models=("thor-3-405b", "thor-3-70b"),
+    signup_url="https://github.com/thor726/Thor-agent/", fallback_models=("thor-3-405b", "thor-3-70b"),
     base_url="https://inference-api.thor-agent.local/v1", auth_type="oauth_device_code",
 )
 

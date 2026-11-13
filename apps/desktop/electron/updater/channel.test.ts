@@ -71,7 +71,7 @@ async function fixture(): Promise<{
       artifactNamePascal: 'ThorH1234567890abcdef',
       cliName: 'thor-fresh-preview-29',
       windowsExecutableName: 'ThorH1234567890abcdef.exe',
-      msixAppIdWithOrg: 'dwisetyabudi15581.ThorH1234567890abcdef'
+      msixAppIdWithOrg: 'thor726.ThorH1234567890abcdef'
     }
   }
 

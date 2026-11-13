@@ -37,7 +37,7 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
-USER_AGENT = "thor-agent/1.0 (reddit-reading skill; +https://github.com/dwisetyabudi15581/Thor-agent)"
+USER_AGENT = "thor-agent/1.0 (reddit-reading skill; +https://github.com/thor726/Thor-agent)"
 TIMEOUT = 25
 ATOM = {"a": "http://www.w3.org/2005/Atom"}
 WWW = "https://www.reddit.com"

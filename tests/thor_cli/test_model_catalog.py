@@ -248,7 +248,7 @@ class TestFallbackChain:
 
     PRIMARY = "https://thor-agent.thor-agent.local/docs/api/model-catalog.json"
     FALLBACK = (
-        "https://raw.githubusercontent.com/dwisetyabudi15581/Thor-agent"
+        "https://raw.githubusercontent.com/thor726/Thor-agent"
         "/main/website/static/api/model-catalog.json"
     )
 

@@ -31,7 +31,7 @@ export const CATALOG_ORIGIN = 'https://thor-agent.thor-agent.local'
 export const PLUGIN_CATALOG_URL = `${CATALOG_ORIGIN}/docs/api/plugins.json`
 export const PLUGIN_CATALOG_DOCS_URL = `${CATALOG_ORIGIN}/docs/user-guide/features/plugin-catalog`
 export const SKILLS_DOCS_URL = `${CATALOG_ORIGIN}/docs/skills/`
-export const SUBMIT_MOD_URL = 'https://github.com/dwisetyabudi15581/Thor-agent/compare'
+export const SUBMIT_MOD_URL = 'https://github.com/thor726/Thor-agent/compare'
 
 const FETCH_TIMEOUT_MS = 15_000
 const LOOKUP_TIMEOUT_MS = 20_000

@@ -123,7 +123,7 @@ def gh_pr_list():
         result = subprocess.run(
             [
                 "gh", "pr", "list",
-                "--repo", "dwisetyabudi15581/Thor-agent",
+                "--repo", "thor726/Thor-agent",
                 "--state", "merged",
                 "--json", "number,title,body,author,mergedAt",
                 "--limit", "300",

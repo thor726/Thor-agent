@@ -8,7 +8,7 @@ mendefinisikan scope untuk laporan kerentanan.
 
 ## 1. Melaporkan Kerentanan
 
-Laporkan secara privat melalui [GitHub Security Advisories](https://github.com/dwisetyabudi15581/Thor-agent/security/advisories/new)
+Laporkan secara privat melalui [GitHub Security Advisories](https://github.com/thor726/Thor-agent/security/advisories/new)
 atau **security@thor-agent.local**. Jangan membuka issue publik untuk
 kerentanan keamanan. **Thor Agent tidak menjalankan program bug
 bounty.**

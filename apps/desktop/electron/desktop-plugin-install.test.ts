@@ -26,8 +26,8 @@ function mkdtemp(prefix: string) {
 
 describe('resolvePluginGitUrl', () => {
   it('maps owner/repo shorthand to github git url', () => {
-    expect(resolvePluginGitUrl('dwisetyabudi15581/thor-example-plugins')).toEqual({
-      gitUrl: 'https://github.com/dwisetyabudi15581/thor-example-plugins.git',
+    expect(resolvePluginGitUrl('thor726/thor-example-plugins')).toEqual({
+      gitUrl: 'https://github.com/thor726/thor-example-plugins.git',
       subdir: null
     })
   })

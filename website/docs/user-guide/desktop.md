@@ -823,7 +823,7 @@ Thor: **one row per plugin**, with two switch columns.
   half is **not** installed in the selected profile shows **Install here**,
   which pre-fills the install dialog from the package's origin (catalog entry
   or git remote) for that profile only. Optional extras such as the
-  [Accent Picker](https://github.com/dwisetyabudi15581/thor-official-plugins/tree/main/accent-picker)
+  [Accent Picker](https://github.com/thor726/thor-official-plugins/tree/main/accent-picker)
   install from the plugin catalog.
 - **Uninstall** — every plugin installed under the selected profile's
   `plugins/` folder (user or git install) has a trash button beside its name.

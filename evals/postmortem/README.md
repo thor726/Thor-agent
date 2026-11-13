@@ -96,7 +96,7 @@ the peak-concurrency window). The tracking issue quotes the second and says so.
 
 ## Cache concurrency probe (`live_ab/cache_concurrency_probe.py`)
 
-The instrument behind #104284 / #104421 and dwisetyabudi15581/api#227. N concurrent real `AIAgent`
+The instrument behind #104284 / #104421 and thor726/api#227. N concurrent real `AIAgent`
 sessions run the same growing tool loop against a route; every call's cache_read / cache_creation,
 response id, upstream provider and prefix shas are logged, and consecutive pairs are classified
 `ideal` / `stuck` (previous write not visible: routing) / `collapse` (whole context re-written).

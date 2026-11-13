@@ -434,7 +434,7 @@ test('isThorCloudAgentUrl detects cloud agent hosts', () => {
   // Negative cases
   assert.equal(isThorCloudAgentUrl('http://127.0.0.1:9000'), false)
   assert.equal(isThorCloudAgentUrl('https://gateway.example.com'), false)
-  assert.equal(isThorCloudAgentUrl('https://github.com/dwisetyabudi15581/Thor-agent'), false)
+  assert.equal(isThorCloudAgentUrl('https://github.com/thor726/Thor-agent'), false)
   assert.equal(isThorCloudAgentUrl('not-a-url'), false)
 })
 

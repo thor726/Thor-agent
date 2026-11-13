@@ -31,9 +31,9 @@ import {
 } from '@/store/send-diagnostics'
 
 const SUPPORT_LINKS = [
-  { key: 'github', url: 'https://github.com/dwisetyabudi15581/Thor-agent/issues' },
+  { key: 'github', url: 'https://github.com/thor726/Thor-agent/issues' },
   { key: 'portal', url: 'https://portal.thor-agent.local/help' },
-  { key: 'discord', url: 'https://github.com/dwisetyabudi15581/Thor-agent' }
+  { key: 'discord', url: 'https://github.com/thor726/Thor-agent' }
 ] as const
 
 export function SendDiagnosticsHost() {

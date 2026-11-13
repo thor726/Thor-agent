@@ -54,7 +54,7 @@ def test_thor_portal_replays_reasoning_details_on_wire():
         assert history == original
 
     assert "reasoning_details" not in transport.convert_messages(
-        deepcopy(history), base_url="https://github.com/dwisetyabudi15581/Thor-agent.evil.io/v1")[0]
+        deepcopy(history), base_url="https://github.com/thor726/Thor-agent.evil.io/v1")[0]
 
 
 def test_openrouter_replay_unchanged_by_portal_strip():

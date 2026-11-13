@@ -60,7 +60,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  IMAGE_NAME: dwisetyabudi15581/Thor-agent
+  IMAGE_NAME: thor726/Thor-agent
   # A stable run is on the default branch, so GITHUB_SHA is not the candidate.
   CANDIDATE_COMMIT: ${{ inputs.commit || github.sha }}
 
@@ -144,7 +144,7 @@ jobs:
     needs: [mode]
     if: >-
       !cancelled() && needs.mode.result == 'success' &&
-      ((needs.mode.outputs.release != 'true' && github.repository == 'dwisetyabudi15581/Thor-agent' && needs.mode.outputs.build == 'true') || needs.mode.outputs.phase == 'test')
+      ((needs.mode.outputs.release != 'true' && github.repository == 'thor726/Thor-agent' && needs.mode.outputs.build == 'true') || needs.mode.outputs.phase == 'test')
     strategy:
       fail-fast: false
       matrix:
@@ -340,7 +340,7 @@ jobs:
   publish:
     if: >-
       needs.mode.outputs.release != 'true' &&
-      github.repository == 'dwisetyabudi15581/Thor-agent' &&
+      github.repository == 'thor726/Thor-agent' &&
       github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [mode, build]
     environment: container-publish
@@ -449,7 +449,7 @@ jobs:
   merge:
     # `needs` is the whole 4-leg matrix: only publish both :main variants
     # after every arch and variant publisher succeeds.
-    if: ${{ !cancelled() && needs.mode.outputs.release != 'true' && github.repository == 'dwisetyabudi15581/Thor-agent' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ !cancelled() && needs.mode.outputs.release != 'true' && github.repository == 'thor726/Thor-agent' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     # GitHub-hosted with docker/setup-buildx-action, as before the runner migration: on
     # Blacksmith `imagetools create` cannot commit a manifest list to Docker Hub (404 on the
     # index commit, any buildx version): v0.22.3 rc.1-rc.4 died on it in the versioned manifest.
@@ -757,7 +757,7 @@ jobs:
           import json, sys
           manifest = json.load(open("/tmp/manifest/manifest.json"))
           manifest["list-digest"] = sys.argv[2]
-          manifest["image"] = "dwisetyabudi15581/Thor-agent"
+          manifest["image"] = "thor726/Thor-agent"
           manifest["tags"] = [sys.argv[1]]
           json.dump(manifest, open("/tmp/manifest/manifest.json", "w"), indent=2)
           EOF

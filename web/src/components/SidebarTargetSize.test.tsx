@@ -147,7 +147,7 @@ describe("sidebar control target sizes (WCAG 2.5.8, issue #70983)", () => {
         <SidebarFooter status={null} />
       </I18nProvider>,
     );
-    const link = container.querySelector('a[href="https://github.com/dwisetyabudi15581/Thor-agent"]');
+    const link = container.querySelector('a[href="https://github.com/thor726/Thor-agent"]');
     expect(link).not.toBeNull();
     expect(hasClass(link!, "min-h-[24px]")).toBe(true);
   });

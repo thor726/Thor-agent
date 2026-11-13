@@ -1,7 +1,7 @@
 """Regression test: set_runtime_main() must pass base_url/api_key/api_mode
 so that _resolve_auto_route() can route custom: providers in Step 1.
 
-Fixes https://github.com/dwisetyabudi15581/Thor-agent/issues/34777
+Fixes https://github.com/thor726/Thor-agent/issues/34777
 """
 
 

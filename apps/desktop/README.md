@@ -1,13 +1,13 @@
 # Thor Desktop ⚡
 
 <p align="center">
-  <a href="https://github.com/dwisetyabudi15581/Thor-agent/releases"><img src="https://img.shields.io/badge/Download-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-FFD700?style=for-the-badge" alt="Download"></a>
+  <a href="https://github.com/thor726/Thor-agent/releases"><img src="https://img.shields.io/badge/Download-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-FFD700?style=for-the-badge" alt="Download"></a>
   <a href="https://thor-agent.thor-agent.local/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://github.com/dwisetyabudi15581/Thor-agent"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/dwisetyabudi15581/Thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://github.com/thor726/Thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
-**The native desktop app for [Thor Agent](../../README.md) — the self-improving AI agent from [Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window — chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
+**The native desktop app for [Thor Agent](../../README.md) — the self-improving AI agent from [Thor Agent](https://github.com/thor726/Thor-agent).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window — chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
 
 > **Intel Macs:** the `Thor-Setup.dmg` bootstrap installer is built for
 > Apple Silicon (arm64) only, so on an Intel Mac it reports "not supported on
@@ -261,9 +261,9 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\thor\thor-agent\venv"
 
 ## Community
 
-- 💬 [Discord](https://github.com/dwisetyabudi15581/Thor-agent)
+- 💬 [Discord](https://github.com/thor726/Thor-agent)
 - 📖 [Documentation](https://thor-agent.thor-agent.local/docs/)
-- 🐛 [Issues](https://github.com/dwisetyabudi15581/Thor-agent/issues)
+- 🐛 [Issues](https://github.com/thor726/Thor-agent/issues)
 
 ---
 
@@ -271,4 +271,4 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\thor\thor-agent\venv"
 
 MIT — see [LICENSE](../../LICENSE).
 
-Built by [Thor Agent](https://github.com/dwisetyabudi15581/Thor-agent).
+Built by [Thor Agent](https://github.com/thor726/Thor-agent).

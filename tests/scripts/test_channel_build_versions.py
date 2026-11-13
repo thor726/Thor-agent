@@ -24,7 +24,7 @@ def channel_request(commit: str, sequence: int = 65536) -> dict:
             "appId": f"com.thorresearch.thor-channel-{token}",
             "appNamePascal": f"ThorChannel{token}", "artifactNamePascal": "ThorBundled",
             "cliName": "thor-unregistered-preview", "windowsExecutableName": "thor-unregistered-preview",
-            "msixAppIdWithOrg": f"dwisetyabudi15581.ThorChannel{token}",
+            "msixAppIdWithOrg": f"thor726.ThorChannel{token}",
         },
         "bundleEnv": {"THOR_PREVIEW_FULL_CONNECTORS": "1", "THOR_HOME": None},
         "publicBase": "https://builds.example.test",

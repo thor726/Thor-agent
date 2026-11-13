@@ -278,7 +278,7 @@ describe('PluginsTab', () => {
         kind: 'disk',
         status: 'loaded',
         packageName: 'thor-media-studio',
-        packageOrigin: { repo: 'https://github.com/dwisetyabudi15581/thor-media-studio.git', sha: 'abc' }
+        packageOrigin: { repo: 'https://github.com/thor726/thor-media-studio.git', sha: 'abc' }
       }
     })
 
@@ -291,7 +291,7 @@ describe('PluginsTab', () => {
       expect($pluginInstallRequest.get()).toMatchObject({
         legacyHint: 'agent',
         profile: 'workbot',
-        repo: 'https://github.com/dwisetyabudi15581/thor-media-studio.git',
+        repo: 'https://github.com/thor726/thor-media-studio.git',
         sha: 'abc'
       })
     })
@@ -308,7 +308,7 @@ describe('PluginsTab', () => {
         packageName: 'thor-media-studio',
         packageOrigin: {
           catalogName: 'thor-media-studio',
-          repo: 'https://github.com/dwisetyabudi15581/thor-media-studio.git',
+          repo: 'https://github.com/thor726/thor-media-studio.git',
           sha: 'abc'
         }
       }

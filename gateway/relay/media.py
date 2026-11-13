@@ -49,7 +49,7 @@ _UPLOAD_RETRY_STATUSES = frozenset({403, 408, 429, 500, 502, 503, 504})
 
 # Discord's CDN (and other public hosts) 403 urllib's default UA, which
 # silently killed every CDN pass-through download. Always send a descriptive UA.
-_MEDIA_USER_AGENT = "ThorAgent-Relay/1.0 (+https://github.com/dwisetyabudi15581/Thor-agent)"
+_MEDIA_USER_AGENT = "ThorAgent-Relay/1.0 (+https://github.com/thor726/Thor-agent)"
 
 
 def media_base_url(relay_dial_url: str) -> str:

@@ -1094,7 +1094,7 @@ Validation rejects values without `http://` / `https://` scheme, without a host,
 
 ### OAuth flow
 
-The provider implements the [Thor Portal OAuth contract v1](https://github.com/dwisetyabudi15581/thor-account-service/blob/main/docs/agent-dashboard-oauth-contract.md) — authorization-code grant with PKCE (S256):
+The provider implements the [Thor Portal OAuth contract v1](https://github.com/thor726/thor-account-service/blob/main/docs/agent-dashboard-oauth-contract.md) — authorization-code grant with PKCE (S256):
 
 1. User hits `/` without a session cookie → gate redirects to `/login`.
 2. Login page shows a "Continue with Thor Agent" button → `/auth/login?provider=thor`.

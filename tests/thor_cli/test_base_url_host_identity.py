@@ -87,7 +87,7 @@ def test_thor_portal_host_detection():
 
     assert base_url_host_matches("https://inference-api.thor-agent.local/v1", "thor-agent.local")
     assert base_url_host_matches("https://portal.thor-agent.local", "thor-agent.local")
-    assert not base_url_host_matches("https://github.com/dwisetyabudi15581/Thor-agent.evil.io/v1", "thor-agent.local")
+    assert not base_url_host_matches("https://github.com/thor726/Thor-agent.evil.io/v1", "thor-agent.local")
     assert not base_url_host_matches("https://proxy.example/thor-agent.local/v1", "thor-agent.local")
 
 

@@ -39,7 +39,7 @@ same reviewed commit this page describes.
 ## What's in an entry
 
 Each catalog entry is a small YAML file in the
-[`plugin-catalog/`](https://github.com/dwisetyabudi15581/Thor-agent/tree/main/plugin-catalog)
+[`plugin-catalog/`](https://github.com/thor726/Thor-agent/tree/main/plugin-catalog)
 directory of the thor-agent repository, declaring:
 
 | Field | Meaning |
@@ -49,7 +49,7 @@ directory of the thor-agent repository, declaring:
 | `repo` | The plugin's public git repository |
 | `sha` | The **exact 40-hex commit** that was reviewed — installs check out this pin, not a branch tip |
 | `subdir` | Path to the plugin inside the repo for monorepos — a plain relative path matching `[A-Za-z0-9._/-]+` (no `..`, `.`, empty segments, absolute or backslash forms) (optional, default repo root) |
-| `tier` | `official` (maintained by dwisetyabudi15581), `verified` (verified by the Thor team to come from the reputable company whose product it integrates), or `community`. Only Thor maintainers set `official` or `verified` |
+| `tier` | `official` (maintained by thor726), `verified` (verified by the Thor team to come from the reputable company whose product it integrates), or `community`. Only Thor maintainers set `official` or `verified` |
 | `category` | Browse shelf: `desktop` (default), `memory`, `platform`, `web`, `tools`, `voice`, `automation`, `models` or `general` |
 | `maintainer` | Who owns the plugin |
 | `capabilities` | Declared tools, hooks, middleware, and required env vars |
@@ -255,7 +255,7 @@ The complete guidelines live in
 what to check before you submit, how the PR and review work, every admission
 rule, and how pin updates, delisting and removal work. That page mirrors the
 canonical rules in the
-[plugin-catalog README](https://github.com/dwisetyabudi15581/Thor-agent/tree/main/plugin-catalog).
+[plugin-catalog README](https://github.com/thor726/Thor-agent/tree/main/plugin-catalog).
 
 In short, a listed plugin is submitted by its owner (or added in a reviewed
 maintainer sweep), lives in a public repository, pins an exact commit, passes

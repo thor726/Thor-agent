@@ -333,7 +333,7 @@ def extract_local_skills():
             rel_id = rel.replace(os.sep, "/")
             install_identifier = (
                 f"official/{rel_id}" if source_label == "optional"
-                else f"dwisetyabudi15581/Thor-agent/skills/{rel_id}"
+                else f"thor726/Thor-agent/skills/{rel_id}"
             )
             skills.append({
                 "name": fm.get("name", os.path.basename(root)),

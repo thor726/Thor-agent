@@ -76,7 +76,7 @@ $script:BoundParams = $PSBoundParameters
 # Under iex, script scope is the caller's session and outlives a run; start
 # each run without the previous run's answer (see Set-LauncherUserPath).
 $script:BinDirOnCallerPath = $null
-$RepoUrl = if ($env:THOR_REPO_URL) { $env:THOR_REPO_URL } else { "https://github.com/dwisetyabudi15581/Thor-agent.git" }
+$RepoUrl = if ($env:THOR_REPO_URL) { $env:THOR_REPO_URL } else { "https://github.com/thor726/Thor-agent.git" }
 
 # --- BEGIN GENERATED: bootstrap pins (scripts/gen-bootstrap-pins.py) ---
 # Derived from pm/lock.json. DO NOT EDIT BY HAND:
@@ -993,13 +993,13 @@ function Get-LatestStableRelease([string]$Origin) {
     $pattern = '^v(0|[1-9]\d{0,2})\.(0|[1-9]\d*)\.(0|[1-9]\d*)$'  # update_channel.STABLE_TAG_RE
     $tag = ''
     try {
-        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/dwisetyabudi15581/Thor-agent/releases/latest' `
+        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/thor726/Thor-agent/releases/latest' `
             -Headers @{ Accept = 'application/vnd.github+json'; 'User-Agent' = 'thor-installer' } -TimeoutSec 20
         $tag = "$($release.tag_name)"
     } catch { }
     if ($tag -cnotmatch $pattern) {
         try {
-            $request = [Net.HttpWebRequest]::Create('https://github.com/dwisetyabudi15581/Thor-agent/releases/latest')
+            $request = [Net.HttpWebRequest]::Create('https://github.com/thor726/Thor-agent/releases/latest')
             $request.Method = 'HEAD'
             $request.AllowAutoRedirect = $false
             $request.Timeout = 20000
@@ -1028,7 +1028,7 @@ function Get-StableTarget([string]$Origin) {
         # The path is matched case-insensitively (-imatch): the canonical URL is
         # ``.../Thor-agent.git``, and a case-sensitive pattern would reject the
         # official repository itself and silently drop every install to main.
-        if ($Origin -notmatch '(?i)^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)dwisetyabudi15581/thor-agent(\.git)?/?$') { return '' }
+        if ($Origin -notmatch '(?i)^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)thor726/thor-agent(\.git)?/?$') { return '' }
     }
     $release = Get-LatestStableRelease $Origin
     if ($release) { return $release }

@@ -12,7 +12,7 @@ import subprocess
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-OFFICIAL = "https://github.com/dwisetyabudi15581/Thor-agent.git"
+OFFICIAL = "https://github.com/thor726/Thor-agent.git"
 
 pytestmark = pytest.mark.platforms("windows")
 

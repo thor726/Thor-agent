@@ -46,7 +46,7 @@ test('ordinary Windows preparation owns temporary bytes while a resumable downlo
     artifactNamePascal: 'Preview',
     cliName: 'preview',
     windowsExecutableName: 'preview',
-    msixAppIdWithOrg: 'dwisetyabudi15581.Preview'
+    msixAppIdWithOrg: 'thor726.Preview'
   }
 
   const target: ChannelTarget = {
@@ -54,7 +54,7 @@ test('ordinary Windows preparation owns temporary bytes while a resumable downlo
       schema: 1,
       state: 'active',
       name: 'preview',
-      repository: 'dwisetyabudi15581/Thor-agent',
+      repository: 'thor726/Thor-agent',
       policy: 'preview',
       revision: 1,
       nextSequence: 2,
@@ -69,7 +69,7 @@ test('ordinary Windows preparation owns temporary bytes while a resumable downlo
         buildId: 'b'.repeat(32),
         channel: 'preview',
         sequence: 1,
-        repository: 'dwisetyabudi15581/Thor-agent',
+        repository: 'thor726/Thor-agent',
         commit: 'c'.repeat(40),
         sourceVersion: '1.0.0',
         version: '0.0.1',
