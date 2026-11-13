@@ -85,7 +85,7 @@ def test_sole_addressee_text_stays_clean_and_prompt_is_session_stable(trigger):
             msg = _group_message("Thor hello", entities=[SimpleNamespace(type="text_mention", offset=0, length=6, user=SimpleNamespace(id=999))])
         elif trigger == "mention":
             text = "😀 @thor_bot 2"
-            msg = _group_message(text, entities=[SimpleNamespace(type="mention", offset=3, length=11)])
+            msg = _group_message(text, entities=[SimpleNamespace(type="mention", offset=3, length=9)])
         elif trigger == "code":
             # Telegram says this is code, not a mention; a reply admits the turn.
             msg = _group_message("@thor_bot", reply_to_bot=True, entities=[SimpleNamespace(type="code", offset=0, length=11)])
