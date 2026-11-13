@@ -1578,8 +1578,10 @@ exit 3
     # rather than a timing coincidence: the pipe was demonstrably still open.
     $budget = $script:StepDrainGraceSeconds + 30
     # A sleep-per-chunk drain moves 16 KiB/150ms ~ 107 KB/s, so 8 MiB takes
-    # ~76s. Generous enough for a loaded CI runner, far under the trickle.
-    $floodBudget = 25
+    # ~76s. Generous enough for a loaded 2-core windows-latest CI runner
+    # (observed 33.5s there; the 32-vCPU runners upstream budgets for ran
+    # well under the old 25s), far under the trickle.
+    $floodBudget = 45
     $problems = @()
     if (-not $leakAlive) { $problems += "handle-holding grandchild was not alive on return (fixture did not reproduce the leak)" }
     if ($elapsed -ge $budget) { $problems += "leak arm returned in ${elapsed}s, over the ${budget}s budget" }

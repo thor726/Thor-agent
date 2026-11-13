@@ -26,6 +26,22 @@ pytestmark = pytest.mark.platforms("windows")
 _HELPER = "import sys, time\nprint('ready', flush=True)\ntime.sleep(300)\n"
 
 
+def _tree_gone(tree: list, timeout: float = 30.0) -> bool:
+    """Wait out the OS's own teardown lag after the holder exited.
+
+    ``taskkill /T`` returns once the tree is signalled; on a loaded 2-core
+    windows-latest runner the kernel can take well past a static wait to reap
+    the handles, so the immediate scan sees a zombie pid and the live proof
+    flakes. The deadline keeps the proof bounded either way.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if not [p.pid for p in tree if p.is_running()]:
+            return True
+        time.sleep(0.25)
+    return not [p.pid for p in tree if p.is_running()]
+
+
 @pytest.fixture
 def swap_fixture(tmp_path, monkeypatch):
     desktop_dir = tmp_path / "apps" / "desktop"
@@ -107,8 +123,8 @@ def test_consented_retry_closes_exactly_the_holder_and_promotes(swap_fixture, ca
     assert error == ""
     assert promoted == live_root / "Thor.exe"
     assert promoted.read_text(encoding="utf-8") == "new"
-    assert helper.wait(10) is not None
-    assert not [p.pid for p in tree if p.is_running()]
+    assert helper.wait(30) is not None
+    assert _tree_gone(tree), [p.pid for p in tree if p.is_running()]
     assert not consent.exists(), "a consent covers one retry only"
     assert "Closed with your consent: " in capsys.readouterr().out
 
@@ -135,7 +151,7 @@ def test_a_partial_close_reports_only_the_holder_still_in_the_way(swap_fixture, 
         promoted, error = _promote(desktop_dir, staging)
 
         assert promoted is None and f"pid {protected.pid}" in error, error
-        assert helper.wait(10) is not None
+        assert helper.wait(30) is not None
         reported = {int(ln.split("(pid ", 1)[1].split(",", 1)[0])
                     for ln in capsys.readouterr().out.splitlines() if "Desktop app folder held by: " in ln}
         assert protected.pid in reported, reported
@@ -144,7 +160,7 @@ def test_a_partial_close_reports_only_the_holder_still_in_the_way(swap_fixture, 
     finally:
         for proc in [*psutil.Process(protected.pid).children(recursive=True), psutil.Process(protected.pid)]:
             proc.kill()
-        protected.wait(10)
+        protected.wait(30)
 
 
 def test_a_program_in_a_sibling_unpacked_folder_is_neither_named_nor_closed(swap_fixture, tmp_path, capsys, monkeypatch):
@@ -171,12 +187,12 @@ def test_a_program_in_a_sibling_unpacked_folder_is_neither_named_nor_closed(swap
         promoted, error = _promote(desktop_dir, staging)
 
         assert error == "" and promoted == live_root / "Thor.exe"
-        assert helper.wait(10) is not None
-        assert not [p.pid for p in tree if p.is_running()]
+        assert helper.wait(30) is not None
+        assert _tree_gone(tree), [p.pid for p in tree if p.is_running()]
         assert all(p.is_running() for p in sibling_tree), "closed a program that never held the renamed folder"
         assert f"pid {sibling.pid}" not in capsys.readouterr().out
     finally:
         for proc in sibling_tree:
             with contextlib.suppress(psutil.NoSuchProcess):
                 proc.kill()
-        sibling.wait(10)
+        sibling.wait(30)
