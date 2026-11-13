@@ -67,6 +67,12 @@ ALLOWED_RAW_SPAWN_ENV_FILES = {
     # needing their real HOME for ~/.ssh and ~/.docker. Same as inheriting (``None``) plus the
     # forwarded values; what crosses into the sandbox is the backend's forward/passthrough policy.
     "tools/environments/remote_common.py",
+    # The git trampoline locator probes a candidate git binary with ``--version`` before any
+    # profile state exists to scrub: the probe must keep the runner's real PATH (plus the
+    # candidate's own PortableGit tree prepended) so the staged git-core layout resolves, and a
+    # scrubbed environment could not find the binary the probe exists to validate. Output is
+    # thrown away; the argv is a file we just resolved, never user-typed text.
+    "thor_cli/update_cmd_git.py",
     # Needing provider keys is not a reason to be here: such a child uses
     # thor_subprocess_env(inherit_credentials=True), which still drops bot/relay tokens.
 }

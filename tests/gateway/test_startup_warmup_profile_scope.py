@@ -1,6 +1,6 @@
 """Boot probes run inside the launch profile's scope under multiplex.
 
-``get_tool_definitions`` runs every ``check_fn``; the vision probe resolves Thor runtime
+``get_tool_definitions`` runs every ``check_fn``; the vision probe resolves Nous runtime
 credentials, whose Portal / inference routing overrides read through ``agent.secret_scope.get_secret``.
 With multiplex active and no scope on the executor thread that read fails closed, the override is
 absent, and a non-production Portal's refresh token is POSTed to the production Portal. The warm-up
@@ -17,7 +17,7 @@ from agent import secret_scope
 from gateway import run as gateway_run
 from gateway.run_startup import GatewayStartupMixin
 
-PORTAL = "https://portal.staging-thor-agent.local"
+PORTAL = "https://portal.staging-thor726.com"
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def multiplex_home(tmp_path, monkeypatch):
     (home / ".env").write_text(f"THOR_PORTAL_BASE_URL={PORTAL}\n")
     monkeypatch.setenv("THOR_HOME", str(home))
     monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
-    monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
+    monkeypatch.delenv("NOUS_PORTAL_BASE_URL", raising=False)
     secret_scope.set_multiplex_active(True)
     try:
         yield home
@@ -38,7 +38,7 @@ def multiplex_home(tmp_path, monkeypatch):
 def _probe(seen: dict):
     def probe() -> int:
         from thor_cli.auth_thor import _thor_portal_env_override
-        seen["scope_installed"] = secret_scope._SECRET_SCOPE.get() is not None
+        seen["scope_installed"] = secret_scope.current_secret_scope() is not None
         seen["portal_override"] = _thor_portal_env_override()
         return 1
     return probe
@@ -59,7 +59,7 @@ def _run_warmup(monkeypatch, *, multiplex: bool) -> dict:
         await _Runner(multiplex=multiplex)._warm_turn_prerequisites()
         # Same task as the warm-up (asyncio.run copies the context, so the caller's view proves nothing).
         from thor_constants import get_thor_home_override
-        seen["scope_after"] = secret_scope._SECRET_SCOPE.get()
+        seen["scope_after"] = secret_scope.current_secret_scope()
         seen["home_override_after"] = get_thor_home_override()
 
     asyncio.run(drive())

@@ -2614,29 +2614,31 @@ def _worker_profile_scope(thor_home: str, *, bind_home: bool = True):
     env-over-``.env`` precedence (``launch_secret_scope``) so systemd / ``op run`` injection still
     resolves for a standalone dispatcher.
     """
-    from agent.secret_scope import build_profile_secret_scope, reset_secret_scope, set_secret_scope
-    from thor_constants import get_process_thor_home, reset_thor_home_override, set_thor_home_override
-    from tools.terminal_scope import install_profile_terminal_scope, reset_terminal_scope
-    from tui_gateway.launch_profile_policy import launch_secret_scope, launch_terminal_env
+    if bind_home:
+        # One bind: the launch home keeps its launch semantics (env over ``.env``, the frozen
+        # TERMINAL_* overlay, unstamped); any other home its own files, stamped as routed
+        # (``_bind_whole_profile`` below makes exactly that split).
+        from agent.runtime_scope import bind_profile_scope
+        with bind_profile_scope(thor_home, hydrate_secrets=False):
+            yield
+        return
+    # Spawn-env build: the passthrough POLICY stays the dispatcher's own (read under its own
+    # home), so only the secret mapping binds here — its VALUES from the assignee's scope.
+    from agent.runtime_scope import bind_state, scope_for_profile
+    from agent.secret_scope import build_profile_secret_scope
+    from thor_constants import get_process_thor_home
+    from tui_gateway.launch_profile_policy import launch_secret_scope
 
     home = Path(thor_home)
     is_launch_home = str(home.resolve()) == str(Path(get_process_thor_home()).resolve())
-    home_token = secret_token = terminal_token = None
+    tokens = bind_state(
+        scope_for_profile(home),
+        secrets=launch_secret_scope(home) if is_launch_home else build_profile_secret_scope(home),
+        hydrate_secrets=False, stamp_home=not is_launch_home, home_override=False, terminal=False)
     try:
-        home_token = set_thor_home_override(str(home)) if bind_home else None
-        secret_token = set_secret_scope(
-            launch_secret_scope(home) if is_launch_home else build_profile_secret_scope(home),
-            profile_home=None if is_launch_home else str(home))
-        terminal_token = install_profile_terminal_scope(
-            home, env_overlay=launch_terminal_env() if is_launch_home else None) if bind_home else None
         yield
     finally:
-        if terminal_token is not None:
-            reset_terminal_scope(terminal_token)
-        if secret_token is not None:
-            reset_secret_scope(secret_token)
-        if home_token is not None:
-            reset_thor_home_override(home_token)
+        tokens.reset()
 
 
 def _resolve_worker_cli_toolsets(thor_home: Optional[str]) -> Optional[list[str]]:

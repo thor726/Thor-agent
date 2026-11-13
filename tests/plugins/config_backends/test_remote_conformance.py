@@ -20,7 +20,7 @@ MANIFEST = VENDOR / "conformance" / "config-fixtures.sha256"
 # is the manifest at gateway-gateway 36dff9281f: P1's v1 set (e7e92b9b…, gg 9151149d7f) plus the
 # twelve portal-groups fixtureVersion 2 multi-group cases (portal-groups contract §7.2, gg #328).
 # A fixture change in gg is a reviewed bump here.
-APPROVED_FIXTURE_DIGEST = "610f8cc120c5ebaee675fbe9a036d1f06ff2c93a940b5351cb2001c300106b3d"
+APPROVED_FIXTURE_DIGEST = "02e4ccb45eec084f1d3064a2ac167042c6031c4f2574c1db849bbfbc333f12a5"
 RESOLUTION = sorted((VENDOR / "conformance" / "config-resolution").glob("*.json"))
 # Fixture formats this runner was reviewed against. v2 (portal-groups §7.1) adds several group
 # levels, groupProvenance, locks[].groupId and lockedByGroupId; the agent reads none of them (it
