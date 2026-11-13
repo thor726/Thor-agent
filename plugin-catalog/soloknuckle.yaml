@@ -1,0 +1,29 @@
+name: soloknuckle
+title: Soloknuckle
+repo: https://github.com/z99wE/soloknucklefXrthor
+sha: "ef9f7565b63d2b3350095d0b953c1b6ea9c61a69"
+subdir: thor-plugin
+version: "5.2.0"
+description: >-
+  Deterministic local guardrails for Thor and dev workflows. Three invocable
+  tools—git-diff secret scanning, a destructive-command firewall, and a project
+  health score—plus native Thor surfaces: additive credential-redaction
+  patterns, a soloknuckle:hygiene skill, thor hygiene CLI, /hygiene, and a
+  weekly hygiene-report blueprint. One rule set, same verdicts across
+  CLI/hooks/MCP/Thor. No hooks, no middleware, no prompt rewriting, no
+  telemetry.
+maintainer: Soloknuckle Contributors
+tier: community
+category: tools
+docs_url: https://github.com/z99wE/soloknucklefXrthor/blob/main/THOR-INTEGRATION.md
+requires_thor: ">=0.22.0"
+readme: true
+platforms: []
+capabilities:
+  provides_tools:
+    - soloknuckle_secrets
+    - soloknuckle_intercept
+    - soloknuckle_health
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

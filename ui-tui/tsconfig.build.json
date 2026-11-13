@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@thor/ink": ["src/types/thor-ink.d.ts"]
+    }
+  }
+}

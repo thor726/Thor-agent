@@ -1,0 +1,20 @@
+name: thor-project-stewardship
+repo: https://github.com/Sahil-SS9/thor-project-stewardship
+sha: cc54a15ccb841c69b4e898ce91c98e6f5ee23444
+description: "Durable project ownership and bounded initiative management for Thor fleets. Disclosure — a `pre_llm_call` hook adds a project's saved rules, decisions and facts to turns of bots assigned to that project; objective checks run allowlisted local programs only at autonomy level 3+ and GitHub objectives shell out to your own `gh api`; it creates and edits Thor Kanban tasks through Thor' internal kanban modules (title/body/tenant written directly to kanban.db), reads other Thor profiles' project registries (projects.db, read-only, profile names and project counts only) to hint where existing projects live during onboarding, keeps its own SQLite DB under `<Thor home>/plugin-data/thor-dockyard/`, and its optional HTTP API (`/stewardship/v1`, 127.0.0.1) stays closed until you set a bearer token."
+maintainer: Sahil-SS9
+tier: community
+category: automation
+requires_thor: ">=0.21.0"
+docs_url: https://github.com/Sahil-SS9/thor-project-stewardship
+platforms: []
+capabilities:
+  provides_tools:
+    - steward_status
+    - steward_run_cycle
+    - steward_propose_initiative
+  provides_hooks:
+    - pre_llm_call
+  provides_middleware: []
+  requires_env: []
+version: 0.5.6

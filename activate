@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+# ============================================================================
+# venv-style activation of the Thor dev environment for an interactive shell.
+#
+#   source ./activate       (bash / zsh, repo root)
+#   source ./activate.fish  (fish)
+#   .\activate.ps1          (PowerShell)
+#
+# Applies the composed pm env (PATH + tool vars) to the CURRENT shell, with
+# save/restore: `deactivate` undoes exactly what activation changed.
+#
+# `thor` becomes a shell function for this checkout. It runs only while the
+# shell is inside this worktree and refuses outside it, so a sibling worktree
+# keeps its own command. A prompt prefix names the worktree.
+#
+# Scripts and other processes do not source this: they run under
+# `scripts/run-in-thor-env`. Both build on scripts/_activation.sh.
+#
+# Sync through setup before selecting the environment. PM owns freshness;
+# activation does not maintain a second dependency stamp. It trusts the
+# recorded tool digest instead of re-hashing every entry. `thor pm
+# install` and `thor update` keep that check.
+# ============================================================================
+_THOR_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Options: `--test-extras a,b` selects the test environment's runtime extras
+# (default: [all]); `--` ends options.
+# A bare `source ./activate` inherits the caller's positional parameters.
+# Ignore unrelated words so scripts with their own arguments can source it.
+_thor_test_env="--test-environment"
+_thor_expect_extras=""
+for _thor_arg in "$@"; do
+    if [ -n "$_thor_expect_extras" ]; then
+        _thor_test_env="--test-environment=$_thor_arg"
+        _thor_expect_extras=""
+        continue
+    fi
+    case "$_thor_arg" in
+        --) break ;;
+        --test-extras) _thor_expect_extras=1 ;;
+        --test-extras=*) _thor_test_env="--test-environment=${_thor_arg#--test-extras=}" ;;
+        *) : ;;
+    esac
+done
+if [ -n "$_thor_expect_extras" ]; then
+    printf '%s\n' 'activate: --test-extras needs a comma-separated list' >&2
+    unset _thor_arg _thor_test_env _thor_expect_extras
+    return 2 2>/dev/null || exit 2
+fi
+unset _thor_arg _thor_expect_extras
+
+# shellcheck source=scripts/_activation.sh
+. "$_THOR_REPO/scripts/_activation.sh"
+
+if ! thor_sync "$_THOR_REPO" "$_thor_test_env"; then
+    printf '%s\n' 'activate: setup failed; shell environment unchanged' >&2
+    unset _thor_test_env
+    return 1 2>/dev/null || exit 1
+fi
+unset _thor_test_env
+
+# Guard against double-sourcing: venv activate precedent (re-activating is a
+# no-op re-save; we keep it idempotent by deactivating first). Key on the
+# function, not the sentinel: child shells inherit __THOR_ACTIVATED from an
+# activated parent but never the function, and there is nothing to undo there.
+if [ "$(type -t deactivate 2>/dev/null)" = "function" ]; then
+    deactivate
+fi
+
+_thor_script="$(thor_compose_env "$_THOR_REPO" sh)" || {
+    echo "activate: could not compose the environment (see above)" >&2
+    unset _thor_script
+    return 1 2>/dev/null || exit 1
+}
+_thor_keys="$(printf '%s\n' "$_thor_script" | sed -n 's/^export \([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' | tr '\n' ' ')"
+
+# --- snapshot what we are about to change (deactivate restores this) ---
+# __THOR_ACTIVATED is part of the composed env below (it carries the
+# installed-state path this environment was built from), so it is snapshotted
+# and exported with every other key — no separate assignment here.
+__THOR_SAVED_PATH="$PATH"
+for _thor_k in $_thor_keys; do
+    eval "__THOR_SAVED_$_thor_k=\"\${$_thor_k+set}\""
+    eval "__THOR_PRIOR_$_thor_k=\${$_thor_k-__THOR_UNSET__}"
+done
+thor_apply_env "$_thor_script"
+
+# This checkout, not whichever `thor` PATH finds. A function beats PATH, an
+# alias, and a hashed command, including the MSIX execution alias.
+__THOR_WORKTREE="$_THOR_REPO"
+# The branch names the worktree. A checkout cannot share a branch with another.
+__THOR_WORKTREE_NAME="$(git -C "$_THOR_REPO" rev-parse --abbrev-ref HEAD 2>/dev/null || :)"
+if [ -z "$__THOR_WORKTREE_NAME" ] || [ "$__THOR_WORKTREE_NAME" = HEAD ]; then
+    __THOR_WORKTREE_NAME="$(basename "$_THOR_REPO")"
+fi
+__THOR_SAVED_PS1="${PS1-__THOR_UNSET__}"
+__THOR_SAVED_PROMPT_COMMAND="${PROMPT_COMMAND-__THOR_UNSET__}"
+
+_thor_worktree_here() {
+    _thor_top="$(git rev-parse --show-toplevel 2>/dev/null)" || return 1
+    [ "$(cd "$_thor_top" && pwd -P)" = "$(cd "$__THOR_WORKTREE" && pwd -P)" ]
+}
+
+thor() {
+    _thor_worktree_here || {
+        printf '%s\n' "thor: $(pwd) is outside $__THOR_WORKTREE; refusing (the installed command is hidden while this checkout is active)" >&2
+        return 1
+    }
+    (
+        cd "$__THOR_WORKTREE" || exit 1
+        if [ -n "${PYTHON-}" ]; then
+            exec "$PYTHON" thor "$@"
+        elif [ -x .venv/Scripts/python.exe ]; then
+            exec .venv/Scripts/python.exe thor "$@"
+        elif [ -x .venv/bin/python ]; then
+            exec .venv/bin/python thor "$@"
+        elif [ -x venv/Scripts/python.exe ]; then
+            exec venv/Scripts/python.exe thor "$@"
+        elif [ -x venv/bin/python ]; then
+            exec venv/bin/python thor "$@"
+        else
+            exec python thor "$@"
+        fi
+    )
+}
+
+_thor_prompt() {
+    if [ "$__THOR_SAVED_PS1" = "__THOR_UNSET__" ]; then
+        _thor_base_ps1=""
+    else
+        _thor_base_ps1="$__THOR_SAVED_PS1"
+    fi
+    if _thor_worktree_here; then
+        PS1="($__THOR_WORKTREE_NAME) $_thor_base_ps1"
+    else
+        PS1="$_thor_base_ps1"
+    fi
+}
+
+if [ -n "${PROMPT_COMMAND-}" ]; then
+    PROMPT_COMMAND="_thor_prompt; ${PROMPT_COMMAND}"
+else
+    PROMPT_COMMAND=_thor_prompt
+fi
+_thor_prompt
+
+deactivate() {
+    export PATH="$__THOR_SAVED_PATH"
+    for _thor_k in $__THOR_KEY_LIST; do
+        eval "_thor_was=\"\$__THOR_SAVED_$_thor_k\""
+        eval "_thor_old=\"\$__THOR_PRIOR_$_thor_k\""
+        if [ "$_thor_was" != "set" ]; then
+            unset "$_thor_k"
+        else
+            export "$_thor_k=$_thor_old"
+        fi
+        unset "__THOR_SAVED_$_thor_k" "__THOR_PRIOR_$_thor_k"
+    done
+    if [ "$__THOR_SAVED_PS1" = "__THOR_UNSET__" ]; then
+        unset PS1
+    else
+        PS1="$__THOR_SAVED_PS1"
+    fi
+    if [ "$__THOR_SAVED_PROMPT_COMMAND" = "__THOR_UNSET__" ]; then
+        unset PROMPT_COMMAND
+    else
+        PROMPT_COMMAND="$__THOR_SAVED_PROMPT_COMMAND"
+    fi
+    unset __THOR_SAVED_PATH __THOR_KEY_LIST __THOR_ACTIVATED \
+          __THOR_WORKTREE __THOR_WORKTREE_NAME \
+          __THOR_SAVED_PS1 __THOR_SAVED_PROMPT_COMMAND
+    unset -f deactivate thor _thor_worktree_here _thor_prompt
+    unset _thor_k _thor_was _thor_old _thor_top
+}
+
+# remember the key list for deactivate (kept out of the loop vars above)
+__THOR_KEY_LIST="$_thor_keys"
+
+# The composition library is not part of the user's shell.
+unset -f thor_sync thor_bootstrap_python thor_compose_env thor_apply_env \
+         thor_activation_current thor_ensure_env
+unset _THOR_REPO _thor_script _thor_keys _thor_k _thor_top
