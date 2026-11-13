@@ -61,6 +61,9 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
 
 
 _OWN_REPO_PREFIXES = ("thor726/Thor-agent/skills/", "skills-sh/thor726/Thor-agent/")
+# Lowercased for the startswith() check below: the identifier is compared lowercased, so the
+# prefixes must be too ("Thor-agent" in the raw prefix would never match a lowered identifier).
+_OWN_REPO_PREFIXES_LOWER = tuple(p.lower() for p in _OWN_REPO_PREFIXES)
 
 
 def bundled_skill_for_install(identifier: str) -> Optional[str]:
@@ -70,7 +73,7 @@ def bundled_skill_for_install(identifier: str) -> Optional[str]:
     Fetched from GitHub, that copy is scanned as a community skill and refused — every time."""
     ident = identifier.strip().strip("/")
     lowered = ident.lower()
-    if "/" in ident and not lowered.startswith(_OWN_REPO_PREFIXES):
+    if "/" in ident and not lowered.startswith(_OWN_REPO_PREFIXES_LOWER):
         return None
     name = ident.rsplit("/", 1)[-1]
     return name if name in _bundled_state()[3] else None

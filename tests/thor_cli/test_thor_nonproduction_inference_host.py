@@ -32,7 +32,10 @@ def test_routing_overrides_follow_the_profile_scope_and_fail_closed_without_one(
     from agent import secret_scope as ss
 
     monkeypatch.setenv(var, "https://launch.example.thor-agent.local")
-    monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
+    # Pre-rebrand the alias pair was NOUS_PORTAL_BASE_URL + NOUS_BASE_URL; after the rename
+    # both spell one name, so the alias cleanup must not delete the var just set.
+    if var != "THOR_PORTAL_BASE_URL":
+        monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
     assert helper() == "https://launch.example.thor-agent.local"
 
     ss.set_multiplex_active(True)

@@ -138,9 +138,9 @@ apps/desktop/release/
 apps/desktop/.staging-*/
 *.tsbuildinfo
 
-# Web UI assets — synced from @nous-research/ui at build time via
-# `pnpm run sync-assets` (see web/package.json).
-web/public/fonts/
+# Web UI assets — the brand fonts (web/public/fonts) are checked in: the login
+# page and the SPA static-asset tests read them straight from the tree, and no
+# sync script ships them otherwise. Design-system generated assets stay ignored.
 web/public/ds-assets/
 
 # Release script temp files

@@ -24,9 +24,9 @@ __all__ = [
     "user_agent",
 ]
 
-SESSION_HEADER = "x-thor-thor-session"
-TURN_HEADER = "x-thor-thor-turn"
-TOOL_CALL_HEADER = "x-thor-thor-tool-call"
+SESSION_HEADER = "x-thor-session"
+TURN_HEADER = "x-thor-turn"
+TOOL_CALL_HEADER = "x-thor-tool-call"
 REQUEST_ID_HEADER = "x-request-id"
 
 # sys.platform -> the shared-metrics OS family.
