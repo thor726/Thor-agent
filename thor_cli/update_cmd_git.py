@@ -611,37 +611,63 @@ def _portable_git_candidates() -> list:
             tools = Path(runtime_dir) if Path(runtime_dir).name == "tools" else Path(runtime_dir) / "tools"
             for staged in sorted(tools.glob("git-*")):
                 candidates.append(staged / "mingw64" / "libexec" / "git-core" / "git.exe")
+    with suppress(Exception):
+        # The git on PATH, when it is a PortableGit shim: its tree's git-core binary is the
+        # real git behind it. PATH survives environments that strip THOR_RUNTIME_DIR (the
+        # hermetic test runner: ``env -i`` without it), which is exactly the CI-runner
+        # shape — no ``C:\\Program Files\\Git``, no ``<root>/git``, only the staged tree
+        # its PATH already points ``cmd\\git.exe`` at.
+        import shutil
+        on_path = shutil.which("git")
+        if on_path:
+            tree = _portable_git_tree_of(on_path)
+            if tree is not None:
+                candidates.append(tree / "mingw64" / "libexec" / "git-core" / "git.exe")
     return candidates
+
+
+def _portable_git_tree_of(git_path: "str | Path") -> Optional[Path]:
+    """The PortableGit tree a git binary path belongs to, or None for any other layout.
+
+    ``<tree>\\cmd\\git.exe`` / ``<tree>\\bin\\git.exe`` (the ~46KB trampoline shims) and
+    ``<tree>\\mingw64\\libexec\\git-core\\git.exe`` (the real binary itself) are the
+    PortableGit layouts; anything else (a system git in ``...\\Git\\cmd\\git.exe`` has no
+    sibling ``mingw64`` tree) is not one.
+    """
+    p = Path(git_path)
+    if p.parent.name in ("cmd", "bin"):
+        tree = p.parent.parent
+        if tree.joinpath("mingw64", "libexec", "git-core", "git.exe").is_file():
+            return tree
+        return None
+    if p.parent.name == "git-core" and p.parent.parent.name == "libexec":
+        return p.parent.parent.parent.parent
+    return None
 
 
 def _probe_fork_bomb(argv: list) -> Optional[bool]:
     """Run ``<argv> --version``; True/False = guard message seen/absent, None = probe itself failed.
 
     The probe runs the candidate BARE (no custody config inserted, no reliance on the update
-    tree's run_git wrapper): a staged PortableGit ``cmd\\git.exe`` shim needs its own tree's
-    ``mingw64`` layout on PATH (git.exe is found relative to the shim when git's own directory
-    precedes the invocation), and the git-core binary is probed directly anyway. A plain
-    ``subprocess.run`` with the candidate's tree on PATH keeps the probe working in CI runner
-    environments where the custody wrapper's assumptions do not hold.
+    tree's run_git wrapper, whose held-token bookkeeping can fail in runner environments):
+    a staged PortableGit ``cmd\\git.exe`` shim needs its own tree's ``mingw64`` layout on
+    PATH, and the git-core binary is probed directly anyway. ``**_GIT_TEXT_KW`` keeps the
+    spawn's stdio and console-hiding flags identical to every other git probe.
     """
     import subprocess as sp
 
     try:
         env = None
         if sys.platform == "win32" and argv:
-            tree = Path(argv[0]).resolve().parent
-            for _ in range(4):  # git-core -> libexec -> mingw64|clangarm64 -> tree root
-                if tree.name in ("mingw64", "clangarm64", "mingw32") and tree.parent.name == "git-core":
-                    tree = tree.parent.parent.parent
-                    break
-                tree = tree.parent
-            else:
-                tree = None
-            if tree is not None:
-                env = {**os.environ, "PATH": str(tree / "mingw64" / "bin") + os.pathsep + str(tree / "usr" / "bin") + os.pathsep + os.environ.get("PATH", "")}
-        result = sp.run([*argv, "--version"], capture_output=True, text=True, encoding="utf-8",
-                        errors="replace", timeout=15, env=env,
-                        **({"creationflags": 0x08000000} if sys.platform == "win32" else {}))
+            tree = _portable_git_tree_of(argv[0])
+            # A shim needs its tree on PATH (git.exe resolves relative to it); the git-core
+            # binary found above IS the real git and needs nothing.
+            if tree is not None and Path(argv[0]).parent.name in ("cmd", "bin"):
+                env = {**os.environ,
+                       "PATH": str(tree / "mingw64" / "bin") + os.pathsep
+                               + str(tree / "usr" / "bin") + os.pathsep
+                               + os.environ.get("PATH", "")}
+        result = sp.run([*argv, "--version"], timeout=15, env=env, check=False, **_GIT_TEXT_KW)
     except Exception:
         return None
     return "fork bomb" in ((result.stdout or "") + (result.stderr or "")).lower()
