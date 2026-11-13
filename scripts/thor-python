@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Run Python in this checkout's environment: `scripts/thor-python ARGS...`.
+#
+# A GitHub Actions job runs the interpreter setup-pm exported as THOR_PYTHON,
+# so a recipe never re-runs setup on a runner. Anywhere else THOR_PYTHON may
+# be inherited from a wrapped `thor` (a release venv without the dev tools),
+# so scripts/run-in-thor-env applies (and if stale, syncs) the environment
+# `source ./activate` gives a shell.
+set -euo pipefail
+
+if [ "${GITHUB_ACTIONS:-}" = true ] && [ -z "${__THOR_ACTIVATED:-}" ] && [ -n "${THOR_PYTHON:-}" ] \
+    && [ -x "$THOR_PYTHON" ]; then
+    exec "$THOR_PYTHON" "$@"
+fi
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/run-in-thor-env" python "$@"
