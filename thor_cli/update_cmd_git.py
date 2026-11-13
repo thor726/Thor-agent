@@ -574,17 +574,6 @@ def _print_fetch_failure(stderr: str, *, git_cmd=None, root: Optional[Path] = No
             print(f"  ... ({len(lines) - 15} more lines omitted)")
 
 
-def _probe_fork_bomb(argv: list) -> Optional[bool]:
-    """Run ``<argv> --version``; True/False = guard message seen/absent, None = probe itself failed."""
-    try:
-        from thor_cli.update_custody import run_git
-
-        result = run_git(argv, ["--version"], timeout=15, **_GIT_TEXT_KW)
-    except Exception:
-        return None
-    return "fork bomb" in ((result.stdout or "") + (result.stderr or "")).lower()
-
-
 def _git_is_trampoline(git_cmd: list) -> bool:
     """Whether *git_cmd* is a broken Git-for-Windows trampoline shim.
 
@@ -623,6 +612,39 @@ def _portable_git_candidates() -> list:
             for staged in sorted(tools.glob("git-*")):
                 candidates.append(staged / "mingw64" / "libexec" / "git-core" / "git.exe")
     return candidates
+
+
+def _probe_fork_bomb(argv: list) -> Optional[bool]:
+    """Run ``<argv> --version``; True/False = guard message seen/absent, None = probe itself failed.
+
+    The probe runs the candidate BARE (no custody config inserted, no reliance on the update
+    tree's run_git wrapper): a staged PortableGit ``cmd\\git.exe`` shim needs its own tree's
+    ``mingw64`` layout on PATH (git.exe is found relative to the shim when git's own directory
+    precedes the invocation), and the git-core binary is probed directly anyway. A plain
+    ``subprocess.run`` with the candidate's tree on PATH keeps the probe working in CI runner
+    environments where the custody wrapper's assumptions do not hold.
+    """
+    import subprocess as sp
+
+    try:
+        env = None
+        if sys.platform == "win32" and argv:
+            tree = Path(argv[0]).resolve().parent
+            for _ in range(4):  # git-core -> libexec -> mingw64|clangarm64 -> tree root
+                if tree.name in ("mingw64", "clangarm64", "mingw32") and tree.parent.name == "git-core":
+                    tree = tree.parent.parent.parent
+                    break
+                tree = tree.parent
+            else:
+                tree = None
+            if tree is not None:
+                env = {**os.environ, "PATH": str(tree / "mingw64" / "bin") + os.pathsep + str(tree / "usr" / "bin") + os.pathsep + os.environ.get("PATH", "")}
+        result = sp.run([*argv, "--version"], capture_output=True, text=True, encoding="utf-8",
+                        errors="replace", timeout=15, env=env,
+                        **({"creationflags": 0x08000000} if sys.platform == "win32" else {}))
+    except Exception:
+        return None
+    return "fork bomb" in ((result.stdout or "") + (result.stderr or "")).lower()
 
 
 def _locate_real_git() -> Optional[Path]:

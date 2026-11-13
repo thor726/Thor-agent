@@ -1687,7 +1687,18 @@ if ($script:IsDotSourced) {
 
 # The normalization prologue runs exactly once per real entry, before any
 # switch is honored, so every contract below sees long-form paths.
-Initialize-ResolvedPaths
+# The store guard's refusal is a `throw` from inside the prologue, BEFORE any
+# try/catch exists: under -File an uncaught throw still exits non-zero, but
+# pwsh 7 can drop the message from redirected output (5.1 prints it), so the
+# user/test sees a silent failure. Catch here, print the reason on stderr,
+# and exit 1 explicitly — the exit code and the message both survive on every
+# host and every redirection shape.
+try {
+    Initialize-ResolvedPaths
+} catch {
+    [Console]::Error.WriteLine("$($_.Exception.Message)")
+    exit 1
+}
 
 # Keep uv from discovering uv.toml / pyproject.toml config from whatever
 # directory or user profile the installer runs under (mirrors install.sh).
