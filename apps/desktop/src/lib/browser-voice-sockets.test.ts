@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { setApiRequestConnection, setApiRequestProfile } from '@/thor'
 import { clearWebappSession, seedWebappSession } from '@/test/webapp-session'
+import { setApiRequestConnection, setApiRequestProfile } from '@/thor'
 
 import { installBrowserDesktopBridge } from './browser-desktop-bridge'
 import { resolveSiblingWsUrl } from './sibling-ws-url'

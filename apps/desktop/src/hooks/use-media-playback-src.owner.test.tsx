@@ -1,5 +1,5 @@
-import { LOCAL_CONNECTION_ID } from '@thor/shared'
 import { renderHook, waitFor } from '@testing-library/react'
+import { LOCAL_CONNECTION_ID } from '@thor/shared'
 import type { ReactNode } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 

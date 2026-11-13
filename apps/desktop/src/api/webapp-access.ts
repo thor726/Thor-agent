@@ -1,4 +1,4 @@
-import { thorApi, profileScoped } from './client'
+import { profileScoped, thorApi } from './client'
 
 // Web access: turn on the Webapp the gateway on THIS machine serves, for other devices, behind Thor
 // sign-in. The backend owns every fact here; the pane renders /status and asks for changes.

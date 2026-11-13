@@ -1,6 +1,6 @@
-import type { GatewayEventName } from '@thor/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, renderHook } from '@testing-library/react'
+import type { GatewayEventName } from '@thor/shared'
 import { useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 

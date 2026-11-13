@@ -1,6 +1,6 @@
 import { fileUrlToNativePath, LOCAL_CONNECTION_ID } from '@thor/shared'
 
-import { capabilityScoped, thorApi, type OwnerScope, sessionFileOwnerScope } from '@/api/client'
+import { capabilityScoped, type OwnerScope, sessionFileOwnerScope, thorApi } from '@/api/client'
 import type { ThorConnection } from '@/global'
 import { translateNow } from '@/i18n'
 import { desktopFsCacheKey, isReadFileErrorResult, readDesktopFileDataUrl } from '@/lib/desktop-fs'

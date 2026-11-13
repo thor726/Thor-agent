@@ -1,9 +1,8 @@
-import type { ModelOptionsResult } from '@thor/shared'
 import { type QueryClient } from '@tanstack/react-query'
+import type { ModelOptionsResult } from '@thor/shared'
 import { useCallback, useRef } from 'react'
 
 import type { ModelSelection } from '@/app/shell/model-menu-panel'
-import { getGlobalModelInfo } from '@/thor'
 import { useI18n } from '@/i18n'
 import { isBusySessionModelSwitch } from '@/lib/gateway-rpc'
 import { surfaceModelSwitchConfirm } from '@/lib/guarded-model-switch'
@@ -29,6 +28,7 @@ import {
   setCurrentReasoningEffortWire
 } from '@/store/session'
 import { $sessionStates, sessionTileDelegate } from '@/store/session-states'
+import { getGlobalModelInfo } from '@/thor'
 
 import { beginModelPick, isPickSuperseded, type ModelPickSnapshot, settleModelPick } from './model-pick-ledger'
 

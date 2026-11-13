@@ -1,3 +1,5 @@
+import { useStore } from '@nanostores/react'
+import { useQuery } from '@tanstack/react-query'
 import type { ModelOptionProvider, ModelOptionsResult, ModelPricing } from '@thor/shared'
 import {
   DEFAULT_REASONING_EFFORT,
@@ -7,8 +9,6 @@ import {
   usageLevel,
   usageTag
 } from '@thor/shared'
-import { useStore } from '@nanostores/react'
-import { useQuery } from '@tanstack/react-query'
 import {
   createContext,
   Fragment,
@@ -40,7 +40,6 @@ import {
 import { HighlightMatches } from '@/components/ui/highlight-matches'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tip, TipHintLabel } from '@/components/ui/tooltip'
-import type { ThorGateway } from '@/thor'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { isSubmitEnter } from '@/lib/ime'
@@ -73,6 +72,7 @@ import {
 } from '@/store/model-visibility'
 import { $collapsedProviders, toggleCollapsedProvider } from '@/store/provider-collapse'
 import { $defaultReasoningEffort } from '@/store/session'
+import type { ThorGateway } from '@/thor'
 import type { LocalModelLoadProgress, LocalRuntimeJob } from '@/types/thor'
 
 import { type DaybreakControl, type FastControl, ModelEditSubmenu, resolveFastControl } from './model-edit-submenu'

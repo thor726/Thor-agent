@@ -1,7 +1,7 @@
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type * as ThorSdk from '@thor/plugin-sdk'
 // eslint-disable-next-line no-restricted-imports -- Exercise the same serialized errors as the shared client.
 import { jsonRpcErrorFromFrame } from '@thor/shared'
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { answerGroupRequests, CANONICAL_GROUP_CAPABILITIES, DISBAND_FAILURES, localGatewaySdkMock } from './canonical-group-contract-test-utils'

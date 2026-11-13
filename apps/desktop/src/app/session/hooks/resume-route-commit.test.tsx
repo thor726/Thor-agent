@@ -2,7 +2,6 @@ import { cleanup, renderHook } from '@testing-library/react'
 import { useRef } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages } from '@/thor'
 import { ensureGatewayProfile } from '@/store/profile'
 import {
   $activeSessionId,
@@ -13,6 +12,7 @@ import {
   setSessions
 } from '@/store/session'
 import { clearAllSessionStates } from '@/store/session-states'
+import { getLatestSessionMessages } from '@/thor'
 
 import { sessionRoute } from '../../routes'
 

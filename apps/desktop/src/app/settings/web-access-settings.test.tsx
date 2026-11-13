@@ -27,10 +27,10 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WebAccessStatus } from '@/api/webapp-access'
-import * as thor from '@/thor'
 import { I18nProvider } from '@/i18n'
 import { queryClient } from '@/lib/query-client'
 import { $notifications, clearNotifications } from '@/store/notifications'
+import * as thor from '@/thor'
 
 import { WebAccessSettings } from './web-access-settings'
 

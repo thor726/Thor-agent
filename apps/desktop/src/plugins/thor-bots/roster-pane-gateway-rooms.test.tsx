@@ -5,9 +5,9 @@
  * them instead of the bot-list error, with no Refresh button.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { atom } from 'nanostores'
 import { afterEach, expect, it, vi } from 'vitest'
 

@@ -2,12 +2,12 @@ import { compactNumber } from '@thor/shared'
 import { useCallback, useMemo, useState } from 'react'
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { type ProfileScope, setToolsetEnabled } from '@/thor'
 import { useI18n } from '@/i18n'
 import { isDesktopToolsetVisible } from '@/lib/desktop-toolsets'
 import { queryClient } from '@/lib/query-client'
 import { invalidateSlashCompletions } from '@/lib/slash-completion-cache'
 import { notify, notifyError } from '@/store/notifications'
+import { type ProfileScope, setToolsetEnabled } from '@/thor'
 import type { ToolsetInfo } from '@/types/thor'
 
 import { asText, toolNames, toolsetDisplayLabel } from '../../settings/helpers'

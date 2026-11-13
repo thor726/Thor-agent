@@ -1,6 +1,6 @@
 import type { ThorGitBranch, ThorGitWorktree } from '@/global'
-import type { ProjectInfo, SessionInfo } from '@/thor'
 import { normalize } from '@/lib/text'
+import type { ProjectInfo, SessionInfo } from '@/thor'
 
 import { rankSessions } from '../order'
 

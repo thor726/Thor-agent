@@ -452,6 +452,7 @@ function CanonicalRoomView({ binding: initialBinding, visible, onBack, onReplace
 
         const message = action.kind === 'discard' ? reasons.get(error?.data?.reason)
           : action.kind === 'retry' && error?.data?.reason === 'session_busy' ? labels.retryBusy : undefined
+
         const member = memberById.get(action.member_id)
 
         throw message ? new Error(message.replace('{name}', member ? canonicalMemberName(member) : action.member_id)) : error

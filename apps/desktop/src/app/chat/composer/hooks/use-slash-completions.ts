@@ -2,7 +2,6 @@ import type { Unstable_TriggerAdapter, Unstable_TriggerItem } from '@assistant-u
 import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useMemo } from 'react'
 
-import type { ThorGateway } from '@/thor'
 import { useI18n } from '@/i18n'
 import { sessionTitle } from '@/lib/chat-runtime'
 import {
@@ -21,6 +20,7 @@ import { $slashCompletionsEpoch, cachedSlashCompletion, hasCachedSlashCompletion
 import { normalize } from '@/lib/text'
 import { onboardingChatStore } from '@/store/onboarding-session'
 import { $sessions } from '@/store/session'
+import type { ThorGateway } from '@/thor'
 
 import { completionOwner, completionOwnerKey, requestCompletion } from './completion-route'
 import type { CompletionEntry, CompletionPayload } from './use-live-completion-adapter'

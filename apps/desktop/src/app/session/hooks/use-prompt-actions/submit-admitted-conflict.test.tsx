@@ -1,5 +1,5 @@
-import { JsonRpcGatewayError } from '@thor/shared'
 import { act, cleanup, renderHook } from '@testing-library/react'
+import { JsonRpcGatewayError } from '@thor/shared'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { en } from '@/i18n/en'

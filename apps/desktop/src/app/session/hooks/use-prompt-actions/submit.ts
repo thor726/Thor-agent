@@ -1,7 +1,6 @@
 import { type PromptSubmitResult, randomUuid } from '@thor/shared'
 import { type MutableRefObject, useCallback } from 'react'
 
-import { getSession, PROMPT_SUBMIT_REQUEST_TIMEOUT_MS } from '@/thor'
 import { translateNow, type Translations } from '@/i18n'
 import { type ChatMessage, finalizeInterruptedMessages, textPart } from '@/lib/chat-messages'
 import { optimisticAttachmentRef } from '@/lib/chat-runtime'
@@ -41,6 +40,7 @@ import {
 } from '@/store/session'
 import { profileScopeForSessionOwner } from '@/store/session-request-router'
 import { $sessionStates, $sessionTiles } from '@/store/session-states'
+import { getSession, PROMPT_SUBMIT_REQUEST_TIMEOUT_MS } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 import { cronRunWriteGateApplies, refreshCronRunWriteGate } from '../../../cron/open-cron-run'

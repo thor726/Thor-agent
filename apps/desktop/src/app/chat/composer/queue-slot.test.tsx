@@ -1,11 +1,11 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import type { ThorGateway } from '@/thor'
 import { I18nProvider } from '@/i18n/context'
 import { en } from '@/i18n/en'
 import { $queuedPromptsBySession, enqueueQueuedPrompt, getQueuedPrompts } from '@/store/composer-queue'
 import { reconcilePendingSubmissions } from '@/store/pending-submissions'
+import type { ThorGateway } from '@/thor'
 
 import { renderComposerQueueSlot } from './queue-slot'
 

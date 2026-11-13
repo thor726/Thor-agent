@@ -1,5 +1,5 @@
-import type { GatewayEventName } from '@thor/shared'
 import { act, cleanup } from '@testing-library/react'
+import type { GatewayEventName } from '@thor/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type MessageStreamHarness, renderMessageStream } from './test-harness'

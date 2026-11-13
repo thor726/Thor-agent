@@ -12,7 +12,6 @@ import {
 } from '@/app/session/hooks/use-prompt-actions/utils'
 import { sessionCreatedThisRun } from '@/app/session/hooks/use-session-actions/created-this-run'
 import { preserveLocalPendingTurnMessages } from '@/app/session/hooks/use-session-actions/utils'
-import { getLatestSessionMessages, type ProfileScope } from '@/thor'
 import {
   type ChatMessage,
   preserveLocalAssistantErrors,
@@ -64,6 +63,7 @@ import {
   setSessionTodos,
   todosForHydration
 } from '@/store/todos'
+import { getLatestSessionMessages, type ProfileScope } from '@/thor'
 
 import type { ClientSessionState } from '../../types'
 import type { GatewayRequester } from '../types'

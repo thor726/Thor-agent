@@ -7,8 +7,8 @@
  * Real SDK components and stores; only the gateway transport is mocked.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { atom } from 'nanostores'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 

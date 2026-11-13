@@ -12,9 +12,9 @@ import type {
 import {
   connectionScoped,
   getApiRequestConnection,
-  thorApi,
   profileScoped,
-  STARTUP_REQUEST_TIMEOUT_MS
+  STARTUP_REQUEST_TIMEOUT_MS,
+  thorApi
 } from './client'
 
 // The cron trigger endpoint intentionally waits for the whole job so its

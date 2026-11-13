@@ -311,9 +311,8 @@ import {
   tightenSecretFileMode,
   writeSecretFileAtomic
 } from './hardening'
-import { isThorProcess } from './thor-process'
 import { assertNotPassiveSpawn } from './host-backend-singleton'
-import { THOR_HUB_FALLBACK_ORIGIN, THOR_HUB_ORIGIN, isThorHubClipboardWrite } from './hub-iframe-policy'
+import { isThorHubClipboardWrite, THOR_HUB_FALLBACK_ORIGIN, THOR_HUB_ORIGIN } from './hub-iframe-policy'
 import { requestHudClose } from './hud-close'
 import { cursorPointInWindow } from './hud-cursor'
 import { startHudGameOverlayWatch } from './hud-game-overlay'
@@ -585,6 +584,7 @@ import { registerStreamWorkClock } from './stream-work-clock'
 import { installSystemCaTrust } from './system-ca'
 import { terminalGatewayTarget } from './terminal-gateway-target'
 import { registerTerminalIpc } from './terminal-ipc'
+import { isThorProcess } from './thor-process'
 import { applyTitleBarOverlay, isHexColor, nativeOverlayWidth, titleBarOverlayOptions } from './titlebar-overlay-width'
 import {
   applyWindowsBackdrop,
@@ -690,7 +690,6 @@ import {
   windowSize
 } from './window-state'
 import { hiddenWindowsChildOptions } from './windows-child-options'
-import { buildPathExtCandidates, chooseUpdaterArgs, resolveVenvThorCommand } from './windows-thor-path'
 import {
   connectWindowsRemote,
   detectRemotePlatform,
@@ -724,6 +723,7 @@ import {
   shouldSurfaceErrorForRendererStackCookieCrashLoop,
   writeGpuStackCookieMarker
 } from './windows-stack-cookie-fallback'
+import { buildPathExtCandidates, chooseUpdaterArgs, resolveVenvThorCommand } from './windows-thor-path'
 import { readWindowsUserEnvVar } from './windows-user-env'
 import { isPackagedInstallPath as isPackagedInstallPathUnderRoots } from './workspace-cwd'
 import { readWslWindowsClipboardImage } from './wsl-clipboard-image'

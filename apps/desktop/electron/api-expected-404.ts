@@ -43,4 +43,4 @@ function unwrapExpectedNotFound(value: unknown): unknown {
   return value
 }
 
-export { THOR_API_EXPECTED_404, isExpectedNotFoundSentinel, unwrapExpectedNotFound }
+export { isExpectedNotFoundSentinel, THOR_API_EXPECTED_404, unwrapExpectedNotFound }

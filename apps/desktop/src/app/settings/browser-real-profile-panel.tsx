@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react'
 
 import type { PreviewSigninsResult } from '@/global'
-import { type ProfileScope, saveThorConfigRecord } from '@/thor'
 import { useI18n } from '@/i18n'
 import { claimPreviewSigninsSync, syncPreviewSignins } from '@/lib/preview-signins'
 import { notify, notifyError } from '@/store/notifications'
+import { type ProfileScope, saveThorConfigRecord } from '@/thor'
 
 import { thorConfigCacheWriter, useThorConfigRecord } from '../hooks/use-config-record'
 

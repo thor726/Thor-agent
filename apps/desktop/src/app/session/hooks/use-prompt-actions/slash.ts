@@ -5,7 +5,6 @@ import { type MutableRefObject, useCallback, useRef } from 'react'
 import { mergeOlderTranscriptPage } from '@/app/chat/transcript-backfill'
 import { prepareDefaultNewSession } from '@/app/session/new-session-route'
 import { invalidateContextBreakdown } from '@/app/shell/hooks/use-context-breakdown'
-import { getProfiles } from '@/thor'
 import type { Translations } from '@/i18n'
 import { translateNow } from '@/i18n/runtime'
 import { type ChatMessage, toChatMessages } from '@/lib/chat-messages'
@@ -61,6 +60,7 @@ import {
   type WakeStatusResponse,
   type WakeStopResponse
 } from '@/store/wake-word'
+import { getProfiles } from '@/thor'
 
 import type {
   BrowserManageResponse,

@@ -1,10 +1,9 @@
 import type { AppendMessage, ThreadMessage } from '@assistant-ui/react'
+import { useStore } from '@nanostores/react'
 import { isUndeliveredCorrectionRefusal, JsonRpcGatewayError } from '@thor/shared'
 import { stripAnsi } from '@thor/shared/ansi'
-import { useStore } from '@nanostores/react'
 import { type MutableRefObject, useCallback, useEffect, useRef } from 'react'
 
-import { type ResolvedOwner, transcribeAudio } from '@/thor'
 import { useI18n } from '@/i18n'
 import { attachmentPathNeedsUpload } from '@/lib/attachment-upload-policy'
 import { type ChatMessage, textPart } from '@/lib/chat-messages'
@@ -46,6 +45,7 @@ import { pruneFinishedSessionSubagents } from '@/store/subagents'
 import { runGatewayRestart } from '@/store/system-actions'
 import { clearSessionTodos } from '@/store/todos'
 import { setSessionDraftingTool } from '@/store/tool-drafting'
+import { type ResolvedOwner, transcribeAudio } from '@/thor'
 
 import type {
   ClientSessionState,

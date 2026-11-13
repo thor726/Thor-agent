@@ -2,19 +2,6 @@ import type { ModelOptionProvider } from '@thor/shared'
 import { atom } from 'nanostores'
 
 import { invalidateAllConnectors } from '@/app/capabilities/connectors/data/keys'
-import {
-  cancelOAuthSession,
-  getGlobalModelOptions,
-  getRecommendedDefaultModel,
-  listOAuthProviders,
-  OAUTH_LONG_POLL_SECONDS,
-  pollOAuthSession,
-  type ProfileScope,
-  setEnvVar,
-  startOAuthLogin,
-  submitOAuthCode,
-  validateProviderCredential
-} from '@/thor'
 import { translateNow } from '@/i18n'
 import { writeClipboardText } from '@/lib/clipboard'
 import { restOfLongPollGap } from '@/lib/long-poll'
@@ -37,6 +24,19 @@ import { afterOnboardingSurfaceClear, onboardingSurfaceOpen } from '@/store/onbo
 import { captureOnboardingScope, type OnboardingScope } from '@/store/onboarding-scope'
 import { requestRoute } from '@/store/recovery-requests'
 import { setModelPickerOpen } from '@/store/session'
+import {
+  cancelOAuthSession,
+  getGlobalModelOptions,
+  getRecommendedDefaultModel,
+  listOAuthProviders,
+  OAUTH_LONG_POLL_SECONDS,
+  pollOAuthSession,
+  type ProfileScope,
+  setEnvVar,
+  startOAuthLogin,
+  submitOAuthCode,
+  validateProviderCredential
+} from '@/thor'
 import type { AppHandoffStatus, OAuthPollResponse, OAuthProvider, OAuthStartResponse } from '@/types/thor'
 
 type PkceStart = Extract<OAuthStartResponse, { flow: 'pkce' }>

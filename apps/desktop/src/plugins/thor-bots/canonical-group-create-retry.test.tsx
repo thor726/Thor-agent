@@ -1,10 +1,10 @@
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 /**
  * A retry after a lost `groups.create` reply is the same request: display data that changed in
  * between (a Bot's title, a mirrored room taking the generated name) never mints a second room.
  */
 import { host } from '@thor/plugin-sdk'
 import type * as ThorSdk from '@thor/plugin-sdk'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import {

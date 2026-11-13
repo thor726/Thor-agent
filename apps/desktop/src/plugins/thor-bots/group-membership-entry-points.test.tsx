@@ -5,8 +5,8 @@
  * connection (each selection there is refused), saying why instead.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { GroupDialog } from './create-dialog'

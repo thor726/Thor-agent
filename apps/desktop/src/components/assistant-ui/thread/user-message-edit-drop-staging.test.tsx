@@ -11,9 +11,9 @@ import {
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type { ThorGateway } from '@/thor'
 import { useIncrementalExternalStoreRuntime } from '@/lib/incremental-external-store-runtime'
 import { $notifications, clearNotifications } from '@/store/notifications'
+import type { ThorGateway } from '@/thor'
 
 import { assistantMessage, stubThreadEnvironment, stubThreadViewportSize, userMessage } from '../test-utils'
 

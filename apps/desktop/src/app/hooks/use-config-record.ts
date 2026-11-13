@@ -1,6 +1,8 @@
 import { useStore } from '@nanostores/react'
 import { replaceEqualDeep, useQuery } from '@tanstack/react-query'
 
+import { queryClient } from '@/lib/query-client'
+import { $activeConnectionId } from '@/store/connections'
 import {
   getThorConfigRecord,
   peekConfigReadOrigin,
@@ -8,8 +10,6 @@ import {
   profileScopeKey,
   retainConfigReadOrigin
 } from '@/thor'
-import { queryClient } from '@/lib/query-client'
-import { $activeConnectionId } from '@/store/connections'
 import type { ThorConfigRecord } from '@/types/thor'
 
 // One shared cache for the whole profile config record (`GET /api/config`).

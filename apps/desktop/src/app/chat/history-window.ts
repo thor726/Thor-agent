@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { capabilityScoped, thorApi, type ProfileScope, sessionReadOwnerPin } from '@/api/client'
+import { capabilityScoped, type ProfileScope, sessionReadOwnerPin, thorApi } from '@/api/client'
 import {
   cachedTimelineIndex,
   previousPromptRowId,

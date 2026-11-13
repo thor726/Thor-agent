@@ -6,7 +6,7 @@ import type {
   ProfilesResponse
 } from '@/types/thor'
 
-import { capabilityScoped, thorApi, type ProfileScope, STARTUP_REQUEST_TIMEOUT_MS } from './client'
+import { capabilityScoped, type ProfileScope, STARTUP_REQUEST_TIMEOUT_MS, thorApi } from './client'
 
 export function getProfiles(scope?: ProfileScope): Promise<ProfilesResponse> {
   return thorApi<ProfilesResponse>({

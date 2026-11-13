@@ -7,7 +7,7 @@ vi.mock('@/store/transcript-tail', () => ({ recordTranscriptTail: vi.fn() }))
 vi.mock('./client', async importOriginal => ({
   ...await importOriginal<typeof ClientApi>(), thorApi: vi.fn()
 }))
-import { thorApi, setApiRequestConnection, setApiRequestProfile } from './client'
+import { setApiRequestConnection, setApiRequestProfile, thorApi } from './client'
 import { deleteSession, renameSession, setSessionArchived, setSessionPinnedRemote, setSessionUnreadRemote } from './sessions'
 
 beforeEach(() => { vi.mocked(thorApi).mockReset(); setApiRequestConnection('owner'); setApiRequestProfile('work') })

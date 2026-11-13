@@ -1,5 +1,5 @@
-import { randomUuid } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { randomUuid } from '@thor/shared'
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useI18n } from '@/i18n'

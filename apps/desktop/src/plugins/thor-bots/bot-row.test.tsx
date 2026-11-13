@@ -15,8 +15,8 @@
  * old plugin.js bundle and rendered it against a hand-built jsx stub.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { BotRow, GroupRow } from './bot-row'

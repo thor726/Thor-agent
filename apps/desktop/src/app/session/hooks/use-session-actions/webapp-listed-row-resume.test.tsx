@@ -2,7 +2,6 @@ import { act, cleanup, render } from '@testing-library/react'
 import { useEffect, useRef } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages, type SessionInfo } from '@/thor'
 import { installBrowserDesktopBridge } from '@/lib/browser-desktop-bridge'
 import { createClientSessionState } from '@/lib/chat-runtime'
 import * as gateways from '@/store/gateway'
@@ -10,6 +9,7 @@ import { $activeGatewayProfile, $showAllProfiles } from '@/store/profile'
 import { _resetSessionOwnerHintsForTests, setConnection, setSessions } from '@/store/session'
 import { clearAllSessionStates, publishSessionState } from '@/store/session-states'
 import { clearWebappSession, seedWebappSession } from '@/test/webapp-session'
+import { getLatestSessionMessages, type SessionInfo } from '@/thor'
 
 import type { ClientSessionState } from '../../../types'
 

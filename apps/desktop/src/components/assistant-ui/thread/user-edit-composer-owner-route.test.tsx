@@ -8,11 +8,11 @@ import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ThorGateway } from '@/thor'
 import { useIncrementalExternalStoreRuntime } from '@/lib/incremental-external-store-runtime'
 import { queryClient } from '@/lib/query-client'
 import type * as GatewayStore from '@/store/gateway'
 import { $sessions, _resetSessionOwnerHintsForTests, setSessionOwnerHint } from '@/store/session'
+import type { ThorGateway } from '@/thor'
 
 import { assistantMessage, stubThreadEnvironment, stubThreadViewportSize, userMessage } from '../test-utils'
 

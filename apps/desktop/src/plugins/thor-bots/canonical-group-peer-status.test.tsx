@@ -1,5 +1,5 @@
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { cleanup, render, screen, within } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { answerGroupRequests, localGatewaySdkMock, PEER_HOME, peerRosterRow } from './canonical-group-contract-test-utils'

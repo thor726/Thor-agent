@@ -1,6 +1,6 @@
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { host } from '@thor/plugin-sdk'
 import type * as ThorSdk from '@thor/plugin-sdk'
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import {
@@ -83,6 +83,7 @@ async function createWithMini({ rows, onCreated }: Awaited<ReturnType<typeof ope
 it('seats a named profile from another computer on that gateway, pinned to that profile', async () => {
   const coder = { ...MINI, room_link: { ...MINI.room_link, profile: 'coder', catalog: { ...MINI.room_link.catalog,
     execution_policy: { ...MINI.room_link.catalog.execution_policy, target_profile: 'coder' } } } }
+
   gateways(undefined, (method, params) => method === 'groups.capabilities' && params.profile === 'coder' ? coder
     : method === 'groups.peer.invite' ? { ...peerInvitation('grant-for-coder'), target_profile: 'coder', catalog: coder.room_link.catalog }
       : mini()(method, params))

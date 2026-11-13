@@ -1,9 +1,9 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { $desktopActionTasks } from '@/store/activity'
 import type * as ThorApi from '@/thor'
 import { getActionStatus } from '@/thor'
-import { $desktopActionTasks } from '@/store/activity'
 
 import { MaintenancePanel } from './maintenance'
 

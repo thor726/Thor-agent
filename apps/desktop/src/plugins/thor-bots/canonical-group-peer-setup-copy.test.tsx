@@ -1,6 +1,6 @@
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { host } from '@thor/plugin-sdk'
 import type * as ThorSdk from '@thor/plugin-sdk'
-import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import {

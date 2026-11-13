@@ -1,5 +1,5 @@
-import { host } from '@thor/plugin-sdk'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { host } from '@thor/plugin-sdk'
 import type { atom } from 'nanostores'
 import type { ComponentProps } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'

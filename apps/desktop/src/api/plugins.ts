@@ -4,7 +4,7 @@ import type { ThorConnection } from '@/global'
 import { hostHas } from '@/lib/host-capabilities'
 import { RECONNECT_ATTEMPT_TIMEOUT_MS, withTimeout } from '@/lib/with-timeout'
 
-import { $apiRequestScope, getApiRequestConnection, getApiRequestProfile, thorApi, profileScoped } from './client'
+import { $apiRequestScope, getApiRequestConnection, getApiRequestProfile, profileScoped, thorApi } from './client'
 
 /** Resolve the ACTIVE backend's connection descriptor, (connectionId,
  *  profile)-scoped — mirroring how store/profile resolves $connection: a

@@ -1,5 +1,5 @@
-import { mergeUsage, randomUuid } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { mergeUsage, randomUuid } from '@thor/shared'
 import { type MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import type { NavigateFunction } from 'react-router'
 
@@ -12,13 +12,6 @@ import {
 import { defaultNewSessionTarget, prepareDefaultNewSession } from '@/app/session/new-session-route'
 import { revealTreePane } from '@/components/pane-shell/tree/store'
 import { setWorkspaceScope } from '@/components/pane-shell/workspace-scope'
-import {
-  deleteSession,
-  fetchStoredTranscriptAcrossBackends,
-  getAllSessionMessages,
-  getLatestSessionMessages,
-  setSessionArchived
-} from '@/thor'
 import { useI18n } from '@/i18n'
 import {
   type ChatMessage,
@@ -135,6 +128,13 @@ import { clearSessionSubagents } from '@/store/subagents'
 import { clearSessionTodos, restoreSessionTodosFromSnapshot } from '@/store/todos'
 import { dropTranscriptTail, dropTranscriptTailEverywhere, saveTranscriptTail } from '@/store/transcript-tail-cache'
 import { isWatchWindow } from '@/store/windows'
+import {
+  deleteSession,
+  fetchStoredTranscriptAcrossBackends,
+  getAllSessionMessages,
+  getLatestSessionMessages,
+  setSessionArchived
+} from '@/thor'
 import type {
   SessionCreateResponse,
   SessionMessagesResponse,

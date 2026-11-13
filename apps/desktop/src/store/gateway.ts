@@ -12,7 +12,6 @@ import { atom, batch } from 'nanostores'
 
 import { canonicalOwnerProfile } from '@/api/canonical-protocol'
 import type { ThorConnection } from '@/global'
-import { ThorGateway } from '@/thor'
 import { translateNow } from '@/i18n'
 import { UnservedProfileError } from '@/lib/browser-served-profiles'
 import {
@@ -43,6 +42,7 @@ import { notifyError, RECOVERY_ACTIONS } from '@/store/notifications'
 import { markNativeNotifyBaseline } from '@/store/notify-baseline'
 import { setConnection, setGatewayState } from '@/store/session'
 import { stampSecondaryProfileOwner } from '@/store/session-event-provenance'
+import { ThorGateway } from '@/thor'
 export { useGatewayActivationEpoch } from '@/store/gateway-activation-epoch'
 
 // ── Multi-profile gateway routing ──────────────────────────────────────────

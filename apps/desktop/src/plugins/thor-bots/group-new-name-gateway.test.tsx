@@ -5,8 +5,8 @@
  * gateway is current or too old to run group chats.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { $canonicalGroupBindings } from './canonical-group-registry'

@@ -1,5 +1,5 @@
-import { gaugeTitle } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { gaugeTitle } from '@thor/shared'
 import { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 

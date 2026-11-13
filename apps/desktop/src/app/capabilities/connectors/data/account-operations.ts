@@ -6,11 +6,11 @@ import type {
 } from '@thor/shared'
 import { atom } from 'nanostores'
 
-import type { ProfileScope } from '@/thor'
 import { type ConnectionTarget, parseConnectionTarget } from '@/store/connection-request'
 import { noteFreeTierAppConnected } from '@/store/free-tier-sign-in'
 import { activeGatewayConnectionId } from '@/store/gateway'
 import { normalizeProfileKey } from '@/store/profile'
+import type { ProfileScope } from '@/thor'
 
 import { invalidateConnectors } from './keys'
 import { accountOperationStatus } from './rpc'

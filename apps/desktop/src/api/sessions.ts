@@ -18,10 +18,10 @@ import {
   connectionScoped,
   getApiRequestConnection,
   getApiRequestProfile,
-  thorApi,
   type ProfileScope,
   profileScoped,
-  sessionReadOwnerPin
+  sessionReadOwnerPin,
+  thorApi
 } from './client'
 
 const SESSION_LIST_REQUEST_TIMEOUT_MS = 60_000

@@ -1,5 +1,5 @@
-import { skillCatalogInstallIdentifier } from '@thor/shared'
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { skillCatalogInstallIdentifier } from '@thor/shared'
 
 import { CATALOG_ORIGIN } from '@/lib/plugin-catalog'
 import { queryClient } from '@/lib/query-client'

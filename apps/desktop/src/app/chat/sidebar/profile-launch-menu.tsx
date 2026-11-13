@@ -1,5 +1,5 @@
-import { LOCAL_CONNECTION_ID } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { LOCAL_CONNECTION_ID } from '@thor/shared'
 import type { ReactNode } from 'react'
 
 import { Codicon } from '@/components/ui/codicon'

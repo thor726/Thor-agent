@@ -7,6 +7,14 @@ import { formatElapsed, useElapsedSeconds } from '@/components/chat/activity-tim
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SegmentedControl } from '@/components/ui/segmented-control'
+import { useViewedInterval } from '@/hooks/use-viewed-interval'
+import { useI18n } from '@/i18n'
+import type { WebAccessTranslations } from '@/i18n/types_gateway_host'
+import { ExternalLink } from '@/lib/external-link'
+import { hostHas } from '@/lib/host-capabilities'
+import { Globe, Loader2, Network } from '@/lib/icons'
+import { notify, notifyError } from '@/store/notifications'
+import { $connection } from '@/store/session'
 import {
   getWebAccessStatus,
   restartWebAccess,
@@ -17,14 +25,6 @@ import {
   type WebAccessStartProgress,
   type WebAccessStatus
 } from '@/thor'
-import { useViewedInterval } from '@/hooks/use-viewed-interval'
-import { useI18n } from '@/i18n'
-import type { WebAccessTranslations } from '@/i18n/types_gateway_host'
-import { ExternalLink } from '@/lib/external-link'
-import { hostHas } from '@/lib/host-capabilities'
-import { Globe, Loader2, Network } from '@/lib/icons'
-import { notify, notifyError } from '@/store/notifications'
-import { $connection } from '@/store/session'
 
 import { CONTROL_TEXT } from './constants'
 import { ListRow, Pill, SectionHeading, SettingsContent, SettingsSection, SettingsSkeleton } from './primitives'

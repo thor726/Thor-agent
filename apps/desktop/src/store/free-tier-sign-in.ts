@@ -2,6 +2,8 @@ import type { FreeTierClaimNudgeResult } from '@thor/shared'
 import { atom } from 'nanostores'
 
 import { invalidateAllConnectors } from '@/app/capabilities/connectors/data/keys'
+import { LONG_POLL_MIN_GAP_MS, pause, restOfLongPollGap } from '@/lib/long-poll'
+import { gatewayActivationEpoch } from '@/store/gateway'
 import {
   cancelOAuthSession,
   getThorHandoffStatus,
@@ -11,11 +13,9 @@ import {
   type ProfileScope,
   startOAuthLogin
 } from '@/thor'
-import { LONG_POLL_MIN_GAP_MS, pause, restOfLongPollGap } from '@/lib/long-poll'
-import { gatewayActivationEpoch } from '@/store/gateway'
 import type { AppHandoffStatus, FreeTierStatus, OAuthPollResponse } from '@/types/thor'
 
-import { type FreeTierRequester, THOR_PORTAL_PROVIDER_ID, refreshFreeTierStatus } from './free-tier'
+import { type FreeTierRequester, refreshFreeTierStatus, THOR_PORTAL_PROVIDER_ID } from './free-tier'
 import { $localModelOfferPending } from './local-model-offer'
 import { onboardingSurfaceActive } from './onboarding-presence'
 

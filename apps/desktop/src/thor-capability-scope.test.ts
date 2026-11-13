@@ -5,10 +5,10 @@ import { getAuxiliaryModels, getGlobalModelInfo } from './api/models'
 import { getOfficialSkills, getSkillHubSources } from './api/skills'
 import { getTerminalBackends, getToolsetConfig, selectTerminalBackend } from './api/toolsets'
 import {
-  getThorConfigRecord,
   getMcpCatalog,
   getSkillContent,
   getSkills,
+  getThorConfigRecord,
   getToolsets,
   getUsageAnalytics,
   installSkillFromHub,

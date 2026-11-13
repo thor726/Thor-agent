@@ -1,6 +1,6 @@
-import { gaugeScope, gaugeTitle, PAYMENT_PAUSE_REASON } from '@thor/shared'
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
+import { gaugeScope, gaugeTitle, PAYMENT_PAUSE_REASON } from '@thor/shared'
 
 import type { Translations } from '@/i18n'
 import { en } from '@/i18n/en'
