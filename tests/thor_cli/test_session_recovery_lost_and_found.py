@@ -225,6 +225,12 @@ def test_unreadable_schema_without_cli_names_the_sqlite3_requirement(
     import thor_cli.session_lost_and_found as laf
 
     monkeypatch.setattr(laf, "find_sqlite3_cli", lambda: None)
+    # The monkeypatch bypasses find_sqlite3_cli itself, so its refusal record
+    # (a module global) still carries whatever an earlier test in this process
+    # left there (e.g. the salvage-gate suite's wal_reset_vulnerable refusal) —
+    # which would route this refusal down the wrong branch. Clear it: no CLI
+    # found means the "missing" guidance message, exactly what this test pins.
+    monkeypatch.setattr(laf, "_last_cli_refusal", {})
     with pytest.raises(SessionRecoverySourceError) as excinfo:
         recover_session_database(
             source,
