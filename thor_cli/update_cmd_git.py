@@ -605,11 +605,23 @@ def _portable_git_candidates() -> list:
     The Thor-managed PortableGit tree lives under the SHARED root (``<root>/git/...``), not the
     profile-scoped THOR_HOME (``<root>/profiles/<name>``), so a profile-scoped ``thor update`` must look
     there (monerostar review, #87876).
+
+    pm's staged toolchain trees (``<runtime>/tools/git-<version>/...``, pm.packages.Git: the same
+    PortableGit 7z layout with cmd/, usr/bin/, mingw64/) are also candidates — a CI runner or a
+    pm-managed machine has no ``C:\\Program Files\\Git`` and no ``<root>/git``, only the staged tree
+    its PATH already points ``cmd\\git.exe`` at.
     """
     from thor_constants import get_default_thor_root, get_thor_home
     candidates = []
     with suppress(Exception):
         candidates += [root / "git" / "mingw64" / "libexec" / "git-core" / "git.exe" for root in (get_default_thor_root(), Path(get_thor_home()))]
+    with suppress(Exception):
+        import os
+        runtime_dir = os.environ.get("THOR_RUNTIME_DIR")
+        if runtime_dir:
+            tools = Path(runtime_dir) if Path(runtime_dir).name == "tools" else Path(runtime_dir) / "tools"
+            for staged in sorted(tools.glob("git-*")):
+                candidates.append(staged / "mingw64" / "libexec" / "git-core" / "git.exe")
     return candidates
 
 
