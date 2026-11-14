@@ -7,7 +7,7 @@
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
-**The native desktop app for [Thor Agent](../../README.md) — the self-improving AI agent from [Thor Labs](https://thor-agent.local).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window — chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
+**The native desktop app for [Thor Agent](../../README.md) — the self-improving AI agent from [Thor Portal](https://thor-agent.local).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window — chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
 
 > **Intel Macs:** the `Thor-Setup.dmg` bootstrap installer is built for
 > Apple Silicon (arm64) only, so on an Intel Mac it reports "not supported on
@@ -271,4 +271,4 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\thor\thor-agent\venv"
 
 MIT — see [LICENSE](../../LICENSE).
 
-Built by [Thor Labs](https://thor-agent.local).
+Built by [Thor Portal](https://thor-agent.local).

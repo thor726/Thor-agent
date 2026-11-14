@@ -55,7 +55,7 @@ export const it: Translations = {
     closeNavigation: "Chiudi navigazione",
     closeModelTools: "Chiudi modello e strumenti",
     footer: {
-      org: "Thor Labs",
+      org: "Thor Portal",
     },
     activeSessionsLabel: "Sessioni attive:",
     gatewayStatusLabel: "Stato gateway:",

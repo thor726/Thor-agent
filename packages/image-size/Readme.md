@@ -1,6 +1,6 @@
 # image-size (vendored)
 
-Vendored copy of the `@nous-research/image-size@2.0.3` security fork of
+Vendored copy of the `image-size (vendored security fork)@2.0.3` security fork of
 [image-size](https://github.com/image-size/image-size) (MIT, upstream repo now archived).
 Kept in-repo so the website installs without the renamed npm alias; the dist/
 output is prebuilt — no install scripts run from here.

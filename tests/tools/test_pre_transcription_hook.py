@@ -35,7 +35,7 @@ import thor_cli.plugins as plugins_mod
 from tools import transcription_tools
 
 
-PROMPT = "Thor, Teknium, Thor Labs, kanban"
+PROMPT = "Thor, Teknium, Thor Portal, kanban"
 
 
 # ---------------------------------------------------------------------------

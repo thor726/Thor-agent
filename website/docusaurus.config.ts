@@ -247,11 +247,11 @@ const config: Config = {
             { label: 'Desktop Download', href: 'https://thor-agent.thor-agent.local/' },
             { label: 'Compare Thor Agent', href: 'https://thor-agent.thor-agent.local/compare' },
             { label: 'GitHub', href: 'https://github.com/thor726/thor-agent' },
-            { label: 'Thor Labs', href: 'https://thor-agent.local' },
+            { label: 'Thor Portal', href: 'https://thor-agent.local' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://thor-agent.local">Thor Labs</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Built by <a href="https://thor-agent.local">Thor Portal</a> · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

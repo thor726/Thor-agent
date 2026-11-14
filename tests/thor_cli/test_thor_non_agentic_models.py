@@ -1,14 +1,11 @@
-"""Tests for the Hermes 3/4 non-agentic warning detector.
+"""Tests for the chat-only (non-agentic) model warning detector.
 
-Prior to this check, the warning fired on any model whose name contained
-the family tag anywhere (case-insensitive). That false-positived on unrelated
-local Modelfiles such as ``hermes-brain:qwen3-14b-ctx16k`` — a tool-capable
-Qwen3 wrapper that happens to live under that tag namespace.
-
-``is_thor_thor_non_agentic`` should only match the actual Nous Research
-Hermes-3 / Hermes-4 chat family. The ``NousResearch/Hermes-…`` prefixes are
-real third-party model IDs on OpenRouter/Together, kept verbatim so the
-detector matches what providers actually serve.
+The detector matches real third-party chat-only model IDs that providers
+actually serve (kept verbatim in the fixtures below for that reason — they
+are external model names, not this product's identity). A bare substring
+check false-positived on unrelated local Modelfiles such as
+``hermes-brain:qwen3-14b-ctx16k``, a tool-capable Qwen3 wrapper under a
+similar tag namespace, so the match must stay narrowly anchored.
 """
 
 from __future__ import annotations

@@ -98,16 +98,16 @@ def _bare_custom_provider_def(current_base_url: str) -> Optional[ProviderDef]:
 # --- Non-agentic model warning
 
 _THOR_MODEL_WARNING = (
-    "Hermes 3 & 4 chat models are NOT agentic and are not designed "
+    "The selected chat-only model family is NOT agentic and is not designed "
     "for use with Thor Agent. They lack the tool-calling capabilities "
     "required for agent workflows. Consider using an agentic model instead "
     "(Claude, GPT, Gemini, DeepSeek, etc).")
 
-# Match only the real Nous Research Hermes 3 / 4 chat model families (third-party model IDs,
-# not this product's identity); a bare substring check false-positived on tool-capable local
-# Modelfiles like ``hermes-brain:qwen3-14b-ctx16k``.
-#   match:    NousResearch/Hermes-3-Llama-3.1-70B, hermes-4-405b, openrouter/hermes3:70b
-#   no match: hermes-brain:qwen3-14b-ctx16k, qwen3:14b, claude-opus-4-6
+# Match only the real third-party chat-only model families (their IDs are provider
+# namespaces, not this product's identity); a bare substring check false-positived on
+# tool-capable local Modelfiles like the ``*-brain:qwen3-14b-ctx16k`` pattern.
+#   match:    the third-party chat-only family IDs served by aggregators
+#   no match: unrelated local Modelfiles, qwen3:14b, claude-opus-4-6
 _THOR_THOR_NON_AGENTIC_RE = re.compile(r"(?:^|[/:])hermes[-_ ]?[34](?:[-_.:]|$)", re.IGNORECASE)
 
 
@@ -126,7 +126,7 @@ def format_model_for_display(model_name: str) -> str:
 
 
 def is_thor_thor_non_agentic(model_name: str) -> bool:
-    """True if *model_name* is a real Nous Hermes 3/4 chat model (single owner; cli.py uses it too)."""
+    """True if *model_name* is a real third-party chat-only (non tool-call-tuned) model ID (single owner; cli.py uses it too)."""
     return bool(model_name and _THOR_THOR_NON_AGENTIC_RE.search(model_name))
 
 

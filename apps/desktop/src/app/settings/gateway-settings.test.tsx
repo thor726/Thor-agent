@@ -412,7 +412,7 @@ describe('GatewaySettings', () => {
 
     const oauthProbe = {
       authMode: 'oauth',
-      providers: [{ displayName: 'Thor Labs', name: 'thor', supportsPassword: false }],
+      providers: [{ displayName: 'Thor Portal', name: 'thor', supportsPassword: false }],
       reachable: true
     }
 
@@ -431,7 +431,7 @@ describe('GatewaySettings', () => {
       // The env override still owns the URL: the editor stays read-only.
       expect(((await screen.findByDisplayValue(envUrl)) as HTMLInputElement).disabled).toBe(true)
 
-      fireEvent.click(await screen.findByRole('button', { name: 'Sign in with Thor Labs' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Sign in with Thor Portal' }))
 
       await waitFor(() => expect(oauthLoginConnectionConfig).toHaveBeenCalledWith(envUrl))
     })
@@ -448,7 +448,7 @@ describe('GatewaySettings', () => {
       render(<GatewaySettings embedded />)
 
       expect(((await screen.findByDisplayValue(envUrl)) as HTMLInputElement).disabled).toBe(false)
-      expect(await screen.findByRole('button', { name: 'Sign in with Thor Labs' })).toBeTruthy()
+      expect(await screen.findByRole('button', { name: 'Sign in with Thor Portal' })).toBeTruthy()
       expect(oauthLoginConnectionConfig).not.toHaveBeenCalled()
     })
   })

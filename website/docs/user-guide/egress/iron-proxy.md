@@ -99,7 +99,7 @@ proxy:
   # Extra allowed upstream hosts beyond the bundled defaults.
   # Wildcards (`*.foo.com`) are supported. The defaults cover OpenRouter,
   # OpenAI, Anthropic, Google, xAI, Mistral, Groq, Together, DeepSeek,
-  # and Thor Labs.
+  # and Thor Portal.
   extra_allowed_hosts: []
 ```
 

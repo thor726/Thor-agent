@@ -444,7 +444,7 @@ launchd plist 是静态的——如果你在配置网关后安装了新工具（
 | Weixin | `thor-weixin` | 完整工具，包括终端 |
 | BlueBubbles | `thor-bluebubbles` | 完整工具，包括终端 |
 | QQBot | `thor-qqbot` | 完整工具，包括终端 |
-| Yuanbao（Labs 插件） | `thor-yuanbao` | 完整工具，外加 `yuanbao` Thor Labs 插件提供的 `yb_*` 群组/私聊/贴纸工具 |
+| Yuanbao（Labs 插件） | `thor-yuanbao` | 完整工具，外加 `yuanbao` Thor Portal 插件提供的 `yb_*` 群组/私聊/贴纸工具 |
 | Microsoft Teams | `thor-teams` | 完整工具，包括终端 |
 | API Server | `thor-api-server` | 完整工具（去除 `clarify`、`send_message`、`text_to_speech`——程序化访问没有交互用户） |
 | Webhooks | `thor-webhook` | 完整工具，包括终端 |
@@ -568,7 +568,7 @@ display:
 - [Weixin 配置（微信）](weixin.md)
 - [BlueBubbles 配置（iMessage）](bluebubbles.md)
 - [QQBot 配置](qqbot.md)
-- [Yuanbao](yuanbao.md)（Thor Labs 插件）
+- [Yuanbao](yuanbao.md)（Thor Portal 插件）
 - [Microsoft Teams 配置](teams.md)
 - [Teams 会议流水线](teams-meetings.md)
 - [Open WebUI + API Server](open-webui.md)

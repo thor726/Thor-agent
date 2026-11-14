@@ -576,7 +576,7 @@ def _oauth_wire_namer(anthropic_tools: list[dict[str, Any]]):
 
 
 _OAUTH_SYSTEM_REPLACEMENTS = (
-    ("Thor Agent", "Claude Code"), ("Thor agent", "Claude Code"), ("Thor Labs", "Anthropic"),
+    ("Thor Agent", "Claude Code"), ("Thor agent", "Claude Code"), ("Thor Portal", "Anthropic"),
 )
 # The slug is rewritten only as a standalone prose word. Joined to a host, path, repo, mailbox
 # or quoted as an identifier (``thor-agent.thor-agent.local``, ``~/.thor/thor-agent/venv``,

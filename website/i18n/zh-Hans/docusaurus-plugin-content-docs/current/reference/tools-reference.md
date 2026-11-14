@@ -216,4 +216,4 @@ description: "Thor 内置工具权威参考，按工具集分组"
 |------|------|----------|
 | `discord_admin` | 通过 REST API 管理 Discord 服务器：列出 guild/频道/角色，创建/编辑/删除频道，管理角色授予、禁言、踢出和封禁。 | `DISCORD_BOT_TOKEN` + bot 权限 |
 
-**元宝工具**（`yb_*`，工具集 `yuanbao`）已不再内置，改由 `yuanbao` Thor Labs 插件提供（`thor plugins install yuanbao`）。参见 [Yuanbao](../user-guide/messaging/yuanbao.md)。
+**元宝工具**（`yb_*`，工具集 `yuanbao`）已不再内置，改由 `yuanbao` Thor Portal 插件提供（`thor plugins install yuanbao`）。参见 [Yuanbao](../user-guide/messaging/yuanbao.md)。

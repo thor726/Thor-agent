@@ -607,7 +607,7 @@ def _banner_left_lines(model: str, cwd: str, session_id, context_length, provide
     marker = context_marker or ("pinned" if context_pinned else "")
     pin = f" ({marker})" if marker else ""
     ctx_str = _dim_sep(f"{_format_context_length(context_length)} context{pin}") if context_length else ""
-    thor_str = _dim_sep("Thor Labs")
+    thor_str = _dim_sep("Thor Portal")
     if (provider or "").strip().lower() == "moa":
         # MoA virtual provider: ``model`` is a preset name; show it with its aggregator.
         agg_label = _quiet(lambda: _moa_aggregator_label(model), "")

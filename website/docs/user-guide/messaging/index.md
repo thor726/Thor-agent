@@ -808,7 +808,7 @@ Each platform has its own toolset:
 | Weixin | `thor-weixin` | Full tools including terminal |
 | BlueBubbles | `thor-bluebubbles` | Full tools including terminal |
 | QQBot | `thor-qqbot` | Full tools including terminal |
-| Yuanbao (Labs plugin) | `thor-yuanbao` | Full tools + the `yb_*` group/DM/sticker tools from the `yuanbao` Thor Labs plugin |
+| Yuanbao (Labs plugin) | `thor-yuanbao` | Full tools + the `yb_*` group/DM/sticker tools from the `yuanbao` Thor Portal plugin |
 | Microsoft Teams | `thor-teams` | Full tools including terminal |
 | API Server | `thor-api-server` | Full tools (drops `clarify`, `text_to_speech` — programmatic access doesn't have an interactive user) |
 | Webhooks | `thor-webhook` | Full tools including terminal |
@@ -1059,7 +1059,7 @@ Defaults to `false`. Only platforms whose adapter implements `delete_message` ho
 - [BlueBubbles Setup (iMessage)](bluebubbles.md)
 - [Photon Setup (iMessage)](photon.md)
 - [QQBot Setup](qqbot.md)
-- [Yuanbao](yuanbao.md) (Thor Labs plugin)
+- [Yuanbao](yuanbao.md) (Thor Portal plugin)
 - [Microsoft Teams Setup](teams.md)
 - [Teams Meetings Pipeline](teams-meetings.md)
 - [Microsoft Graph Webhook Listener](msgraph-webhook.md)

@@ -127,7 +127,7 @@ thor-agent/
 │                             #   buzz, ntfy, photon, raft, simplex, whatsapp_cloud,
 │                             #   signal, weixin, bluebubbles, qqbot
 │                             #   (Home Assistant: `homeassistant` catalog plugin;
-│                             #    Yuanbao: `yuanbao` Thor Labs plugin)
+│                             #    Yuanbao: `yuanbao` Thor Portal plugin)
 │
 ├── acp_adapter/              # ACP server (VS Code / Zed / JetBrains)
 ├── cron/                     # Scheduler (jobs.py, scheduler.py)

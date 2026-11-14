@@ -1,16 +1,16 @@
 ---
 sidebar_position: 16
 title: "Yuanbao"
-description: "Yuanbao moved out of Thor core into the yuanbao Thor Labs plugin"
+description: "Yuanbao moved out of Thor core into the yuanbao Thor Portal plugin"
 ---
 
 # Yuanbao
 
-:::warning Thor Labs plugin
-Yuanbao is now a Thor Labs plugin: built by Thor Labs, not supported, and likely not maintained going forward. Fixes from the community are welcome.
+:::warning Thor Portal plugin
+Yuanbao is now a Thor Portal plugin: built by Thor Portal, not supported, and likely not maintained going forward. Fixes from the community are welcome.
 :::
 
-The [Yuanbao](https://yuanbao.tencent.com/) gateway platform and its `yb_*` tools (`yb_query_group_info`, `yb_query_group_members`, `yb_send_dm`, `yb_search_sticker`, `yb_send_sticker`) are no longer part of Thor core. They ship as the `yuanbao` plugin in [thor726/thor-labs-plugins](https://github.com/thor726/thor-labs-plugins/tree/main/yuanbao), which carries the full setup guide.
+The [Yuanbao](https://yuanbao.tencent.com/) gateway platform and its `yb_*` tools (`yb_query_group_info`, `yb_query_group_members`, `yb_send_dm`, `yb_search_sticker`, `yb_send_sticker`) are no longer part of Thor core. They ship as the `yuanbao` plugin in its plugin package, which carries the full setup guide.
 
 ## Install
 

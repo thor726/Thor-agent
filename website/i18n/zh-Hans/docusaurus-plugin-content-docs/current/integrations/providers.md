@@ -51,7 +51,7 @@ sidebar_position: 1
 
 ### Thor Portal
 
-[Thor Portal](https://portal.thor-agent.local) 是 Thor Labs 的统一订阅网关，也是**运行 Thor Agent 的推荐方式**。一次 OAuth 登录即可访问 300+ 前沿智能体模型（Claude、GPT、Gemini、DeepSeek、Qwen、Kimi、GLM、MiniMax、Grok 等）以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网页搜索、图像生成、TTS、浏览器自动化）——费用从你的 Thor 订阅中扣除，无需单独管理各提供商账户。
+[Thor Portal](https://portal.thor-agent.local) 是 Thor Portal 的统一订阅网关，也是**运行 Thor Agent 的推荐方式**。一次 OAuth 登录即可访问 300+ 前沿智能体模型（Claude、GPT、Gemini、DeepSeek、Qwen、Kimi、GLM、MiniMax、Grok 等）以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网页搜索、图像生成、TTS、浏览器自动化）——费用从你的 Thor 订阅中扣除，无需单独管理各提供商账户。
 
 ```bash
 thor setup --portal     # 全新安装——一条命令完成 OAuth + 提供商 + 网关配置
@@ -147,7 +147,7 @@ model:
 
 ### GitHub Copilot（labs 插件）
 
-GitHub Copilot 提供商（`copilot` 对应 Copilot API，`copilot-acp` 对应通过 ACP 驱动的 Copilot CLI）已不再内置于 Thor，而是以 `github-copilot` **labs 插件**的形式发布——由 Thor Labs 构建，但不提供支持：
+GitHub Copilot 提供商（`copilot` 对应 Copilot API，`copilot-acp` 对应通过 ACP 驱动的 Copilot CLI）已不再内置于 Thor，而是以 `github-copilot` **labs 插件**的形式发布——由 Thor Portal 构建，但不提供支持：
 
 ```bash
 thor plugins install github-copilot
@@ -157,7 +157,7 @@ thor plugins install github-copilot
 
 使用 `thor auth add copilot`（设备码登录）登录，或设置 `COPILOT_GITHUB_TOKEN`、`GH_TOKEN` 或 `GITHUB_TOKEN`。插件不再读取 `gh` CLI 或 Copilot CLI 的登录信息：如果你此前依赖它们，请运行 `thor auth add copilot`。
 
-安装、模型和环境变量说明：[github-copilot 插件文档](https://github.com/thor726/thor-labs-plugins/tree/main/github-copilot)。
+安装、模型和环境变量说明：github-copilot 插件文档。
 
 ### 一等 API Key 提供商
 

@@ -222,7 +222,7 @@ def test_canary_publisher_consumes_staged_bytes_and_writes_pointer_last(tmp_path
     with zipfile.ZipFile(bundle, 'w') as archive:
         archive.writestr('AppxMetadata/AppxBundleManifest.xml',
                          '<Bundle><Identity Name="thor726.ThorBundledCanary" '
-                         'Publisher="CN=Thor Labs Inc., O=Thor Labs Inc., L=Austin, S=Texas, C=US" '
+                         'Publisher="CN=Thor Portal Inc., O=Thor Portal Inc., L=Austin, S=Texas, C=US" '
                          f'Version="{version}"/></Bundle>')
     tested_bytes = bundle.read_bytes()
     jobs = _workflow()['jobs']

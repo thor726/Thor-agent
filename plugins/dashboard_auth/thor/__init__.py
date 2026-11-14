@@ -47,7 +47,7 @@ class ThorDashboardAuthProvider(JwtOAuthProvider):
     """Thor Portal OAuth via authorization-code + PKCE (S256)."""
 
     name = "thor"
-    display_name = "Thor Labs"
+    display_name = "Thor Portal"
     supports_peer_pass = True
 
     def __init__(self, *, client_id: str, portal_url: str, token_leeway: float = DEFAULT_TOKEN_LEEWAY_SECONDS) -> None:

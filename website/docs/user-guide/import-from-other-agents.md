@@ -8,7 +8,7 @@ description: "One-command import of an OpenClaw (~/.openclaw), Claude Code (~/.c
 
 `thor import-agent` imports your existing **OpenClaw**, **Claude Code**, **OpenAI Codex CLI**, **Cursor**, **Grok Bot** or **OpenBot** setup into Thor with one command. You always see a per-item plan before anything is written, and `--dry-run` never touches disk.
 
-The command comes from the official **`agent-importers` plugin** from the [plugin catalog](./features/plugins.md), maintained by Thor Labs in [thor726/thor-official-plugins](https://github.com/thor726/thor-official-plugins/tree/main/agent-importers).
+The command comes from the official **`agent-importers` plugin** from the [plugin catalog](./features/plugins.md), maintained by Thor Portal in [thor726/thor-official-plugins](https://github.com/thor726/thor-official-plugins/tree/main/agent-importers).
 
 ## The easy way: `thor setup`
 

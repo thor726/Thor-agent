@@ -55,7 +55,7 @@ export const uk: Translations = {
     closeNavigation: "Закрити навігацію",
     closeModelTools: "Закрити модель та інструменти",
     footer: {
-      org: "Thor Labs",
+      org: "Thor Portal",
     },
     activeSessionsLabel: "Активні сесії:",
     gatewayStatusLabel: "Стан шлюзу:",

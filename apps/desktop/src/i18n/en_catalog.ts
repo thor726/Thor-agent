@@ -68,7 +68,7 @@ export const enCatalog: CatalogTranslations = {
   slideOf: (index: number, count: number) => `${index} of ${count}`,
   tierLabels: { official: 'Official', verified: 'Verified', community: 'Community' },
   tiers: {
-    official: { title: 'Official Plugins', blurb: 'Built and maintained by Thor Labs.' },
+    official: { title: 'Official Plugins', blurb: 'Built and maintained by Thor Portal.' },
     verified: { title: 'Verified Plugins', blurb: 'From the company behind the integration, verified by Thor.' }
   },
   moreToExplore: 'More to explore',

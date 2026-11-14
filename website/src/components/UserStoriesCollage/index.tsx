@@ -303,7 +303,7 @@ export default function UserStoriesCollage(): React.JSX.Element {
         </a>{' '}
         by editing <code>userStories.json</code>, or post it in the{' '}
         <a href="https://discord.gg/thor726" target="_blank" rel="noopener noreferrer">
-          Thor Labs Discord
+          Thor Portal Discord
         </a>{' '}
         and we&apos;ll pick it up.
       </div>
