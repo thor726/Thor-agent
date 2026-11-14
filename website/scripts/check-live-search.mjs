@@ -39,8 +39,9 @@ const MIN_HITS = 5;
 // (from the upstream rebrand) has no 'thor docs' index until this project
 // registers its own Algolia Crawler — queries fail 403/404 in the meantime.
 // Set EXPECTED_ALGOLIA_INDEX to the provisioned index name (repo variable or
-// env) to turn the search checks back into hard failures.
-const EXPECTED_ALGOLIA_INDEX = process.env.EXPECTED_ALGOLIA_INDEX || 'thor docs';
+// env) to turn the search checks back into hard failures; while unset, an
+// index 404 is a warning ("not provisioned yet"), not an outage.
+const EXPECTED_ALGOLIA_INDEX = process.env.EXPECTED_ALGOLIA_INDEX || '';
 // Every request (body included) gets a deadline, and the whole probe gets one,
 // so a slow-drip server fails the check with time left to retry and alert
 // instead of running into the job's timeout.
@@ -144,7 +145,10 @@ async function checkAlgolia({ appId, apiKey, indexName }) {
     // Algolia app/index this project never provisioned (the rebrand kept the
     // upstream appId and renamed the index). Until the crawler exists that
     // is a known gap, not an outage: warn once instead of paging.
-    if (res.status === 404 && indexName !== EXPECTED_ALGOLIA_INDEX) {
+    // EXPECTED_ALGOLIA_INDEX is only set once the operator has provisioned
+    // the index — an empty value means "no expectation yet", so any 404 on
+    // the index stays a warning instead of a page.
+    if (res.status === 404 && (!EXPECTED_ALGOLIA_INDEX || indexName !== EXPECTED_ALGOLIA_INDEX)) {
       warn(
         `Algolia index "${indexName}" does not exist yet on app ${appId} (HTTP 404) — ` +
           `register this site's Algolia Crawler, then set EXPECTED_ALGOLIA_INDEX="${indexName}" to enforce search checks`,
