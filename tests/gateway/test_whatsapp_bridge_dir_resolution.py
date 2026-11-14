@@ -30,8 +30,7 @@ def test_readonly_install_mirrors_to_thor_home(tmp_path, monkeypatch):
     thor_home.mkdir()
 
     monkeypatch.setattr(
-        whatsapp_common, "__file__",
-        str(install_root / "gateway" / "platforms" / "whatsapp_common.py"),
+        "thor_cli._startup_fast.project_root_str", lambda: str(install_root)
     )
     monkeypatch.setattr(
         "thor_constants.get_thor_home", lambda: thor_home
@@ -73,7 +72,7 @@ def test_existing_mirror_is_refreshed_from_the_install_tree_and_keeps_its_deps(t
     (mirror / "node_modules" / "dep" / "index.js").write_text("// installed\n")
     (mirror / "bridge.js").write_text("// stale bridge\n")
 
-    monkeypatch.setattr(whatsapp_common, "__file__", str(install_root / "gateway" / "platforms" / "whatsapp_common.py"))
+    monkeypatch.setattr("thor_cli._startup_fast.project_root_str", lambda: str(install_root))
     monkeypatch.setattr("thor_constants.get_thor_home", lambda: thor_home)
     _real_touch = Path.touch
 

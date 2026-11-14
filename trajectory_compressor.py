@@ -33,9 +33,10 @@ from thor_constants import OPENROUTER_BASE_URL, get_thor_home
 from agent.compression_marker import elide_middle
 from agent.retry_utils import jittered_backoff
 from thor_cli.env_loader import load_thor_dotenv
+from thor_cli._startup_fast import project_root_str
 
 # Load .env from THOR_HOME first, then project root as a dev fallback.
-load_thor_dotenv(thor_home=get_thor_home(), project_env=Path(__file__).parent / ".env")
+load_thor_dotenv(thor_home=get_thor_home(), project_env=Path(project_root_str()) / ".env")
 
 
 def _response_finish_reason(response: Any) -> str:

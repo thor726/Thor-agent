@@ -93,6 +93,19 @@ function requireEmptyThorHome(home: string): void {
   }
 }
 
+/** After an update the app reopens the profile the OLD phase left, so the post-update
+ * smoke expects state there. Reseeding it is safe only when the prediction is one of
+ * this run's own homes, never a real profile the resolver fell through to. */
+export function admitPredictedThorHome(home: string, phase: SmokeOptions['phase'], runHomes: readonly string[]): void {
+  if (phase !== 'new') {
+    requireEmptyThorHome(home)
+    return
+  }
+  if (!runHomes.some((runHome: string): boolean => path.relative(runHome, home) === '')) {
+    throw new Error(`Predicted Thor home ${home} is not one of this run's homes (${runHomes.join(', ')}); refusing to seed it after the update`)
+  }
+}
+
 export function resolveSmokeLaunch(options: SmokeOptions): Launch {
   const spec = options['launch-spec'] ? launchSpecSchema.parse(JSON.parse(fs.readFileSync(options['launch-spec'], 'utf8').replace(/^\uFEFF/, ''))) : null
   const env = smokeEnvironment({ ...process.env, ...spec?.env }, options.home, options['user-data'])
@@ -292,7 +305,7 @@ export async function runInstalledDesktopSmoke(options: SmokeOptions, launchApp:
     predictedHome = bundleEnv ? predictSmokeThorHome(launch.env, bundleEnv) : undefined
 
     // Check before the driver creates its sandbox folders inside this home.
-    if (predictedHome) { requireEmptyThorHome(predictedHome) }
+    if (predictedHome) { admitPredictedThorHome(predictedHome, options.phase, candidateSmokeThorHomes(options.home, options['user-data'])) }
 
     fs.mkdirSync(options.home, { recursive: true })
     fs.mkdirSync(options['user-data'], { recursive: true })

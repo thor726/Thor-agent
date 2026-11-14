@@ -256,7 +256,7 @@ kittentts = [
   # raised to <3.15. Declaring it here makes KittenTTS's transitive
   # requirement resolve to the fork. Drop this line when upstream misaki
   # publishes a release that allows 3.14.
-  "misaki[en] @ git+https://github.com/NousResearch/misaki.git@f03fd2be7346952a83d3d4845c217fc7667f322d ; (platform_machine != 'ARM64' or sys_platform != 'win32') and (platform_machine != 'x86_64' or sys_platform != 'darwin') and sys_platform != 'android'",
+  "misaki[en] @ git+https://github.com/ThorResearch/misaki.git@f03fd2be7346952a83d3d4845c217fc7667f322d ; (platform_machine != 'ARM64' or sys_platform != 'win32') and (platform_machine != 'x86_64' or sys_platform != 'darwin') and sys_platform != 'android'",
   "soundfile==0.14.0; (platform_machine != 'ARM64' or sys_platform != 'win32') and (platform_machine != 'x86_64' or sys_platform != 'darwin') and sys_platform != 'android'",
 ]
 # onnxruntime has no Intel macOS or Android wheel. Piper has no Windows ARM64 wheel.
@@ -612,7 +612,8 @@ update-startup-files = [
   "thor_cli/update_handoff.py", "thor_cli/venv_sync.py", "pm/__init__.py", "pm/environments.py",
   "thor_cli/main.py", "thor_cli/config.py", "thor_cli/__init__.py",
   "thor_cli/web_server.py", "cli.py", "run_agent.py", "model_tools.py", "toolsets.py",
-  "thor_constants.py",
+  "thor_constants.py", "thor_agent/__init__.py", "thor_agent/compat/__init__.py",
+  "thor_agent/compat/finder.py", "thor_agent/compat/moves.py",
 ]
 
 # Per-extra platform gates (settled 2026-09-02): an extra listed here is

@@ -293,7 +293,8 @@ def resolve_whatsapp_bridge_dir() -> Path:
     /opt/thor) is mirrored to THOR_HOME so npm install works."""
     import shutil
     from thor_constants import get_thor_home
-    install_bridge = Path(__file__).resolve().parents[2] / "scripts" / "whatsapp-bridge"
+    from thor_cli._startup_fast import project_root_str
+    install_bridge = Path(project_root_str()) / "scripts" / "whatsapp-bridge"
     thor_home_bridge = get_thor_home() / "scripts" / "whatsapp-bridge"
     try:
         (install_bridge / ".write_test").touch()

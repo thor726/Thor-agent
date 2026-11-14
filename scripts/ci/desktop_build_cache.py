@@ -18,6 +18,7 @@ import sys
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from thor_agent.compat.paths import current_path
 from scripts.ci.pnpm_lock import section_keys
 from scripts.ci.setup_toolchain import current_target, file_commands
 
@@ -52,11 +53,12 @@ _INPUT_FILES = (
     "thor_cli/__init__.py", "thor_cli/release_channels.py", "thor_cli/update_channel.py",
     "thor_cli/runtime_state.py", "thor_constants.py", "thor_platform/__init__.py",
     "thor_platform/resolver/__init__.py", "thor_platform/resolver/base.py",
-    "thor_platform/resolver/core.py", "thor_platform/resolver/known_dirs.py",
+    "thor_platform/resolver/core.py", "thor_platform/resolver/known_dirs.py", "thor_agent/__init__.py",
 )
 # Python packages preparation owns (or, for pm/, depends on throughout): keyed whole, so a new
 # module or a new late import inside them needs no list edit.
-_INPUT_GLOBS = ("pm/*.py", "scripts/bundles/*.py", "scripts/build/*.py", "apps/desktop/scripts/*.py")
+_INPUT_GLOBS = ("pm/*.py", "scripts/bundles/*.py", "scripts/build/*.py", "apps/desktop/scripts/*.py",
+                "thor_agent/compat/*.py")
 
 
 def input_files(source: Path, importers: list[str]) -> list[str]:
@@ -73,7 +75,8 @@ def _input_digest(source: Path, importers: list[str]) -> str:
     # admission remains necessary even when this digest matches exactly.
     digest = hashlib.sha256()
     for name in input_files(source, importers):
-        path = source / name
+        # Keyed by the listed name, read where the file lives now: a move keeps the key.
+        path = source / current_path(name)
         digest.update(name.encode() + b"\0")
         digest.update(path.read_bytes() if path.is_file() else b"<missing>")
         digest.update(b"\0")

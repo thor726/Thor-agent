@@ -172,6 +172,17 @@
       "entries": [
         "thor_cli.urllib_security:open_credentialed_url"
       ]
+    },
+    {
+      "source": "user-guide/features/plugins.md § A plugin with its own chat client",
+      "entries": [
+        "thor_cli.chat_launch:thor_command",
+        "thor_cli.chat_launch:print_exit_summary",
+        "thor_cli.gateway_chat:shell_client_env",
+        "thor_cli.session_worktree:create",
+        "thor_cli.session_worktree:restore",
+        "thor_cli.session_worktree:finish"
+      ]
     }
   ]
 }

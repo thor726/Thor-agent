@@ -899,8 +899,9 @@ async def run_config_migrate(profile: Optional[str] = None):
 @router.post("/api/ops/debug-share")
 async def run_debug_share_endpoint(body: DebugShareRequest | None = None,
                                    profile: Optional[str] = None):
-    """Upload a redacted debug report + full logs and return the paste URLs; refused (400) unless
-    the body carries ``consent: true`` from a user confirmation. ____SYNCHROTHOR_UP___CAP__,
+    """Upload the allowlisted public debug summary (no log text; full logs only via
+    ``thor debug share --thor``) and return the paste URL; refused (400) unless the body
+    carries ``consent: true`` from a user confirmation. Synchrothor,
     unlike the other diagnostics actions: the point is the shareable URLs, returned as a
     structured payload the dashboard renders as copyable links."""
     from thor_cli.debug import build_debug_share

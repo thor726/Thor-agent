@@ -337,58 +337,28 @@ class TestRunDebugShare:
 
 
 
-    def test_share_uploads_five_pastes(self, thor_home, capsys):
-        """Successful share uploads report + agent.log + gateway.log + gui.log + desktop.log."""
+    def test_share_uploads_one_summary_paste(self, thor_home, capsys):
+        """The public share is a single allowlisted summary paste; no full-log pastes (#46006)."""
         from thor_cli.debug import run_debug_share
 
-        args = MagicMock()
-        args.lines = 50
-        args.expire = 7
-        args.local = False
-        args.thor = False
-
-        call_count = [0]
+        args = MagicMock(lines=50, expire=7, local=False, thor=False, no_redact=False)
         uploaded_content = []
-        def _mock_upload(content, expiry_days=7):
-            call_count[0] += 1
-            uploaded_content.append(content)
-            return f"https://paste.rs/paste{call_count[0]}"
 
-        with patch("thor_cli.dump.run_dump") as mock_dump, \
-             patch("thor_cli.debug.upload_to_pastebin",
-                    side_effect=_mock_upload):
-            mock_dump.side_effect = lambda a: print("--- thor dump ---\nversion: test\n--- end dump ---")
+        def _mock_upload(content, expiry_days=7):
+            uploaded_content.append(content)
+            return f"https://paste.rs/paste{len(uploaded_content)}"
+
+        with patch("thor_cli.debug.upload_to_pastebin", side_effect=_mock_upload):
             run_debug_share(args)
 
         out = capsys.readouterr().out
-        # Should have 5 uploads: report, agent.log, gateway.log, gui.log, desktop.log
-        assert call_count[0] == 5
-        assert "paste.rs/paste1" in out  # Report
-        assert "paste.rs/paste2" in out  # agent.log
-        assert "paste.rs/paste3" in out  # gateway.log
-        assert "paste.rs/paste4" in out  # gui.log
-        assert "paste.rs/paste5" in out  # desktop.log
-        assert "Report" in out
-        assert "agent.log" in out
-        assert "gateway.log" in out
-        assert "gui.log" in out
-        assert "desktop.log" in out
-
-        # Each log paste should start with the dump header
-        agent_paste = uploaded_content[1]
-        assert "--- thor dump ---" in agent_paste
-        assert "--- full agent.log ---" in agent_paste
-        gateway_paste = uploaded_content[2]
-        assert "--- thor dump ---" in gateway_paste
-        assert "--- full gateway.log ---" in gateway_paste
-        gui_paste = uploaded_content[3]
-        assert "--- thor dump ---" in gui_paste
-        assert "--- full gui.log ---" in gui_paste
-        desktop_paste = uploaded_content[4]
-        assert "--- thor dump ---" in desktop_paste
-        assert "--- full desktop.log ---" in desktop_paste
-
-
+        assert len(uploaded_content) == 1
+        assert "paste.rs/paste1" in out and "Report" in out
+        assert "thor debug share --thor" in out  # where full logs go instead
+        summary = uploaded_content[0]
+        assert "--- thor debug summary ---" in summary
+        assert "session started" not in summary and "connection lost" not in summary
+        assert "gateway.run" in summary  # the ERROR's logger name is counted
 
 
 # ---------------------------------------------------------------------------
@@ -441,8 +411,8 @@ class TestRunDebugShareRedaction:
              patch("thor_cli.debug.upload_to_pastebin", side_effect=fake_upload):
             run_debug_share(args)
 
-        # At least the report plus one full log paste reached the upload path.
-        assert len(captured) >= 2
+        # Only the allowlisted summary reaches the public paste (#46006).
+        assert len(captured) == 1
         for content in captured:
             assert _REDACT_FIXTURE_TOKEN not in content, (
                 "raw token leaked into upload-bound content"
@@ -519,7 +489,7 @@ class TestRunDebugShareRedaction:
                    side_effect=lambda content, expiry_days=1: uploaded.append(content) or "https://paste.rs/x"):
             run_debug_share(args)  # what actually reaches the paste service
 
-        assert any("backup-model" in text for text in uploaded)  # the dump really reached the sink
+        assert any("fallback_providers" in text for text in uploaded)  # the summary reached the sink
         assert not [text for text in uploaded if secret in text]  # checked first: the sink alone catches a leak
 
         texts = [_capture_dump(redact=False),  # `thor dump` stdout, as printed
@@ -579,68 +549,54 @@ class TestRunDebugShareRedaction:
             assert secret not in safe
             assert secret in raw
 
-    def test_default_share_includes_redaction_banner(
+    def test_public_paste_carries_the_summary_banner(
         self, thor_home_with_secret, capsys
     ):
-        """Each upload-bound paste carries the visible redaction banner."""
+        """The public paste says what it is: an allowlisted summary, full logs via --thor."""
         from thor_cli.debug import run_debug_share
 
-        args = MagicMock()
-        args.lines = 50
-        args.expire = 7
-        args.local = False
-        args.thor = False
-        args.no_redact = False
-
+        args = MagicMock(lines=50, expire=7, local=False, thor=False, no_redact=False)
         captured: list[str] = []
 
         def fake_upload(content, expiry_days=7):
             captured.append(content)
             return f"https://paste.rs/{len(captured)}"
 
-        with patch("thor_cli.dump.run_dump"), \
-             patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)), \
+        with patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)), \
              patch("thor_cli.debug.upload_to_pastebin", side_effect=fake_upload):
             run_debug_share(args)
 
-        for content in captured:
-            assert "redacted at upload time" in content, (
-                "redaction banner missing from upload-bound content"
-            )
+        assert len(captured) == 1
+        assert "PUBLIC SUMMARY" in captured[0] and "--thor" in captured[0]
 
-    def test_no_redact_flag_disables_redaction_and_banner(
-        self, thor_home_with_secret, capsys
+    def test_no_redact_flag_disables_redaction_and_banner_in_the_private_bundle(
+        self, thor_home_with_secret
     ):
-        """--no-redact preserves original log content and omits the banner."""
+        """--no-redact leaves the --thor/--local bundle raw and drops its banner; the default
+        bundle is redacted and bannered."""
+        from thor_cli.debug import collect_share_bundle
+
+        with patch("thor_cli.dump.run_dump"):
+            raw = collect_share_bundle(log_lines=50, redact=False)
+            safe = collect_share_bundle(log_lines=50, redact=True)
+
+        assert _REDACT_FIXTURE_TOKEN in raw["agent.log"]
+        assert not [c for c in raw.values() if "redacted at upload time" in c]
+        assert not [c for c in safe.values() if _REDACT_FIXTURE_TOKEN in c]
+        assert all("redacted at upload time" in c for c in safe.values())
+
+    def test_no_redact_flag_cannot_put_logs_on_the_public_paste(self, thor_home_with_secret):
         from thor_cli.debug import run_debug_share
 
-        args = MagicMock()
-        args.lines = 50
-        args.expire = 7
-        args.local = False
-        args.thor = False
-        args.no_redact = True
-
         captured: list[str] = []
-
-        def fake_upload(content, expiry_days=7):
-            captured.append(content)
-            return f"https://paste.rs/{len(captured)}"
-
-        with patch("thor_cli.dump.run_dump"), \
-             patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)), \
-             patch("thor_cli.debug.upload_to_pastebin", side_effect=fake_upload):
+        args = MagicMock(lines=50, expire=7, local=False, thor=False, no_redact=True)
+        with patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)), \
+             patch("thor_cli.debug.upload_to_pastebin",
+                   side_effect=lambda c, expiry_days=7: captured.append(c) or "https://paste.rs/x"):
             run_debug_share(args)
 
-        # The agent.log paste should now contain the raw token.
-        assert any(_REDACT_FIXTURE_TOKEN in c for c in captured), (
-            "expected raw token in --no-redact upload"
-        )
-        # No banner anywhere when redaction is disabled.
-        for content in captured:
-            assert "redacted at upload time" not in content, (
-                "banner present with --no-redact"
-            )
+        assert len(captured) == 1
+        assert _REDACT_FIXTURE_TOKEN not in captured[0]
 
 
 # ---------------------------------------------------------------------------
@@ -885,26 +841,13 @@ class TestBuildDebugShare:
         joined = "\n".join(uploaded)
         assert secret not in joined, "secret leaked into upload payload"
 
-    def test_optional_log_failure_is_collected_not_raised(self, thor_home):
+    def test_summary_upload_failure_raises_for_the_caller(self, thor_home):
         from thor_cli.debug import build_debug_share
 
-        count = [0]
-
-        def _upload(content, expiry_days=7):
-            count[0] += 1
-            # First call (the required Report) succeeds; a later one fails.
-            if count[0] == 2:
-                raise RuntimeError("paste service hiccup")
-            return f"https://paste.rs/p{count[0]}"
-
-        with patch("thor_cli.dump.run_dump"), patch(
-            "thor_cli.debug.upload_to_pastebin", side_effect=_upload
-        ), patch("thor_cli.debug._schedule_auto_delete"):
-            result = build_debug_share(log_lines=50, redact=True)
-
-        assert "Report" in result.urls
-        assert len(result.failures) == 1
-        assert "paste service hiccup" in result.failures[0]
+        with patch("thor_cli.debug.upload_to_pastebin", side_effect=RuntimeError("down")), \
+                patch("thor_cli.debug._schedule_auto_delete"), \
+                pytest.raises(RuntimeError):
+            build_debug_share(log_lines=50, redact=True)
 
 
 # ---------------------------------------------------------------------------

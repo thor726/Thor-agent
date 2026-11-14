@@ -86,7 +86,7 @@ jobs:
         # select it explicitly (journal_mode config, a pinned vulnerable
         # version), so they run on any interpreter.
         run: |
-          "$THOR_PYTHON" -c "import sqlite3, sys, thor_state_wal as w; v = w.is_sqlite_wal_reset_vulnerable(); print(f'Python {sys.version.split()[0]}, SQLite {sqlite3.sqlite_version}, WAL-reset vulnerable: {v}'); sys.exit(1 if v else 0)"
+          "$THOR_PYTHON" -c "import sqlite3, sys, thor_agent.compat as compat; compat.install(); import thor_state_wal as w; v = w.is_sqlite_wal_reset_vulnerable(); print(f'Python {sys.version.split()[0]}, SQLite {sqlite3.sqlite_version}, WAL-reset vulnerable: {v}'); sys.exit(1 if v else 0)"
 
       - name: Restore per-file duration cache
         # scripts/run_tests_parallel.py raises a file's timeout to
@@ -204,7 +204,7 @@ jobs:
         # The state.db suites skip on a WAL-reset-vulnerable SQLite; fail
         # instead of reporting green over zero coverage.
         run: |
-          "$THOR_PYTHON" -c "import sqlite3, thor_state_wal as w; print('sqlite', sqlite3.sqlite_version); assert not w.is_sqlite_wal_reset_vulnerable()"
+          "$THOR_PYTHON" -c "import sqlite3, thor_agent.compat as compat; compat.install(); import thor_state_wal as w; print('sqlite', sqlite3.sqlite_version); assert not w.is_sqlite_wal_reset_vulnerable()"
 
       - name: Run messaging-gated gateway cases
         # These gateway files drive the REAL Discord/Telegram SDKs and skip when the
@@ -410,7 +410,7 @@ jobs:
         # instead of reporting green over zero coverage.
         run: |
           source .venv/bin/activate
-          python -c "import sqlite3, thor_state_wal as w; print('sqlite', sqlite3.sqlite_version); assert not w.is_sqlite_wal_reset_vulnerable()"
+          python -c "import sqlite3, thor_agent.compat as compat; compat.install(); import thor_state_wal as w; print('sqlite', sqlite3.sqlite_version); assert not w.is_sqlite_wal_reset_vulnerable()"
 
       - name: Run upgrade e2e tests (${{ matrix.shard }})
         run: |

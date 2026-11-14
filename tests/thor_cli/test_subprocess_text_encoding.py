@@ -12,7 +12,9 @@ from pathlib import Path
 
 import pytest
 
-THOR_CLI = Path(__file__).resolve().parents[2] / "thor_cli"
+from thor_agent.compat.paths import current_path
+
+THOR_CLI = Path(__file__).resolve().parents[2] / current_path("thor_cli")
 
 
 def _iter_call_text_nodes(tree: ast.AST) -> list[ast.Call]:

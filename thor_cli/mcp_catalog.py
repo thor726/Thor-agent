@@ -22,6 +22,7 @@ from thor_cli.colors import Colors, color
 from thor_cli.config import load_config, save_config, get_env_value, save_env_value
 from thor_cli.cli_output import prompt as _prompt_input
 from utils import rmtree_readonly
+from thor_cli._startup_fast import project_root_str
 
 _MANIFEST_VERSION = 1
 
@@ -138,7 +139,7 @@ class CatalogError(Exception):
 
 def _catalog_root() -> Path:
     """The optional-mcps/ dir: env-var override / packaged location, else the source checkout's."""
-    return get_optional_mcps_dir(Path(__file__).parent.parent / "optional-mcps")
+    return get_optional_mcps_dir(Path(project_root_str()) / "optional-mcps")
 
 
 def _parse_env_spec(raw: Any) -> EnvVarSpec:

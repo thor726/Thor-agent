@@ -21,7 +21,8 @@ from agent.models_dev import (
     ModelCapabilities, ModelInfo, get_model_capabilities, get_model_info, list_provider_models)
 from utils import base_url_host_matches, base_url_hostname, base_url_origin
 # Re-exported: callers/tests patch thor_cli.model_switch.<name>.
-from thor_cli.model_switch_providers import list_authenticated_providers
+from thor_cli.model_switch_providers import (
+    _extra_headers_from_config, _saved_entry_on_other_origin, list_authenticated_providers)
 
 
 logger = logging.getLogger(__name__)
@@ -108,7 +109,7 @@ _THOR_MODEL_WARNING = (
 # tool-capable local Modelfiles like the ``*-brain:qwen3-14b-ctx16k`` pattern.
 #   match:    the third-party chat-only family IDs served by aggregators
 #   no match: unrelated local Modelfiles, qwen3:14b, claude-opus-4-6
-_THOR_THOR_NON_AGENTIC_RE = re.compile(r"(?:^|[/:])hermes[-_ ]?[34](?:[-_.:]|$)", re.IGNORECASE)
+_THOR_THOR_NON_AGENTIC_RE = re.compile(r"(?:^|[/:])thor[-_ ]?[34](?:[-_.:]|$)", re.IGNORECASE)
 
 
 # Opaque proxy model IDs (Palantir Foundry: ``ri.language-model-service..language-model.<slug>``)
@@ -1479,16 +1480,22 @@ def _creds_for_switched_provider(st: _Switch) -> Optional[ModelSwitchResult]:
         user_pdef = (resolve_user_provider(explicit_norm, st.user_providers)
                      or resolve_user_provider(st.target_provider, st.user_providers))
     if user_pdef is not None and user_pdef.base_url:
-        ucfg = st.user_providers.get(explicit_norm) or st.user_providers.get(st.target_provider) or {}
+        entry_name = explicit_norm if st.user_providers.get(explicit_norm) else st.target_provider
+        ucfg = st.user_providers.get(entry_name) or {}
         # Key reads go through the per-profile secret scope (multiplexed gateway).
         ukey = _entry_configured_key(ucfg, _scoped_key_env)
-        st.validation_headers = _extra_headers_from_config(ucfg)
         try:
             st.resolve_runtime(
                 requested=st.target_provider, explicit_api_key=ukey or None, explicit_base_url=user_pdef.base_url)
-            st.api_key, st.base_url = st.api_key or ukey, st.base_url or user_pdef.base_url
+            # A keyless entry whose saved copy is for another origin (an unsaved edit moved it): the key
+            # the resolver read from disk belongs to the previous host, so this one is probed keyless.
+            moved = not ukey and _saved_entry_on_other_origin(entry_name, user_pdef.base_url)
+            st.api_key, st.base_url = "" if moved else st.api_key or ukey, st.base_url or user_pdef.base_url
         except Exception:
             st.api_key, st.base_url, st.api_mode = ukey, user_pdef.base_url, ""
+        # The entry's own headers, not the resolver's: it reads the on-disk copy, which an unsaved
+        # edit may have moved to a new host (those headers belong to the previous one).
+        st.validation_headers = _extra_headers_from_config(ucfg)
     elif st.target_provider == "custom" and st.current_base_url:
         # A bare-custom session switching models stays on its endpoint (#45597). Arriving from
         # ANOTHER provider (the per-turn config sync adopting ``provider: custom``) the configured
@@ -1968,12 +1975,6 @@ def persist_model_selection(result: ModelSwitchResult, config_path: Any = None) 
     except (OSError, NotImplementedError):
         pass
 
-
-def _extra_headers_from_config(entry: Any) -> dict[str, str]:
-    if not isinstance(entry, dict):
-        return {}
-    from thor_cli.config import normalize_extra_headers
-    return normalize_extra_headers(entry.get("extra_headers"))
 
 
 def _scoped_key_env(name: str) -> str:
