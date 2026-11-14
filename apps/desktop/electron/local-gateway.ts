@@ -26,6 +26,7 @@ export function runGatewayEnsure(
     // The gateway this starts outlives a dev session and Desktop reaches it without an Origin
     // (main-process HTTP, Origin-stripped socket dials): it never trusts the dev renderer.
     const { THOR_DESKTOP_DEV_SERVER: _devServer, ...env } = { ...parentEnv, THOR_HOME: home, ...backend.env }
+
     // shell: true hands cmd.exe one command line it cuts at the first unquoted space,
     // so an install under `C:\Users\John Doe\...` must arrive quoted (#74064).
     const child = spawn(
@@ -33,6 +34,7 @@ export function runGatewayEnsure(
       backend.args,
       hiddenWindowsChildOptions({ cwd, env, shell: backend.shell, stdio: ['ignore', 'pipe', 'pipe'] })
     )
+
     let stdout = ''
     let stderr = ''
     let expired: Error | undefined
@@ -42,6 +44,7 @@ export function runGatewayEnsure(
       if (expired) {
         return
       }
+
       expired = new Error(message)
       child.kill()
       forceTimer = setTimeout(() => {
@@ -274,6 +277,7 @@ async function reensureDuringRestart(
     if (last || restartWait || replaced) {
       return { result, payload }
     }
+
     let timer: ReturnType<typeof setTimeout> | undefined
     await Promise.race([
       done,
@@ -313,6 +317,7 @@ export async function ensureLocalGateway(
     // `detail`; a start that died carries its own output there. Either beats a pointer elsewhere.
     const detail =
       typeof payload.detail === 'string' && payload.detail.trim() ? ` ${payload.detail.trim().split(/\r?\n/)[0]}.` : ''
+
     const recovery = payload.reason_code === 'update_paused' ? 'restart' : 'status'
 
     throw new Error(
@@ -367,6 +372,7 @@ export async function redialLocalGateway<TEndpoint, TResult>(deps: {
     if (!isStaleLocalGatewayError(error)) {
       throw error
     }
+
     await deps.forget()
 
     return deps.use(await deps.ensure())
@@ -439,6 +445,7 @@ export function createLocalGatewayDials() {
     if (pending.size >= 100) {
       throw new Error('Too many pending gateway dials')
     }
+
     // Keyed by the one-use nonce, not the full URL: a loopback proxy the app dials
     // through (tests, tunnels) rewrites host:port but carries the query through.
     // A header grant is the exception: main attaches it, so it is bound to its origin.
@@ -492,6 +499,7 @@ export function createLocalGatewayDials() {
       if (grant.expires <= Date.now()) {
         return null
       }
+
       const headers = { ...details.requestHeaders }
 
       for (const key of Object.keys(headers)) {
@@ -513,12 +521,14 @@ export function createLocalGatewayDials() {
 // directory stay owner-only.
 async function privateNode(file: string, kind: 'directory' | 'socket' | 'file' | 'home'): Promise<boolean> {
   const node = await fs.lstat(file)
+
   const valid = {
     directory: node.isDirectory(),
     home: node.isDirectory(),
     socket: node.isSocket(),
     file: node.isFile()
   }[kind]
+
   const uid = process.getuid?.()
   const quoted = shellQuote(file)
 
@@ -606,6 +616,7 @@ export function routedGatewayEndpoint(
   if (!profile || profile === 'current') {
     return endpoint
   }
+
   const own = path.basename(endpoint.profile_id)
   const ownName = path.basename(path.dirname(endpoint.profile_id)) === 'profiles' ? own : 'default'
 
@@ -616,12 +627,14 @@ export function routedGatewayEndpoint(
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(profile)) {
     throw new Error('Invalid profile route')
   }
+
   // The root home is the endpoint's own profile_id (Python resolved it); the raw launch THOR_HOME
   // may be a symlink, and a ticket for an unresolved sibling home fails 'Noncanonical' (B2-17).
   const root =
     path.basename(path.dirname(endpoint.profile_id)) === 'profiles'
       ? path.dirname(path.dirname(endpoint.profile_id))
       : endpoint.profile_id
+
   const home = profile === 'default' ? root : path.join(root, 'profiles', profile)
 
   return { ...endpoint, profile_id: home, control_home: endpoint.control_home || endpoint.profile_id }
@@ -650,6 +663,7 @@ export async function routedTicketEndpoint(
         `Profile '${path.basename(routed.profile_id)}' does not exist: no directory at ${routed.profile_id}`
       )
     }
+
     throw error
   })
 
@@ -668,6 +682,7 @@ export function nativeGrantPurpose(url: string, method = 'GET'): GatewayTicketPu
   if (verb === 'POST' && pathname === '/api/profiles') {
     return 'native-profile-create'
   }
+
   const suffix = profileRouteSuffix(pathname)
 
   // Method-aware: PATCH/DELETE of `/api/profiles/active|import|sessions` is the profile of that name.
@@ -690,6 +705,7 @@ export function nativeGrantRoute(url: string, body?: unknown, method?: string): 
   if (scopedProfileOf(new URL(url), method)?.trim()) {
     return url
   }
+
   const profile =
     body && typeof body === 'object' && !Array.isArray(body) ? (body as { profile?: unknown }).profile : undefined
 
@@ -741,6 +757,7 @@ async function mintGroupWritableHome(endpoint: GatewayEndpoint, purpose: Gateway
     if ((error as { reason?: string })?.reason !== 'unsafe_control_permissions') {
       throw error
     }
+
     const quoted = homes.map(shellQuote).join(' ')
 
     throw new Error(`Profile home is writable by a group other accounts share: run chmod g-w ${quoted}`)
@@ -785,11 +802,13 @@ async function posixRealpath(dir: string): Promise<string> {
     if (++links > 40) {
       throw Object.assign(new Error(`Too many levels of symbolic links: ${dir}`), { code: 'ELOOP' })
     }
+
     const target = await fs.readlink(next)
 
     if (target.startsWith('/')) {
       resolved = '/'
     }
+
     rest.push(...target.split('/').reverse())
   }
 
@@ -813,6 +832,7 @@ async function resolveControlSocket(home: string): Promise<string> {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       throw error
     }
+
     const pointer = path.join(home, 'gateway.sock.path')
     await privateNode(pointer, 'file')
     const target = (await fs.readFile(pointer, 'utf8')).trim()
@@ -825,6 +845,7 @@ async function resolveControlSocket(home: string): Promise<string> {
     ) {
       throw new Error('Invalid gateway control pointer')
     }
+
     await privateNode(path.dirname(target), 'directory')
     await privateNode(target, 'socket')
 
@@ -886,6 +907,7 @@ export async function mintLocalGatewayTicket(
     if (isMissingNodeError(error)) {
       throw new Error('Gateway ticket control socket missing')
     }
+
     throw error
   }
 
@@ -933,6 +955,7 @@ export async function mintLocalGatewayTicket(
         ) {
           throw new Error('Invalid gateway ticket')
         }
+
         resolve(grant.ticket)
       } catch {
         reject(new Error('Invalid gateway ticket response'))

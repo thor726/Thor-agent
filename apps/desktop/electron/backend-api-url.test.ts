@@ -49,6 +49,7 @@ test('joinBackendApiUrl rejects absolute URLs smuggled as the path', () => {
 // fetchJsonForBackend joins it; whatever they emit must still be refused or on-origin.
 test('routed renderer paths never leave the backend origin once joined', async () => {
   const { pathForRegistryBackendRequest, resolveProfileApiRequest } = await import('./connection-config')
+
   const hostile = [
     '@attacker.example/',
     ' @attacker.example/',

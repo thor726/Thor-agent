@@ -477,9 +477,11 @@ describe('durable projection', () => {
     host.state = { ...(host.state as object), connectionId: { get: () => active, listen: () => () => undefined } }
     host.profileRoutes = async () => ['gw-a', 'gw-b'].map(connectionId => ({ connectionId, profile: 'default' }))
     let release!: (value: unknown) => void
+
     const read = new Promise(resolve => {
       release = resolve
     })
+
     host.requestProfile = async () => read
     room.chat.updateGroupChat('Live', current => ({
       ...current,
@@ -504,6 +506,7 @@ describe('durable projection', () => {
     expect(durable(room).Live).toBeUndefined()
     expect(room.chat.groupChatSyncSnapshot(room.chat.$groupChats.get()).rooms).toEqual({})
     room.chat.stopGroupChatServerSync()
+
     // After pending jobs end, the name fence must not block a fresh identity.
     const recreated = room.chat.groupChatSyncSnapshot({
       Live: {
@@ -513,6 +516,7 @@ describe('durable projection', () => {
         watermarks: {}
       }
     })
+
     host.requestProfile = async () => ({ profiles: [{ name: 'default', ui_meta: { 'thor-bots-groups': recreated } }] })
     await room.chat.pullGroupChatServerState('gw-b')
     expect(room.chat.$groupChats.get().Live?.roomId).toBe('fresh-room')

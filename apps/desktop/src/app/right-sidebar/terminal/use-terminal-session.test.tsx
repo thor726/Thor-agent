@@ -72,6 +72,7 @@ vi.mock('@xterm/xterm', () => ({
       if (data.includes('\u001b[6n')) {
         emulator.input('\u001b[1;1R')
       }
+
       emulator.output += data
       callback?.()
     }

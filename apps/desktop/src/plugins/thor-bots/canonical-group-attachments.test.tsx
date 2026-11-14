@@ -48,6 +48,7 @@ it.each([32, 1_048_576])('uploads all %i bytes using the canonical owner method'
     if (method !== 'groups.attachment.upload') {
       throw new Error('Unknown gateway method')
     }
+
     expect(params).toMatchObject({ profile: binding.profile, room_id: binding.roomId, name: file.name })
     const decoded = Uint8Array.from(atob(params.data_base64), value => value.charCodeAt(0))
     expect(Buffer.from(decoded).equals(Buffer.from(bytes))).toBe(true)
@@ -64,11 +65,13 @@ it.each([32, 1_048_576])('uploads all %i bytes using the canonical owner method'
   })
   const changed = vi.fn()
   const submit = vi.fn(event => event.preventDefault())
+
   const view = render(
     <form onSubmit={submit}>
       <CanonicalGroupAttachments attachments={[]} binding={binding} disabled={false} onChange={changed} />
     </form>
   )
+
   fireEvent.click(screen.getByRole('button', { name: 'Attach files' }))
   fireEvent.change(view.container.querySelector('input')!, { target: { files: [file] } })
   await waitFor(() => expect(changed).toHaveBeenCalledWith([uploaded]), { timeout: 2000 })
@@ -84,6 +87,7 @@ it('downloads only the selected committed attachment from its captured owner', a
     name: 'report.bin',
     mime: 'application/octet-stream'
   }
+
   const save = vi.fn().mockResolvedValue(undefined)
   const observed = observeDownloads()
   window.thorDesktop = { saveImageBuffer: save } as unknown as typeof window.thorDesktop
@@ -93,6 +97,7 @@ it('downloads only the selected committed attachment from its captured owner', a
     if (method !== 'groups.attachment.download') {
       throw new Error('Unknown gateway method')
     }
+
     expect(params).toEqual({
       profile: binding.profile,
       room_id: binding.roomId,
