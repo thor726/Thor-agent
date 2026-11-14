@@ -1131,6 +1131,25 @@ class CuaDriver(BinaryPackage):
     def latest_versions(self, target: str, locked=None) -> list[str]:
         return github_release_tags("trycua/cua", strip_prefix="cua-driver-rs-v")
 
+    def repair_staged_verification(self, entry: Path, target: str, reason: str) -> tuple[str, str]:
+        """Repair the host X11 library cua-driver links against, then re-probe.
+
+        Keep this out of verify(): doctor/status checks call verify and must
+        never gain permission to install host packages. Same contract as
+        Nodejs.repair_staged_verification for libatomic.so.1.
+        """
+        if target != current_target() or not target.startswith("linux") or "libXi.so.6" not in reason:
+            return reason, ""
+        from pm.libxi import try_install_libxi
+
+        installed, remedy = try_install_libxi()
+        if not installed:
+            return reason, remedy
+        retried = self.verify(entry, target)
+        if "libXi.so.6" in retried:
+            return retried, "the libXi package installed, but cua-driver still cannot load libXi.so.6; check the loader path"
+        return retried, ""
+
     def stage(self, store: Store, staged: Path, version: str, target: str) -> None:
         flatten_single_dir(staged)
         sdk = staged / "sdk"
