@@ -10,7 +10,7 @@ description: "Delegate coding to OpenAI Codex CLI (features, PRs)"
 
 Delegate coding to OpenAI Codex CLI (features, PRs).
 
-Want the full side-by-side? Read [Thor Agent vs Codex](https://thor726.github.io/Thor-agent/compare/codex).
+Want the full side-by-side? Read [Thor Agent vs Codex](https://thor-agent.thor-agent.local/compare/codex).
 
 ## Skill metadata
 

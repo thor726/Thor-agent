@@ -54,15 +54,22 @@ RUN for i in 1 2 3; do \
 
 # cua-driver: computer_use's MCP driver. Pinned release tarball from the
 # cua-driver-rs-v* tags (never releases/latest: prereleases publish 0 assets).
+# Fetch to a file and verify the committed sha256 before extracting, so the
+# release server can never turn into a code-execution endpoint (repo guard:
+# scripts/ci/check_dockerfile_downloads.py).
 RUN set -eu; \
     case "${TARGETARCH:-amd64}" in \
-        amd64) arch=x86_64 ;; \
-        arm64) arch=arm64 ;; \
+        amd64) arch=x86_64; sha="a1d99fd04bb4927ef5ffdbe60eb91ed8b51a2bab60e10fc604a75bd59ce69c3e" ;; \
+        arm64) arch=arm64; sha="55e8a32839a4ac369a773df4dac87b345bd4567779221ade4a5e39223a45a2e8" ;; \
         *) echo "unsupported TARGETARCH ${TARGETARCH}"; exit 1 ;; \
     esac; \
     mkdir -p /opt/cua-driver; \
     curl -fsSL "https://github.com/trycua/cua/releases/download/cua-driver-rs-v${CUA_DRIVER_VERSION}/cua-driver-rs-${CUA_DRIVER_VERSION}-linux-${arch}-binary.tar.gz" \
-        | tar -xz -C /opt/cua-driver; \
+        -o /tmp/cua-driver.tar.gz; \
+    printf '%s  %s\n' "${sha}" /tmp/cua-driver.tar.gz > /tmp/cua-driver.sha256; \
+    sha256sum -c /tmp/cua-driver.sha256; \
+    tar -xz -C /opt/cua-driver -f /tmp/cua-driver.tar.gz; \
+    rm /tmp/cua-driver.tar.gz /tmp/cua-driver.sha256; \
     ln -sf /opt/cua-driver/cua-driver /usr/local/bin/cua-driver; \
     /usr/local/bin/cua-driver --version
 
