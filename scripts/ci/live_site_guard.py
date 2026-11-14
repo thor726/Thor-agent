@@ -30,7 +30,11 @@ from urllib.parse import urlsplit
 # is how future placeholder domains get covered without touching the probes.
 PLACEHOLDER_SUFFIXES = (".local",)
 
-DEFAULT_DOCS_URL = "https://thor-agent.thor-agent.local/docs"
+# Live docs host (GitHub Pages, deployed by deploy-site.yml). Placeholder
+# hosts that will never resolve in public DNS stay listed in
+# PLACEHOLDER_SUFFIXES so a future rebrand without a real domain skips the
+# probes instead of failing every scheduled run.
+DEFAULT_DOCS_URL = "https://thor726.github.io/Thor-agent/docs"
 
 
 def effective_docs_url() -> str:

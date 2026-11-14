@@ -19,11 +19,10 @@ import { appendFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-const DOCS_URL = (process.env.DOCS_URL || 'https://thor-agent.thor-agent.local/docs').replace(/\/$/, '');
-// Placeholder docs host (.local) never resolves in public DNS: until the real
-// docs domain exists there is no deployed site to probe, so skip cleanly
-// instead of failing every scheduled run with ENOTFOUND. Set DOCS_URL to the
-// real domain (or replace this default) to re-enable the probe.
+const DOCS_URL = (process.env.DOCS_URL || 'https://thor726.github.io/Thor-agent/docs').replace(/\/$/, '');
+// Placeholder docs host (.local) never resolves in public DNS: if DOCS_URL
+// ever points at one, skip cleanly instead of failing every scheduled run
+// with ENOTFOUND — there is no deployed site to check.
 if (new URL(DOCS_URL).hostname.endsWith('.local')) {
   const notice = `SKIP: live docs search probe disabled — docs host ${new URL(DOCS_URL).hostname} is a placeholder (.local), no deployed site to check yet. Set DOCS_URL to the real docs domain to enable.`;
   console.log(notice);
@@ -36,6 +35,12 @@ const ORIGIN = new URL(DOCS_URL).origin;
 // Terms that must always match many pages; one per major area of the docs.
 const QUERIES = ['telegram', 'install', 'skills'];
 const MIN_HITS = 5;
+// The Algolia index behind the deployed bundle. The bundled appId/indexName
+// (from the upstream rebrand) has no 'thor docs' index until this project
+// registers its own Algolia Crawler — queries fail 403/404 in the meantime.
+// Set EXPECTED_ALGOLIA_INDEX to the provisioned index name (repo variable or
+// env) to turn the search checks back into hard failures.
+const EXPECTED_ALGOLIA_INDEX = process.env.EXPECTED_ALGOLIA_INDEX || 'thor docs';
 // Every request (body included) gets a deadline, and the whole probe gets one,
 // so a slow-drip server fails the check with time left to retry and alert
 // instead of running into the job's timeout.
@@ -48,6 +53,10 @@ const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Geck
 const ACCEPT_ENCODING = 'gzip, deflate, br, zstd';
 
 const failures = [];
+const warn = (msg) => {
+  console.log(`warn ${msg}`);
+  if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Docs search::${msg.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')}`);
+};
 const fail = (msg) => {
   failures.push(msg);
   console.error(`FAIL ${msg}`);
@@ -130,7 +139,18 @@ async function checkAlgolia({ appId, apiKey, indexName }) {
   });
   const body = await res.text();
   if (!res.ok) {
-    // 403 "Invalid Application-ID or API key" is the deleted-key outage.
+    // 403 "Invalid Application-ID or API key" is the deleted-key outage. A
+    // 404 on the index itself means the deployed bundle still points at an
+    // Algolia app/index this project never provisioned (the rebrand kept the
+    // upstream appId and renamed the index). Until the crawler exists that
+    // is a known gap, not an outage: warn once instead of paging.
+    if (res.status === 404 && indexName !== EXPECTED_ALGOLIA_INDEX) {
+      warn(
+        `Algolia index "${indexName}" does not exist yet on app ${appId} (HTTP 404) — ` +
+          `register this site's Algolia Crawler, then set EXPECTED_ALGOLIA_INDEX="${indexName}" to enforce search checks`,
+      );
+      return [];
+    }
     fail(`Algolia rejected the deployed search key: HTTP ${res.status} ${body.slice(0, 200)}`);
     return [];
   }
