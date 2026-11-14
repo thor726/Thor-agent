@@ -14,6 +14,11 @@ name: Docs Search Monitor
 # notification secrets: a failing probe turns the run red and records each
 # reason as an `::error::` annotation. Alerting lives with whoever subscribes
 # to the repository's `workflow_run` webhook events for this file.
+#
+# DISABLED (2026-11-14): the site now uses @easyops-cn/docusaurus-search-local
+# (client-side lunr index, no Algolia account, no domain). This probe only
+# exercises the Algolia DocSearch API, which is gone; it would fail forever.
+# To re-enable, remove the `if: false` gate on the probe job.
 
 on:
   schedule:
@@ -32,7 +37,7 @@ concurrency:
 
 jobs:
   probe:
-    if: github.repository == 'thor726/thor-agent'
+    if: false  # disabled — Algolia DocSearch removed from the site (see header)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
