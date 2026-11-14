@@ -46,6 +46,25 @@ jobs:
         with:
           command: python -m scripts.ci.python_packages httpx==0.28.1 ruamel.yaml==0.18.17
 
+      # Without App credentials the composite action falls back to the job's
+      # GITHUB_TOKEN (~1,000 req/hr per repository). The crawl needs ~4,600
+      # requests (2,300 repos x 2), so that token always exhausts mid-crawl and
+      # the health check refuses the collapsed index after ~45 wasted minutes.
+      # Fail fast with the exact remedy instead.
+      - name: Require high-quota GitHub credentials for the crawl
+        env:
+          APP_CLIENT_ID: ${{ vars.APP_CLIENT_ID }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "::error::No GitHub token at all for the skills-index crawl."
+            exit 1
+          fi
+          if [ -z "$APP_CLIENT_ID" ]; then
+            echo "::error::GitHub App not configured (vars.APP_CLIENT_ID is empty): get-app-token fell back to the job's GITHUB_TOKEN (~1,000 req/hr), which cannot cover the ~4,600-request crawl. Create a GitHub App with read access, install it on this repository, then set vars.APP_CLIENT_ID and secrets.APP_PRIVATE_KEY (installation tokens give 5,000 req/hr)."
+            exit 1
+          fi
+
       - name: Build skills index
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

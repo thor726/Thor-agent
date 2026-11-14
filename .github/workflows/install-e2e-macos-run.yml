@@ -101,7 +101,7 @@ jobs:
       update-ref: ${{ inputs.update-ref }}
       tag-has-desktop: ${{ inputs.tag-has-desktop }}
       leg-id: ${{ inputs.leg-id }}
-      runner: blacksmith-6vcpu-macos-latest
+      runner: macos-latest
       timeout-minutes: ${{ inputs.timeout-minutes }}
 
   # ---- arm 2: the published dmg, then Playwright drives the app ------------
@@ -112,7 +112,7 @@ jobs:
     if: >-
       inputs.install-method == 'desktop-installer@latest' && inputs.tag-has-desktop
       && contains(fromJSON('["open-app-update", "thor-desktop-app-update", "thor-update", "installer-script", "installer-script+desktop"]'), inputs.update-method)
-    runs-on: blacksmith-12vcpu-macos-latest
+    runs-on: macos-latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
 
     steps:
@@ -226,7 +226,7 @@ jobs:
     name: packaged bundle (open-app-update)
     if: inputs.install-method == 'packaged-app' && inputs.update-method == 'open-app-update'
     # Not macos-15: v0.22.0 gives Squirrel.Mac 120 s to unpack and verify an update, and macos-15 takes 112-149 s.
-    runs-on: blacksmith-12vcpu-macos-15
+    runs-on: macos-latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
 
     steps:

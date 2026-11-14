@@ -13,7 +13,7 @@ When the manifest is unreachable (offline, network blocked, hosting failure), Th
 ## Live manifest URL
 
 ```
-https://thor-agent.thor-agent.local/docs/api/model-catalog.json
+https://thor726.github.io/Thor-agent/docs/api/model-catalog.json
 ```
 
 Published on every merge to `main` via the existing `deploy-site.yml` GitHub Pages pipeline. The source of truth lives in the repo at `website/static/api/model-catalog.json`.
@@ -76,7 +76,7 @@ The Desktop, TUI and dashboard pickers (`model.options`) build each provider's r
 ```yaml
 model_catalog:
   enabled: true
-  url: https://thor-agent.thor-agent.local/docs/api/model-catalog.json
+  url: https://thor726.github.io/Thor-agent/docs/api/model-catalog.json
   ttl_minutes: 20
   providers: {}
 ```

@@ -23,16 +23,32 @@ BUMPS = ("major", "minor", "patch")
 def published_channel_identity(repository: str, channel: str, *, base_url: str | None = None,
                                reader_type=None) -> tuple[str, str] | None:
     """Resolve one validated protected channel's payload version and commit."""
-    from thor_cli.release_channels import ChannelNotFound, ChannelReader
+    from urllib.parse import urlsplit
+
+    from thor_cli.release_channels import ChannelError, ChannelNotFound, ChannelReader
     from scripts.releases.r2 import public_base_url
 
     if channel not in {"stable", "canary"}:
         raise ValueError("Expected a protected release channel")
+    # A placeholder asset host (the ``.local`` rebrand default in scripts/releases/r2.py)
+    # never resolves in public DNS, so the channel read dies with a generic
+    # ``ChannelError: Channel read unavailable`` instead of the ``ChannelNotFound``
+    # handled below — crashing every canary/stable identity lookup even though the
+    # fallback path (published GitHub releases) works fine. Treat an unresolvable
+    # placeholder host exactly like a channel that does not exist yet.
+    resolved_base = base_url or public_base_url()
+    if (urlsplit(resolved_base).hostname or "").endswith(".local"):
+        return None
     reader_type = reader_type or ChannelReader
     try:
-        resolved = reader_type(base_url or public_base_url(), repository=repository).resolve(channel)
+        resolved = reader_type(resolved_base, repository=repository).resolve(channel)
     except ChannelNotFound:
         return None
+    except ChannelError as exc:
+        raise ValueError(
+            f"Release channel {channel!r} is unreadable at {resolved_base}: {exc}. "
+            "Check CLOUDFLARE_R2_PUBLIC_URL / scripts.releases.r2.DEFAULT_PUBLIC_URL."
+        ) from exc
     if resolved.manifest is None:
         return None
     if resolved.terminal.get("policy") != f"{channel}-release":

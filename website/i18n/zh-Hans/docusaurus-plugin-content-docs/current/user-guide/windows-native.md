@@ -20,7 +20,7 @@ Thor 可在 Windows 10 和 Windows 11 上原生运行——无需 WSL、Cygwin �
 打开 **PowerShell**（或 Windows Terminal）并运行：
 
 ```powershell
-iex (irm https://thor-agent.thor-agent.local/install.ps1)
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
 ```
 
 无需管理员权限。安装程序会写入 `%LOCALAPPDATA%\thor\`，并将 `thor` 添加到你的**用户 PATH**——安装完成后打开新终端即可使用。
@@ -28,7 +28,7 @@ iex (irm https://thor-agent.thor-agent.local/install.ps1)
 **安装程序选项：**
 
 ```powershell
-& ([scriptblock]::Create((irm https://thor-agent.thor-agent.local/install.ps1))) -NonInteractive -Branch main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1))) -NonInteractive -Branch main
 ```
 
 | 参数 | 用途 |
