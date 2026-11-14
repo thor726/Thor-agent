@@ -5,8 +5,8 @@ description: "Install Thor Agent with desktop bundles, source installers, Docker
 ---
 
 <head>
-  <title>Install Thor Agent: Official Guide | Thor Labs</title>
-  <meta property="og:title" content="Install Thor Agent: Official Guide | Thor Labs" />
+  <title>Install Thor Agent: Official Guide | Thor Portal</title>
+  <meta property="og:title" content="Install Thor Agent: Official Guide | Thor Portal" />
 </head>
 
 # Installation

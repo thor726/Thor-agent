@@ -697,7 +697,7 @@ same auth gate as the rest of `/api/`.
 When the dashboard is bound to a public or non-loopback address — anything other than `127.0.0.1` / `localhost` — Thor Agent engages an auth gate. Every request must carry a verified session cookie or it's bounced to the login page. Three providers ship in the box:
 
 - **[Username/password](#usernamepassword-provider-no-oauth-idp)** — the simplest way to put auth on a self-hosted / on-prem / homelab dashboard. No external identity provider. **Use it only on a trusted network or behind a VPN — not for public-internet exposure.**
-- **[OAuth (Thor Portal)](#default-provider-thor-labs)** — for hosted deployments and any dashboard reachable over the public internet, and the recommended path for a [remote Thor Desktop connection](#connecting-thor-desktop-to-a-remote-backend). Every login is verified against your Thor account, so this is the provider suitable for internet-facing use.
+- **[OAuth (Thor Portal)](#default-provider-thor-portal)** — for hosted deployments and any dashboard reachable over the public internet, and the recommended path for a [remote Thor Desktop connection](#connecting-thor-desktop-to-a-remote-backend). Every login is verified against your Thor account, so this is the provider suitable for internet-facing use.
 - **[Self-hosted OIDC](#self-hosted-oidc-provider)** — for bringing your own identity provider via standard OpenID Connect (Keycloak, Auth0, Okta, Google, GitHub via an OIDC bridge, etc.). No Thor Portal involved; suitable for public-internet exposure when fronted by a conformant OIDC server.
 
 Operator-owned dashboards bound to loopback are unaffected — no auth, no login page.
@@ -721,7 +721,7 @@ If the gate would engage but **no** `DashboardAuthProvider` is registered (no Th
 
 When you run `thor dashboard --host 0.0.0.0` **interactively** (a real terminal) and no provider is configured yet, Thor doesn't just fail — it offers to set one up on the spot: pick **username & password** (writes `dashboard.basic_auth` to `config.yaml` and you're running in seconds) or **OAuth** (points you at `thor dashboard register`). Non-interactive callers — Docker/s6, CI, piped runs — skip the prompt and hit the fail-closed error above, so an unattended deploy still never starts without auth.
 
-### Default provider: Thor Labs
+### Default provider: Thor Portal
 
 The bundled `plugins/dashboard_auth/thor` plugin is **always installed** and auto-loaded. It auto-registers a `DashboardAuthProvider` named `thor` when a client ID is configured.
 
@@ -784,7 +784,7 @@ There is no unauthenticated public-bind option — to keep it local, bind
 127.0.0.1 and tunnel in (SSH / Tailscale).
 ```
 
-#### Worked example: Thor Labs
+#### Worked example: Thor Portal
 
 From a logged-in Thor install to a Thor-gated dashboard in three steps.
 
@@ -803,7 +803,7 @@ thor dashboard register
 thor dashboard --host 0.0.0.0 --port 9119 --no-open
 ```
 
-**3. Log in.** Open `http://<host>:9119/`, you'll be bounced to `/login`. Click **Sign in with Thor Labs** → authenticate at the Portal → land back on the authenticated dashboard. Verify the gate from any machine:
+**3. Log in.** Open `http://<host>:9119/`, you'll be bounced to `/login`. Click **Sign in with Thor Portal** → authenticate at the Portal → land back on the authenticated dashboard. Verify the gate from any machine:
 
 ```bash
 curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'
@@ -820,7 +820,7 @@ If you don't want to wire up an OAuth identity provider — a self-hosted "just 
 It plugs into the same gate as the OAuth provider: the gate engages on a non-loopback bind, the login page renders a credential form for this provider (instead of a "Log in with X" button), and everything downstream of login — session cookies, transparent refresh, WS tickets, logout, the audit log — is identical to the OAuth path. Sessions are HMAC-signed tokens the provider mints itself, so there's **no database and no external IDP**. The signing key is bound to the configured username and password, so changing either ends every existing session; logout revokes that login (and its renewals) via a small `dashboard_auth/basic-revoked-sessions.json` file in the Thor home. Password hashing uses stdlib `scrypt` (no third-party dependency).
 
 :::warning Use this on trusted networks only — not the public internet
-The username/password provider is intended for self-hosted / on-prem / homelab dashboards on a **trusted network**, or reachable only over a **VPN**. It protects a single shared credential with no external identity provider, MFA, or per-user accounts behind it, so it is **not suitable for exposing a dashboard directly to the public internet**. For an internet-facing dashboard, use the [Thor Labs provider](#default-provider-thor-labs) (or your own [self-hosted OIDC](#self-hosted-oidc-provider) / [custom OAuth](#custom-providers) provider) instead.
+The username/password provider is intended for self-hosted / on-prem / homelab dashboards on a **trusted network**, or reachable only over a **VPN**. It protects a single shared credential with no external identity provider, MFA, or per-user accounts behind it, so it is **not suitable for exposing a dashboard directly to the public internet**. For an internet-facing dashboard, use the [Thor Portal provider](#default-provider-thor-portal) (or your own [self-hosted OIDC](#self-hosted-oidc-provider) / [custom OAuth](#custom-providers) provider) instead.
 :::
 
 #### Configuration
@@ -890,7 +890,7 @@ curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'
 # ["basic"]
 ```
 
-`GET /api/auth/me` then returns the verified session (`provider: basic`). Keep this behind a VPN — see the warning above; for a public host use the [Thor Labs](#default-provider-thor-labs) or [self-hosted OIDC](#self-hosted-oidc-provider) provider instead.
+`GET /api/auth/me` then returns the verified session (`provider: basic`). Keep this behind a VPN — see the warning above; for a public host use the [Thor Portal](#default-provider-thor-portal) or [self-hosted OIDC](#self-hosted-oidc-provider) provider instead.
 
 #### Writing your own password provider
 
@@ -903,7 +903,7 @@ The bundled `plugins/dashboard_auth/session_token` plugin makes the **deployment
 When the env var is provisioned, the provider registers automatically and `verify_session` constant-time-compares the presented credential against it. Both legs a token-mode client uses run through that seam — REST, where Desktop's "Session token" connection sends the token in the `X-Thor-Session-Token` header (a bearer token in the `Authorization` header works too and wins when both are sent; only this provider's token works in the dedicated header), and the `/api/ws` `?token=` upgrade credential — so one provisioned token authorizes both. There is **no browser sign-in flow**: `/login` renders a note explaining the credential channel instead of sign-in buttons, and the provider is never offered by the auto-SSO redirect.
 
 :::warning Treat the token like a password
-The provisioned token grants full dashboard access to whoever holds it. Provision it from a secret manager (never a Nix store path), rotate by redeploying the secret — rotation invalidates every saved client copy, which surfaces as "HTTP reachable but the WebSocket fails" in Desktop until the new token is pasted in. There is no per-user identity behind it: for shared or internet-facing deployments prefer the [Thor Labs](#default-provider-thor-labs) or [self-hosted OIDC](#self-hosted-oidc-provider) provider.
+The provisioned token grants full dashboard access to whoever holds it. Provision it from a secret manager (never a Nix store path), rotate by redeploying the secret — rotation invalidates every saved client copy, which surfaces as "HTTP reachable but the WebSocket fails" in Desktop until the new token is pasted in. There is no per-user identity behind it: for shared or internet-facing deployments prefer the [Thor Portal](#default-provider-thor-portal) or [self-hosted OIDC](#self-hosted-oidc-provider) provider.
 :::
 
 **Activation and opt-out.** Registering is driven by the credential itself: the provider is a no-op until `THOR_DASHBOARD_SESSION_TOKEN` is set (env wins; `file:<path>` is read at startup and fails loudly when missing/empty). To keep the token internal-only (loopback SPA use, desktop-spawned backends) while authenticating the gate with basic-auth/OAuth instead, disable the provider:
@@ -1133,7 +1133,7 @@ Validation rejects values without `http://` / `https://` scheme, without a host,
 The provider implements the [Thor Portal OAuth contract v1](https://github.com/thor726/thor-account-service/blob/main/docs/agent-dashboard-oauth-contract.md) — authorization-code grant with PKCE (S256):
 
 1. User hits `/` without a session cookie → gate redirects to `/login`.
-2. Login page shows a "Continue with Thor Labs" button → `/auth/login?provider=thor`.
+2. Login page shows a "Continue with Thor Portal" button → `/auth/login?provider=thor`.
 3. Server stashes PKCE state in a short-lived cookie, redirects user to `https://portal.thor-agent.local/oauth/authorize?…`.
 4. User authenticates with Portal, lands at `/auth/callback?code=…&state=…`.
 5. Server exchanges the code for an access token at `POST /api/oauth/token`, verifies the JWT signature against the Portal's JWKS (`/.well-known/jwks.json`), and sets the `thor_session_at` cookie.
@@ -1242,9 +1242,9 @@ The dashboard's React StatusPage shows the same fields under "Web server". A sid
 
 Thor Desktop can drive a Thor backend running on another machine (a VPS, a home server, a Mini behind Tailscale). In the app this lives under **Settings → Gateways → Remote gateway**, which asks for a **Remote URL** and a way to **Sign in**. (For the desktop app itself — install, settings, chat — see the [Thor Desktop](../desktop.md) page.)
 
-You protect the remote dashboard with one of the bundled auth providers, and the desktop app signs in against whichever one the backend advertises. For a backend reachable beyond your own machine — a VPS, a public host, anything internet-facing — the recommended provider is **OAuth (Thor Portal)** (register it with [`thor dashboard register`](#registering-a-dashboard) and sign in with *Sign in with Thor Labs*). The bundled [username/password provider](#usernamepassword-provider-no-oauth-idp) is the quickest option when the backend is on a trusted LAN or reachable only over a VPN, but is **not suitable for direct public-internet exposure**. Binding the dashboard to a non-loopback address engages its auth gate; once signed in, Desktop reuses the session for the chat WebSocket automatically — there is no token to copy or paste.
+You protect the remote dashboard with one of the bundled auth providers, and the desktop app signs in against whichever one the backend advertises. For a backend reachable beyond your own machine — a VPS, a public host, anything internet-facing — the recommended provider is **OAuth (Thor Portal)** (register it with [`thor dashboard register`](#registering-a-dashboard) and sign in with *Sign in with Thor Portal*). The bundled [username/password provider](#usernamepassword-provider-no-oauth-idp) is the quickest option when the backend is on a trusted LAN or reachable only over a VPN, but is **not suitable for direct public-internet exposure**. Binding the dashboard to a non-loopback address engages its auth gate; once signed in, Desktop reuses the session for the chat WebSocket automatically — there is no token to copy or paste.
 
-The recipe below uses the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Default provider: Thor Labs](#default-provider-thor-labs).
+The recipe below uses the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Default provider: Thor Portal](#default-provider-thor-portal).
 
 ### On the backend (the remote machine)
 

@@ -3,7 +3,7 @@ contact_links:
   - name: 🔒 Report a security vulnerability
     url: https://github.com/thor726/thor-agent/security/advisories/new
     about: Report vulnerabilities privately — never in a public issue. Read SECURITY.md for scope first.
-  - name: 💬 Thor Labs Discord
+  - name: 💬 Thor Portal Discord
     url: https://discord.gg/thor726
     about: For quick questions, showcasing projects, sharing skills, and community chat.
   - name: 📖 Documentation

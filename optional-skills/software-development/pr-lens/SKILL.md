@@ -2,7 +2,7 @@
 name: pr-lens
 description: "Draw code changes as animated architecture/data-flow SVGs."
 version: 1.0.0
-author: Coldtea AI (adapted by Thor Labs)
+author: Coldtea AI (adapted by Thor Portal)
 license: MIT
 platforms: [linux, macos]
 metadata:

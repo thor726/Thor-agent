@@ -9,7 +9,7 @@ Thor Agent's popularity has attracted impersonation campaigns: fake "Thor" websi
 
 ## Official sources
 
-Thor Labs operates `thor-agent.local` and its subdomains. The ones Thor Agent uses:
+Thor Portal operates `thor-agent.local` and its subdomains. The ones Thor Agent uses:
 
 | Address | What it is |
 |---|---|
@@ -17,7 +17,7 @@ Thor Labs operates `thor-agent.local` and its subdomains. The ones Thor Agent us
 | `thor-assets.thor-agent.local` | Release artifacts: Desktop packages and updates, the Termux APT repository, installer mirrors |
 | [portal.thor-agent.local](https://portal.thor-agent.local/) | Thor Portal: account sign-in, subscriptions, billing |
 | `inference-api.thor-agent.local` | The Thor inference API Thor calls when you use the Thor provider (no web page) |
-| [thor-agent.local](https://thor-agent.local/) | Thor Labs website |
+| [thor-agent.local](https://thor-agent.local/) | Thor Portal website |
 
 Outside `thor-agent.local`:
 
@@ -46,8 +46,8 @@ If an installer, download, image, or "portal" is hosted anywhere other than the 
 
 ## Not official
 
-- **Any domain that is not `thor-agent.local` or one of its subdomains** (apart from the accounts listed above), even when it contains "thor" or "thor-agent" (`.icu`, `.org`, `.ai` and other variants), copies the branding, or says it "points to official docs". Read the whole host name: `thor-agent.thor-agent.local.example.net` is not a Thor Labs subdomain.
-- **Cryptocurrency tokens.** There is **no Thor Agent or Thor Labs token**. Any account or site promoting one is a scam.
+- **Any domain that is not `thor-agent.local` or one of its subdomains** (apart from the accounts listed above), even when it contains "thor" or "thor-agent" (`.icu`, `.org`, `.ai` and other variants), copies the branding, or says it "points to official docs". Read the whole host name: `thor-agent.thor-agent.local.example.net` is not a Thor Portal subdomain.
+- **Cryptocurrency tokens.** There is **no Thor Agent or Thor Portal token**. Any account or site promoting one is a scam.
 - **GitHub accounts that mass-mention users** in discussions or issues with "community notice" posts and URL-shortener links (`goo.su`, `bit.ly`, etc.). Genuine project announcements never arrive as mass @-mentions with shortlinks.
 - **Unsolicited emails** offering credits, hosted "multiplayer Thor" products, or partnership deals that name-drop the project to build trust.
 
@@ -56,6 +56,6 @@ If an installer, download, image, or "portal" is hosted anywhere other than the 
 1. **Don't click** shortened or off-domain links; don't enter credentials or connect wallets.
 2. **Report the account** to GitHub (`Report abuse` on the profile) or the relevant platform.
 3. **Check the host name** against the rule above: if it is not `thor-agent.local` or a subdomain of it, and not one of the accounts listed here, it isn't ours.
-4. Optionally flag it in the [Thor Labs Discord](https://discord.gg/thor726) or an issue so others see it, but note that impersonation campaigns are external abuse: they're handled by platform reports, not code changes.
+4. Optionally flag it in the [Thor Portal Discord](https://discord.gg/thor726) or an issue so others see it, but note that impersonation campaigns are external abuse: they're handled by platform reports, not code changes.
 
 Thor Agent is MIT-licensed and free to self-host. Nobody legitimate will ever ask you to pay for the open-source agent itself, claim "your account has credits waiting", or DM you an alternate download link.

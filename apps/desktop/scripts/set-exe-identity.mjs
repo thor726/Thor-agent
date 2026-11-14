@@ -88,8 +88,8 @@ async function stampExeIdentity(
     'version-string': {
       ProductName: 'Thor',
       FileDescription: 'Thor',
-      CompanyName: 'Thor Labs',
-      LegalCopyright: 'Copyright (c) 2026 Thor Labs'
+      CompanyName: 'Thor Portal',
+      LegalCopyright: 'Copyright (c) 2026 Thor Portal'
     }
   }
 

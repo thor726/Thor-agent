@@ -70,7 +70,7 @@ class ThorProfile(ProviderProfile):
 
 thor = ThorProfile(
     name="thor", aliases=("thor-portal", "thorlabs"), env_vars=("THOR_API_KEY",),
-    display_name="Thor Labs", description="Thor Labs — Thor model family",
+    display_name="Thor Portal", description="Thor Portal — Thor model family",
     signup_url="https://thor-agent.local/", fallback_models=("thor-3-405b", "thor-3-70b"),
     base_url="https://inference-api.thor-agent.local/v1", auth_type="oauth_device_code",
 )

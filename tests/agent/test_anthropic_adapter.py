@@ -1813,7 +1813,7 @@ def test_oauth_system_prompt_sanitizer_preserves_docs_url():
             {
                 "role": "system",
                 "content": (
-                    "Thor Agent by Thor Labs uses thor-agent skills. "
+                    "Thor Agent by Thor Portal uses thor-agent skills. "
                     "Docs: https://thor-agent.thor-agent.local/docs ; "
                     "interpreter ~/.thor/thor-agent/venv/bin/python ; "
                     "source github.com/thor726/thor-agent ; mail thor-agent@example.com ; "

@@ -120,7 +120,7 @@ For local files, a full unredacted read (including all pages of the same file ve
 
 **Spotify tools** (`spotify_playback`, `spotify_devices`, `spotify_queue`, `spotify_search`, `spotify_playlists`, `spotify_albums`, `spotify_library`, toolset `spotify`) are no longer built-in. They come from the `spotify` catalog plugin (`thor plugins install spotify`, then `thor spotify login`). See [Spotify](../user-guide/features/spotify.md).
 
-**Yuanbao tools** (`yb_query_group_info`, `yb_query_group_members`, `yb_send_dm`, `yb_search_sticker`, `yb_send_sticker`, toolset `yuanbao`) are no longer built-in. They come from the `yuanbao` Thor Labs plugin (`thor plugins install yuanbao`). See [Yuanbao](../user-guide/messaging/yuanbao.md).
+**Yuanbao tools** (`yb_query_group_info`, `yb_query_group_members`, `yb_send_dm`, `yb_search_sticker`, `yb_send_sticker`, toolset `yuanbao`) are no longer built-in. They come from the `yuanbao` Thor Portal plugin (`thor plugins install yuanbao`). See [Yuanbao](../user-guide/messaging/yuanbao.md).
 :::
 
 ## `image_gen` toolset

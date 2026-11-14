@@ -1,4 +1,4 @@
-import collapseBold from '@nous-research/ui/fonts/Collapse-Bold.woff2?url'
+import collapseBold from '@thor/ui/fonts/Collapse-Bold.woff2?url'
 
 import { isTransparentWindow } from './transparent-windows'
 

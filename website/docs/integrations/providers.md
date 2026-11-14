@@ -71,7 +71,7 @@ In the `model:` config section, you can use either `default:` or `model:` as the
 
 ### Thor Portal
 
-[Thor Portal](https://portal.thor-agent.local) is Thor Labs's unified subscription gateway and **the recommended way to run Thor Agent**. One OAuth login covers 300+ frontier agentic models (Claude, GPT, Gemini, DeepSeek, Qwen, Kimi, GLM, MiniMax, Grok, ...) plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, browser automation) — billed against your Thor subscription instead of separate per-provider accounts.
+[Thor Portal](https://portal.thor-agent.local) is Thor Portal's unified subscription gateway and **the recommended way to run Thor Agent**. One OAuth login covers 300+ frontier agentic models (Claude, GPT, Gemini, DeepSeek, Qwen, Kimi, GLM, MiniMax, Grok, ...) plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, browser automation) — billed against your Thor subscription instead of separate per-provider accounts.
 
 ```bash
 thor setup --portal     # fresh install — OAuth + provider + gateway in one command
@@ -207,7 +207,7 @@ model:
 
 ### GitHub Copilot (labs plugin)
 
-The GitHub Copilot providers (`copilot` for the Copilot API, `copilot-acp` for the Copilot CLI over ACP) are no longer built into Thor. They ship as the `github-copilot` **labs plugin** — built by Thor Labs, but not supported:
+The GitHub Copilot providers (`copilot` for the Copilot API, `copilot-acp` for the Copilot CLI over ACP) are no longer built into Thor. They ship as the `github-copilot` **labs plugin** — built by Thor Portal, but not supported:
 
 ```bash
 thor plugins install github-copilot
@@ -217,7 +217,7 @@ Profiles that already use `copilot` or `copilot-acp` (main model, fallback, auxi
 
 Sign in with `thor auth add copilot` (device-code login), or set `COPILOT_GITHUB_TOKEN`, `GH_TOKEN` or `GITHUB_TOKEN`. Logins made with the `gh` CLI or the Copilot CLI are no longer read: if you relied on them, run `thor auth add copilot`.
 
-Setup, models and environment variables: [github-copilot plugin docs](https://github.com/thor726/thor-labs-plugins/tree/main/github-copilot).
+Setup, models and environment variables: [github-copilot plugin docs].
 
 ### First-Class API-Key Providers
 

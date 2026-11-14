@@ -2,7 +2,7 @@
 name: blackbox
 description: Delegate coding tasks to the Blackbox AI multi-model CLI.
 version: 1.0.1
-author: Thor Agent (Thor Labs)
+author: Thor Agent (Thor Portal)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:

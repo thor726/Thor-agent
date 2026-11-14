@@ -121,7 +121,7 @@ thor-agent/
 │
 ├── plugins/platforms/        # 随包平台插件：telegram、discord、slack、whatsapp、
 │                             #   whatsapp_cloud、signal、weixin、bluebubbles、qqbot、
-│                             #   matrix、feishu 等（元宝：`yuanbao` Thor Labs 插件）
+│                             #   matrix、feishu 等（元宝：`yuanbao` Thor Portal 插件）
 ├── acp_adapter/              # ACP 服务器（VS Code / Zed / JetBrains）
 ├── cron/                     # 调度器（jobs.py、scheduler.py）
 ├── plugins/memory/           # 记忆提供者插件

@@ -22,7 +22,7 @@ description: >-
   installed, a click hands a table or ticked rows to that page through a
   window event, with no file, backend or model involved; no telemetry, no credentials, no shell commands or
   background processes of its own. Independent community project, not
-  affiliated with Thor Labs.
+  affiliated with Thor Portal.
 maintainer: Adolanium
 tier: community
 category: desktop

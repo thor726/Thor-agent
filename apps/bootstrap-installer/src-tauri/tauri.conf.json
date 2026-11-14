@@ -36,8 +36,8 @@
     "category": "DeveloperTool",
     "shortDescription": "Thor",
     "longDescription": "Installs Thor Agent on your machine. Drives scripts/install.ps1 (Windows) and scripts/install.sh (macOS/Linux).",
-    "publisher": "Thor Labs",
-    "copyright": "Copyright © 2026 Thor Labs",
+    "publisher": "Thor Portal",
+    "copyright": "Copyright © 2026 Thor Portal",
     "targets": [
       "app",
       "dmg",

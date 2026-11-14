@@ -13,7 +13,7 @@ body:
         - If you're in a chat session, you can use `/debug` instead — it does the same thing
         - Try `thor update` to get the latest version
         - Check the [README troubleshooting section](https://github.com/thor726/thor-agent#troubleshooting)
-        - For general questions, consider the [Thor Labs Discord](https://discord.gg/thor726) for faster help
+        - For general questions, consider the [Thor Portal Discord](https://discord.gg/thor726) for faster help
 
   - type: textarea
     id: description

@@ -141,7 +141,7 @@ describe("sidebar control target sizes (WCAG 2.5.8, issue #70983)", () => {
     expect(hasClass(btn!, "py-1")).toBe(false);
   });
 
-  it("Thor Labs footer link renders a >=24px hit area (min-h 24px)", async () => {
+  it("Thor Portal footer link renders a >=24px hit area (min-h 24px)", async () => {
     await render(
       <I18nProvider>
         <SidebarFooter status={null} />

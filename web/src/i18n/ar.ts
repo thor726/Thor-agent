@@ -55,7 +55,7 @@ export const ar = defineLocale({
     closeNavigation: "إغلاق التنقل",
     closeModelTools: "إغلاق النموذج والأدوات",
     footer: {
-      org: "Thor Labs",
+      org: "Thor Portal",
     },
     activeSessionsLabel: "الجلسات النشطة:",
     gatewayStatusLabel: "حالة البوابة:",

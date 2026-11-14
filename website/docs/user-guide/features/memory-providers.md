@@ -600,7 +600,7 @@ Holographic used to ship inside the Thor tree. If your `config.yaml` already has
 
 Your facts (`$THOR_HOME/memory_store.db`, or the `db_path` you set) and your `plugins.thor-memory-store` settings are read exactly as before, so no memory is lost. Verify with `thor memory status` and `thor plugins list`.
 
-If you installed Thor Labs's interim copy by URL (`thor726/thor-plugin-holographic`, now archived), `thor plugins update holographic` moves it onto the catalog entry; your data stays where it is.
+If you installed Thor Portal's interim copy by URL (`thor726/thor-plugin-holographic`, now archived), `thor plugins update holographic` moves it onto the catalog entry; your data stays where it is.
 
 ---
 

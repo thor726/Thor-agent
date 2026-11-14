@@ -1953,7 +1953,7 @@ def _warn_nonagentic_thor_model(agent):
         _thor_warn = _check_thor_model_warning(agent.model or "")
         if _thor_warn:
             _user_msg = (
-                "⚠ Thor Labs Thor 3 & 4 models are NOT agentic — they "
+                "⚠ Thor Portal Thor 3 & 4 models are NOT agentic — they "
                 "lack reliable tool-calling for agent workflows (delegation, "
                 "cron, proactive tools). Consider an agentic model instead "
                 "(Claude, GPT, Gemini, Qwen-Coder, etc.)."

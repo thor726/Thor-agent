@@ -17,7 +17,7 @@ Draw code changes as animated architecture/data-flow SVGs.
 | Source | Optional — install with `thor skills install official/software-development/pr-lens` |
 | Path | `optional-skills/software-development/pr-lens` |
 | Version | `1.0.0` |
-| Author | Coldtea AI (adapted by Thor Labs) |
+| Author | Coldtea AI (adapted by Thor Portal) |
 | License | MIT |
 | Platforms | linux, macos |
 | Tags | `diagrams`, `pull-requests`, `code-review`, `svg` |

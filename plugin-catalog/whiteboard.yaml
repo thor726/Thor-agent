@@ -25,7 +25,7 @@ description: >-
   installed, a click on that page pins notes to the open board through a
   window event, with no file, backend or model involved; no telemetry, no credentials, no
   shell commands or background processes of its own. Independent community
-  project, not affiliated with Thor Labs.
+  project, not affiliated with Thor Portal.
 maintainer: Adolanium
 tier: community
 category: desktop

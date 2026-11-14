@@ -69,8 +69,8 @@ importers:
       '@nanostores/react':
         specifier: 1.1.0
         version: 1.1.0(nanostores@1.4.2)(react@19.3.0)
-      '@thor-labs/ui':
-        specifier: 0.19.1
+      '@thor/ui':
+        specifier: 'npm:@nous-research/ui@0.19.1'
         version: 0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)
       '@tailwindcss/typography':
         specifier: 0.5.20
@@ -202,8 +202,8 @@ importers:
       '@nanostores/react':
         specifier: 1.1.0
         version: 1.1.0(nanostores@1.4.2)(react@19.3.0)
-      '@thor-labs/ui':
-        specifier: 0.19.1
+      '@thor/ui':
+        specifier: 'npm:@nous-research/ui@0.19.1'
         version: 0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)
       '@novnc/novnc':
         specifier: 1.7.0
@@ -722,8 +722,8 @@ importers:
       '@thor/shared':
         specifier: workspace:*
         version: link:../apps/shared
-      '@thor-labs/ui':
-        specifier: 0.19.1
+      '@thor/ui':
+        specifier: 'npm:@nous-research/ui@0.19.1'
         version: 0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)
       '@observablehq/plot':
         specifier: 0.6.17
