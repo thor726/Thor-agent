@@ -10,7 +10,7 @@ description: "Delegate coding to Claude Code CLI (features, PRs)"
 
 Delegate coding to Claude Code CLI (features, PRs).
 
-Want the full side-by-side? Read [Thor Agent vs Claude Code](https://thor-agent.thor-agent.local/compare/claude-code).
+Want the full side-by-side? Read [Thor Agent vs Claude Code](https://thor726.github.io/Thor-agent/compare/claude-code).
 
 ## Skill metadata
 

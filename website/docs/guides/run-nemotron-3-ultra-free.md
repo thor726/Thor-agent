@@ -20,7 +20,7 @@ The simplest path: a one-click installer with a guided, point-and-click setup. N
 
 ### 1. Download and install
 
-[Download the Thor Desktop installer](https://thor-agent.thor-agent.local/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
+[Download the Thor Desktop installer](https://thor726.github.io/Thor-agent/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
 
 ### 2. Connect Thor Portal
 
@@ -49,16 +49,16 @@ Prefer the terminal?
 On macOS/Linux/WSL2/Android, run
 
 ```bash
-curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 On Windows, run
 
 ```powershell
-iex (irm https://thor-agent.thor-agent.local/install.ps1)
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
 ```
 
-Prefer to review first? Download [`install.sh`](https://thor-agent.thor-agent.local/install.sh), inspect it, then run it.
+Prefer to review first? Download [`install.sh`](https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh), inspect it, then run it.
 
 After it finishes, reload your shell:
 

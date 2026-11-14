@@ -148,6 +148,12 @@ mini-swe-agent/
 .direnv/
 .nix-stamps/
 result
+
+# skills-index.json is generated per deploy (deploy-site.yml reuses the
+# scheduled artifact / live copy / bootstrap below and never commits it back).
+# skills-index.bootstrap.json IS committed on purpose: a healthy index snapshot
+# kept as the first-deploy fallback, refreshed from a scheduled skills-index
+# artifact when one lands.
 website/static/api/skills-index.json
 # skills.json + skills-meta.json are build artifacts emitted by
 # website/scripts/extract-skills.py during prebuild — keep them out of

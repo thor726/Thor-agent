@@ -28,7 +28,7 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\thor\` and adds 
 **Installer options** use a scriptblock:
 
 ```powershell
-& ([scriptblock]::Create((irm https://thor-agent.thor-agent.local/install.ps1))) -NonInteractive -Channel main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1))) -NonInteractive -Channel main
 ```
 
 | Parameter | Purpose |

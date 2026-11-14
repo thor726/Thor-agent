@@ -130,6 +130,21 @@ jobs:
           PY
           }
 
+          # A fresh crawl needs an authenticated GitHub API token (5,000 req/hr);
+          # unauthenticated runs hit the 60 req/hr limit after a few dozen repos and
+          # the health check then refuses to ship the collapsed index. Fail fast
+          # with a clear reason instead of burning ~30 min of crawl to get there.
+          if [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
+            echo "::error::No GitHub credentials (GH_TOKEN/GITHUB_TOKEN) for the skills-index crawl. Configure the GitHub App (vars.APP_CLIENT_ID + secrets.APP_PRIVATE_KEY) or dispatch with an authenticated run."
+            exit 1
+          fi
+
+          # Committed bootstrap copy of the last good index: the fallback of last
+          # resort before a fresh crawl, so a first deploy of a fork (no scheduled
+          # artifact yet, no live site yet) can still publish the docs. Refresh it
+          # from a healthy scheduled skills-index artifact.
+          BOOTSTRAP_INDEX="website/static/api/skills-index.bootstrap.json"
+
           if [ "$REBUILD_SKILLS_INDEX" = "true" ]; then
             python3 scripts/build_skills_index.py
             validate_index
@@ -160,7 +175,15 @@ jobs:
             exit 0
           fi
 
-          echo "::warning::Live skills index unavailable or unhealthy; falling back to a fresh crawl"
+          if [ -f "$BOOTSTRAP_INDEX" ]; then
+            echo "Live skills index unavailable; falling back to the committed bootstrap copy"
+            cp "$BOOTSTRAP_INDEX" "$INDEX_PATH"
+            if validate_index; then
+              exit 0
+            fi
+          fi
+
+          echo "::warning::No reusable skills index (artifact, live, bootstrap); falling back to a fresh crawl"
           rm -f "$INDEX_PATH"
           python3 scripts/build_skills_index.py
           validate_index

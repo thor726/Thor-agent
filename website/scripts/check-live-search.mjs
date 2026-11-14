@@ -149,7 +149,7 @@ async function checkAlgolia({ appId, apiKey, indexName }) {
         `Algolia index "${indexName}" does not exist yet on app ${appId} (HTTP 404) — ` +
           `register this site's Algolia Crawler, then set EXPECTED_ALGOLIA_INDEX="${indexName}" to enforce search checks`,
       );
-      return [];
+      return null;
     }
     fail(`Algolia rejected the deployed search key: HTTP ${res.status} ${body.slice(0, 200)}`);
     return [];
@@ -218,9 +218,22 @@ async function checkBrowser() {
 
 async function probe() {
   const config = await readDeployedConfig();
-  if (config) await checkHitPagesOpen(await checkAlgolia(config));
-  if (!process.argv.includes('--no-browser')) {
+  let searchConfigured = true;
+  if (config) {
+    const urls = await checkAlgolia(config);
+    // checkAlgolia returns null (with a warning, not a failure) when the
+    // deployed bundle points at an Algolia index this project has not
+    // provisioned yet. The modal cannot list results either in that case, so
+    // the browser check would only re-report the same known gap as a
+    // click-timeout failure. Skip it until EXPECTED_ALGOLIA_INDEX turns the
+    // API check back into a hard failure.
+    searchConfigured = urls !== null;
+    await checkHitPagesOpen(urls || []);
+  }
+  if (searchConfigured && !process.argv.includes('--no-browser')) {
     await checkBrowser().catch((e) => fail(`browser check crashed: ${e.message.split('\n')[0]}`));
+  } else if (!searchConfigured) {
+    warn('browser check skipped: Algolia index not provisioned yet (see warning above)');
   }
 }
 

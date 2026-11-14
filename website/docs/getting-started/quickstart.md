@@ -52,7 +52,7 @@ Pick the row that matches your goal:
 
 ## 1. Install Thor Agent
 ### With the Thor Desktop installer on macOS or Windows (recommended)
-To easily install the command-line and desktop applications, [download the Thor Desktop installer](https://thor-agent.thor-agent.local/) from our website and run it.
+To easily install the command-line and desktop applications, [download the Thor Desktop installer](https://thor726.github.io/Thor-agent/) from our website and run it.
 
 ### Without Thor Desktop:
 For a command-line only install without Thor Desktop, run:
@@ -61,14 +61,14 @@ For aarch64 Android devices, use the separate [Termux APT guide](./termux.md).
 
 #### Linux / macOS / WSL2
 ```bash
-curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 #### Windows (native)
 
 Run in powershell:
 ```powershell
-iex (irm https://thor-agent.thor-agent.local/install.ps1) 
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) 
 ```
 
 After it finishes, reload your shell:

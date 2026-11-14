@@ -314,8 +314,8 @@ The CLI uses argparse, so `--help` is a good first probe for "did my new flag re
 
 ## See also
 
-- User-facing setup + troubleshooting: [Egress proxy](https://thor-agent.thor-agent.local/docs/user-guide/egress/iron-proxy)
-- Docker backend internals: [Docker](https://thor-agent.thor-agent.local/docs/user-guide/docker)
-- Bitwarden Secrets Manager integration: [`thor secrets bitwarden`](https://thor-agent.thor-agent.local/docs/user-guide/secrets/bitwarden)
-- CLI command reference: [`thor egress`](https://thor-agent.thor-agent.local/docs/reference/cli-commands#thor-egress)
-- Sandbox-injected environment variables: [Egress proxy (sandbox-injected)](https://thor-agent.thor-agent.local/docs/reference/environment-variables#egress-proxy-sandbox-injected)
+- User-facing setup + troubleshooting: [Egress proxy](https://thor726.github.io/Thor-agent/docs/user-guide/egress/iron-proxy)
+- Docker backend internals: [Docker](https://thor726.github.io/Thor-agent/docs/user-guide/docker)
+- Bitwarden Secrets Manager integration: [`thor secrets bitwarden`](https://thor726.github.io/Thor-agent/docs/user-guide/secrets/bitwarden)
+- CLI command reference: [`thor egress`](https://thor726.github.io/Thor-agent/docs/reference/cli-commands#thor-egress)
+- Sandbox-injected environment variables: [Egress proxy (sandbox-injected)](https://thor726.github.io/Thor-agent/docs/reference/environment-variables#egress-proxy-sandbox-injected)
