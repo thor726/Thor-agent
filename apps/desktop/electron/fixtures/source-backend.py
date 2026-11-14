@@ -23,7 +23,8 @@ def main() -> None:
     root = Path(os.environ["THOR_HOME"]) / "thor-agent"
     root.mkdir(parents=True)
     for name in (
-        "thor_cli", "thor_platform", "pm", "agent", "tools", "gateway", "tui_gateway", "cron", "plugins",
+        "thor_agent", "thor_cli", "thor_platform", "pm", "agent", "tools", "gateway", "tui_gateway", "cron",
+        "plugins",
     ):
         shutil.copytree(repository / name, root / name,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))

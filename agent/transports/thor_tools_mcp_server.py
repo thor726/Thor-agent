@@ -136,11 +136,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     """Entry point for `python -m agent.transports.thor_tools_mcp_server`."""
     argv = argv or sys.argv[1:]
     verbose = "--verbose" in argv or "-v" in argv
-    logging.basicConfig(
-        level=logging.INFO if verbose else logging.WARNING,
-        stream=sys.stderr,  # MCP uses stdio for protocol — logs MUST go to stderr
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
+    from thor_logging import DisplayNameFormatter
+    stderr_handler = logging.StreamHandler(sys.stderr)  # MCP uses stdio for protocol — logs MUST go to stderr
+    stderr_handler.setFormatter(DisplayNameFormatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
+    logging.basicConfig(level=logging.INFO if verbose else logging.WARNING, handlers=[stderr_handler])
     # Keep Thor' own banners off stdout (the MCP wire).
     os.environ.setdefault("THOR_QUIET", "1")
     os.environ.setdefault("THOR_REDACT_SECRETS", "true")

@@ -576,23 +576,25 @@ config_overrides:
 thor debug share [options]
 ```
 
-将调试报告（系统信息 + 近期日志）上传到粘贴服务并获取可分享的 URL。适用于快速支持请求——包含帮助者诊断问题所需的一切信息。
+将调试摘要上传到公共粘贴服务并获取可分享的 URL；或使用 `--thor` 将完整的脱敏日志发送到 Thor 私有存储。
 
 | 选项 | 说明 |
 |--------|-------------|
-| `--lines <N>` | 每个日志文件包含的日志行数（默认：200）。 |
-| `--expire <days>` | 粘贴过期天数（默认：7）。 |
+| `--lines <N>` | 每个日志文件的行数：用于摘要中的错误计数，并在 `--thor` / `--local` 中（脱敏后）包含（默认：200）。 |
+| `--expire <days>` | dpaste.com 备用粘贴的保留天数（默认：1）。 |
+| `--thor` | 上传到 Thor 内部诊断存储，而非公共粘贴服务。 |
 | `--local` | 在本地打印报告而非上传。 |
+| `--no-redact` | 关闭 `--thor` / `--local` 日志的密钥脱敏。对公共粘贴无影响，公共粘贴从不包含日志文本。 |
 
-报告包含系统信息（操作系统、Python 版本、Thor 版本）、近期 agent 和 gateway 日志（每文件 512 KB 限制）以及脱敏的 API 密钥状态。密钥始终脱敏——不会上传任何密钥；这也涵盖系统 dump（包括 `fallback_providers` 条目及其 URL 中的凭据）和 gateway 的 `/debug` 报告。
+**公共粘贴（默认）。** 上传内容是白名单摘要，绝不包含日志行或消息文本：Thor、Python 和操作系统版本；安装方式；已连接平台和已配置内置工具集的名称；`config.yaml` 中设置了哪些键（仅键名，无值；提供商、MCP 服务器等用户命名的条目只计数不列名）；以及近期日志中按 logger、异常类和 HTTP 状态统计的警告/错误数。gateway 的 `/debug upload` 命令和仪表盘的 **Share debug report** 按钮上传的也是这份摘要。依次尝试的粘贴服务：paste.rs、dpaste.com。
 
-依次尝试的粘贴服务：paste.rs、dpaste.com。
+**私有包（`--thor`）。** 完整调试报告、系统 dump 以及 agent、gateway、GUI/仪表盘和桌面端日志（每文件 512 KB），以及存在时的更新与桌面更新交接日志，会发送到 Thor 私有诊断存储。除非设置 `--no-redact`，密钥会被脱敏；日志中的其他个人数据（名称、ID、消息文本）不会被脱敏。返回的查看链接仅供 Thor 团队使用，14 天后自动删除。
 
 ### 示例
 
 ```bash
 thor debug share              # 上传调试报告，打印 URL
-thor debug share --lines 500  # 包含更多日志行
+thor debug share --lines 500  # 为摘要扫描更多日志行
 thor debug share --expire 30  # 粘贴保留 30 天
 thor debug share --local      # 在终端打印报告（不上传）
 ```

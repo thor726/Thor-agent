@@ -309,7 +309,7 @@ export function runDebugShare(owner: ResolvedOwner): Promise<DebugShareResponse>
     method: 'POST',
     // Only called after the user confirmed the upload; the backend refuses a missing consent.
     body: { consent: true },
-    // ____SYNCHROTHOR_UP___CAP__ upload of report + logs to the paste service.
+    // Synchrothor upload of the allowlisted summary to the public paste service.
     timeoutMs: 120_000
   })
 }

@@ -21,7 +21,7 @@ def test_fresh_takeover_prepares_generation_and_runs_selected_python(tmp_path):
     source = Path(__file__).resolve().parents[2]
     root = tmp_path / "source with spaces"
     root.mkdir()
-    for name in ("pm", "thor_cli"):
+    for name in ("pm", "thor_cli", "thor_agent"):
         shutil.copytree(source / name, root / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     for name in ("thor_constants.py", "thor_dir_acl.py", "thor_yaml.py", "utils.py", "thor_bootstrap.py"):
         shutil.copy2(source / name, root / name)

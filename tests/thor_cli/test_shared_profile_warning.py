@@ -75,7 +75,8 @@ def test_warning_tracks_live_other_install_in_same_home(homes, tmp_path):
 @contextmanager
 def running_cli(home: Path, install: Path):
     """Run the real CLI constructor and entrypoint; stop at terminal interaction."""
-    env = dict(os.environ, THOR_HOME=str(home), HOME=str(home.parent), USERPROFILE=str(home.parent))
+    env = dict(os.environ, THOR_HOME=str(home), HOME=str(home.parent), USERPROFILE=str(home.parent),
+               THOR_BUNDLED_LOCALES=str(Path(__file__).resolve().parents[2] / "locales"))
     for key in ("THOR_SPAWN", "THOR_PARENT_PID", "THOR_PARENT_START_MARKER"):
         env.pop(key, None)
     script = """

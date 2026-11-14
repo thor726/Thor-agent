@@ -25,8 +25,9 @@ eslint.config.*                 @thor726/thor-agent-core
 
 # MCP catalog entries define local commands users later install into
 # ``mcp_servers``; the installer decides how they are fetched and run.
-/optional-mcps/                 @thor726/thor-agent-core
-/thor_cli/mcp_catalog.py      @thor726/thor-agent-core
+/optional-mcps/                 @ThorResearch/thor-agent-core
+/thor_cli/mcp_catalog.py      @ThorResearch/thor-agent-core
+/thor_agent/thor_cli/mcp_catalog.py @ThorResearch/thor-agent-core
 
 # Files that execute at pip-install or interpreter startup.
 /setup.py                       @thor726/thor-agent-core

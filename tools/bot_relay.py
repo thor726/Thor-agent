@@ -491,7 +491,8 @@ def _thor_cli() -> str:
     # Do not select batch shims: cmd.exe reinterprets otherwise literal argv
     # (for example an ampersand in a query-file path), even with shell=False.
     name = "thor.exe" if sys.platform == "win32" else "thor"
-    published = Path(__file__).resolve().parents[1] / ".thor" / "bin" / name
+    from thor_cli._startup_fast import project_root_str
+    published = Path(project_root_str()) / ".thor" / "bin" / name
     if published.is_file():
         return str(published)
     sibling = Path(sys.executable or "").parent / name

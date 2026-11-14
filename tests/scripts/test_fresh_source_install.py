@@ -66,7 +66,7 @@ def test_current_installer_publishes_real_dependencies_and_warm_path(tmp_path, s
     run([uv, "python", "install", "--no-bin", "--no-registry", minor])
     source = tmp_path / "fixture source"
     source.mkdir()
-    for name in ("pm", "thor_cli", "thor_platform"):
+    for name in ("pm", "thor_cli", "thor_platform", "thor_agent"):
         shutil.copytree(ROOT / name, source / name, ignore=shutil.ignore_patterns("__pycache__"))
     for name in ("utils.py", "thor_constants.py", "thor_dir_acl.py", "thor_yaml.py", "thor_bootstrap.py",
                  "setup-thor.sh"):

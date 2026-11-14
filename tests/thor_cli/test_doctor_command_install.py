@@ -46,6 +46,8 @@ def _pm_source(project, home):
     root = Path(__file__).resolve().parents[2]
     for relative in (
         "thor", "thor_bootstrap.py", "thor_constants.py", "thor_cli/__init__.py",
+        "thor_agent/__init__.py", "thor_agent/compat/__init__.py", "thor_agent/compat/finder.py",
+        "thor_agent/compat/moves.py",
         "pm/environments.py", "pm/filesystem.py", "thor_cli/runtime_state.py",
         "thor_cli/_early_recovery.py", "thor_cli/_parser.py",
         "thor_cli/venv_sync.py", "thor_cli/steward.py", "thor_cli/stderr_timestamp.py",

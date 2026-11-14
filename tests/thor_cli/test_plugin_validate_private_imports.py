@@ -243,3 +243,20 @@ def test_public_api_docs_page_is_generated_from_the_data_file():
     spec.loader.exec_module(gen)
 
     assert gen.check() == 0, "website/docs/developer-guide/plugins/public-api.md is stale"
+
+
+def test_a_published_module_moved_under_thor_agent_is_public_in_every_spelling(tmp_path, monkeypatch):
+    """Once ``thor_constants`` moves, ``from thor_agent import thor_constants`` names the same
+    published module as ``import thor_constants`` and must not warn."""
+    from thor_agent.compat.paths import PathMoves
+    from thor_cli import plugin_validate_private_imports as private_imports
+
+    monkeypatch.setattr(private_imports, "original_module",
+                        PathMoves({"thor_constants": "thor_agent.thor_constants"}).original_module)
+    plugin = _plugin(tmp_path / "moved", {"uses_moved.py": (
+        "from thor_agent import thor_constants\n"
+        "from thor_agent.thor_constants import get_thor_home\n"
+        "import thor_agent.thor_constants\n"
+    )})
+
+    assert _private_warnings(validate_plugin_dir(plugin)) == []

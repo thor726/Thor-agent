@@ -27,6 +27,8 @@ from thor_cli import _launchers
 SOURCE = Path(__file__).resolve().parents[2]
 # What a minted launcher imports before the application entry.
 BOOT = ("thor_bootstrap.py", "thor_constants.py", "thor_cli/__init__.py", "thor_cli/_launchers.py",
+        "thor_agent/__init__.py", "thor_agent/compat/__init__.py", "thor_agent/compat/finder.py",
+        "thor_agent/compat/moves.py",
         "thor_cli/_early_recovery.py", "thor_cli/_parser.py", "thor_cli/runtime_state.py",
         "thor_cli/venv_sync.py", "thor_cli/steward.py", "thor_cli/stderr_timestamp.py",
         "thor_cli/update_lock.py", "thor_cli/update_custody.py", "pm/environments.py",

@@ -129,3 +129,9 @@ with a name allows that one name only.
 | `thor_yaml` | `safe_load` | plugins/index.md § Check file paths and read YAML with Thor's own helpers |
 | `thor_yaml` | `safe_dump` | plugins/index.md § Check file paths and read YAML with Thor's own helpers |
 | `thor_cli.urllib_security` | `open_credentialed_url` | plugins/index.md § Send a credentialed HTTP request without leaking it on redirect |
+| `thor_cli.chat_launch` | `thor_command` | user-guide/features/plugins.md § A plugin with its own chat client |
+| `thor_cli.chat_launch` | `print_exit_summary` | user-guide/features/plugins.md § A plugin with its own chat client |
+| `thor_cli.gateway_chat` | `shell_client_env` | user-guide/features/plugins.md § A plugin with its own chat client |
+| `thor_cli.session_worktree` | `create` | user-guide/features/plugins.md § A plugin with its own chat client |
+| `thor_cli.session_worktree` | `restore` | user-guide/features/plugins.md § A plugin with its own chat client |
+| `thor_cli.session_worktree` | `finish` | user-guide/features/plugins.md § A plugin with its own chat client |

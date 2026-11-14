@@ -38,7 +38,7 @@ def test_retained_tui_worktree_survives_stale_prune_while_its_session_resumes(tm
     import os
     import time
 
-    from thor_cli import main_tui_launch
+    from thor_cli import main_tui_launch, session_worktree
     from thor_cli.worktree_ops import _prune_stale_worktrees, _setup_worktree
     from thor_constants import get_thor_home
     from thor_state import SessionDB
@@ -56,7 +56,7 @@ def test_retained_tui_worktree_survives_stale_prune_while_its_session_resumes(tm
     subprocess.run(['git', '-C', str(repo), 'worktree', 'unlock', wt_info['path']], check=True)
     subprocess.run(['git', '-C', str(repo), 'worktree', 'lock', '--reason', 'thor pid=999999999',
                     wt_info['path']], check=True)
-    monkeypatch.setattr(main_tui_launch, '_setup_tui_worktree', lambda: wt_info)
+    monkeypatch.setattr(session_worktree, 'create', lambda: wt_info)
     monkeypatch.setattr(main_tui_launch, '_make_tui_argv', lambda *_: (['node'], Path('.')))
     monkeypatch.setattr(main_tui_launch, '_print_tui_exit_summary', lambda *_: None)
 

@@ -37,6 +37,9 @@ ACCEPT = [
     # a profile literally NAMED "gateway"
     "thor -p gateway gateway run",
     "python -m thor_cli.main --profile gateway gateway run",
+    # gateway-level flags before the action (`thor gateway --accept-hooks run` parses)
+    "thor gateway --accept-hooks run --no-supervise",
+    "thor gateway --accept-hooks",
     # quoted Windows paths with spaces (shlex-aware tokenization)
     r'"C:\Program Files\Thor\thor-gateway.exe"',
     r'"C:\Program Files\Thor\gateway\run.py" run',
@@ -48,6 +51,8 @@ REJECT = [
     "python -m thor_cli.main gateway status",           # other subcommand
     "python -m thor_cli.main gateway restart",
     "python -m thor_cli.main gateway stop",
+    "thor gateway --accept-hooks status",
+    "thor gateway --help",                               # prints help, runs nothing
     "python -m thor_cli.main --profile x dashboard",    # non-gateway subcommand
     "some random python -m mygateway thing",
     "",
