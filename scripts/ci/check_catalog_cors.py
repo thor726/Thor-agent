@@ -24,7 +24,7 @@ from email.message import Message
 from pathlib import Path
 from urllib.parse import urlsplit, urljoin
 
-DEFAULT_URL = "https://thor-agent.thor-agent.local/docs/api/plugins.json"
+DEFAULT_URL = "https://thor726.github.io/Thor-agent/docs/api/plugins.json"
 ORIGIN = "null"
 MAX_HOPS = 5
 TIMEOUT_SECONDS = 20

@@ -43,17 +43,20 @@ jobs:
     # a skills-index PR that doesn't touch website/** paths and so
     # doesn't auto-deploy via the deploy-docs path.
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Trigger Vercel Deploy
+        # No-op until a Vercel deploy hook is configured: with the secret
+        # absent, curl would POST to an empty URL and fail the whole run.
+        if: env.VERCEL_DEPLOY_HOOK != ''
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: curl -fsS --retry 3 --retry-delay 10 -X POST "$VERCEL_DEPLOY_HOOK"
 
   deploy-docs:
     if: github.repository == 'thor726/thor-agent'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
       name: github-pages
@@ -152,7 +155,7 @@ jobs:
 
           echo "Downloading currently live skills index"
           if curl -fsSL --retry 3 --retry-delay 5 \
-            "https://thor-agent.thor-agent.local/docs/api/skills-index.json" \
+            "https://thor726.github.io/Thor-agent/docs/api/skills-index.json" \
             -o "$INDEX_PATH" && validate_index; then
             exit 0
           fi

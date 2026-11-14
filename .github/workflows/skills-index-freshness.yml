@@ -39,11 +39,11 @@ jobs:
         id: probe
         run: |
           set -e
-          URL="https://thor-agent.thor-agent.local/docs/api/skills-index.json"
+          URL="${DOCS_URL:-https://thor726.github.io/Thor-agent/docs}/api/skills-index.json"
           echo "Probing $URL"
-          # Placeholder docs host (.local) never resolves: until the real docs
-          # domain exists there is no deployed index to check, so exit "ok"
-          # instead of filing a fetch-failed issue every 4 hours.
+          # Placeholder docs host (.local) never resolves: if DOCS_URL ever
+          # points at one again, exit "ok" instead of filing a fetch-failed
+          # issue every 4 hours — there is no deployed index to check.
           if python3 -c "from scripts.ci.live_site_guard import effective_docs_url, is_placeholder_host; import sys; sys.exit(0 if is_placeholder_host(effective_docs_url()) else 1)"; then
             echo "status=ok" >> "$GITHUB_OUTPUT"
             echo "detail=Skipped: docs host is a placeholder (.local); no deployed index to check yet" >> "$GITHUB_OUTPUT"

@@ -8,11 +8,14 @@ const config: Config = {
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://thor-agent.thor-agent.local',
-  baseUrl: '/docs/',
+  // Served by GitHub Pages (deploy-site.yml → actions/deploy-pages). The site
+  // is staged under _site/docs/, so the Pages path is /<repo>/docs/ — baseUrl
+  // must match exactly (case-sensitive) or assets and client-side routing 404.
+  url: 'https://thor726.github.io',
+  baseUrl: '/Thor-agent/docs/',
 
   organizationName: 'thor726',
-  projectName: 'thor-agent',
+  projectName: 'Thor-agent',
 
   onBrokenLinks: 'warn',
 

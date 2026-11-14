@@ -1,9 +1,10 @@
 name: Docs Search Monitor
 
-# Live check that search works on thor-agent.thor-agent.local/docs. Search
-# broke in production twice in one month with every build green (a deleted
-# Algolia search key, then Vercel access controls), because nothing ever
-# exercised the deployed site.
+# Live check that search works on https://thor726.github.io/Thor-agent/docs
+# (GitHub Pages, deployed by deploy-site.yml). Search broke in production
+# twice in one month with every build green (a deleted Algolia search key,
+# then Vercel access controls), because nothing ever exercised the deployed
+# site.
 #
 # website/scripts/check-live-search.mjs reads the Algolia credentials from the
 # bundle the site is serving, queries Algolia with the site's Origin, opens the
@@ -53,6 +54,9 @@ jobs:
         timeout-minutes: 9
         env:
           PLAYWRIGHT_DIR: ${{ runner.temp }}/pw
+          # Hosted on GitHub Pages (deploy-site.yml). Override with a repo
+          # `DOCS_URL` variable when a custom domain takes over.
+          DOCS_URL: https://thor726.github.io/Thor-agent/docs
         run: |
           # One retry after a pause so a transient blip never pages anyone.
           # Only the retry writes annotations, so a run that recovers on the
