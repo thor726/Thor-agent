@@ -69,9 +69,6 @@ importers:
       '@nanostores/react':
         specifier: 1.1.0
         version: 1.1.0(nanostores@1.4.2)(react@19.3.0)
-      '@thor/ui':
-        specifier: 'npm:@nous-research/ui@0.19.1'
-        version: 0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)
       '@tailwindcss/typography':
         specifier: 0.5.20
         version: 0.5.20(tailwindcss@4.3.3)
@@ -93,6 +90,9 @@ importers:
       '@tauri-apps/plugin-shell':
         specifier: 2.4.1
         version: 2.4.1
+      '@thor/ui':
+        specifier: npm:@nous-research/ui@0.19.1
+        version: '@nous-research/ui@0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)'
       '@vscode/codicons':
         specifier: 0.0.45
         version: 0.0.45
@@ -190,9 +190,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: 3.2.2
         version: 3.2.2(react@19.3.0)
-      '@thor/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@icons-pack/react-simple-icons':
         specifier: 13.15.1
         version: 13.15.1(react@19.3.0)
@@ -202,9 +199,6 @@ importers:
       '@nanostores/react':
         specifier: 1.1.0
         version: 1.1.0(nanostores@1.4.2)(react@19.3.0)
-      '@thor/ui':
-        specifier: 'npm:@nous-research/ui@0.19.1'
-        version: 0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)
       '@novnc/novnc':
         specifier: 1.7.0
         version: 1.7.0
@@ -232,6 +226,12 @@ importers:
       '@tanstack/react-virtual':
         specifier: 3.14.14
         version: 3.14.14(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@thor/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@thor/ui':
+        specifier: npm:@nous-research/ui@0.19.1
+        version: '@nous-research/ui@0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)'
       '@vscode/codicons':
         specifier: 0.0.45
         version: 0.0.45
@@ -585,15 +585,15 @@ importers:
 
   ui-tui:
     dependencies:
+      '@nanostores/react':
+        specifier: 1.1.0
+        version: 1.1.0(nanostores@1.4.2)(react@19.3.0)
       '@thor/ink':
         specifier: workspace:*
         version: link:packages/thor-ink
       '@thor/shared':
         specifier: workspace:*
         version: link:../apps/shared
-      '@nanostores/react':
-        specifier: 1.1.0
-        version: 1.1.0(nanostores@1.4.2)(react@19.3.0)
       ink-text-input:
         specifier: 6.0.0
         version: 6.0.0(ink@7.1.1(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)
@@ -719,12 +719,6 @@ importers:
 
   web:
     dependencies:
-      '@thor/shared':
-        specifier: workspace:*
-        version: link:../apps/shared
-      '@thor/ui':
-        specifier: 'npm:@nous-research/ui@0.19.1'
-        version: 0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)
       '@observablehq/plot':
         specifier: 0.6.17
         version: 0.6.17
@@ -734,6 +728,12 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+      '@thor/shared':
+        specifier: workspace:*
+        version: link:../apps/shared
+      '@thor/ui':
+        specifier: npm:@nous-research/ui@0.19.1
+        version: '@nous-research/ui@0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)'
       '@xterm/addon-fit':
         specifier: 0.11.0
         version: 0.11.0
@@ -1663,7 +1663,7 @@ packages:
     resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
     engines: {node: '>= 20.19.0'}
 
-  '@thor-labs/ui@0.19.1':
+  '@nous-research/ui@0.19.1':
     resolution: {integrity: sha512-GIPNJQrOyFesjRZSjR/wqXdSJHzX5OW7a5ioTzI6CGeFG/l8gpajNZaY82R5n14wncQD+GyswY0rPrTxAamNcQ==}
     peerDependencies:
       '@observablehq/plot': ^0.6.17
@@ -4269,10 +4269,10 @@ packages:
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
-  thor-estree@0.25.1:
+  hermes-estree@0.25.1:
     resolution: {integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==}
 
-  thor-parser@0.25.1:
+  hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
   hoist-non-react-statics@3.3.2:
@@ -7542,7 +7542,7 @@ snapshots:
 
   '@noble/hashes@2.4.0': {}
 
-  '@thor-labs/ui@0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)':
+  '@nous-research/ui@0.19.1(@observablehq/plot@0.6.17)(@react-three/fiber@9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(gsap@3.15.0)(leva@0.10.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(motion@12.43.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.180.0)':
     dependencies:
       '@nanostores/react': 1.1.0(nanostores@1.4.2)(react@19.3.0)
       class-variance-authority: 0.7.1
@@ -9943,7 +9943,7 @@ snapshots:
       '@babel/core': 7.29.7(supports-color@10.2.2)
       '@babel/parser': 7.29.9
       eslint: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
-      thor-parser: 0.25.1
+      hermes-parser: 0.25.1
       zod: 4.6.7
       zod-validation-error: 4.0.2(zod@4.6.7)
     transitivePeerDependencies:
@@ -10402,11 +10402,11 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  thor-estree@0.25.1: {}
+  hermes-estree@0.25.1: {}
 
-  thor-parser@0.25.1:
+  hermes-parser@0.25.1:
     dependencies:
-      thor-estree: 0.25.1
+      hermes-estree: 0.25.1
 
   hoist-non-react-statics@3.3.2:
     dependencies:
