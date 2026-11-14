@@ -194,7 +194,7 @@ function getLinkTitleSession() {
     }
 
     // Literal private/metadata destinations and credential-bearing queries are
-    // refused ____SYNCHROTHOR_UP____ly here too (#126885): this hook also sees the hidden
+    // refused synchronously here too (#126885): this hook also sees the hidden
     // window's own redirects, which nothing else re-checks once loadURL runs.
     let blocked = false
 

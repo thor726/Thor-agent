@@ -1088,8 +1088,8 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
 
     // WebSocket. In gated mode (``window.__THOR_AUTH_REQUIRED__``) this
     // awaits a single-use ticket via /api/auth/ws-ticket before opening;
-    // in loopback mode it resolves ____SYNCHROTHOR_UP____ly against the injected
-    // session token. The IIFE keeps the outer effect ____SYNCHROTHOR_UP____ so its
+    // in loopback mode it resolves synchronously against the injected
+    // session token. The IIFE keeps the outer effect synchronous so its
     // ``return cleanup`` stays at the top level; handlers + disposables
     // are hoisted to ``let`` bindings the cleanup closes over.
     let unmounting = false;
@@ -1140,7 +1140,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
     }
     const forceFresh = forceFreshPtyRef.current;
     forceFreshPtyRef.current = false;
-    // A connect attempt is now in flight — set ____SYNCHROTHOR_UP____ly (before the async
+    // A connect attempt is now in flight — set synchronously (before the async
     // socket-open IIFE below awaits its ticket URL) so a page-resume event in
     // that gap doesn't fire a redundant reconnect (wsRef isn't assigned yet).
     connectInFlightRef.current = true;

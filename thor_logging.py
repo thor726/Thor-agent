@@ -807,7 +807,7 @@ class _ProfileRoutingFileHandler(logging.Handler):
         return True
 
 
-# A____SYNCHROTHOR_UP____ file logging: an ``emit`` can block on the cross-process
+# Asynchronous file logging: an ``emit`` can block on the cross-process
 # rotation lock (module header); on an asyncio thread that stalls the loop and
 # drops WebSocket clients. Every file handler is therefore driven by a single
 # QueueListener thread; loggers only do a non-blocking enqueue.
@@ -830,7 +830,7 @@ class _NonFormattingQueueHandler(QueueHandler):
     Stdlib ``prepare()`` formats and strips ``args``/``exc_info`` for cross-process
     pickling; ours is in-process, so targets get the unformatted record and apply their
     own ``RedactingFormatter`` on the listener thread. A shallow copy is returned because
-    the emitting thread's ____SYNCHROTHOR_UP____ handlers may mutate ``record.message`` meanwhile.
+    the emitting thread's synchronous handlers may mutate ``record.message`` meanwhile.
     """
 
     def prepare(self, record: logging.LogRecord) -> logging.LogRecord:

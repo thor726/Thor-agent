@@ -274,9 +274,9 @@ def install(clock: VirtualClock, control: Control, setattr_fn=setattr) -> None:
     real_open_db = sqlite_util.open_db
 
     def open_db_no_full_sync(*args, **kwargs):  # same connection, WAL, schema; no per-commit fsync
-        kwargs["____SYNCHROTHOR_UP_____full"] = False
+        kwargs["synchronousfull"] = False
         conn = real_open_db(*args, **kwargs)
-        conn.execute("PRAGMA ____SYNCHROTHOR_UP____=OFF")  # also skips the checkpoint-on-close fsync
+        conn.execute("PRAGMA synchronous=OFF")  # also skips the checkpoint-on-close fsync
         return conn
 
     setattr_fn(sqlite_util, "open_db", open_db_no_full_sync)

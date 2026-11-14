@@ -1,8 +1,8 @@
-"""Guest ledger connections must inherit the configured database.____SYNCHROTHOR_UP____.
+"""Guest ledger connections must inherit the configured database.synchronous.
 
 apply_durability_barriers() is the guest-connection entry point (secondary
 state.db users that must NOT touch journal mode). The configured
-``database.____SYNCHROTHOR_UP____`` level normally rides on apply_database_pragmas()
+``database.synchronous`` level normally rides on apply_database_pragmas()
 during the owner's journal-mode setup — a path guests deliberately skip — so
 the guest entry point applies it directly.
 """
@@ -23,14 +23,14 @@ def _config(monkeypatch, database_section):
     return cfg
 
 
-def test_guest_barriers_apply_configured_____SYNCHROTHOR_UP____(monkeypatch, tmp_path):
-    _config(monkeypatch, {"____SYNCHROTHOR_UP____": "FULL"})
+def test_guest_barriers_apply_configured synchronous(monkeypatch, tmp_path):
+    _config(monkeypatch, {"synchronous": "FULL"})
     conn = sqlite3.connect(tmp_path / "state.db")
     try:
         conn.execute("PRAGMA journal_mode=DELETE")
-        conn.execute("PRAGMA ____SYNCHROTHOR_UP____=1")
+        conn.execute("PRAGMA synchronous=1")
         apply_durability_barriers(conn)
-        assert conn.execute("PRAGMA ____SYNCHROTHOR_UP____").fetchone()[0] == 2
+        assert conn.execute("PRAGMA synchronous").fetchone()[0] == 2
         # And the journal mode was NOT touched — that is the whole contract.
         assert (
             str(conn.execute("PRAGMA journal_mode").fetchone()[0]).lower()
@@ -40,14 +40,14 @@ def test_guest_barriers_apply_configured_____SYNCHROTHOR_UP____(monkeypatch, tmp
         conn.close()
 
 
-def test_guest_barriers_leave_____SYNCHROTHOR_UP_____alone_when_unset(monkeypatch, tmp_path):
+def test_guest_barriers_leave_synchronous_alone_when_unset(monkeypatch, tmp_path):
     _config(monkeypatch, {})
     conn = sqlite3.connect(tmp_path / "state.db")
     try:
         conn.execute("PRAGMA journal_mode=DELETE")
-        conn.execute("PRAGMA ____SYNCHROTHOR_UP____=1")
+        conn.execute("PRAGMA synchronous=1")
         apply_durability_barriers(conn)
-        assert conn.execute("PRAGMA ____SYNCHROTHOR_UP____").fetchone()[0] == 1
+        assert conn.execute("PRAGMA synchronous").fetchone()[0] == 1
     finally:
         conn.close()
 

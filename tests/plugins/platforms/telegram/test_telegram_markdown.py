@@ -149,7 +149,7 @@ def test_emphasis_pairing_does_not_rescan_a_distant_opener(adapter):
     """A distant unmatched `**` opener must not make every later closer rescan its span.
 
     #151723: each closer sliced text[o_end:start] and re-found its newlines (and recompiled the
-    quote regex), so this 32 KB reply took ~1.4 s (200 KB ~106 s) ____SYNCHROTHOR_UP____ly on the gateway
+    quote regex), so this 32 KB reply took ~1.4 s (200 KB ~106 s) synchronously on the gateway
     event loop before every send and streamed edit. The payload is 128 KB so the 2 s floor
     tests/AGENTS.md asks of wall-clock bounds still separates the linear pairing from the regression.
     """

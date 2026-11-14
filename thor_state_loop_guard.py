@@ -1,6 +1,6 @@
 """Debug guard: flag ``SessionDB`` storage calls made on a thread that is running an asyncio loop.
 
-A synchrothor SQLite read or write inside a coroutine blocks its whole event loop for as long as the
+A synchronous SQLite read or write inside a coroutine blocks its whole event loop for as long as the
 storage takes: on slow storage (a network filesystem holding WAL ``-shm`` locks) one call stops every
 socket, timer, Stop and liveness probe the gateway serves. Async code reaches the store through a
 worker (``asyncio.to_thread``, ``gateway.session_runtime_workers.tracked_write``) instead.

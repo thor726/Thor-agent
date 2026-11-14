@@ -265,7 +265,7 @@ class TestStartRun:
         (like every other agent-entry route does via _run_agent): the async
         delegation dispatch reads THOR_SESSION_CHAT_ID to pick its wake
         self-post target, and an empty binding forces background delegations
-        on this route back to ____SYNCHROTHOR_UP____ execution."""
+        on this route back to synchronous execution."""
         app = _create_runs_app(adapter)
         captured = {}
 

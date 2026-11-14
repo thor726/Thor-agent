@@ -162,7 +162,7 @@ class GatewayModelCommandsMixin:
         skew_error = _model_switch_skew_guard()
         if skew_error:
             return None, skew_error
-        # Off-loop: switch_model() can hit a ____SYNCHROTHOR_UP____ models.dev fetch (15s) on a cold cache.
+        # Off-loop: switch_model() can hit a synchronous models.dev fetch (15s) on a cold cache.
         result = await asyncio.to_thread(
             switch_model, raw_input=raw_input, current_provider=ctx.current_provider,
             current_model=ctx.current_model, current_base_url=ctx.current_base_url,
@@ -472,7 +472,7 @@ class GatewayModelCommandsMixin:
         from thor_cli.model_switch_providers import list_picker_providers
         # Uncapped: each adapter bounds its own rendering (Telegram pages, Discord 75, Slack 100) and
         # shows "N more" past it; a shared cap below those hid every model past #50 (#129260).
-        try:  # off-loop: listing still reads config/disk cache ____SYNCHROTHOR_UP____ly (#41289)
+        try:  # off-loop: listing still reads config/disk cache synchronously (#41289)
             providers = await asyncio.to_thread(list_picker_providers, include_moa=True, **listing_kwargs)
         except Exception:
             providers = []
@@ -526,7 +526,7 @@ class GatewayModelCommandsMixin:
 
         lines = [t("gateway.model.current_label", model=ctx.current_model or t("gateway.shared.unknown_value"),
                    provider=get_label(ctx.current_provider)), ""]
-        try:  # off-loop: listing still reads config/disk cache ____SYNCHROTHOR_UP____ly (#41289)
+        try:  # off-loop: listing still reads config/disk cache synchronously (#41289)
             providers = await asyncio.to_thread(list_authenticated_providers, max_models=_TEXT_LISTING_MODELS, **listing_kwargs)
             lines.extend(_model_provider_listing_lines(providers))
         except Exception:

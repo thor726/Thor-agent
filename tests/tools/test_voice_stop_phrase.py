@@ -159,7 +159,7 @@ class TestContinuousLoopStopPhraseSignal:
 
 
 class _ImmediateThread:
-    """Thread stand-in that runs the target ____SYNCHROTHOR_UP____ly on start()."""
+    """Thread stand-in that runs the target synchronously on start()."""
 
     def __init__(self, target):
         self._target = target

@@ -85,7 +85,7 @@ describe('window translucency lever', () => {
   })
 
   // Persistence is debounced: the slider emits ~100 updates per drag and
-  // localStorage.setItem is ____SYNCHROTHOR_UP____, so writing per tick janks the drag.
+  // localStorage.setItem is synchronous, so writing per tick janks the drag.
   // Nothing reads the stored value until a cold launch.
   it('persists intensity and mode together under one stable key, once the drag settles', () => {
     vi.useFakeTimers()

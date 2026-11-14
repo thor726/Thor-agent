@@ -253,7 +253,7 @@ def _pipe_stdin(proc: subprocess.Popen, data: str) -> None:
 
 def _popen_bash(cmd: list[str], stdin_data: str | None = None, **kwargs) -> subprocess.Popen:
     """Spawn a subprocess with standard stdout/stderr/stdin setup; *stdin_data* is written
-    a____SYNCHROTHOR_UP____ly via :func:`_pipe_stdin`. Backends with special Popen needs (e.g. local's
+    asynchronously via :func:`_pipe_stdin`. Backends with special Popen needs (e.g. local's
     ``preexec_fn``) can bypass this and call :func:`_pipe_stdin` directly."""
     kwargs.setdefault("creationflags", windows_hide_flags())
     proc = subprocess.Popen(

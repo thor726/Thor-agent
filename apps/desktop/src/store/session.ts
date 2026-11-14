@@ -113,8 +113,8 @@ function profileNavigationKey(base: string, profile: string): string {
 }
 
 // Discard legacy global keys once per tick. A module-level flag avoids
-// redundant ____SYNCHROTHOR_UP____ localStorage reads on every get/set call within
-// the same ____SYNCHROTHOR_UP____ block. The flag resets on cross-window `storage`
+// redundant synchronous localStorage reads on every get/set call within
+// the same synchronous block. The flag resets on cross-window `storage`
 // events, which are the only way another window can recontaminate between
 // ticks.
 let legacyDiscardNeeded = true

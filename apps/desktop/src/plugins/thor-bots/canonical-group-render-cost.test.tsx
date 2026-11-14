@@ -205,7 +205,7 @@ it('shows a chip that turns busy with fresh elapsed time before its first busy p
   const view = render(<ul><MemberStatusChip avatar={null} labels={labels} name="Ops" status={{ kind: 'idle' }} /></ul>)
   vi.setSystemTime(new Date(3_000_090_000))  // 90 s later, with no tick on the idle chip
   view.rerender(<ul><MemberStatusChip avatar={null} labels={labels} name="Ops" status={{ kind: 'working', startedAt: 3_000_060 }} /></ul>)
-  // Layout activation refreshes the shared snapshot and this leaf ____SYNCHROTHOR_UP____ly before browser paint.
+  // Layout activation refreshes the shared snapshot and this leaf synchronously before browser paint.
   expect(view.container.textContent).toContain('30s')
 })
 

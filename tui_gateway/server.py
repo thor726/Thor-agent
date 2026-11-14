@@ -180,7 +180,7 @@ _DETAIL_MODES = frozenset({"hidden", "collapsed", "expanded"})
 # mcp.servers.* = rediscovery, cold npx spawn, ~30s OAuth wait; profiles.* = skill-tree walk + state.db
 # open; bot_relay.* = a FULL one-turn agent conversation (600s); setup.* / session.active_list =
 # Desktop-polled and under GIL pressure block the WS read loop (false "needs setup", stalled
-# interrupts); voice.*/wake.* = __SYNCHROTHOR_UP__ faster-whisper install (300s); session.workspace.move =
+# interrupts); voice.*/wake.* = synchronous faster-whisper install (300s); session.workspace.move =
 # git subprocess probes on an arbitrary (maybe slow) mount; session.save = a full stored-session read + JSON
 # render (up to sessions.max_export_messages rows, ~0.8s at the default cap); onboarding.start = session
 # creation + a prompt.submit; onboarding.state = a bounded wait on the boot-time due answer.
@@ -1859,7 +1859,7 @@ def _read_spawn_tree_index(session_dir) -> list[dict]:
 _GOAL_COMPRESSION_RECOVERY_ATTEMPTS = "_goal_compression_recovery_attempts"
 _GOAL_COMPRESSION_RECOVERY_LIMIT = 1
 
-# Captured at import time: tests monkeypatch threading.Thread with a ____SYNCHROTHOR_UP____ stub, and the ticker only
+# Captured at import time: tests monkeypatch threading.Thread with a synchronous stub, and the ticker only
 # exits once `stop` is set AFTER run_conversation returns — inline it would spin forever.
 _RealThread = threading.Thread
 

@@ -218,7 +218,7 @@ describe('MessagingView enable switch', () => {
     // would still be showing A's data.
     //
     // Note on coverage: jsdom cannot observe the paint-order race itself
-    // (act() flushes passive effects ____SYNCHROTHOR_UP____ly, so an effect-based reset
+    // (act() flushes passive effects synchronously, so an effect-based reset
     // also clears before the assertion; outside act() the commit itself is
     // deferred). This test therefore pins the reset *semantics* — after a
     // scope switch the previous profile's credential placeholder must be gone
@@ -232,7 +232,7 @@ describe('MessagingView enable switch', () => {
       $settingsScopeOverride.set('profile-b')
     })
 
-    // ____SYNCHROTHOR_UP___CAP__ assertion — no waitFor: the reset must have discarded the
+    // Synchronous assertion — no waitFor: the reset must have discarded the
     // stale platforms state before the new profile's fetch resolves.
     expect(screen.queryByPlaceholderText(oldToken)).toBeNull()
 

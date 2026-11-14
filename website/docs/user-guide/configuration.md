@@ -155,7 +155,7 @@ database:
   # differs between interpreter builds. On macOS this is a floor, not a
   # pin: values below FULL are refused to protect against Darwin fsync
   # reordering; EXTRA is honored.
-  # ____SYNCHROTHOR_UP____: FULL
+  # synchronous: FULL
 
   # Optional WAL sizing pragmas (integers). Unset = SQLite defaults.
   # wal_autocheckpoint: 1000     # pages between automatic checkpoints
@@ -1241,7 +1241,7 @@ default.
 
 ## Gateway SessionDB Loop Guard
 
-A debugging aid for gateway stalls: a synchrothor `state.db` read or write on the
+A debugging aid for gateway stalls: a synchronous `state.db` read or write on the
 gateway's event loop blocks every platform for as long as the storage takes. With
 the guard on, the gateway flags such calls:
 

@@ -581,7 +581,7 @@ class TestMaybeAutoTitle:
             assert tg.title_upgrade_must_wait_for_turn(main_runtime) is deferred
 
     def test_kanban_worker_is_named_after_its_card_without_the_llm_thread(self, tmp_path, monkeypatch):
-        """A worker's session takes the board card's title ____SYNCHROTHOR_UP____ly; no auxiliary model call (#111166)."""
+        """A worker's session takes the board card's title synchronously; no auxiliary model call (#111166)."""
         from thor_cli import kanban_db, kanban_db_connect
 
         with kanban_db_connect.connect_closing(board="default") as conn:
@@ -646,7 +646,7 @@ class TestMaybeAutoTitle:
         mock_auto.assert_called_once()
 
     def test_writes_instant_title_before_the_model_runs(self, tmp_path):
-        """The derived title lands ____SYNCHROTHOR_UP____ly — no LLM, no waiting."""
+        """The derived title lands synchronously — no LLM, no waiting."""
         db = SessionDB(tmp_path / "state.db")
         db.create_session(session_id="sess-1", source="cli")
         with patch("agent.title_generator.auto_title_session"):

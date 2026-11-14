@@ -1,6 +1,6 @@
 """delegate_task(background=true) on stateless API-server sessions.
 
-Previously async_delivery_supported()=False forced __SYNCHROTHOR_UP__ execution for
+Previously async_delivery_supported()=False forced synchronous execution for
 every background dispatch on the API server, blocking the whole turn. Now
 that background completions can wake the originating session via the
 /v1/chat/completions self-post (gateway/wake.py), a session-continuable
@@ -147,7 +147,7 @@ def test_apiserver_session_with_id_dispatches_background(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def test_apiserver_session_without_id_stays_____SYNCHROTHOR_UP____(monkeypatch):
+def test_apiserver_session_without_id_stays_synchronous(monkeypatch):
     """No session id to wake → keep the sync fallback (a detached result
     would never re-enter any conversation)."""
     dt = _patch_delegate(monkeypatch)
@@ -165,5 +165,5 @@ def test_apiserver_session_without_id_stays_____SYNCHROTHOR_UP____(monkeypatch):
     )
     parsed = json.loads(out)
     assert parsed.get("status") != "dispatched", parsed
-    assert "__SYNCHROTHOR_UP__LY" in parsed.get("note", "")
+    assert "synchronously" in parsed.get("note", "")
     assert process_registry.completion_queue.empty()

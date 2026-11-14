@@ -250,7 +250,7 @@ def test_profile_routed_child_continues_inside_its_profile_scope(tmp_path, monke
     assert [m["content"] for m in model.turns[1]["history"]] == [brief, f"done: {brief}"]
 
 
-@pytest.mark.parametrize("background", [False, True], ids=["____SYNCHROTHOR_UP____", "sync-fallback"])
+@pytest.mark.parametrize("background", [False, True], ids=["synchronous", "sync-fallback"])
 def test_joined_result_handle_can_continue_the_same_child(background):
     from tools import delegate_tool  # register the real handler
 
@@ -261,7 +261,7 @@ def test_joined_result_handle_can_continue_the_same_child(background):
         out = json.loads(registry.dispatch("delegate_task", {"goal": "write parser", "background": background},
                                            parent_agent=parent))
         if background:
-            assert "__SYNCHROTHOR_UP__LY" in out["note"]
+            assert "synchronously" in out["note"]
         sid = out["results"][0]["subagent_id"]
         again = json.loads(registry.dispatch("delegate_task", {
             "action": "continue", "subagent_id": sid, "message": "add tests", "background": False,

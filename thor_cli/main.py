@@ -2709,7 +2709,7 @@ def _prepare_agent_startup(args) -> None:
             from thor_cli.plugins import start_background_plugin_discovery
 
             # Daemon thread: ~150ms of manifest scanning overlaps the rest of
-            # startup. Every ____SYNCHROTHOR_UP____ reader goes through discover_plugins(),
+            # startup. Every synchronous reader goes through discover_plugins(),
             # which joins this thread first (incl. model_tools at import time).
             start_background_plugin_discovery()
         except Exception:

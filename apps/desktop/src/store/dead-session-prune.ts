@@ -179,7 +179,7 @@ function dropDeadId(id: string): void {
   }
 
   // Forget the pin's sync bookkeeping BEFORE unpinning: the reconcile listener
-  // fires ____SYNCHROTHOR_UP____ly on unpin, and with the id still tracked it would
+  // fires synchronously on unpin, and with the id still tracked it would
   // re-PATCH the dead id (a fresh 404 on every boot — the noise we're removing).
   if ($pinnedSessionIds.get().includes(id)) {
     forgetPinSyncState(id)

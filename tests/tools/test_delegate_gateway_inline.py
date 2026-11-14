@@ -167,7 +167,7 @@ def test_dispatch_follows_the_schema_the_session_carries(fast_children, monkeypa
 
 
 def test_nested_and_one_shot_delegation_keep_their_own_paths(fast_children, monkeypatch):
-    # An orchestrator child (depth > 0) was always ____SYNCHROTHOR_UP____; a one-shot session keeps its explanatory note.
+    # An orchestrator child (depth > 0) was always synchronous; a one-shot session keeps its explanatory note.
     monkeypatch.setattr(fast_children, "_get_max_spawn_depth", lambda: 2)
     nested = json.loads(fast_children.delegate_task(
         goal="audit", background=False, parent_agent=_parent(_built(inline=False).tools, depth=1)))
@@ -176,7 +176,7 @@ def test_nested_and_one_shot_delegation_keep_their_own_paths(fast_children, monk
     oneshot = _parent(_built(inline=True).tools)
     oneshot._oneshot_session = True
     result = json.loads(fast_children.delegate_task(goal="audit", background=True, parent_agent=oneshot))
-    assert "__SYNCHROTHOR_UP__LY" in result["note"]
+    assert "synchronously" in result["note"]
 
 
 def test_live_control_degrades_to_plain_answers_in_an_inline_session(fast_children):

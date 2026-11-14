@@ -1385,7 +1385,7 @@ def _register_linux_desktop_entry(defer: bool = False):
 
     ``defer=True`` (app-grid launch) returns a ``DeferredDesktopEntryInstall`` that writes the
     entry only once the Electron window is on screen (#111906); ``None`` when nothing is
-    pending. Terminal, detached and ``--build-only`` launches install ____SYNCHROTHOR_UP____ly.
+    pending. Terminal, detached and ``--build-only`` launches install synchronously.
     """
     from thor_cli.main import PROJECT_ROOT
     try:

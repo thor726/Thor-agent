@@ -13,7 +13,7 @@ title: "Leonardo.AI Video"
 platforms: []
 known_issues:
   - "Image-to-video accepts a public image URL only; local file paths are not supported and the URL path has not been exercised end-to-end."
-  - "Only the Leonardo Motion 2.0 model family is verified. Other models reachable through the same a____SYNCHROTHOR_UP____ endpoint (Veo, Kling, Seedance, Wan) share the transport but their model ids are unverified and are not advertised."
+  - "Only the Leonardo Motion 2.0 model family is verified. Other models reachable through the same asynchronous endpoint (Veo, Kling, Seedance, Wan) share the transport but their model ids are unverified and are not advertised."
   - "A clip costs roughly 200 Leonardo API tokens. The plugin reports the cost per call but cannot cap spend, so allow it to run unattended only with a balance you are willing to burn."
 capabilities:
   provides_tools: []

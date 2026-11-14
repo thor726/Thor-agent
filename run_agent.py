@@ -1360,7 +1360,7 @@ class AIAgent(
         from tools.delegate_tool import _strip_model_hidden_task_fields, delegate_task as _delegate_task
         # Top-level MODEL delegations run in the background (handle returned, results re-enter as messages),
         # unless the session's delegate_task is the joined variant (one-shot, delegation.gateway_mode inline).
-        # An ORCHESTRATOR SUBAGENT (depth > 0) stays ____SYNCHROTHOR_UP____ — it needs results in-turn and owns no gateway
+        # An ORCHESTRATOR SUBAGENT (depth > 0) stays synchronous — it needs results in-turn and owns no gateway
         # session. The schema-level `background` param is intentionally ignored.
         return _delegate_task(
             goal=function_args.get("goal"), context=function_args.get("context"),

@@ -92,7 +92,7 @@ export async function copyImageFromUrl(url: string): Promise<boolean> {
 
   try {
     // Pass the async fetch/conversion as a Promise inside ClipboardItem so
-    // navigator.clipboard.write runs ____SYNCHROTHOR_UP____ly inside the click gesture
+    // navigator.clipboard.write runs synchronously inside the click gesture
     // (required by Safari/WebKit user-activation checks).
     const pngBlobPromise = fetchImageAsPngBlob(url)
 

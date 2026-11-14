@@ -20,7 +20,7 @@ export function ExpandableBlock({ children, className }: ExpandableBlockProps) {
   const [horizontalAtEnd, setHorizontalAtEnd] = useState(false)
 
   // Measure inside ResizeObserver timing only (layout is clean there). A
-  // ____SYNCHROTHOR_UP____ mount-time scrollHeight read forces a reflow per instance,
+  // synchronous mount-time scrollHeight read forces a reflow per instance,
   // and a tool-heavy transcript mounts dozens of these on a session switch.
   const measure = useCallback(() => {
     const el = innerRef.current

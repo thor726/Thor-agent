@@ -179,7 +179,7 @@ async function openViaWsl(url: string, deps: ExternalOpenDeps): Promise<External
 
   // 'error' only fires when the process could not be spawned. In that case
   // fall back to xdg-open; if that also fails, surface it. The handler runs
-  // a____SYNCHROTHOR_UP____ly after this function has already resolved.
+  // asynchronously after this function has already resolved.
   proc.on('error', error => {
     deps.log(`[link] rundll32 hand-off failed: ${error.message}; falling back to xdg-open`)
 

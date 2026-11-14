@@ -104,8 +104,8 @@ async function runtimeContentMatches(runGit: RunGit, stampCommit: string, option
 
 /**
  * About/version polls share one check per checkout, including failed checks.
- * `isUpdating` may answer a____SYNCHROTHOR_UP____ly (the marker's owner liveness is an
- * async judgement); a sync answer keeps the check ____SYNCHROTHOR_UP____.
+ * `isUpdating` may answer asynchronously (the marker's owner liveness is an
+ * async judgement); a sync answer keeps the check synchronous.
  */
 export function createBundleSkewChecker(
   stamp: BundleSkewStamp | null,

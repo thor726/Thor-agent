@@ -29,7 +29,7 @@ using the real default-off registry schema produced a one-task array without
 `group`. The actual delegation handler then built and ran one real AIAgent child,
 which completed in one API call with `GROUP_GATE_OK`. Parent tool bytes were
 unchanged across child execution. This is a schema-acceptance/execution smoke,
-not a comparative quality evaluation or proof of a____SYNCHROTHOR_UP____ delivery timing.
+not a comparative quality evaluation or proof of asynchronous delivery timing.
 
 Before inference, the live catalog was read and an approximately $0.016 budget
 estimated for two calls (20k input + 1024 output allowance).

@@ -1003,7 +1003,7 @@ def _human_decision(spec: _GateSpec, *, command: str, description: str,
                 return deny(spec.transport_denied, "denied")
             return grant(choice)
 
-    # Gateway/async approval: block the agent thread until /approve or /deny, mirroring the CLI's ____SYNCHROTHOR_UP____ input()
+    # Gateway/async approval: block the agent thread until /approve or /deny, mirroring the CLI's synchronous input()
     # flow. The agent never sees "approval_required" here — it gets output or a definitive BLOCKED.
     if is_gateway or is_ask:
         # Redacted copies for user-visible rendering only (the gateway paints them into Discord/Slack); the raw

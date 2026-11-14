@@ -9,7 +9,7 @@
 // link-local, CGNAT, cloud-metadata and reserved ranges, plus token-bearing
 // URLs whose GET would consume a one-time link.
 //
-// The classification functions are pure so the ____SYNCHROTHOR_UP____
+// The classification functions are pure so the synchronous
 // `webRequest.onBeforeRequest` hook can use them; they see through `127.1`,
 // `0x7f.1` and integer IPv4 spellings because curl's inet_aton does.
 // `isSafeTitleFetchTarget` adds the DNS-resolution layer and is the check the
@@ -183,7 +183,7 @@ function ipv6BlockReason(value: bigint): string | null {
 const BLOCKED_TITLE_HOSTNAMES = new Set(['metadata.google.internal', 'metadata.goog'])
 
 /**
- * ____SYNCHROTHOR_UP___CAP__ hostname classification — literal addresses and always-blocked
+ * Synchronous hostname classification — literal addresses and always-blocked
  * names. Returns the block reason, or null when the host is a public literal
  * or an unresolved name (DNS is `isSafeTitleFetchTarget`'s job).
  */
@@ -215,7 +215,7 @@ export function literalTitleBlockReason(hostname: string): string | null {
   }
 
   // `localhost` and its subdomains always mean loopback, so they classify
-  // without DNS — that keeps the ____SYNCHROTHOR_UP____ onBeforeRequest hook able to
+  // without DNS — that keeps the synchronous onBeforeRequest hook able to
   // cancel redirect hops to them, and a configured proxy from re-opening them.
   if (host === 'localhost' || host.endsWith('.localhost')) {
     return 'loopback-host'

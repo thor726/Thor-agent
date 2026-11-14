@@ -399,7 +399,7 @@ def _display_result(client: Any, suggested: list[str], *, session_id: Optional[s
 
 def _rename_result(target: HostedTarget) -> str:
     """Rename the one account of ``target.name`` called ``target.alias`` (or, when unnamed, labelled
-    so) to ``target.to``. ____SYNCHROTHOR_UP___CAP__: no operation and no card."""
+    so) to ``target.to``. Synchronous: no operation and no card."""
     from tools.connectors.gateway.errors import GatewayUnavailable, IdempotencyConflict
     from tools.connectors.portal.client import PortalConnectorClient
 

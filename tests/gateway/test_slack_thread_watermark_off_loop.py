@@ -2,7 +2,7 @@
 
 Every ordinary reply in a Slack thread persists the thread's watermark (session metadata, so a
 restart can rehydrate the replies it missed). That write is a full routing-index save
-(``replace_gateway_routing_entries`` + the fsynced ``sessions.json`` mirror) and ran synchrothorly
+(``replace_gateway_routing_entries`` + the fsynced ``sessions.json`` mirror) and ran synchronously
 on the event loop inside the adapter's message handler, holding ``SessionStore._lock`` across the
 storage I/O, so every loop-side reader of that lock waited for it too.
 

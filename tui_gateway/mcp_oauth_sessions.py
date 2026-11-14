@@ -91,7 +91,7 @@ def start_flow(
         daemon=True, name=f"mcp-oauth-{server_name}").start()
     try:
         auth_url = None
-        # wait_for_authorization_url is async; run its wait ____SYNCHROTHOR_UP____ly.
+        # wait_for_authorization_url is async; run its wait synchronously.
         deadline = time.time() + url_timeout
         while time.time() < deadline:
             snap = flow.snapshot()

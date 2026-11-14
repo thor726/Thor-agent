@@ -254,7 +254,7 @@ class _YamlEnvLoad:
             undo()
 
 
-# Loads are synchrothor; copied contexts must not inherit another thread's partial seen-set.
+# Loads are synchronous; copied contexts must not inherit another thread's partial seen-set.
 _YAML_ENV_LOAD = threading.local()
 
 

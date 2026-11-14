@@ -564,7 +564,7 @@ class TestRound2MidCommitLeaseRelease:
 
         fence.revoke_commit_admission()
 
-        # Release happened ____SYNCHROTHOR_UP____ly inside revoke — no worker involved.
+        # Release happened synchronously inside revoke — no worker involved.
         assert db.get_compression_lock_holder(session_id) is None, (
             "revoke before begin_commit must release the lease immediately"
         )

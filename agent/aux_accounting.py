@@ -82,7 +82,7 @@ def record_aux_usage(
         except Exception:
             logger.debug("Aux usage cost estimation failed", exc_info=True)
         # Inside a Relay-driven tool callback the thread runs Relay's loop; a worker store refuses
-        # ____SYNCHROTHOR_UP____ RPC there (#139029).
+        # synchronous RPC there (#139029).
         from agent.runtime_session_store import call_off_event_loop
         call_off_event_loop(
             session_db.record_auxiliary_usage,

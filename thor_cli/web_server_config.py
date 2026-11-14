@@ -856,7 +856,7 @@ def _apply_model_assignment_sync(
     scope: str, provider: str, model: str, task: str, base_url: str, api_key: str = "",
     reasoning_effort: Optional[str] = _UNSET, prepared: "Optional[tuple[str, ModelSwitchResult]]" = None,
 ):
-    """____SYNCHROTHOR_UP___CAP__ body of POST /api/model/set.
+    """Synchronous body of POST /api/model/set.
 
     Runs inside ``_profile_scope`` (worker thread) so every load_config/save_config lands in
     the requested profile. Raises HTTPException for validation errors. ``prepared`` is a

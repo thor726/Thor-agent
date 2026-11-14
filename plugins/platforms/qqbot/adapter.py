@@ -492,7 +492,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
     @staticmethod
     def _create_task(coro):
         """Schedule a coroutine; returns None (no error) when no loop is running
-        (tests call _dispatch_payload ____SYNCHROTHOR_UP____ly)."""
+        (tests call _dispatch_payload synchronously)."""
         try:
             return asyncio.get_running_loop().create_task(coro)
         except RuntimeError:
@@ -504,7 +504,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
             self._create_task(self._ws.close())
 
     def _dispatch_payload(self, payload: dict[str, Any]) -> None:
-        """Route inbound WebSocket payloads (dispatch ____SYNCHROTHOR_UP____ly, spawn async handlers)."""
+        """Route inbound WebSocket payloads (dispatch synchronously, spawn async handlers)."""
         op, t, s, d = payload.get("op"), payload.get("t"), payload.get("s"), payload.get("d")
         if isinstance(s, int) and (self._last_seq is None or s > self._last_seq):
             self._last_seq = s

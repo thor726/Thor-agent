@@ -146,7 +146,7 @@ let detachListener: (() => void) | undefined
  *
  * Kept for secondary-window renderers that still drive search via the
  * Electron bridge. The primary window's renderer-side walker calls
- * `updateFindResults` ____SYNCHROTHOR_UP____ly and never wires this listener.
+ * `updateFindResults` synchronously and never wires this listener.
  */
 export function initFindInPageListener(): () => void {
   listenerRefs += 1
