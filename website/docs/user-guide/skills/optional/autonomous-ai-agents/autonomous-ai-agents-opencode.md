@@ -10,7 +10,7 @@ description: "Delegate coding to OpenCode CLI (features, PR review)"
 
 Delegate coding to OpenCode CLI (features, PR review).
 
-Want the full side-by-side? Read [Thor Agent vs OpenCode](https://thor726.github.io/Thor-agent/compare/opencode).
+Want the full side-by-side? Read [Thor Agent vs OpenCode](https://thor-agent.thor-agent.local/compare/opencode).
 
 ## Skill metadata
 

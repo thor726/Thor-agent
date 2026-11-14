@@ -23,7 +23,7 @@ def _config(monkeypatch, database_section):
     return cfg
 
 
-def test_guest_barriers_apply_configured synchronous(monkeypatch, tmp_path):
+def test_guest_barriers_apply_configured_synchronous(monkeypatch, tmp_path):
     _config(monkeypatch, {"synchronous": "FULL"})
     conn = sqlite3.connect(tmp_path / "state.db")
     try:
