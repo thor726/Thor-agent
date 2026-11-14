@@ -2,12 +2,12 @@
  "counts": {
   "http": {
    "keep-host-wide": 1,
-   "undecided": 345
+   "undecided": 344
   },
   "rpc": {
-   "authority": 111,
+   "authority": 108,
    "keep-host-wide": 1,
-   "undecided": 179
+   "undecided": 182
   },
   "websocket": {
    "undecided": 10
@@ -47,7 +47,6 @@
   {"current_path": "thor_cli.web_routers.ops:delete_webhook", "decision": "undecided", "handler": "DELETE /api/webhooks/{name}", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_server_dashboard:_PluginApiHotMount", "decision": "undecided", "handler": "DELETE GET HEAD OPTIONS PATCH POST PUT /api/plugins/{name}/{path:path}", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.webapp_relay_proxy:relay_http", "decision": "undecided", "handler": "DELETE GET HEAD OPTIONS PATCH POST PUT /api/relay/{connection_id}/{path:path}", "kind": "http", "ref": ""},
-  {"current_path": "thor_cli.web_routers.peer:peer_forward", "decision": "undecided", "handler": "DELETE GET PATCH POST /api/peer/{path:path}", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.actions:get_action_status", "decision": "undecided", "handler": "GET /api/actions/{name}/status", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.analytics:get_models_analytics", "decision": "undecided", "handler": "GET /api/analytics/models", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.analytics:get_usage_analytics", "decision": "undecided", "handler": "GET /api/analytics/usage", "kind": "http", "ref": ""},
@@ -108,8 +107,6 @@
   {"current_path": "thor_cli.web_routers.git:git_worktrees_route", "decision": "undecided", "handler": "GET /api/git/worktrees", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_health", "decision": "undecided", "handler": "GET /api/health", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_health_idle", "decision": "undecided", "handler": "GET /api/health/idle", "kind": "http", "ref": ""},
-  {"current_path": "thor_cli.web_routers.actions:check_thor_update", "decision": "undecided", "handler": "GET /api/thor/update/check", "kind": "http", "ref": ""},
-  {"current_path": "thor_cli.web_routers.actions:get_update_receipt", "decision": "undecided", "handler": "GET /api/thor/update/receipt", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_host_identity", "decision": "undecided", "handler": "GET /api/host/identity", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_learning_graph", "decision": "undecided", "handler": "GET /api/learning/graph", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_learning_node", "decision": "undecided", "handler": "GET /api/learning/node", "kind": "http", "ref": ""},
@@ -180,6 +177,8 @@
   {"current_path": "thor_cli.web_routers.status:get_ssh_ownership", "decision": "undecided", "handler": "GET /api/ssh/ownership", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_status", "decision": "undecided", "handler": "GET /api/status", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:get_system_stats", "decision": "undecided", "handler": "GET /api/system/stats", "kind": "http", "ref": ""},
+  {"current_path": "thor_cli.web_routers.actions:check_thor_update", "decision": "undecided", "handler": "GET /api/thor/update/check", "kind": "http", "ref": ""},
+  {"current_path": "thor_cli.web_routers.actions:get_update_receipt", "decision": "undecided", "handler": "GET /api/thor/update/receipt", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.tools:get_computer_use_status", "decision": "undecided", "handler": "GET /api/tools/computer-use/status", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.tools:get_terminal_backends", "decision": "undecided", "handler": "GET /api/tools/terminal/backends", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.tools:get_toolsets", "decision": "undecided", "handler": "GET /api/tools/toolsets", "kind": "http", "ref": ""},
@@ -262,7 +261,6 @@
   {"current_path": "thor_cli.web_routers.git:git_worktree_add_route", "decision": "undecided", "handler": "POST /api/git/worktree/add", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.git:git_worktree_remove_route", "decision": "undecided", "handler": "POST /api/git/worktree/remove", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.status:post_health_retirement", "decision": "undecided", "handler": "POST /api/health/retirement", "kind": "http", "ref": ""},
-  {"current_path": "thor_cli.web_routers.actions:update_thor", "decision": "undecided", "handler": "POST /api/thor/update", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.local_models:local_models_activate", "decision": "undecided", "handler": "POST /api/local-models/activate", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.local_models:local_models_download", "decision": "undecided", "handler": "POST /api/local-models/download", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.local_models:local_models_download_browsed", "decision": "undecided", "handler": "POST /api/local-models/download-browsed", "kind": "http", "ref": ""},
@@ -322,6 +320,7 @@
   {"current_path": "thor_cli.web_routers.skills:install_skill_hub", "decision": "undecided", "handler": "POST /api/skills/hub/install", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.skills:uninstall_skill_hub", "decision": "undecided", "handler": "POST /api/skills/hub/uninstall", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.skills:update_skills_hub", "decision": "undecided", "handler": "POST /api/skills/hub/update", "kind": "http", "ref": ""},
+  {"current_path": "thor_cli.web_routers.actions:update_thor", "decision": "undecided", "handler": "POST /api/thor/update", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.tools:grant_computer_use_permissions", "decision": "undecided", "handler": "POST /api/tools/computer-use/permissions/grant", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.tools:run_toolset_post_setup", "decision": "undecided", "handler": "POST /api/tools/toolsets/{name}/post-setup", "kind": "http", "ref": ""},
   {"current_path": "thor_cli.web_routers.webapp_access:restart_webapp_access; surface: web_access", "decision": "undecided", "handler": "POST /api/webapp-access/restart", "kind": "http", "ref": ""},
@@ -469,9 +468,9 @@
   {"current_path": "authority; standalone: legacy server.dispatch", "decision": "authority", "handler": "groups.send", "kind": "rpc", "ref": ""},
   {"current_path": "authority; standalone: legacy server.dispatch", "decision": "authority", "handler": "groups.state", "kind": "rpc", "ref": ""},
   {"current_path": "authority; standalone: legacy server.dispatch", "decision": "authority", "handler": "groups.stop", "kind": "rpc", "ref": ""},
-  {"current_path": "authority; standalone: legacy server.dispatch", "decision": "authority", "handler": "handoff.fail", "kind": "rpc", "ref": ""},
-  {"current_path": "authority; standalone: legacy server.dispatch", "decision": "authority", "handler": "handoff.request", "kind": "rpc", "ref": ""},
-  {"current_path": "authority; standalone: legacy server.dispatch", "decision": "authority", "handler": "handoff.state", "kind": "rpc", "ref": ""},
+  {"current_path": "legacy fallback; standalone: legacy server.dispatch", "decision": "undecided", "handler": "handoff.fail", "kind": "rpc", "ref": "D3"},
+  {"current_path": "legacy fallback; standalone: legacy server.dispatch", "decision": "undecided", "handler": "handoff.request", "kind": "rpc", "ref": "D3"},
+  {"current_path": "legacy fallback; standalone: legacy server.dispatch", "decision": "undecided", "handler": "handoff.state", "kind": "rpc", "ref": "D3"},
   {"current_path": "legacy fallback; standalone: legacy server.dispatch", "decision": "undecided", "handler": "i18n.catalog", "kind": "rpc", "ref": "D3"},
   {"current_path": "legacy fallback; standalone: legacy server.dispatch", "decision": "undecided", "handler": "i18n.languages", "kind": "rpc", "ref": "D3"},
   {"current_path": "legacy fallback; standalone: legacy server.dispatch", "decision": "undecided", "handler": "image.attach", "kind": "rpc", "ref": "D3"},
