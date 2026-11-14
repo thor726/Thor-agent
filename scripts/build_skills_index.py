@@ -108,24 +108,22 @@ def crawl_skills_sh(source: SkillsShSource) -> list:
 
 def _fetch_repo_tree(repo: str, auth: GitHubAuth) -> tuple[str, list]:
     """Recursive tree for a repo as ``(status, entries)``: ``ok``, ``truncated`` (partial
-    entries), ``gone`` (the repo 404s) or ``error`` (anything transient — the row is kept)."""
-    headers = auth.get_headers()
+    entries), ``gone`` (the repo 404s) or ``error`` (anything transient — the row is kept).
+
+    One request, not two: ``git/trees/HEAD`` resolves the default branch server-side, so the
+    separate ``GET /repos/{repo}`` lookup is gone. The resolve phase fans out over ~2,300
+    repos; at 2 requests each it spent ~4,600 of the App installation token's 5,000 req/hr,
+    and the tap crawl that follows died on the leftover ~400 (github: 0 skills, health check
+    refuses the index). One request per repo halves the resolve cost and leaves ~2,700 for
+    the taps."""
     try:
         resp = httpx.get(
-            f"https://api.github.com/repos/{repo}",
-            headers=headers, timeout=15, follow_redirects=True,
+            f"https://api.github.com/repos/{repo}/git/trees/HEAD",
+            params={"recursive": "1"},
+            headers=auth.get_headers(), timeout=30, follow_redirects=True,
         )
         if resp.status_code != 200:
             return ("gone" if resp.status_code == 404 else "error"), []
-        branch = resp.json().get("default_branch", "main")
-
-        resp = httpx.get(
-            f"https://api.github.com/repos/{repo}/git/trees/{branch}",
-            params={"recursive": "1"},
-            headers=headers, timeout=30, follow_redirects=True,
-        )
-        if resp.status_code != 200:
-            return "error", []
         data = resp.json()
         return ("truncated" if data.get("truncated") else "ok"), data.get("tree", [])
     except Exception:
@@ -288,6 +286,8 @@ def main():
 
     # Crawl skills.sh, then resolve its repo paths right away: the CI App token lives 1 h and
     # the ClawHub walk below runs longer, so resolving after it 401'd every tree (0/20000).
+    # trees/HEAD costs one request per repo (~2,300 total) instead of two (~4,600), so the
+    # crawl stays inside the App installation token's 5,000 req/hr with room for the taps.
     all_skills.extend(crawl_skills_sh(skills_sh_source))
     all_skills = batch_resolve_paths(all_skills, auth)
 
