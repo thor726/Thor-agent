@@ -184,7 +184,7 @@ def _stop_worker_group(proc) -> None:
                 os.killpg(pgid, sig)  # windows-footgun: ok — POSIX-only, Windows returned above
             with contextlib.suppress(Exception):
                 proc.wait(timeout=1)
-    # Killed members are reaped by init a____SYNCHROTHOR_UP____ly; one still alive after that stays covered.
+    # Killed members are reaped by init asynchronously; one still alive after that stays covered.
     release_process_group_once_empty(pgid, proc=proc)
 
 

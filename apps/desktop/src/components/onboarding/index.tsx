@@ -138,7 +138,7 @@ function useApiKeyCatalog(scope: OnboardingContext['scope']): ApiKeyOption[] {
     let cancelled = false
 
     // Best-effort — on failure the curated defaults still render. Wrapped in
-    // Promise.resolve().then so a ____SYNCHROTHOR_UP____ throw (e.g. no desktop bridge in
+    // Promise.resolve().then so a synchronous throw (e.g. no desktop bridge in
     // tests) is funneled into the same .catch instead of escaping.
     void Promise.resolve()
       .then(() => getGlobalModelOptions({ includeUnconfigured: true, explicitOnly: false }, scope))

@@ -252,7 +252,7 @@ def _is_backend_available(backend: str) -> bool:
 # check_firecrawl_api_key() all live in plugins.web.firecrawl.provider.
 def _web_requires_env() -> list[str]:
     """Tool-registry metadata env vars for the web backends. Gateway vars are always listed: gating them
-    on ``managed_thor_tools_enabled()`` cost a ____SYNCHROTHOR_UP____ portal HTTP refresh at every CLI startup.
+    on ``managed_thor_tools_enabled()`` cost a synchronous portal HTTP refresh at every CLI startup.
     Contract: set var -> tool sees it; extras are harmless for the not-logged-in."""
     return [
         "EXA_API_KEY", "PARALLEL_API_KEY", "TAVILY_API_KEY", "PERPLEXITY_API_KEY", "KEENABLE_API_KEY", "FIRECRAWL_API_KEY",

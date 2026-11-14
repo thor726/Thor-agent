@@ -495,7 +495,7 @@ async def _advisory_pressure(status: dict[str, Any], home: Path) -> None:
 
 
 def _status_local_reads() -> dict[str, Any]:
-    """The probe's ____SYNCHROTHOR_UP____ local reads: the raw config.yaml stamp, the install method, the
+    """The probe's synchronous local reads: the raw config.yaml stamp, the install method, the
     auth store and (first call only) git provenance. Run on a worker thread: on the event loop that
     also serves the session WebSocket they stalled every Desktop request behind the disk (#143561)."""
     current_ver, latest_ver = check_config_version()
@@ -901,7 +901,7 @@ async def run_debug_share_endpoint(body: DebugShareRequest | None = None,
                                    profile: Optional[str] = None):
     """Upload the allowlisted public debug summary (no log text; full logs only via
     ``thor debug share --thor``) and return the paste URL; refused (400) unless the body
-    carries ``consent: true`` from a user confirmation. Synchrothor,
+    carries ``consent: true`` from a user confirmation. Synchronous,
     unlike the other diagnostics actions: the point is the shareable URLs, returned as a
     structured payload the dashboard renders as copyable links."""
     from thor_cli.debug import build_debug_share

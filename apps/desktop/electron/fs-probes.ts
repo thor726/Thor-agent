@@ -1,4 +1,4 @@
-// ____SYNCHROTHOR_UP___CAP__ filesystem probes main.ts uses on its boot and update paths.
+// Synchronous filesystem probes main.ts uses on its boot and update paths.
 
 import fs from 'node:fs'
 import path from 'node:path'

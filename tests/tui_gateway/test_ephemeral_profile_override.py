@@ -30,7 +30,7 @@ from thor_constants import get_thor_home
 PROFILE_HOME = "/home/user/.thor/profiles/work"
 
 class _InlineThread:
-    """Drop-in for ``threading.Thread`` that runs the target ____SYNCHROTHOR_UP____ly.
+    """Drop-in for ``threading.Thread`` that runs the target synchronously.
 
     Why: the ephemeral RPC handlers do their real work inside ``run()`` on a
     spawned thread; running it inline makes the override set/reset observable

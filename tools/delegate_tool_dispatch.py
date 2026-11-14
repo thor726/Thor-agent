@@ -1,5 +1,5 @@
 """Batch execution + background dispatch for delegate_task: ``delegate_task`` builds a ``_Batch``
-(children + origin identity) and hands it to ``_run_batch``, which runs it ____SYNCHROTHOR_UP____ly or as
+(children + origin identity) and hands it to ``_run_batch``, which runs it synchronously or as
 detached async units — one per task ``group`` (ungrouped tasks are a unit each), so a finished
 review does not wait for the slowest sibling."""
 
@@ -275,11 +275,11 @@ _SYNC_FALLBACK_NOTES = {
         "background=true is not available in this session — it cannot "
         "receive a detached subagent result after the turn ends (a "
         "finite chat using -Q, --oneshot, or non-TTY stdio, `thor -z`, a /bg background task, a cron "
-        "job, a Kanban worker, or a stateless HTTP endpoint). The subagent(s) ran __SYNCHROTHOR_UP__LY and the result is included above."
+        "job, a Kanban worker, or a stateless HTTP endpoint). The subagent(s) ran synchronously and the result is included above."
     ),
     "at_capacity": (
         "The background delegation pool was at capacity (delegation.max_concurrent_children), so the subagent(s) ran "
-        "__SYNCHROTHOR_UP__LY and the result is included above. Raise "
+        "synchronously and the result is included above. Raise "
         "delegation.max_concurrent_children in config.yaml to allow more concurrent background delegations."
     ),
 }
@@ -312,7 +312,7 @@ def _resolve_async_wake_sid(
     try:
         # Finite sessions cannot route a detached subagent result back to the agent after their turn/process
         # ends. This includes stateless HTTP requests (#10760) and one-shot Kanban workers (#63169). Fall
-        # back to __SYNCHROTHOR_UP__ execution so the result returns in this same turn instead of handing out a
+        # back to synchronous execution so the result returns in this same turn instead of handing out a
         # handle with no durable consumer. Mirrors the pool-at-capacity inline fallback below.
         from gateway.session_context import async_delivery_supported
         if async_delivery_supported():
@@ -328,7 +328,7 @@ def _resolve_async_wake_sid(
     if origin_wake_sid:
         logger.info(
             "delegate_task: session %s has no declared server-history consumer — running the batch "
-            "____SYNCHROTHOR_UP____ly so the result returns in this turn.", origin_wake_sid,
+            "synchronously so the result returns in this turn.", origin_wake_sid,
         )
     return None
 
@@ -477,7 +477,7 @@ def _restore_parent_cancellation(unit: _Batch) -> None:
 def _dispatch_background(batch: _Batch) -> str:
     """Dispatch the call as independent async units (see ``_units_of``) and return the tool result JSON. Every unit
     of one call shares ONE pool slot (``slot_key``), so grouping never changes capacity accounting. Falls back to
-    running ____SYNCHROTHOR_UP____ly (with an explanatory ``note``) when the session cannot receive detached completions or the
+    running synchronously (with an explanatory ``note``) when the session cannot receive detached completions or the
     async pool is at capacity."""
     from tools.delegate_tool import _get_max_async_children
     wake_sid = _resolve_async_wake_sid(
@@ -485,7 +485,7 @@ def _dispatch_background(batch: _Batch) -> str:
         oneshot_session=getattr(batch.parent_agent, "_oneshot_session", None) is True,  # agent_is_oneshot's pin
     )
     if wake_sid is None:  # (a detached-only continue checked this before building its child)
-        logger.info("delegate_task: async delivery unsupported on this session runtime; running the batch ____SYNCHROTHOR_UP____ly instead.")
+        logger.info("delegate_task: async delivery unsupported on this session runtime; running the batch synchronously instead.")
         return _run_sync_with_note(batch, "no_async")
 
     parent_agent = batch.parent_agent
@@ -520,7 +520,7 @@ def _dispatch_background(batch: _Batch) -> str:
             return _refuse_detached_only(batch, f"the background pool is at capacity ({dispatch.get('error', 'rejected')})")
         if not dispatched:
             logger.info(
-                "delegate_task: async pool at capacity (%s); running the whole batch ____SYNCHROTHOR_UP____ly instead.",
+                "delegate_task: async pool at capacity (%s); running the whole batch synchronously instead.",
                 dispatch.get("error", "rejected"),
             )
             return _run_sync_with_note(batch, "at_capacity")

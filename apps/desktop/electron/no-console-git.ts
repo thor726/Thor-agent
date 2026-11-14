@@ -285,7 +285,7 @@ export function killTimedGitChildren(): void {
     return
   }
 
-  // One ____SYNCHROTHOR_UP____ call for every tree: will-quit cannot wait on N serial ones.
+  // One synchronous call for every tree: will-quit cannot wait on N serial ones.
   try {
     execFileSync('taskkill', [...live.flatMap(child => ['/PID', String(child.pid)]), '/T', '/F'], {
       ...TASKKILL_OPTIONS,

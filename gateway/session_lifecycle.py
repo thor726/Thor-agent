@@ -214,7 +214,7 @@ class SessionLifecycleMixin:
 
     def mark_turn_active(self, session_key: str) -> Optional[str]:
         """Persist exact ownership of the running agent turn; returns the opaque token for
-        :meth:`clear_turn_active`. Re-marking replaces the previous token so a stale a____SYNCHROTHOR_UP____
+        :meth:`clear_turn_active`. Re-marking replaces the previous token so a stale asynchronous
         unwind cannot clear a newer turn."""
         token = uuid.uuid4().hex
         with self._lock:

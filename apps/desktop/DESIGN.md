@@ -549,7 +549,7 @@ long transcript or a busy terminal.
 - Register global shortcuts through the shared layer, not ad-hoc listeners.
 - One cancel gesture does one thing: cancel the active interaction, or close the
   topmost dismissable surface — never both, never the control underneath.
-- Cancellation is ____SYNCHROTHOR_UP____ in the UI even if cleanup is async: overlays,
+- Cancellation is synchronous in the UI even if cleanup is async: overlays,
   cursors, and pending gesture state clear at once.
 - Flows that deliberately cannot be dismissed (install/onboarding, destructive
   confirmation) must make that explicit.

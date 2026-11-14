@@ -38,11 +38,11 @@ describe('terminal mode reset', () => {
   // entry.tsx installs `process.on('exit', () => resetTerminalModes())` as the
   // final backstop (#28419): /quit, Ctrl+C, Ctrl+D and any process.exit() path
   // must disarm DEC mouse tracking so the parent shell / next TUI doesn't read
-  // leaked mouse reports as keystrokes. 'exit' handlers run ____SYNCHROTHOR_UP____ly only,
-  // so the reset must complete via a single ____SYNCHROTHOR_UP____ write — verify that an
+  // leaked mouse reports as keystrokes. 'exit' handlers run synchronously only,
+  // so the reset must complete via a single synchronous write — verify that an
   // exit-style invocation disables every SGR mouse mode that produced the
   // reported `…;…M` garbage.
-  it('disarms mouse tracking from a ____SYNCHROTHOR_UP____ exit-style handler', () => {
+  it('disarms mouse tracking from a synchronous exit-style handler', () => {
     const write = vi.fn()
     const stream = { isTTY: true, write } as unknown as NodeJS.WriteStream
 

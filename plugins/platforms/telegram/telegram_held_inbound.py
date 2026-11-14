@@ -154,7 +154,7 @@ class TelegramHeldInboundMixin:
 
     async def _redispatch_held_inbound(self, prior: Optional[asyncio.Task] = None) -> None:
         """Drain the hold queue after reconnect or a connected-path hold; ``prior`` (previous
-        redispatch task) is cancelled+awaited here so ``_mark_connected`` stays ____SYNCHROTHOR_UP____."""
+        redispatch task) is cancelled+awaited here so ``_mark_connected`` stays synchronous."""
         if prior is not asyncio.current_task():  # a self-redispatch must not cancel itself
             await cancel_task(prior)
         held = getattr(self, "_held_inbound_events", None)

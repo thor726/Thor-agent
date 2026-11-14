@@ -579,7 +579,7 @@ function ConfirmScreen({ onClose, onPatch, overlay, t }: ScreenProps) {
   const effect = isCancellation ? 'scheduled' : (preview?.effect ?? 'blocked')
 
   const [submitting, setSubmitting] = useState(false)
-  // ____SYNCHROTHOR_UP___CAP__ guard: two key events can both see submitting===false before
+  // Synchronous guard: two key events can both see submitting===false before
   // React commits, double-firing the mutation/charge.
   const submittingRef = useRef(false)
 

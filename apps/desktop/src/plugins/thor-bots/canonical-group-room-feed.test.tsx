@@ -115,7 +115,7 @@ it('refreshes on its own route’s and room’s groups.changed, not another conn
   await screen.findByText('m1')
   room.log.push(message(2))
 
-  // A refresh issues groups.state ____SYNCHROTHOR_UP____ly, so an ignored signal is visible at once: no read starts.
+  // A refresh issues groups.state synchronously, so an ignored signal is visible at once: no read starts.
   const reads = stateReads()
   emit('groups.changed', { connectionId: 'other-machine' })
   emit('groups.changed', { connectionId: 'local', payload: { room_ids: ['another-room'] } })

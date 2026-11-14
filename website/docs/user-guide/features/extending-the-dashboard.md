@@ -753,7 +753,7 @@ Plugin API routes sit behind the dashboard's normal auth gate — unauthenticate
 
 With the default `plugins.isolation: in_process`, API handlers run on the gateway's event loop, the same
 loop that answers every other dashboard, Desktop and chat request. A handler that blocks (`time.sleep`, a
-____SYNCHROTHOR_UP____ HTTP client, a long file scan) holds all of them until it returns: a handler sleeping 3 s
+synchronous HTTP client, a long file scan) holds all of them until it returns: a handler sleeping 3 s
 delays an unrelated `/api/status` by seconds and can time out Desktop's connection. Use `async def` with
 async I/O, or move blocking work off the loop with `await asyncio.to_thread(...)` (a plain `def` handler
 also runs in a worker thread). `plugins.isolation: host` runs the handlers in a separate process

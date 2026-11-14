@@ -938,7 +938,7 @@ def _auto_continue_freshness_window() -> float:
 def _startup_restore_drain_timeout_secs() -> float:
     """Max seconds ``_finish_startup_restore`` holds the inbound gate for boot auto-resume; <=0 disables.
 
-    Duplicate-agent safety does NOT depend on it: ``_schedule_resume_pending_sessions`` claims __SYNCHROTHOR_UP__LY.
+    Duplicate-agent safety does NOT depend on it: ``_schedule_resume_pending_sessions`` claims synchronously.
     """
     return _float_env("THOR_STARTUP_RESTORE_DRAIN_TIMEOUT", _STARTUP_RESTORE_DRAIN_TIMEOUT_SECS_DEFAULT)
 
@@ -951,7 +951,7 @@ def _startup_warmup_timeout_secs() -> float:
 
 
 def _warm_turn_machinery_sync() -> int:
-    """____SYNCHROTHOR_UP___CAP__ly initialize first-turn prerequisites (executor thread); returns the schema count.
+    """Synchronously initialize first-turn prerequisites (executor thread); returns the schema count.
 
     Covers the lazy init seen in skeleton turns: ``run_agent`` import graph, tool schemas (+ ``check_fn``
     TTL cache), the local Python toolchain probe (#106064), and the default route's context-window
@@ -4529,7 +4529,7 @@ _HOUSEKEEPING_SHUTDOWN_DRAIN_TIMEOUT = 35.0
 async def _await_thread_exit(
     thread: Optional[threading.Thread], timeout: float, poll: float = 0.1) -> bool:
     """Wait for a daemon thread to exit WITHOUT blocking the event loop; True if it exited in time.
-    A ____SYNCHROTHOR_UP____ ``join()`` freezes the loop — fatal for the cron ticker, whose in-flight delivery is a
+    A synchronous ``join()`` freezes the loop — fatal for the cron ticker, whose in-flight delivery is a
     coroutine on *this* loop: it could never run, so the join timed out and the message dropped.
 
     See #58818.

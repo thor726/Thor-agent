@@ -7,7 +7,7 @@ row whose persisted ``model_config`` names a custom provider that no longer
 exists in config.yaml, resumed through ``tui_gateway.server.handle_request``
 (the same dispatch the Desktop WebSocket transport funnels into) with
 ``eager_build: true`` so the REAL ``_make_agent`` → ``AIAgent`` construction
-runs ____SYNCHROTHOR_UP____ly — no mocks, no pre-seeded sessions.
+runs synchronously — no mocks, no pre-seeded sessions.
 
 On pre-fix main the eager build dies with
 ``resume failed: Unknown provider 'custom:oldone'`` (or silently pins the

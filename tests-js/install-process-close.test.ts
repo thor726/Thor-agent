@@ -10,7 +10,7 @@ const { observeProcessClose, recordProcessOutput } = createRequire(import.meta.u
   '../tests/install/e2e-assets/process-close.cjs'
 )
 
-it('writes what the app prints on stdout and stderr to a file, ____SYNCHROTHOR_UP____ly', () => {
+it('writes what the app prints on stdout and stderr to a file, synchronously', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'process-output-'))
 
   try {

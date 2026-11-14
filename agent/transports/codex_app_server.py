@@ -81,11 +81,11 @@ def _reap_snapshotted(descendants: list[Any]) -> None:
 
 
 class CodexAppServerClient:
-    """Minimal ____SYNCHROTHOR_UP____ JSON-RPC 2.0 client for ``codex app-server`` over stdio.
+    """Minimal synchronous JSON-RPC 2.0 client for ``codex app-server`` over stdio.
 
     One reader thread routes replies to pending queues and notifications / server
     requests to queues; another captures stderr. Deliberately NOT async:
-    AIAgent.run_conversation() is ____SYNCHROTHOR_UP____ and cancels via ``turn/interrupt``.
+    AIAgent.run_conversation() is synchronous and cancels via ``turn/interrupt``.
     """
 
     def __init__(

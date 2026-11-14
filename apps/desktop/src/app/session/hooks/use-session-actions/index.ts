@@ -535,7 +535,7 @@ export function useSessionActions({
       // painting on the pane-hidden marker, which is what actually cleared the
       // chat.
       revealTreePane('workspace')
-      // Clear the durable route intent ____SYNCHROTHOR_UP____ly, before React Router
+      // Clear the durable route intent synchronously, before React Router
       // publishes /new. Submit uses that intent to heal an existing-session
       // rebind race, so leaving the old id here could revive it on a very fast
       // New Chat -> Enter sequence.
@@ -677,7 +677,7 @@ export function useSessionActions({
         // prong: background gateway events retarget it while other sessions
         // stream (#47709 class), and the seconds-long session.create round-trip
         // (server-side agent + MCP init) makes that churn near-certain — every
-        // genuine user switch retargets selection AND route ____SYNCHROTHOR_UP____ly
+        // genuine user switch retargets selection AND route synchronously
         // anyway. submitTargetStoredId is the just-created stored session, so
         // our own upcoming re-home onto it never reads as drift.
         const drift = sessionContextDrift({
@@ -1211,7 +1211,7 @@ export function useSessionActions({
       // the thread shows this session's proven warm transcript or its loader
       // instead of the old session lingering until resume lands. Setting the
       // ref here is also what use-route-resume's self-heal assumes ("set
-      // ____SYNCHROTHOR_UP____ly at resume entry").
+      // synchronously at resume entry").
       setFreshDraftReady(false)
       clearResumeToasts(options)
       resetViewSync()
@@ -3027,7 +3027,7 @@ export function useSessionActions({
         return
       }
 
-      // Selection and runtime refs are updated ____SYNCHROTHOR_UP____ly at routing
+      // Selection and runtime refs are updated synchronously at routing
       // boundaries. React props can still describe the previous render when a
       // delete lands in the same tick, which used to leave the doomed route in
       // place and let the generic 4001 recovery rebind it.

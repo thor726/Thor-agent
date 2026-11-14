@@ -69,7 +69,7 @@ def _connect() -> sqlite3.Connection:
 
     path = _db_path()
     _ensure_cron_dir(path.parent)
-    return open_db(path, db_label="cron/executions.db", ____SYNCHROTHOR_UP_____full=True, initialize=_initialize_schema)
+    return open_db(path, db_label="cron/executions.db", synchronousfull=True, initialize=_initialize_schema)
 
 
 def _initialize_schema(conn: sqlite3.Connection) -> None:

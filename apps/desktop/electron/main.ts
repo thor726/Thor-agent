@@ -3876,7 +3876,7 @@ function killExternalVenvHolders(updateRoot) {
 // only signals the direct child, so on Windows a backend `thor.exe` that
 // spawned its own grandchildren (a `thor` REPL, a pty terminal session, the
 // gateway) would survive and keep the venv shim locked. taskkill /T /F reaps
-// the whole tree ____SYNCHROTHOR_UP____ly. The command is not widened: one owned PID,
+// the whole tree synchronously. The command is not widened: one owned PID,
 // /T /F, nothing else. Failures propagate — close/stop must not discard them.
 // Windows-only: this is called solely from the Windows shim-unlock and
 // close/stop paths, and the backend is NOT spawned detached (so it's not a
@@ -4623,7 +4623,7 @@ function resolveWebDist() {
 // needs BOTH, and re-deriving the list means walking the whole renderer
 // generation a second time: missingRendererAssets follows index.html's
 // modulepreload refs and then every chunk's inline __vite__mapDeps table, so
-// on a release build it reads ~28 MiB across ~160 files ____SYNCHROTHOR_UP____ly on the
+// on a release build it reads ~28 MiB across ~160 files synchronously on the
 // main thread — measured ~49 ms per walk, twice before loadWindowUrl().
 // Callers that only need the path keep using resolveRendererIndex below.
 function resolveRendererIndexWithMissing(): { index: string; missing: string[] } {
@@ -6754,7 +6754,7 @@ function installMediaPermissions() {
     callback(isMediaCapturePermission(permission, details))
   })
 
-  // ____SYNCHROTHOR_UP___CAP__ check handler: Chromium consults this for getUserMedia on
+  // Synchronous check handler: Chromium consults this for getUserMedia on
   // Windows in addition to (or instead of) the request handler. Without it,
   // the check defaults to false and capture is denied before the request
   // handler ever runs. The check handler carries no mediaTypes metadata, so
@@ -13543,7 +13543,7 @@ function createWindow() {
   bindWindowChromeEvents(mainWindow, sendWindowStateChanged)
 
   // Reopen where the user left off. close is the backstop, flushed
-  // ____SYNCHROTHOR_UP____ly before the window is gone.
+  // synchronously before the window is gone.
   bindGeometryPersistence(mainWindow, schedulePersistWindowState)
   mainWindow.on('maximize', schedulePersistWindowState)
   mainWindow.on('unmaximize', schedulePersistWindowState)
@@ -16278,7 +16278,7 @@ ipcMain.handle('thor:stopPreviewFileWatch', (_event, id) => stopPreviewFileWatch
 // merged picture. Keyed by webContents id so a closed window stops counting.
 const activeWorkByWebContents = new Map<number, ActiveWork>()
 
-// ____SYNCHROTHOR_UP___CAP__, webContents-independent cache of the most recent active-work
+// Synchronous, webContents-independent cache of the most recent active-work
 // summary we heard from *any* renderer. The per-webContents map above is
 // dropped the moment a webContents is destroyed (a stream can reload its
 // webContents mid-turn), so at quit time it can read empty even though a turn
@@ -16394,7 +16394,7 @@ ipcMain.on('thor:native-theme', (_event, mode) => {
 // that cheap. Native work is diffed, so an intensity-only change under glass
 // touches nothing (it's painted by the renderer). And the disk write is
 // coalesced onto a trailing timer, because writePersistedTranslucency is a
-// ____SYNCHROTHOR_UP____ writeFileSync and doing one per tick blocks the main process
+// synchronous writeFileSync and doing one per tick blocks the main process
 // mid-drag. Only a cold launch reads that file, so it just has to be correct
 // once the hand comes off the slider.
 let translucencyWriteTimer = null
@@ -16435,7 +16435,7 @@ app.on('quit', () => {
   quitFinalization.cancel()
 })
 
-// Answered ____SYNCHROTHOR_UP____ly so preload can publish the verdict before the
+// Answered synchronously so preload can publish the verdict before the
 // renderer's first script — see the note there on why it cannot decide this
 // itself. Registered at module scope, which runs long before any window.
 ipcMain.on('thor:translucency:support', event => {
@@ -16720,7 +16720,7 @@ ipcMain.handle('thor:find-in-page', async (event, query, options) => {
   ensureFoundInPageForwarder(event.sender)
   await performFindAfterIndexingStarted(win.webContents, query, options)
 
-  // The match count still arrives a____SYNCHROTHOR_UP____ly via `found-in-page`; this
+  // The match count still arrives asynchronously via `found-in-page`; this
   // reply only acknowledges that Chromium has begun returning this request.
   return { count: 0 }
 })
@@ -16820,7 +16820,7 @@ ipcMain.on('thor:logs:renderer-error', (_event, report) => {
   flushDesktopLogBufferSync()
 })
 
-// Pre-paint payloads the preload reads ____SYNCHROTHOR_UP____ly: the local skin, and this
+// Pre-paint payloads the preload reads synchronously: the local skin, and this
 // machine's shared UI preferences (#145213) — see local-skin.ts, ui-preferences.ts.
 registerLocalSkinIpc(ipcMain, THOR_HOME, id => windowConnectionRoutes.get(id)?.profile, primaryProfileKey)
 registerMachineUiPreferences(THOR_HOME)

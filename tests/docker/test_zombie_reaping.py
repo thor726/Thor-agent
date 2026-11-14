@@ -31,7 +31,7 @@ def test_orphan_zombies_reaped(
     )
 
     # Poll for zombies-absent instead of a fixed sleep: reaping is
-    # a____SYNCHROTHOR_UP____ (SIGCHLD) and can lag on a loaded host.
+    # asynchronous (SIGCHLD) and can lag on a loaded host.
     deadline = time.monotonic() + 10
     zombies = ["(never checked)"]
     while time.monotonic() < deadline:

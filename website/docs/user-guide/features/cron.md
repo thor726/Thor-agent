@@ -53,7 +53,7 @@ unknown and is not retried automatically.
 
 An interrupted execution or a prepared fire that cannot be found stays paused for operator review.
 Recovery never creates another admission for it. Paused jobs are not automatically resumed, even
-when their completed result is recovered. `thor cron run` exits nonzero for a known ____SYNCHROTHOR_UP____
+when their completed result is recovered. `thor cron run` exits nonzero for a known synchronous
 execution failure; background dispatch is not a terminal success/failure verdict.
 
 ## Creating scheduled tasks
@@ -1314,7 +1314,7 @@ cronjob(action="remove", job_id="...")
 
 For `update`, pass `skills=[]` to remove all attached skills.
 
-### Manual runs are a____SYNCHROTHOR_UP____
+### Manual runs are asynchronous
 
 `cronjob(action="run")` fires the job immediately **in the background** (like
 `delegate_task`): the tool call returns at once with a handle, and the job's
@@ -1339,7 +1339,7 @@ definition, and it passes the same prompt-injection scan as stored prompts.
 
 Runtimes that can't receive detached results (one-shot `thor -z`, `thor
 cron run` from the CLI, cron child sessions, Kanban workers) fall back to
-____SYNCHROTHOR_UP____ execution automatically.
+synchronous execution automatically.
 
 ## Toolsets available to cron jobs
 

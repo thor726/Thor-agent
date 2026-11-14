@@ -1,4 +1,4 @@
-"""Cross-process ordering for a____SYNCHROTHOR_UP____ session Git metadata probes."""
+"""Cross-process ordering for asynchronous session Git metadata probes."""
 
 from __future__ import annotations
 

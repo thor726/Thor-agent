@@ -326,7 +326,7 @@ result by identity with the entry your card was rendered for before acting on a 
 
 ### Read a conversation's model settings
 
-`BasePlatformAdapter.get_session_model_settings(source)` is a ____SYNCHROTHOR_UP____, read-only
+`BasePlatformAdapter.get_session_model_settings(source)` is a synchronous, read-only
 accessor for native settings sheets. The named consumer is the **Inline platform plugin**:
 its agent settings sheet currently reads the runner's private session-model override map
 and combines it with configured defaults. Together with `list_session_model_picker_providers`
@@ -376,7 +376,7 @@ and leaves the legacy override view and all existing model-switch behavior uncha
 ### List a conversation's model picker providers
 
 `BasePlatformAdapter.list_session_model_picker_providers(source, *, max_models=100,
-include_moa=True)` is the ____SYNCHROTHOR_UP____ catalog counterpart. It shares the display accessor's
+include_moa=True)` is the synchronous catalog counterpart. It shares the display accessor's
 source canonicalization, owning-profile config scope, session > channel > config precedence,
 and persisted-pick fallback. It returns `None` without a runner or for a rejected route;
 an attached adapter with no session can still list configured providers. It does not create

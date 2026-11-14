@@ -46,7 +46,7 @@ from tools.approval_context import reset_thor_interactive_context, set_thor_inte
 
 logger = logging.getLogger(__name__)
 
-# Runs the ____SYNCHROTHOR_UP____ AIAgent off the event loop.
+# Runs the synchronous AIAgent off the event loop.
 _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="acp-agent")
 
 # ListSessionsRequest has no client-side limit; clients paginate via `cursor`/`next_cursor`.
@@ -648,7 +648,7 @@ class ThorACPAgent(SlashCommandsMixin, acp.Agent):
                 # Claude Code / OpenCode / Pi and the Zed client (which registers the session-update routing
                 # entry before awaiting the loadSession RPC specifically so in-call history replay updates
                 # can find the thread). Deferring this via `loop.call_soon` (as we did briefly in May 2026)
-                # broke every spec-compliant ACP client that measures notifications ____SYNCHROTHOR_UP____ly against
+                # broke every spec-compliant ACP client that measures notifications synchronously against
                 # the load response — see #12285 follow-up.
                 await self._replay_session_history(state)
             except Exception:
@@ -1104,7 +1104,7 @@ class ThorACPAgent(SlashCommandsMixin, acp.Agent):
                 raise acp.RequestError(-32603, "Session is busy; switch models while the session is idle")
             state.command_op = True
         try:
-            # switch_model() does ____SYNCHROTHOR_UP____ network I/O (models.dev, custom-endpoint probes,
+            # switch_model() does synchronous network I/O (models.dev, custom-endpoint probes,
             # ~10 s cold) — off the loop, like the gateway, so other ACP sessions keep flowing.
             try:
                 _old, requested_provider, resolved_model = await asyncio.to_thread(

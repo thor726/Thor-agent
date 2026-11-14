@@ -909,7 +909,7 @@ def seed_credits_at_session_start(agent) -> bool:
             fixture = dev_fixture_credits_state()
         except Exception:
             fixture = None
-        if fixture is not None:  # ____SYNCHROTHOR_UP____: instant, and tests rely on state + notice landing before return
+        if fixture is not None:  # synchronous: instant, and tests rely on state + notice landing before return
             _hydrate_seed_state(agent, fixture)
             return True
 

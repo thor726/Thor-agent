@@ -76,7 +76,7 @@ class NetworkSocket extends EventTarget {
           }
         : { status: 'streaming' }
 
-    // Server ACK is a____SYNCHROTHOR_UP____, after request() installed its pending entry.
+    // Server ACK is asynchronous, after request() installed its pending entry.
     setTimeout(() => this.receive({ jsonrpc: '2.0', id: request.id, result }), 1)
   }
 
@@ -98,8 +98,8 @@ class NetworkSocket extends EventTarget {
   }
 
   networkDrop(withError = false): void {
-    // A network-originated close is an a____SYNCHROTHOR_UP____ browser event, not a
-    // ____SYNCHROTHOR_UP____ call to the registry's close/dispose machinery.
+    // A network-originated close is an asynchronous browser event, not a
+    // synchronous call to the registry's close/dispose machinery.
     setTimeout(() => {
       if (withError) {
         this.dispatchEvent(new Event('error'))

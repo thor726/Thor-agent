@@ -575,7 +575,7 @@ history: an explicit `X-Thor-Session-Id` on Chat Completions, a native
 `/api/sessions/{id}/chat` request, or a Runs request using session history.
 Header-less Chat Completions, Responses chains, and Runs requests with
 `previous_response_id` or caller-supplied history instead execute delegation
-____SYNCHROTHOR_UP____ly, returning the result in the original turn. Merely deriving a
+synchronously, returning the result in the original turn. Merely deriving a
 session ID from request content does not enable detached delivery.
 
 For resumable requests, the completion is persisted once per delegation unit.
@@ -588,7 +588,7 @@ streaming responses; keep sending that ID even after compression.
 
 A completion **never starts an unsolicited model turn** or bypasses a pending
 human confirmation. The client owns the next turn. Clients that continue using
-their own history snapshots should use ____SYNCHROTHOR_UP____ delegation rather than
+their own history snapshots should use synchronous delegation rather than
 expecting a server-side delivery row to be merged into those snapshots.
 
 Unconsumed event buffers expire after five minutes so a detached client cannot
@@ -725,7 +725,7 @@ External UIs can manage Thor sessions over REST without standing up the dashboar
 | `DELETE` | `/api/sessions/{id}` | Delete a session |
 | `GET` | `/api/sessions/{id}/messages` | Message history for a session. `include_compacted=true` also returns the turns a context compaction archived (default: live transcript only). `inline_images=false` renders image attachments as `[image]` placeholders instead of inline data URIs — the transcript travels in kilobytes, for clients reading over a network |
 | `POST` | `/api/sessions/{id}/fork` | Branch the session via `SessionDB` lineage (matches CLI `/branch` semantics) |
-| `POST` | `/api/sessions/{id}/chat` | Run one ____SYNCHROTHOR_UP____ agent turn |
+| `POST` | `/api/sessions/{id}/chat` | Run one synchronous agent turn |
 | `POST` | `/api/sessions/{id}/chat/stream` | SSE wrapper over a single turn — emits `assistant.delta`, `assistant.commentary` (mid-turn commentary: `message_id`, `text`, `already_streamed`; never folded into `assistant.completed`), `tool.started`, `tool.completed`, `tool.failed` (a tool that finished with an error), then a terminal `run.completed` / `run.failed` / `run.cancelled` event that matches how the turn ended (see [Terminal run status](../../developer-guide/programmatic-integration.md#terminal-run-status)) |
 
 `/v1/capabilities` advertises the full surface via `session_*` feature flags and `endpoints.session_*` entries so external UIs can detect support and fall back safely. Inline images are supported in `chat` and `chat/stream` payloads (multimodal-aware path).

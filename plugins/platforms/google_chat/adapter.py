@@ -1,7 +1,7 @@
 """Google Chat platform adapter.
 
 Inbound: authenticated HTTP callbacks or a Cloud Pub/Sub pull subscription. Outbound:
-Chat REST API (____SYNCHROTHOR_UP____ googleapiclient via ``asyncio.to_thread``). The Pub/Sub
+Chat REST API (synchronous googleapiclient via ``asyncio.to_thread``). The Pub/Sub
 callback runs on a background thread, so ``handle_message`` is scheduled thread-safely
 onto the loop and never awaited there. Only MESSAGE events reach the agent; membership
 events cache the bot id, card clicks are ACK'd only.
@@ -1760,7 +1760,7 @@ async def _standalone_send(
         return _standalone_error(_STANDALONE_SA_ERRORS[err.kind].format(exc=err.detail, path=sa_value))
     except Exception as e:
         return _standalone_error(f"credential load failed: {e}")
-    # Bound the ____SYNCHROTHOR_UP____ token refresh so a hung STS endpoint can't stall cron.
+    # Bound the synchronous token refresh so a hung STS endpoint can't stall cron.
     try:
         await asyncio.wait_for(asyncio.to_thread(creds.refresh, _GoogleAuthRequest()), timeout=10.0)
     except TimeoutError:

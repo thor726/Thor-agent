@@ -872,7 +872,7 @@ class TestListProfiles:
         """Polled surfaces (``profiles.list`` RPC, ``GET /api/profiles``) must render
         ``skill_count`` without any skill-tree walk on the request thread; the count arrives
         from one background refresh per profile per recheck window (#114041). Control: the
-        ____SYNCHROTHOR_UP____ ``list_profiles()`` still walks and reports the fresh number."""
+        synchronous ``list_profiles()`` still walks and reports the fresh number."""
         import threading
         import tui_gateway.server as srv
 
@@ -914,7 +914,7 @@ class TestListProfiles:
         from tui_gateway import methods_complete
         app = FastAPI()
         app.include_router(profiles_router.router)
-        # Cold cache: a ____SYNCHROTHOR_UP____ list_profiles() in either caller would walk on the request thread.
+        # Cold cache: a synchronous list_profiles() in either caller would walk on the request thread.
         profiles._SKILL_COUNT_CACHE.clear()
         resp = TestClient(app).get("/api/profiles")
         assert resp.status_code == 200
@@ -923,7 +923,7 @@ class TestListProfiles:
         assert any(i["text"] == "@default" for i in methods_complete._profile_mention_items("def"))
         assert walks == ["thor-skill-count"]
 
-        # Control: the detail/CLI path counts ____SYNCHROTHOR_UP____ly on the caller's thread.
+        # Control: the detail/CLI path counts synchronously on the caller's thread.
         profiles._SKILL_COUNT_CACHE.clear()
         assert list_profiles()[0].skill_count == 3
         assert walks[-1] == threading.current_thread().name

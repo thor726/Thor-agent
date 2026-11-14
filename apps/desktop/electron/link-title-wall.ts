@@ -103,7 +103,7 @@ export function needsRendererFallback(input: {
   }
 
   // Tier 1's ladder refused a hop; tier 2 would re-walk the same redirects with
-  // only the ____SYNCHROTHOR_UP____ literal check to stop them (#126885 follow-up).
+  // only the synchronous literal check to stop them (#126885 follow-up).
   if (input.refused) {
     return false
   }

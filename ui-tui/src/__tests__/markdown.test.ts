@@ -16,7 +16,7 @@ afterEach(() => {
 })
 
 // Stub the network and warm the shared title cache, so a subsequent render
-// has the resolved title available ____SYNCHROTHOR_UP____ly.
+// has the resolved title available synchronously.
 const stubFetchedTitle = (url: string, title: string) => {
   vi.stubGlobal(
     'fetch',

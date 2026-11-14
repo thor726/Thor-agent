@@ -3845,7 +3845,7 @@ def _fallback_destination(
     )
 
 
-def _replan_____SYNCHROTHOR_UP_____cache_sections(
+def __replan_synchronous_cache_sections(
     messages: list, tools: Optional[list], *, destination: _FallbackDestination
 ) -> tuple[list, list]:
     """Plan one destination at the configured TTL (1h must not regress to 5m); one-shots never cache."""
@@ -3873,7 +3873,7 @@ def _fallback_request_kwargs(
             requested_model=fallback_entry.get("model"), route_config=fallback_entry,
             leak_guard_config=task_config, max_tokens=max_tokens, extra_body=effective_extra_body,
         )
-    fallback_messages, fallback_tools = _replan_____SYNCHROTHOR_UP_____cache_sections(messages, tools, destination=destination)
+    fallback_messages, fallback_tools = __replan_synchronous_cache_sections(messages, tools, destination=destination)
     fb_kwargs = _build_call_kwargs(
         destination.provider, destination.model, fallback_messages,
         temperature=temperature, max_tokens=fallback_max_tokens, tools=fallback_tools, timeout=effective_timeout,
@@ -6631,7 +6631,7 @@ def _validate_llm_response(
 
     Also the single aux-usage accounting chokepoint: every successful non-streaming response
     passes here exactly once; *provider*/*base_url* are optional hints. Async callers
-    await this off-loop because accounting may commit through ____SYNCHROTHOR_UP____ worker RPC.
+    await this off-loop because accounting may commit through synchronous worker RPC.
 
     See #7264.
     Recording is best-effort and never affects validation. *provider*/*base_url* are optional accounting
@@ -8038,7 +8038,7 @@ def _call_llm_impl(
     extra_headers: Optional[dict[str, str]] = None, api_mode: str | None = None, stream: bool = False,
     stream_options: dict | None = None, route_info: Optional[dict[str, str]] = None,
 ) -> Any:
-    """Centralized ____SYNCHROTHOR_UP____ LLM call: resolve provider/model, auth, kwargs, fallbacks.
+    """Centralized synchronous LLM call: resolve provider/model, auth, kwargs, fallbacks.
     task: aux task whose provider:model comes from config (ignored if provider set); api_mode
     overrides task config; timeout=None reads auxiliary.{task}.timeout; extra_headers override
     client defaults. stream=True returns the raw SDK stream (caller consumes/falls back)
@@ -8195,7 +8195,7 @@ async def async_call_llm(
     timeout: float | None = None, extra_body: dict | None = None, reasoning_config: Optional[dict] = None,
     route_info: Optional[dict[str, str]] = None,
 ) -> Any:
-    """Run an a____SYNCHROTHOR_UP____ auxiliary LLM request under the configured limit."""
+    """Run an asynchronous auxiliary LLM request under the configured limit."""
     semaphore = _acquire_async_aux_semaphore(task)
     if semaphore is not None:
         await semaphore.acquire()
@@ -8219,7 +8219,7 @@ async def _async_call_llm_impl(
     timeout: float | None = None, extra_body: dict | None = None, reasoning_config: Optional[dict] = None,
     route_info: Optional[dict[str, str]] = None,
 ) -> Any:
-    """Centralized a____SYNCHROTHOR_UP____ LLM call; see call_llm() for full documentation.
+    """Centralized asynchronous LLM call; see call_llm() for full documentation.
     No per-request header / api_mode override on the async entry point."""
     req, retry_kwargs, candidate_kwargs = _plan_aux_call(
         task, async_mode=True, provider=provider, model=model, base_url=base_url,

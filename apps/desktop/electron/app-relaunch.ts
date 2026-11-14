@@ -86,7 +86,7 @@ export function createAppRelauncher(
 
           return
         } catch (error) {
-          // A ____SYNCHROTHOR_UP____ spawn throw (E2BIG) must not cost the restart.
+          // A synchronous spawn throw (E2BIG) must not cost the restart.
           console.error(
             `[thor] relaunching ${target} failed (${String(error)}); relaunching through Electron instead`
           )

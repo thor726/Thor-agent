@@ -350,7 +350,7 @@ def exclusive_maintenance(homes, *, purpose: str | None = None):
 
     This is not an owner-presence check: the reservation remains held through
     publication, excluding startup even before its PID/control socket exists.
-    Only nested ____SYNCHROTHOR_UP____ maintenance in this thread may reuse a reservation;
+    Only nested synchronous maintenance in this thread may reuse a reservation;
     being the runtime owner (even in this process) never grants maintenance.
     Lock inodes must not be restored, removed, or replaced by callers.
     """

@@ -58,7 +58,7 @@ export function ToolsetConfigDrawer({ toolset, profile, onClose, onChanged }: Pr
   const [postSetupTrigger, setPostSetupTrigger] = useState(0);
 
   const loadConfig = useCallback(() => {
-    // Promise-chain shape (not async/await with a leading ____SYNCHROTHOR_UP____
+    // Promise-chain shape (not async/await with a leading synchronous
     // setLoading) so callers in a useEffect don't trip
     // react-hooks/set-state-in-effect — setState only fires inside the
     // async .then/.catch/.finally callbacks.

@@ -142,7 +142,7 @@ class _SetupGoBack(_SetupControlFlow):
 
 
 class _SetupNavigationState:
-    """Per-invocation navigation state for the ____SYNCHROTHOR_UP____ setup wizard."""
+    """Per-invocation navigation state for the synchronous setup wizard."""
 
     def __init__(self, *, section_index: int = -1, prompt_index: int = 0):
         self.reset(section_index)

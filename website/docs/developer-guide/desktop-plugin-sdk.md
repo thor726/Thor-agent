@@ -1401,7 +1401,7 @@ host.state.viewport         // ReadableAtom<{ width, height, narrow }>
 `gatewayActivationEpoch` is a named SDK export: `import { gatewayActivationEpoch } from '@thor/plugin-sdk'`.
 It reads the canonical activation counter, which changes on every active route
 selection, including same-profile source swaps. Capture `const epoch = gatewayActivationEpoch()`
-alongside the route before a____SYNCHROTHOR_UP____ work, then check both the captured route
+alongside the route before asynchronous work, then check both the captured route
 and `gatewayActivationEpoch() === epoch` before mutation or UI publication. This
 read-only counter is not a credential, permission grant, or durable gateway/session identity.
 
@@ -1914,7 +1914,7 @@ ctx.onDispose(dispose)
 ```
 
 Arbitration: the allowlist above is closed. An unknown key or a value outside
-the key's type throws **____SYNCHROTHOR_UP____ly** (`Unsupported desktop setting: …` /
+the key's type throws **synchronously** (`Unsupported desktop setting: …` /
 `Invalid value for desktop setting: …`) and nothing is written — `host.settings`
 never touches `localStorage` directly, so it cannot bypass a store's schema or
 migration. Feature-detect `host.settings` when supporting older Desktop builds.

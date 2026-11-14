@@ -68,7 +68,7 @@ def diagnostic_wake_muted(event, user_config=None) -> bool:
 
 
 def render_notification(render, *, platform, diagnostic=True, user_config=None) -> bool:
-    """Invoke a ____SYNCHROTHOR_UP____ UI renderer only when its classified content is visible.
+    """Invoke a synchronous UI renderer only when its classified content is visible.
 
     Return whether the renderer ran, not whether a transport delivered anything.
     Call only at a presentation sink, never around producer callbacks or persistence.

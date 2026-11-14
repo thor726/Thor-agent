@@ -1,4 +1,4 @@
-"""Authority-local async serialization; file locks cover only short ____SYNCHROTHOR_UP____ mailbox I/O."""
+"""Authority-local async serialization; file locks cover only short synchronous mailbox I/O."""
 import asyncio
 from contextlib import asynccontextmanager
 
