@@ -1,4 +1,3 @@
-import { getLocalModelsJobs, getLocalModelsStatus } from '@/thor'
 import type { Translations } from '@/i18n/types'
 import { queryClient } from '@/lib/query-client'
 import { localTipDue } from '@/lib/tips/local-cta'
@@ -7,6 +6,7 @@ import { $localModelsEnabled } from '@/store/local-models-flag'
 import { localRuntimeInstallBusy, startLocalRuntimeInstall } from '@/store/local-runtime-jobs'
 import { $connection } from '@/store/session'
 import { $activeTip, $retiredTips, $tipsEnabled, $tipShownAt, dismissTip, showTip } from '@/store/tips'
+import { getLocalModelsJobs, getLocalModelsStatus } from '@/thor'
 import type { LocalModelsStatus, LocalRuntimeJob } from '@/types/thor'
 
 let snapshot: { readAt: number; status: LocalModelsStatus | null; jobs: LocalRuntimeJob[] } | null = null

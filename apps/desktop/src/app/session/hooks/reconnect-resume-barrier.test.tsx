@@ -3,7 +3,6 @@ import { act, cleanup, renderHook } from '@testing-library/react'
 import { useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages } from '@/thor'
 import { type ChatMessage, chatMessageText, toChatMessages } from '@/lib/chat-messages'
 import { resetInFlightTurnJournalStateForTests } from '@/lib/inflight-turn-journal'
 import { $activeGatewayProfile } from '@/store/profile'
@@ -18,6 +17,7 @@ import {
   setSessions
 } from '@/store/session'
 import { clearAllSessionStates } from '@/store/session-states'
+import { getLatestSessionMessages } from '@/thor'
 import type { SessionMessage, SessionResumeResult } from '@/types/thor'
 
 import { handleMessageStreamEvent } from './use-message-stream/gateway-event/message-stream'

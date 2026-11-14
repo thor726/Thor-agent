@@ -1,11 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ThorGateway } from '@/thor'
 import { $connectionsRegistry } from '@/store/connection-registry-state'
 import { setPrimaryGateway, setPrimaryGatewayConnectionId } from '@/store/gateway'
 import { $gatewayProjectLooks } from '@/store/gateway-project-looks'
 import { makeSessionInfo } from '@/test/session-info'
+import type { ThorGateway } from '@/thor'
 
 import { useGatewayProjectTree } from './use-gateway-project-tree'
 

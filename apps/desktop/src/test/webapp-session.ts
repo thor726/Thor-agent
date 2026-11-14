@@ -19,6 +19,8 @@ export function clearWebappSession(): void {
   delete (window as WebappWindow).__THOR_UI_SURFACE__
 
   for (const key of Object.keys(sessionStorage)) {
-    if (key.startsWith('thor.webapp.session.v1:')) {sessionStorage.removeItem(key)}
+    if (key.startsWith('thor.webapp.session.v1:')) {
+      sessionStorage.removeItem(key)
+    }
   }
 }

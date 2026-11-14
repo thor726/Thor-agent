@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   normalizeThorOpenString,
-  pathFromThorDeepLink,
   pathFromOpenDeepLink,
+  pathFromThorDeepLink,
   resolveThorOpenPath
 } from './thor-open-target'
 

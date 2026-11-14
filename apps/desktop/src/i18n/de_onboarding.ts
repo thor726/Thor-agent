@@ -4,8 +4,7 @@ export const deOnboarding: TranslationOverrides['onboarding'] = {
   headerTitle: 'Thor Agent für Sie einrichten',
   headerDesc:
     'Verbinden Sie einen Modell-Anbieter, um mit dem Chatten zu beginnen. Die meisten Optionen brauchen nur einen Klick.',
-  preparingInstall:
-    'Thor schließt die Installation ab. Das dauert beim ersten Start normalerweise unter einer Minute.',
+  preparingInstall: 'Thor schließt die Installation ab. Das dauert beim ersten Start normalerweise unter einer Minute.',
   starting: 'Thor wird gestartet…',
   setupSlowTitle: 'Die Einrichtung dauert länger als üblich.',
   setupSlowBody: 'Thor wird im Hintergrund noch gestartet.',

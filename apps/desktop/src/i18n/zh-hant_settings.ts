@@ -72,8 +72,7 @@ export const zhHantSettings = {
     plugins: {
       openFolder: '開啟桌面外掛資料夾',
       installModal: {
-        installUncertain:
-          'Thor 已停止等待安裝結果，但外掛可能仍在安裝中。請關閉此視窗，重新掃描外掛清單後再嘗試安裝。',
+        installUncertain: 'Thor 已停止等待安裝結果，但外掛可能仍在安裝中。請關閉此視窗，重新掃描外掛清單後再嘗試安裝。',
         installFromGit: '從 Git 安裝',
         reviewRepository: '檢查儲存庫',
         repoPlaceholder: 'https://github.com/owner/repo',
@@ -90,7 +89,10 @@ export const zhHantSettings = {
         versionLabel: '版本',
         reviewedPin: sha => (sha ? `已審核的固定提交 ${sha}` : '已審核的固定提交'),
         latestCommit: '最新提交',
-        sourceMoved: sha => (sha ? `自你審閱後儲存庫已變更。請先審閱新版本（提交 ${sha}）再安裝。` : '自你審閱後儲存庫已變更。正在讀取新版本…'),
+        sourceMoved: sha =>
+          sha
+            ? `自你審閱後儲存庫已變更。請先審閱新版本（提交 ${sha}）再安裝。`
+            : '自你審閱後儲存庫已變更。正在讀取新版本…',
         legacyBackendConfirm:
           '此後端比本應用程式舊，無法保證安裝的就是你審閱過的版本：如果儲存庫之後有變更，安裝的會是較新的版本。更新後端即可獲得這項保證。',
         installAnyway: '仍要安裝',
@@ -912,8 +914,7 @@ export const zhHantSettings = {
       localTitle: '本機閘道',
       localDesc: '在 localhost 啟動私有 Thor 後端。這是預設方式，可離線使用。',
       remoteTitle: '遠端閘道',
-      remoteDesc:
-        '將此桌面殼層連線至遠端 Thor 後端。託管閘道使用 OAuth 或帳號密碼；自託管閘道也可使用工作階段 Token。',
+      remoteDesc: '將此桌面殼層連線至遠端 Thor 後端。託管閘道使用 OAuth 或帳號密碼；自託管閘道也可使用工作階段 Token。',
       remoteUrlTitle: '遠端 URL',
       remoteUrlDesc: '遠端儀表板後端的基礎 URL。支援路徑前綴，例如 /thor。',
       probing: '正在檢查此閘道的驗證方式…',
@@ -1044,7 +1045,8 @@ export const zhHantSettings = {
         lanUnencrypted: '連線未加密：同一網路中的其他人可能讀取你傳送和接收的內容。',
         noLan: '這台電腦沒有其他裝置可以連到的網路位址。',
         modePublic: '我自己的網址',
-        modePublicDetail: port => `你已有的 HTTPS 網址（例如 Tailscale Serve 或通道），並轉送到 http://127.0.0.1:${port}。`
+        modePublicDetail: port =>
+          `你已有的 HTTPS 網址（例如 Tailscale Serve 或通道），並轉送到 http://127.0.0.1:${port}。`
       }
     },
     keys: {

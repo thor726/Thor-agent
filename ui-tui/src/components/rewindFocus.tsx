@@ -1,5 +1,5 @@
-import type { ScrollBoxHandle } from '@thor/ink'
 import { useStore } from '@nanostores/react'
+import type { ScrollBoxHandle } from '@thor/ink'
 import { type RefObject, useEffect, useRef } from 'react'
 
 import { $backtrackPrime, $pendingRewind } from '../app/backtrackStore.js'

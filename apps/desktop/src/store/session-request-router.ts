@@ -1,5 +1,5 @@
-import type { ProfileScope } from '@/thor'
 import { requestGatewayForAgent, requestGatewayForProfile, retainGatewayForSessionTurn } from '@/store/gateway'
+import type { ProfileScope } from '@/thor'
 
 import { resetBackgroundPollingGuardAfterRebind } from './session-gone-latch'
 

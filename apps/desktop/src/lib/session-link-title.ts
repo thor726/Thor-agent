@@ -8,9 +8,9 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 
-import { getSession } from '@/thor'
 import { parseSessionRefValue, sessionRefCacheKey, sessionRefFallbackLabel } from '@/lib/session-refs'
 import { $sessions, sessionMatchesStoredId } from '@/store/session'
+import { getSession } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 const titleCache = new Map<string, string>()

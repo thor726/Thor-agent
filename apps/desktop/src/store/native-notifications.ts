@@ -1,8 +1,8 @@
 import { atom } from 'nanostores'
 
 import { translateNow } from '@/i18n'
-import { type ThorOpenTarget, resolveThorOpenPath } from '@/lib/thor-open-target'
 import { persistString, storedString } from '@/lib/storage'
+import { resolveThorOpenPath, type ThorOpenTarget } from '@/lib/thor-open-target'
 
 import { recordFeatureToggle } from './desktop-metrics'
 import { $gateway } from './gateway'

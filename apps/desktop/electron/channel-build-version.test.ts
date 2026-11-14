@@ -61,12 +61,7 @@ function load(build: ChannelBuildRequest): PackagingFacts {
 }
 
 afterEach((): void => {
-  for (const key of [
-    '_THOR_CHANNEL_REQUEST_JSON',
-    'THOR_DESKTOP_VARIANT',
-    'THOR_BUILD_COMMIT',
-    'THOR_PAYLOAD_TAG'
-  ]) {
+  for (const key of ['_THOR_CHANNEL_REQUEST_JSON', 'THOR_DESKTOP_VARIANT', 'THOR_BUILD_COMMIT', 'THOR_PAYLOAD_TAG']) {
     delete process.env[key]
   }
 

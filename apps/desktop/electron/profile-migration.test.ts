@@ -269,10 +269,7 @@ test('findRunningGatewayProfiles preserves order of allProfiles', () => {
   })
 
   const deps = { ...fs, isThorProcess: () => true }
-  assert.deepEqual(findRunningGatewayProfiles('/home/u/.thor/profiles', ['coder', 'writer'], deps), [
-    'coder',
-    'writer'
-  ])
+  assert.deepEqual(findRunningGatewayProfiles('/home/u/.thor/profiles', ['coder', 'writer'], deps), ['coder', 'writer'])
 })
 
 // ---------------------------------------------------------------------------
@@ -536,10 +533,7 @@ test('profileStateDbPath puts default at thorHome, named under profilesRoot', ()
 })
 
 test('profileGatewayPidPath puts default at thorHome', () => {
-  assert.equal(
-    profileGatewayPidPath('default', '/home/u/.thor', '/home/u/.thor/profiles'),
-    '/home/u/.thor/gateway.pid'
-  )
+  assert.equal(profileGatewayPidPath('default', '/home/u/.thor', '/home/u/.thor/profiles'), '/home/u/.thor/gateway.pid')
   assert.equal(
     profileGatewayPidPath('coder', '/home/u/.thor', '/home/u/.thor/profiles'),
     '/home/u/.thor/profiles/coder/gateway.pid'

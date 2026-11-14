@@ -1,10 +1,10 @@
-import type { GatewayEventName } from '@thor/shared'
 // A tool event can reach the renderer twice. A background `delegate_task`
 // returns in about a second, and a second copy of its start or completion
 // used to draw the whole fan-out again: "5 subagents" showed 10 rows. A copy
 // of a call this turn already finished must change nothing. llama.cpp's
 // constant ids and a later turn reusing an id still get their own rows.
 import { act, cleanup } from '@testing-library/react'
+import type { GatewayEventName } from '@thor/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { type MessageStreamHarness, renderMessageStream } from './test-harness'

@@ -4,7 +4,6 @@ import { createElement, type ReactElement, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { NotificationStack } from '@/components/notifications'
-import { getStatus } from '@/thor'
 import { I18nProvider, type Locale, TRANSLATIONS, type Translations } from '@/i18n'
 import { $freeTierStatus } from '@/store/free-tier'
 import { $setupReadyTick, notifySetupReady } from '@/store/live-sync'
@@ -12,6 +11,7 @@ import { $notifications, clearNotifications } from '@/store/notifications'
 import { $desktopOnboarding, refreshOnboarding } from '@/store/onboarding'
 import { markOnboardingDecided } from '@/store/onboarding-presence'
 import { $currentModel } from '@/store/session'
+import { getStatus } from '@/thor'
 
 import { deferred } from '../../../test/deferred'
 

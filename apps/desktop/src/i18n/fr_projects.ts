@@ -45,8 +45,7 @@ export const frProjects: NonNullable<TranslationOverrides['sidebar']>['projects'
   createFailed: 'Impossible de créer le projet',
   staleBackend:
     'Mettez à jour le backend Thor pour créer des projets — votre backend est plus ancien que cette application de bureau (Paramètres → Mises à jour → Backend).',
-  deleteConfirm:
-    'Cela supprime le projet enregistré de Thor. Les fichiers, dépôts git et worktrees restent inchangés.',
+  deleteConfirm: 'Cela supprime le projet enregistré de Thor. Les fichiers, dépôts git et worktrees restent inchangés.',
   startWork: 'Nouveau worktree',
   newWorktreeTitle: 'Nouveau worktree',
   newWorktreeDesc: 'Nommez la branche pour ce worktree.',

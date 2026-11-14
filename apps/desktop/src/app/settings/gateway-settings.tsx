@@ -1,5 +1,5 @@
-import { isGatewayReauthRequired } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { isGatewayReauthRequired } from '@thor/shared'
 import { useEffect, useRef, useState } from 'react'
 
 import { RemoteSetupFields } from '@/components/remote-setup/fields'

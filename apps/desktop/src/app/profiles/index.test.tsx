@@ -2,9 +2,9 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import type * as Nanostores from 'nanostores'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { deleteProfile, getProfileSoul, updateProfileSoul } from '@/thor'
 import { retireLocalProfileGateways } from '@/store/gateway'
 import { refreshProfiles, selectProfile, setActiveProfile } from '@/store/profile'
+import { deleteProfile, getProfileSoul, updateProfileSoul } from '@/thor'
 import type { ProfileInfo } from '@/types/thor'
 
 import { ProfilesView } from './index'

@@ -1,7 +1,7 @@
+import { useStore } from '@nanostores/react'
 import { Box, type ScrollBoxHandle, stringWidth, Text } from '@thor/ink'
 import { compactNumber } from '@thor/shared/format'
 import type { Usage } from '@thor/shared/gateway-events'
-import { useStore } from '@nanostores/react'
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import unicodeSpinners from 'unicode-animations'
 

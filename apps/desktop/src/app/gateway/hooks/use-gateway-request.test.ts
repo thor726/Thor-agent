@@ -1,5 +1,5 @@
-import type { GatewayWsUrlResult } from '@thor/shared'
 import { act, renderHook } from '@testing-library/react'
+import type { GatewayWsUrlResult } from '@thor/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const gatewayMocks = vi.hoisted(() => ({
@@ -55,8 +55,6 @@ vi.mock('@/thor', async importOriginal => {
 // out on a loaded runner.
 import '@/store/session-states'
 
-import type * as ThorModule from '@/thor'
-import type { ThorGateway } from '@/thor'
 import {
   $gateway,
   closeSecondaryGateways,
@@ -66,6 +64,8 @@ import {
 } from '@/store/gateway'
 import { $activeGatewayProfile } from '@/store/profile'
 import { $connection, $gatewayState } from '@/store/session'
+import type * as ThorModule from '@/thor'
+import type { ThorGateway } from '@/thor'
 
 import { useGatewayRequest } from './use-gateway-request'
 

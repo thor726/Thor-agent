@@ -20,7 +20,6 @@
  * the id is deferred to a later pass instead of being dropped.
  */
 
-import { getSession } from '@/thor'
 import { mapPool } from '@/lib/pool'
 import { clearSessionDraft, isFreshDraftScope, stashedDraftScopes } from '@/store/composer'
 import { dropInterruptedSends, interruptedSendScopes } from '@/store/composer-outbox'
@@ -28,6 +27,7 @@ import { $queuedPromptsBySession, clearQueuedPrompts } from '@/store/composer-qu
 import { $pinnedSessionIds, unpinSession } from '@/store/layout'
 import { $activeGatewayProfile, $profiles, normalizeProfileKey } from '@/store/profile'
 import { $sessions } from '@/store/session'
+import { getSession } from '@/thor'
 
 import { forgetPinSyncState } from './session-pin-sync'
 

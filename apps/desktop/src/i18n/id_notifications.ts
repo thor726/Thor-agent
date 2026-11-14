@@ -42,7 +42,7 @@ export const idNotifications = {
       default:
         'Tampilkan peringatan dari browser ini saat tab ada di latar belakang. Sampai kamu mengizinkannya, hanya judul tab yang berkedip.',
       granted: 'Diizinkan. Peringatan muncul saat tab ini di latar belakang; judul tab juga berkedip.',
-      denied: "Diblokir di pengaturan situs browser ini. Judul tab tetap berkedip.",
+      denied: 'Diblokir di pengaturan situs browser ini. Judul tab tetap berkedip.',
       insecure: 'Butuh HTTPS, misalnya Tailscale serve. Lewat HTTP biasa judul tab tetap berkedip.',
       unsupported: 'Browser ini tidak bisa menampilkan notifikasi. Judul tab tetap berkedip.'
     }

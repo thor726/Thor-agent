@@ -2,10 +2,10 @@ import { useState } from 'react'
 
 import { ActionsMenu, renderActionItem } from '@/components/ui/actions-menu'
 import { Button } from '@/components/ui/button'
-import type { DelegationModelMap, DelegationModelRoute, ProfileScope } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Box, MoreHorizontal, Plus } from '@/lib/icons'
 import { confirm } from '@/store/confirm'
+import type { DelegationModelMap, DelegationModelRoute, ProfileScope } from '@/thor'
 
 import { Pill, SectionHeading } from '../primitives'
 

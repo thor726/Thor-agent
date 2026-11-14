@@ -14,7 +14,7 @@ export const idMemoryLayers: MemoryLayersTranslations = {
     `${name} adalah provider tersimpan tapi tidak menambah daya ingat sampai siap. Lapisan bawaan tetap bekerja.`,
   providerUnknownDesc: name => `${name} adalah provider tersimpan; Thor tidak bisa membaca apakah sudah siap.`,
   statusUnavailable: 'Status memori tidak tersedia',
-  statusUnavailableDesc: "Tidak bisa membaca provider memori mana yang aktif atau apakah sudah siap.",
+  statusUnavailableDesc: 'Tidak bisa membaca provider memori mana yang aktif atau apakah sudah siap.',
   retry: 'Coba lagi',
   status: {
     ready: 'siap',

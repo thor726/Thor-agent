@@ -1,9 +1,9 @@
 import { afterAll, expect, it, vi } from 'vitest'
 
-import { getApiRequestProfile } from '@/thor'
 import { syncApprovalModeForProfile } from '@/store/approval-mode'
 import { activeGatewayProfileKey, requestGatewayForProfile, setPrimaryGateway } from '@/store/gateway'
 import { $activeGatewayProfile } from '@/store/profile'
+import { getApiRequestProfile } from '@/thor'
 
 // A Webapp tab's one socket answers for the profile its gateway runs as, and the gateway refuses a
 // request naming a profile it does not serve (`profile_mismatch`). Boot requests that name the tab's

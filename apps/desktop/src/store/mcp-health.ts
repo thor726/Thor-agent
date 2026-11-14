@@ -22,7 +22,6 @@
 import type { McpServersStatusResult } from '@thor/shared'
 
 import { $apiRequestScope } from '@/api/client'
-import { getThorConfigRecord, setMcpServerEnabled } from '@/thor'
 import { translateNow } from '@/i18n'
 import { isLoopbackPreviewUrl } from '@/lib/local-preview'
 import { getServers, type McpServerEntry, serverEnabled } from '@/lib/mcp-servers'
@@ -31,6 +30,7 @@ import { requestGatewayForAgent } from '@/store/gateway'
 import { notify, notifyError } from '@/store/notifications'
 import { $activeGatewayProfile, normalizeProfileKey } from '@/store/profile'
 import { $gatewayState } from '@/store/session'
+import { getThorConfigRecord, setMcpServerEnabled } from '@/thor'
 
 // A constant, not a config knob: the sweep is one cached-state read, and the
 // notification is transition-gated below, so there is nothing to tune.

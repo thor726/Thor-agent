@@ -20,8 +20,7 @@ export const frDelegationRouting: DelegationRoutingTranslations = {
   plugin: 'Plugin',
   pluginMissing: 'Routes de modèle et Routes de profil proviennent du plugin Advanced Delegation.',
   pluginDisabled: 'Advanced Delegation est installé mais désactivé pour ce profil.',
-  pluginNotLoaded:
-    "Advanced Delegation est activé, mais Thor ne l'a pas encore chargé. Redémarrez Thor pour terminer.",
+  pluginNotLoaded: "Advanced Delegation est activé, mais Thor ne l'a pas encore chargé. Redémarrez Thor pour terminer.",
   installPlugin: 'Installer le plugin',
   installUnavailable:
     "Advanced Delegation n'est pas encore dans le catalogue de plugins. Installez-le depuis Capacités › Plugins.",

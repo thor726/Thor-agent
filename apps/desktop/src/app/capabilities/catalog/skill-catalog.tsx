@@ -3,10 +3,10 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import { capabilityScoped } from '@/api/client'
 import { Loader } from '@/components/ui/loader'
-import { getOfficialSkills, getSkillHubUpdates, type ProfileScope, profileScopeKey } from '@/thor'
 import { useI18n } from '@/i18n'
 import { HUB_SOURCES_KEY, installHubSkill, notifyHubActionFailed, OFFICIAL_SKILLS_KEY } from '@/store/hub-actions'
 import { notify } from '@/store/notifications'
+import { getOfficialSkills, getSkillHubUpdates, type ProfileScope, profileScopeKey } from '@/thor'
 import type { SkillHubSourcesResponse, SkillInfo } from '@/types/thor'
 
 import { skillSearchTerms, usageOf } from '../skills/skills-data'

@@ -28,7 +28,7 @@
  */
 
 // Relative, not `@thor/shared`: esbuild bundles electron/ without tsconfig paths.
-import { THOR_CLOUD_MANAGED, isThorCloudUrl } from '../../shared/src/thor-cloud'
+import { isThorCloudUrl, THOR_CLOUD_MANAGED } from '../../shared/src/thor-cloud'
 
 import {
   hostLabelFromBaseUrl,

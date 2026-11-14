@@ -5,8 +5,8 @@ vi.mock('@/thor', () => ({
   saveThorConfig: vi.fn(async () => undefined)
 }))
 
-import { saveThorConfig } from '@/thor'
 import { isVoiceStopCommand } from '@/lib/voice-stop-word'
+import { saveThorConfig } from '@/thor'
 
 import {
   $bargeInEnabled,

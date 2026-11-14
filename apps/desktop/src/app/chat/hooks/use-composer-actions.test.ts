@@ -10,10 +10,10 @@ import {
   attachmentPreviewDataUrl,
   type DroppedFile,
   extractDroppedFiles,
-  THOR_PATHS_MIME,
   partitionDroppedFiles,
   resolveImageAttachmentPreview,
   stageDroppedFilePath,
+  THOR_PATHS_MIME,
   useComposerActions
 } from './use-composer-actions'
 

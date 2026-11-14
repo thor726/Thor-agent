@@ -2,16 +2,6 @@ import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  getMcpCatalog,
-  type ThorGateway,
-  type McpCatalogEntry,
-  type McpCatalogResponse,
-  type McpTestResult,
-  type ProfileScope,
-  profileScopeKey,
-  saveMcpServers
-} from '@/thor'
 import { useI18n } from '@/i18n'
 import { completeMcpDesktopOAuth } from '@/lib/mcp-dashboard-oauth'
 import { probeCache, probeKey } from '@/lib/mcp-probe-cache'
@@ -21,6 +11,16 @@ import { setDisabledTools, toggleToolInServer } from '@/lib/mcp-tool-filter'
 import { notify, notifyError } from '@/store/notifications'
 import { $activeGatewayProfile, normalizeProfileKey } from '@/store/profile'
 import { $activeSessionId } from '@/store/session'
+import {
+  getMcpCatalog,
+  type McpCatalogEntry,
+  type McpCatalogResponse,
+  type McpTestResult,
+  type ProfileScope,
+  profileScopeKey,
+  saveMcpServers,
+  type ThorGateway
+} from '@/thor'
 import type { ThorConfigRecord } from '@/types/thor'
 
 import { thorConfigCacheWriter, useThorConfigRecord } from '../../hooks/use-config-record'

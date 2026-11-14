@@ -16,7 +16,7 @@
  */
 
 import { ensureContrast, mix } from '@thor/shared/color'
-import type { ThorSkin, SkinColors } from '@thor/shared/skin'
+import type { SkinColors, ThorSkin } from '@thor/shared/skin'
 
 import { luminance, normalizeHex, readableInk } from './color'
 import type { DesktopTheme, DesktopThemeColors } from './types'

@@ -1,6 +1,6 @@
 import type { McpCatalogResponse, McpServerSummary } from '@/types/thor'
 
-import { capabilityScoped, thorApi, type ProfileScope, profileScoped } from './client'
+import { capabilityScoped, type ProfileScope, profileScoped, thorApi } from './client'
 
 export interface McpTestResult {
   ok: boolean
