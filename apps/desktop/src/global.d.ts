@@ -40,10 +40,7 @@ declare global {
       getConnection: (profile?: string | null) => Promise<ThorConnection>
       // Registry-scoped backend resolution: dial (connectionId, profile). An
       // empty/local connectionId delegates to the legacy getConnection path.
-      getConnectionFor?: (payload: {
-        connectionId?: null | string
-        profile?: null | string
-      }) => Promise<ThorConnection>
+      getConnectionFor?: (payload: { connectionId?: null | string; profile?: null | string }) => Promise<ThorConnection>
       // Registry-scoped fresh WS URL (same result contract as getGatewayWsUrl).
       getGatewayWsUrlFor?: (payload: {
         connectionId?: null | string
@@ -660,7 +657,10 @@ declare global {
       }) => Promise<PreviewSigninsResult>
       // P2-7: the per-profile imported-sign-ins record + cookie jar live in Electron main (userData),
       // so the renderer's local profile rename/delete flow signals main to move/clear them.
-      migratePreviewSigninsForProfile?: (request: { oldProfile: string; newProfile: string }) => Promise<{ ok: boolean }>
+      migratePreviewSigninsForProfile?: (request: {
+        oldProfile: string
+        newProfile: string
+      }) => Promise<{ ok: boolean }>
       dropPreviewSigninsForProfile?: (request: { profile: string }) => Promise<{ ok: boolean }>
       setActiveConnectionRoute?: (
         route: {

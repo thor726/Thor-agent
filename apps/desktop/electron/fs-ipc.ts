@@ -57,11 +57,7 @@ export function registerFsIpc({
       }
     },
     userDataDir: () => app.getPath('userData'),
-    thorHomes: () => [
-      thorHome,
-      platformDefaultThorHome(app.getPath('home')),
-      path.join(app.getPath('home'), '.thor')
-    ],
+    thorHomes: () => [thorHome, platformDefaultThorHome(app.getPath('home')), path.join(app.getPath('home'), '.thor')],
     trashItem: target => shell.trashItem(target)
   })
 

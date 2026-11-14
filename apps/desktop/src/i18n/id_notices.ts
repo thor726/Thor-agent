@@ -22,13 +22,12 @@ export const idNotices = {
     legacySendUnconfirmed:
       'Server ini tidak bisa memastikan pengiriman pesan ini sebelumnya, jadi mungkin sudah dijalankan. Periksa percakapan sebelum mengirimnya lagi.',
     restoredDraftAttachmentsDropped:
-      "Lampiran dari pesan yang belum terkirim tidak dipulihkan. Lampirkan lagi sebelum mengirimnya.",
+      'Lampiran dari pesan yang belum terkirim tidak dipulihkan. Lampirkan lagi sebelum mengirimnya.',
     mcpReloadDeferred:
       'Chat ini sedang sibuk: perubahan MCP berlaku setelah turn-nya selesai dan MCP dimuat ulang lagi, atau saat kamu membuka lagi chat-nya',
     mcpReloadUnavailable: servers => `Tidak terhubung: ${servers}`,
-    compactedTurnUnavailable:
-      "Pesan itu diringkas saat chat dikompresi, jadi tidak bisa dipulihkan atau diedit lagi.",
-    staleTurnUnavailable: "Pesan itu sudah tidak ada di riwayat chat ini.",
+    compactedTurnUnavailable: 'Pesan itu diringkas saat chat dikompresi, jadi tidak bisa dipulihkan atau diedit lagi.',
+    staleTurnUnavailable: 'Pesan itu sudah tidak ada di riwayat chat ini.',
     sessionCommands: idSessionCommands,
     desktopCommands: idDesktopCommands
   },

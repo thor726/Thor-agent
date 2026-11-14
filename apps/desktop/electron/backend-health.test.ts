@@ -7,9 +7,9 @@ import {
   isAuthRejectionError,
   isGatedMissingHealthError,
   isMissingHealthEndpointError,
-  isThorCloudAgentUrl,
   isReauthRequiredError,
   isServerSideHttpError,
+  isThorCloudAgentUrl,
   makeThorCloudBackendDownError,
   makeUnsignedOauthError,
   waitForThorReady

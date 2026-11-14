@@ -1,3 +1,5 @@
+import { useStore } from '@nanostores/react'
+import { useQuery } from '@tanstack/react-query'
 import type { ModelOptionProvider, ModelPricing, PlanUsage, PlanUsageGauge } from '@thor/shared'
 import {
   gaugeTitle,
@@ -9,8 +11,6 @@ import {
   usageTag
 } from '@thor/shared'
 import { fuzzyRank, modelSearchText } from '@thor/shared'
-import { useStore } from '@nanostores/react'
-import { useQuery } from '@tanstack/react-query'
 import { type ReactElement, useMemo, useRef, useState } from 'react'
 
 import { useI18n } from '@/i18n'
@@ -31,8 +31,8 @@ import {
 } from '@/store/local-runtime-jobs'
 import type { LocalModelLoadProgress, LocalRuntimeJob } from '@/types/thor'
 
-import type { ThorGateway } from '../thor'
 import { startManualOnboarding } from '../store/onboarding'
+import type { ThorGateway } from '../thor'
 
 import { InlineNotice } from './notifications'
 import { ProviderStatusChip } from './provider-status-chip'

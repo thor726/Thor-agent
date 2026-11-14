@@ -10,7 +10,6 @@ import {
   type SidebarProjectTree
 } from '@/app/chat/sidebar/projects/workspace-groups'
 import type { ThorGitBaseBranch, ThorGitBranch } from '@/global'
-import { getThorConfig, thorApi, type ThorGateway, type SessionInfo } from '@/thor'
 import { translateNow } from '@/i18n'
 import { desktopDefaultCwd, isDesktopFsRemoteMode, selectDesktopPaths, writeDesktopFileText } from '@/lib/desktop-fs'
 import { desktopGit, desktopGitFor, type GitOwnerRoute } from '@/lib/desktop-git'
@@ -55,6 +54,7 @@ import {
   type SessionTombstoneGenerationSnapshot,
   tombstoneRowIds
 } from '@/store/session-removal'
+import { getThorConfig, type SessionInfo, thorApi, type ThorGateway } from '@/thor'
 import type { ProjectInfo, ProjectsPayload } from '@/types/thor'
 
 import { recordFeatureUse } from './desktop-metrics'

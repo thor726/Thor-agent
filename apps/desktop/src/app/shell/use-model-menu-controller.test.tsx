@@ -3,10 +3,10 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { expect, it, vi } from 'vitest'
 
-import type { ThorGateway } from '@/thor'
 import { $daybreakByProfile, daybreakKey } from '@/store/daybreak'
 import { $notifications } from '@/store/notifications'
 import { $activeSessionId, $currentModel, $currentProvider } from '@/store/session'
+import type { ThorGateway } from '@/thor'
 
 import { useModelMenuController } from './use-model-menu-controller'
 

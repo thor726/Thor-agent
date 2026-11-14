@@ -14,7 +14,6 @@ import { createGatewayEventDedupe } from '@/app/gateway/gateway-event-dedupe'
 import { reportStartupLatency } from '@/app/gateway/report-startup-latency'
 import { shouldApplyPostBootProgressError } from '@/components/boot-failure-reauth'
 import type { DesktopBootProgress, ThorConnection, ThorWindowState } from '@/global'
-import { ThorGateway } from '@/thor'
 import { translateNow } from '@/i18n'
 import { desktopDefaultCwd } from '@/lib/desktop-fs'
 import {
@@ -108,6 +107,7 @@ import {
 } from '@/store/session-states'
 import { warnIfTerminalBackendUnavailable } from '@/store/terminal-backend-warning'
 import { isPeerInstanceWindow, windowProfileOverride } from '@/store/windows'
+import { ThorGateway } from '@/thor'
 
 import { stashGatewaySurvivor, survivorIsStale, takeGatewaySurvivor } from './gateway-hmr-survivor'
 import { notifyPrimaryReauth } from './primary-reauth-notice'
@@ -191,7 +191,9 @@ async function openWebappTabProfile(desktop: Window['thorDesktop'], primary: str
   const routes = await desktop.getProfileRoutes?.([profile]).catch(() => null)
 
   if (routes && !routes.some(route => normalizeProfileKey(route.profile) === normalizeProfileKey(profile))) {
-    console.warn(`[gateway] this gateway has no profile "${profile}" or does not serve it; this tab stays on "${primary}"`)
+    console.warn(
+      `[gateway] this gateway has no profile "${profile}" or does not serve it; this tab stays on "${primary}"`
+    )
     await desktop.profile?.remember?.(primary)
 
     return

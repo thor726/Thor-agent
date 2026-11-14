@@ -7,7 +7,6 @@ import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SegmentedControl } from '@/components/ui/segmented-control'
-import { getElevenLabsVoices, getThorConfigSchema, saveThorConfig } from '@/thor'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { isSubmitEnter } from '@/lib/ime'
@@ -33,6 +32,7 @@ import { normalizeProfileKey } from '@/store/profile'
 import { repoDiscoveryPolicyFromConfig, repoDiscoveryPolicySignature, scanAndRecordRepos } from '@/store/projects'
 import { $settingsRequestProfile } from '@/store/settings-scope'
 import { $autoSpeakReplies, setAutoSpeakReplies } from '@/store/voice-prefs'
+import { getElevenLabsVoices, getThorConfigSchema, saveThorConfig } from '@/thor'
 import type { ConfigFieldSchema, ThorConfigRecord } from '@/types/thor'
 
 import { thorConfigCacheWriter, useThorConfigRecord } from '../hooks/use-config-record'
@@ -148,8 +148,7 @@ function ConfigSettingsInner({
   } = useQuery({
     // Base key when following the active profile (matches every pre-existing
     // consumer); suffixed only for an explicit scope override.
-    queryKey:
-      scopeProfile == null ? ['thor-config-schema'] : ['thor-config-schema', normalizeProfileKey(scopeProfile)],
+    queryKey: scopeProfile == null ? ['thor-config-schema'] : ['thor-config-schema', normalizeProfileKey(scopeProfile)],
     queryFn: () => getThorConfigSchema(scopeProfile),
     staleTime: 5 * 60 * 1000
   })

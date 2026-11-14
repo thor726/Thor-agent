@@ -9,7 +9,7 @@ import type {
 } from '@/types/thor'
 import type { ActionResponse } from '@/types/thor'
 
-import { capabilityScoped, thorApi, type ProfileScope, profileScoped } from './client'
+import { capabilityScoped, type ProfileScope, profileScoped, thorApi } from './client'
 
 export function getSkills(profile?: ProfileScope): Promise<SkillInfo[]> {
   return window.thorDesktop.api<SkillInfo[]>({

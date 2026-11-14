@@ -14,7 +14,6 @@ import './kanban.css'
 import {
   cn,
   Codicon,
-  type ThorPlugin,
   host,
   type KeybindContribution,
   KEYBINDS_AREA,
@@ -25,6 +24,7 @@ import {
   SIDEBAR_NAV_AREA,
   type SidebarNavContribution,
   STATUSBAR_AREAS,
+  type ThorPlugin,
   Tip,
   useQuery,
   useValue

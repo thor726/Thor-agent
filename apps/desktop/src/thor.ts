@@ -7,14 +7,14 @@
 export {
   getApiRequestConnection,
   getApiRequestProfile,
-  thorApi,
-  ThorGateway,
   profileScopeKey,
   PROMPT_SUBMIT_REQUEST_TIMEOUT_MS,
   resolveOwnerNow,
   setApiRequestConnection,
   setApiRequestProfile,
-  STARTUP_REQUEST_TIMEOUT_MS
+  STARTUP_REQUEST_TIMEOUT_MS,
+  thorApi,
+  ThorGateway
 } from './api/client'
 export type { ProfileScope, ResolvedOwner } from './api/client'
 export * from './api/config'
@@ -68,8 +68,6 @@ export type {
   ElevenLabsVoice,
   ElevenLabsVoicesResponse,
   EnvVarInfo,
-  ThorConfig,
-  ThorConfigRecord,
   LogsResponse,
   McpCatalogEntry,
   McpCatalogResponse,
@@ -127,6 +125,8 @@ export type {
   TelegramOnboardingApplyResponse,
   TelegramOnboardingStartResponse,
   TelegramOnboardingStatusResponse,
+  ThorConfig,
+  ThorConfigRecord,
   ToolsetConfig,
   ToolsetInfo,
   ToolsetModel,

@@ -1,12 +1,12 @@
 import { act, cleanup, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ThorGateway } from '@/thor'
 import type * as GatewayStore from '@/store/gateway'
 import { $liveWorkRoster } from '@/store/live-work-roster'
 import type * as SessionStore from '@/store/session'
 import type * as RequestRouter from '@/store/session-request-router'
 import type * as SessionStates from '@/store/session-states'
+import type { ThorGateway } from '@/thor'
 
 import { useLiveWorkRoster } from './use-live-work-roster'
 

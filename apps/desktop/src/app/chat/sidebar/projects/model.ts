@@ -2,11 +2,11 @@ import { useStore } from '@nanostores/react'
 import { useEffect, useMemo, useState } from 'react'
 
 import type { ThorGitWorktree } from '@/global'
-import type { SessionInfo } from '@/thor'
 import { desktopGit, desktopGitFor } from '@/lib/desktop-git'
 import { mapPool } from '@/lib/pool'
 import { $sidebarWorkspaceNodeOpen, toggleWorkspaceNodeCollapsed } from '@/store/layout'
 import { $worktreeRefreshToken } from '@/store/projects'
+import type { SessionInfo } from '@/thor'
 
 import { projectOwnerRoute } from './gateway-project-rows'
 import { sessionRecency, type SidebarProjectTree } from './workspace-groups'

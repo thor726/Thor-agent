@@ -1,5 +1,5 @@
-import type { ModelOptionProvider } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import type { ModelOptionProvider } from '@thor/shared'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { getGlobalModelOptions } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronLeft, KeyRound, Loader2 } from '@/lib/icons'
 import { isSubmitEnter } from '@/lib/ime'
@@ -37,6 +36,7 @@ import {
   startProviderOAuth
 } from '@/store/onboarding'
 import { $onboardingSurfaces, onboardingSurfaceActive } from '@/store/onboarding-presence'
+import { getGlobalModelOptions } from '@/thor'
 import type { OAuthProvider } from '@/types/thor'
 
 import { DocsLink, FlowPanel, Status } from './flow'

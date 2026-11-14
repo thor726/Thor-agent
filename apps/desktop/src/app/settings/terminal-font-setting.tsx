@@ -7,9 +7,9 @@ import {
   TERMINAL_FONT_SUGGESTIONS
 } from '@/app/right-sidebar/terminal/terminal-font'
 import { Button } from '@/components/ui/button'
-import { saveThorConfig } from '@/thor'
 import { useI18n } from '@/i18n'
 import { notifyError } from '@/store/notifications'
+import { saveThorConfig } from '@/thor'
 import type { ThorConfigRecord } from '@/types/thor'
 
 import { setThorConfigCache, useThorConfigRecord } from '../hooks/use-config-record'

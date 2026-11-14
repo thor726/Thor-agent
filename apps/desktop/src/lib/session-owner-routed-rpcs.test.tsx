@@ -1,11 +1,11 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { cleanup, render, waitFor } from '@testing-library/react'
 // Every Desktop RPC that carries a session_id must reach the backend that OWNS
 // that session. On a multiplexed local gateway the window's ambient socket is
 // the launch profile's authority, which refuses a secondary profile's session:
 // llm.oneshot and the session YOLO toggle failed outright, session.title fell
 // back to REST and model.options to the launch profile's catalog.
 import type { ModelOptionsResult } from '@thor/shared'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, waitFor } from '@testing-library/react'
 import { atom } from 'nanostores'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 

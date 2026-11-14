@@ -1,4 +1,4 @@
-import { thorApi, profileScoped } from './client'
+import { profileScoped, thorApi } from './client'
 
 // Web access: turn on the Webapp the gateway on THIS machine serves, for other devices, behind Thor
 // sign-in. The backend owns every fact here; the pane renders /status and asks for changes.
@@ -9,7 +9,11 @@ export interface WebAccessStatus {
   /** `webapp.enabled` in the serving gateway's config: what it serves from its next start. */
   enabled: boolean
   /** What the gateway serves now; `stopped` when none answers. */
-  gateway: { reason: null | string; state: 'off' | 'serving' | 'starting' | 'stopped' | 'unavailable'; url: null | string }
+  gateway: {
+    reason: null | string
+    state: 'off' | 'serving' | 'starting' | 'stopped' | 'unavailable'
+    url: null | string
+  }
   lan_address: null | string
   /** Who the configured web app serves; `local` is a loopback bind, reachable from this computer only. */
   mode: 'local' | null | WebAccessMode

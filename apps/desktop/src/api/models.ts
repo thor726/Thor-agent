@@ -9,7 +9,7 @@ import type {
   ModelInfoResponse
 } from '@/types/thor'
 
-import { capabilityScoped, thorApi, type ProfileScope, profileScoped, STARTUP_REQUEST_TIMEOUT_MS } from './client'
+import { capabilityScoped, type ProfileScope, profileScoped, STARTUP_REQUEST_TIMEOUT_MS, thorApi } from './client'
 
 // /api/model/info resolves the live context window, which probes the configured
 // provider's /models endpoint. An unreachable provider must not hold the Model

@@ -1,5 +1,5 @@
-import { JsonRpcGatewayError } from '@thor/shared'
 import { act, cleanup, renderHook } from '@testing-library/react'
+import { JsonRpcGatewayError } from '@thor/shared'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { en } from '@/i18n/en'
@@ -105,7 +105,11 @@ it('an edited queued entry drains as a new message, not as its admitted original
   const { result } = renderHook(() => useSubmitPrompt(deps as never))
   await act(async () => {
     expect(
-      await result.current(entry!.text, { fromQueue: true, submission_id: queuedSubmissionId(entry!), storedSessionId: 'stored-a' })
+      await result.current(entry!.text, {
+        fromQueue: true,
+        submission_id: queuedSubmissionId(entry!),
+        storedSessionId: 'stored-a'
+      })
     ).toBe(true)
   })
 

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { getSession } from '@/thor'
 import { $sessions } from '@/store/session'
+import { getSession } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 import { __resetSessionLinkTitleCache, fetchSessionLinkTitle, lookupLocalSessionTitle } from './session-link-title'

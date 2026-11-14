@@ -1,13 +1,5 @@
 import { type QueryClient, useQueryClient } from '@tanstack/react-query'
 
-import {
-  activateLocalModel,
-  deleteLocalModel,
-  downloadLocalModel,
-  ejectLocalModel,
-  quickstartLocalModels,
-  setLocalServer
-} from '@/thor'
 import { useI18n } from '@/i18n'
 import type { Translations } from '@/i18n/types'
 import {
@@ -19,6 +11,14 @@ import {
   watchLocalRuntimeJobs
 } from '@/store/local-runtime-jobs'
 import { notify, notifyError } from '@/store/notifications'
+import {
+  activateLocalModel,
+  deleteLocalModel,
+  downloadLocalModel,
+  ejectLocalModel,
+  quickstartLocalModels,
+  setLocalServer
+} from '@/thor'
 import type { LocalCatalogModel, LocalRuntimeJob } from '@/types/thor'
 
 import { useScopedLocalModelsOwner } from './local-models-owner'

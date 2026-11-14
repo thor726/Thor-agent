@@ -2,7 +2,6 @@ import { resolveGatewayWsUrl } from '@thor/shared'
 
 import { openGatewaySocket } from '@/api/canonical-protocol'
 import type { OwnerScope } from '@/api/client'
-import { getApiRequestConnection, getApiRequestProfile, speakText } from '@/thor'
 import { directTtsConfig, type DirectTtsConfig, synthesizeSpeechClientDirect } from '@/lib/voice-client-direct'
 import { RECONNECT_ATTEMPT_TIMEOUT_MS, withTimeout } from '@/lib/with-timeout'
 import {
@@ -11,6 +10,7 @@ import {
   type VoicePlaybackSource,
   type VoicePlaybackState
 } from '@/store/voice-playback'
+import { getApiRequestConnection, getApiRequestProfile, speakText } from '@/thor'
 
 import { cutSentences, sanitizeTextForSpeech } from './speech-text'
 

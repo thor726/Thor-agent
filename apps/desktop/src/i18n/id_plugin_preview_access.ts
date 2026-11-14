@@ -5,10 +5,11 @@ export const idPluginPreviewAccess: PluginPreviewAccessTranslations = {
   previewScriptPromptTitle: (plugin: string) => `Izinkan ${plugin} menjalankan skrip di halaman ini?`,
   previewScriptPromptBody: (plugin: string, origin: string) =>
     `${plugin} ingin menjalankan JavaScript di Browser preview pada ${origin}.`,
-  previewScriptPromptRisk: 'Skrip bisa membaca dan mengubah apa pun di situs itu, termasuk halaman dari akun yang kamu login di sana.',
+  previewScriptPromptRisk:
+    'Skrip bisa membaca dan mengubah apa pun di situs itu, termasuk halaman dari akun yang kamu login di sana.',
   previewScriptPromptRevokeHint: 'Hanya berlaku untuk situs ini. Kamu bisa mencabutnya di Capabilities ▸ Plugins.',
   previewScriptAllow: 'Izinkan di situs ini',
-  previewScriptDeny: "Jangan izinkan",
+  previewScriptDeny: 'Jangan izinkan',
   previewScriptAccessLabel: 'Skrip halaman',
   previewScriptAccessNone: 'Bertanya sebelum menjalankan skrip di halaman',
   previewScriptRevoke: (origin: string) => `Cabut akses ke ${origin}`,

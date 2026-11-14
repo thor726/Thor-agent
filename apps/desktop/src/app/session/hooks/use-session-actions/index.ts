@@ -1,5 +1,5 @@
-import { mergeUsage, randomUuid } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { mergeUsage, randomUuid } from '@thor/shared'
 import { type MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import type { NavigateFunction } from 'react-router'
 
@@ -12,13 +12,6 @@ import {
 import { defaultNewSessionTarget, prepareDefaultNewSession } from '@/app/session/new-session-route'
 import { revealTreePane } from '@/components/pane-shell/tree/store'
 import { setWorkspaceScope } from '@/components/pane-shell/workspace-scope'
-import {
-  deleteSession,
-  fetchStoredTranscriptAcrossBackends,
-  getAllSessionMessages,
-  getLatestSessionMessages,
-  setSessionArchived
-} from '@/thor'
 import { useI18n } from '@/i18n'
 import {
   type ChatMessage,
@@ -136,12 +129,14 @@ import { clearSessionSubagents } from '@/store/subagents'
 import { clearSessionTodos, restoreSessionTodosFromSnapshot } from '@/store/todos'
 import { dropTranscriptTail, dropTranscriptTailEverywhere, saveTranscriptTail } from '@/store/transcript-tail-cache'
 import { isWatchWindow } from '@/store/windows'
-import type {
-  SessionCreateResponse,
-  SessionMessagesResponse,
-  SessionResumeResult,
-  UsageStats
-} from '@/types/thor'
+import {
+  deleteSession,
+  fetchStoredTranscriptAcrossBackends,
+  getAllSessionMessages,
+  getLatestSessionMessages,
+  setSessionArchived
+} from '@/thor'
+import type { SessionCreateResponse, SessionMessagesResponse, SessionResumeResult, UsageStats } from '@/types/thor'
 
 import { navigateToWorkspacePage, NEW_CHAT_ROUTE, sessionRoute, SETTINGS_ROUTE } from '../../../routes'
 import type { ClientSessionState, SidebarNavItem } from '../../../types'
@@ -2060,7 +2055,12 @@ export function useSessionActions({
             : viewMessagesForReconcile()
 
           // Tail page + previously backfilled prefix (same-session re-resume).
-          prefetchedPage = await graftTranscriptPage(prefetchedResult, previousMessages, storedSessionId, sessionRestScope)
+          prefetchedPage = await graftTranscriptPage(
+            prefetchedResult,
+            previousMessages,
+            storedSessionId,
+            sessionRestScope
+          )
           prefetchedTranscriptMessages = prefetchedPage.transcript
           localSnapshot = prefetchedPage.snapshot
           prefetchApplied = true

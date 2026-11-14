@@ -8,7 +8,8 @@ export const idAuxTasks: AuxTaskCopyMap = {
   title_generation: { label: 'Pembuatan judul', hint: 'Judul sesi' },
   review: { label: 'Review', hint: '/review subagent reviewer' },
   voice_chat: { label: 'Voice chat', hint: 'Balasan mode suara' },
-  triage_specifier: { label: 'Triage specifier', hint: 'Penjabaran spec Kanban' },  kanban_decomposer: { label: 'Kanban decomposer', hint: 'Pemecahan tugas' },
+  triage_specifier: { label: 'Triage specifier', hint: 'Penjabaran spec Kanban' },
+  kanban_decomposer: { label: 'Kanban decomposer', hint: 'Pemecahan tugas' },
   profile_describer: { label: 'Profile describer', hint: 'Deskripsi profil otomatis' },
   curator: { label: 'Curator', hint: 'Tinjauan pemakaian skill' }
 }

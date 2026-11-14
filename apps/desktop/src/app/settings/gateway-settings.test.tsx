@@ -1,5 +1,5 @@
-import { GatewayReauthRequiredError } from '@thor/shared'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { GatewayReauthRequiredError } from '@thor/shared'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { en } from '@/i18n/en'

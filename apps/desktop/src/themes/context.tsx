@@ -9,8 +9,8 @@
  * The two are persisted independently. Shift+X toggles light/dark.
  */
 
-import { ensureContrast, mix, parseColor } from '@thor/shared/color'
 import { useStore } from '@nanostores/react'
+import { ensureContrast, mix, parseColor } from '@thor/shared/color'
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { $registryVersion } from '@/contrib/registry'
@@ -32,7 +32,7 @@ import {
 import { writeBootPalette } from './boot-palette'
 import { $chatFontFamily, resolveChatFontFamily } from './chat-font'
 import { harmonize, normalizeHex, readableInk } from './color'
-import { BUILTIN_THEME_LIST, DEFAULT_SKIN_NAME, DEFAULT_TYPOGRAPHY, thorTheme, RETIRED_SKINS } from './presets'
+import { BUILTIN_THEME_LIST, DEFAULT_SKIN_NAME, DEFAULT_TYPOGRAPHY, RETIRED_SKINS, thorTheme } from './presets'
 import { $pendingModeApply } from './request'
 import { retintTheme } from './retint'
 import type { DesktopTheme, DesktopThemeColors, DesktopThemeTypography } from './types'

@@ -3,8 +3,8 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorModule from '@/thor'
 import { $activeGatewayProfile } from '@/store/profile'
+import type * as ThorModule from '@/thor'
 
 import { useStatusbarItems } from './use-statusbar-items'
 

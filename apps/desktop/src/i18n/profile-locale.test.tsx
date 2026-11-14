@@ -3,10 +3,10 @@ import { afterEach, expect, it, vi } from 'vitest'
 
 import { setApiRequestConnection } from '@/api/client'
 import type { ThorApiRequest } from '@/global'
-import type { ThorConfigRecord } from '@/thor'
 import { $gateway } from '@/store/gateway'
 import { $activeGatewayProfile } from '@/store/profile'
 import { $connection, $gatewayState } from '@/store/session'
+import type { ThorConfigRecord } from '@/thor'
 
 import { useI18n } from './context'
 import { ProfileI18nProvider as I18nProvider } from './profile-provider'

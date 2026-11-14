@@ -1,10 +1,9 @@
-import type { GatewayEvent } from '@thor/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages } from '@/thor'
 import { type ChatMessage, chatMessageText, toChatMessages } from '@/lib/chat-messages'
 import { resetInFlightTurnJournalStateForTests } from '@/lib/inflight-turn-journal'
 import { $activeGatewayProfile } from '@/store/profile'
@@ -18,6 +17,7 @@ import {
   setSessions
 } from '@/store/session'
 import { clearAllSessionStates } from '@/store/session-states'
+import { getLatestSessionMessages } from '@/thor'
 import type { SessionMessage, SessionResumeResult } from '@/types/thor'
 
 import { useMessageStream } from './use-message-stream'

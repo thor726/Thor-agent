@@ -3,12 +3,12 @@ import { useMemo, useState } from 'react'
 
 import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
-import { getSkillContent, type ProfileScope, profileScopeKey, setSkillLocked } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Lock, LockOpen } from '@/lib/icons'
 import { queryClient } from '@/lib/query-client'
 import { cn } from '@/lib/utils'
 import { notifyError } from '@/store/notifications'
+import { getSkillContent, type ProfileScope, profileScopeKey, setSkillLocked } from '@/thor'
 import type { SkillInfo } from '@/types/thor'
 
 import { parseFrontmatter } from './frontmatter'

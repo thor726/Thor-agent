@@ -56,7 +56,9 @@ describe('the @thor handle', () => {
     const byName = Object.fromEntries(rows.map(row => [row.name, botHandle(row.name, row)]))
 
     expect(byName).toEqual({ default: 'default', thor: 'thor', researcher: 'researcher' })
-    expect(resolveRosterMentions('@default ping', rows, { name: 'researcher' }).map(row => row.name)).toEqual(['default'])
+    expect(resolveRosterMentions('@default ping', rows, { name: 'researcher' }).map(row => row.name)).toEqual([
+      'default'
+    ])
   })
 
   it('keeps each source separate: a remote thor profile does not rename the local default', () => {
@@ -90,8 +92,6 @@ describe('the @thor handle', () => {
 
     expect([sender('default', rows), sender('thor', rows)]).toEqual(['default', 'thor'])
     // No real thor profile: the default is still @thor (#89484).
-    expect(sender('default', claimDefaultHandles<RosterRow>([{ connectionId: 'local', name: 'default' }]))).toBe(
-      'thor'
-    )
+    expect(sender('default', claimDefaultHandles<RosterRow>([{ connectionId: 'local', name: 'default' }]))).toBe('thor')
   })
 })

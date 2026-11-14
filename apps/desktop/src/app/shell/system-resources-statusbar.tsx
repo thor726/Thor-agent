@@ -2,11 +2,11 @@ import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
 import type { StatusbarItem } from '@/app/shell/statusbar-controls'
-import { getLocalHardware } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Activity } from '@/lib/icons'
 import { $localModelsEnabled } from '@/store/local-models-flag'
 import { $statusbarHiddenIds } from '@/store/statusbar-prefs'
+import { getLocalHardware } from '@/thor'
 import type { LocalHardware } from '@/types/thor'
 
 // Live host-resource readout for the bottom bar: GPU utilization + VRAM +

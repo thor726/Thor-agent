@@ -40,6 +40,6 @@ export const idConnectorCard: Translations['connectors'] = {
     receiptNone: 'Tidak ada aplikasi baru yang terhubung',
     receiptTimedOut: 'Ditutup setelah 10 menit',
     finishInBrowser: 'Selesaikan di browser kamu',
-    signInFailed: "Tidak bisa terhubung. Klik untuk coba lagi"
+    signInFailed: 'Tidak bisa terhubung. Klik untuk coba lagi'
   }
 }

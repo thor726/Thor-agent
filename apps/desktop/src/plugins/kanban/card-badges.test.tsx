@@ -1,4 +1,3 @@
-import { KANBAN_CARD_AREAS, type KanbanCardBadgeContribution } from '@thor/plugin-sdk'
 /**
  * The board paints plugin card badges (#140026): the REAL board page, the REAL
  * plugin context and registry, with only the kanban REST layer mocked. A
@@ -7,6 +6,7 @@ import { KANBAN_CARD_AREAS, type KanbanCardBadgeContribution } from '@thor/plugi
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, within } from '@testing-library/react'
+import { KANBAN_CARD_AREAS, type KanbanCardBadgeContribution } from '@thor/plugin-sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // eslint-disable-next-line no-restricted-imports

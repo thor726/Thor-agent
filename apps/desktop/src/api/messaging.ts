@@ -18,7 +18,7 @@ import type {
   WebhooksResponse
 } from '@/types/webhooks'
 
-import { thorApi, profileScoped } from './client'
+import { profileScoped, thorApi } from './client'
 
 export function getMessagingPlatforms(profile?: null | string): Promise<MessagingPlatformsResponse> {
   return thorApi<MessagingPlatformsResponse>({

@@ -62,6 +62,7 @@ export function createPreviewAnnotateGuest(webview: PreviewDriveGuest | null): n
         '({ width: window.innerWidth, height: window.innerHeight })',
         signal
       )) as { height: number; width: number }
+
       signal?.throwIfAborted()
       const dataUrl = await window.thorDesktop.capturePreview?.({ rect, viewport, webContentsId })
 
@@ -99,7 +100,9 @@ export function overlayInstallScript(source: string, session = ++nextOverlaySess
     `if ((window.__thorAnnotateSession || 0) >= ${session}) return;` +
     `window.__thorAnnotateSession = ${session};` +
     'if (window.__thorAnnotate) window.__thorAnnotate.teardown();' +
-    'var api=' + source + ';window.__thorAnnotate=api;api.install();})()'
+    'var api=' +
+    source +
+    ';window.__thorAnnotate=api;api.install();})()'
   )
 }
 

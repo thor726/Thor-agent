@@ -5,17 +5,17 @@ import type {
   CustomEndpointUpdate,
   CustomEndpointValidationResponse,
   EnvVarInfo,
-  ThorConfig,
-  ThorConfigRecord,
   LogsResponse,
   OAuthPollResponse,
   OAuthProvidersResponse,
   OAuthStartResponse,
   OAuthSubmitResponse,
-  StatusResponse
+  StatusResponse,
+  ThorConfig,
+  ThorConfigRecord
 } from '@/types/thor'
 
-import { capabilityScoped, thorApi, type ProfileScope, profileScoped, STARTUP_REQUEST_TIMEOUT_MS } from './client'
+import { capabilityScoped, type ProfileScope, profileScoped, STARTUP_REQUEST_TIMEOUT_MS, thorApi } from './client'
 
 type ConfigReadOrigin = { connectionId?: string; priority?: 'foreground'; profile?: string }
 

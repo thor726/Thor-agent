@@ -1,6 +1,6 @@
-import { JsonRpcGatewayError } from '@thor/shared'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { JsonRpcGatewayError } from '@thor/shared'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -22,7 +22,11 @@ vi.mock('@/thor', async importOriginal => ({
 
 import { queryClient } from '@/lib/query-client'
 import { $notifications } from '@/store/notifications'
-import { $pluginInstallRequest, closePluginInstallRequest, openPluginInstallRequest } from '@/store/plugin-install-request'
+import {
+  $pluginInstallRequest,
+  closePluginInstallRequest,
+  openPluginInstallRequest
+} from '@/store/plugin-install-request'
 import { $activeGatewayProfile } from '@/store/profile'
 import { $connection, $gatewayState } from '@/store/session'
 
@@ -139,7 +143,11 @@ describe('Install after the source moved past the reviewed commit', () => {
 
     const installDesktopPlugin = vi
       .fn()
-      .mockResolvedValueOnce({ ok: false, sourceMoved: true, error: 'The commit you reviewed could not be checked out.' })
+      .mockResolvedValueOnce({
+        ok: false,
+        sourceMoved: true,
+        error: 'The commit you reviewed could not be checked out.'
+      })
       .mockResolvedValueOnce({ ok: true, pluginName: 'ui' })
 
     vi.stubGlobal('thorDesktop', { installDesktopPlugin, probePluginRepo })

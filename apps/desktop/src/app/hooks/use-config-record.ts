@@ -1,6 +1,8 @@
 import { useStore } from '@nanostores/react'
 import { replaceEqualDeep, useQuery } from '@tanstack/react-query'
 
+import { queryClient } from '@/lib/query-client'
+import { $activeConnectionId } from '@/store/connections'
 import {
   getThorConfigRecord,
   peekConfigReadOrigin,
@@ -8,8 +10,6 @@ import {
   profileScopeKey,
   retainConfigReadOrigin
 } from '@/thor'
-import { queryClient } from '@/lib/query-client'
-import { $activeConnectionId } from '@/store/connections'
 import type { ThorConfigRecord } from '@/types/thor'
 
 // One shared cache for the whole profile config record (`GET /api/config`).
@@ -131,10 +131,7 @@ export const useThorConfigRecord = (profile?: ProfileScope) => {
 // gateway is active when the save happens — the same row its query reads.
 const writeThorConfigCache =
   (keyFor: () => ReturnType<typeof thorConfigKey>) =>
-  (
-    next:
-      ThorConfigRecord | undefined | ((previous: ThorConfigRecord | undefined) => ThorConfigRecord | undefined)
-  ) =>
+  (next: ThorConfigRecord | undefined | ((previous: ThorConfigRecord | undefined) => ThorConfigRecord | undefined)) =>
     void queryClient.setQueryData<ThorConfigRecord>(keyFor(), previous => {
       const record = typeof next === 'function' ? next(previous) : next
 
@@ -147,8 +144,7 @@ const writeThorConfigCache =
     })
 
 export const setThorConfigCache = writeThorConfigCache(() => thorConfigKey())
-export const thorConfigCacheWriter = (profile?: ProfileScope) =>
-  writeThorConfigCache(() => thorConfigKey(profile))
+export const thorConfigCacheWriter = (profile?: ProfileScope) => writeThorConfigCache(() => thorConfigKey(profile))
 
 export const invalidateThorConfig = (profile?: ProfileScope) =>
   queryClient.invalidateQueries({ queryKey: thorConfigKey(profile) })
