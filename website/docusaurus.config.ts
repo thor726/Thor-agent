@@ -42,6 +42,18 @@ const config: Config = {
 
   themes: [
     '@docusaurus/theme-mermaid',
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      /** @type {import('@easyops-cn/docusaurus-search-local').PluginOptions} */
+      ({
+        hashed: true,
+        language: ['en', 'zh'],
+        indexDocs: true,
+        indexBlog: false,
+        docsRouteBasePath: '/',
+        highlightSearchTermsOnTargetPage: true,
+      }),
+    ],
   ],
 
   plugins: [
@@ -150,20 +162,13 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/thor-agent-banner.png',
-    // Algolia DocSearch (replaces @easyops-cn/docusaurus-search-local).
-    // The local plugin shipped a ~16 MB client-side lunr index that every
-    // visitor downloaded and hydrated before their first result; DocSearch
-    // answers from Algolia's servers with no client index at all. These are
-    // public search-only credentials — safe to commit (the admin key is not
-    // in the repo). Index is populated by the Algolia Crawler configured at
-    // crawler.algolia.com; contextualSearch scopes results to the active
-    // locale via the docusaurus_tag/lang facets the crawler records carry.
-    algolia: {
-      appId: '2JLBVEYZN5',
-      apiKey: '9629ec26628d1a126535fd5ef408990d',
-      indexName: 'thor docs',
-      contextualSearch: true,
-    },
+    // Local search (@easyops-cn/docusaurus-search-local): the index is built
+    // at build time and search runs entirely in the visitor's browser — no
+    // Algolia account, no crawler, no domain verification. Reverted from
+    // DocSearch because the Algolia credentials/index belong to the upstream
+    // hermes project and were dead weight here. language uses 'zh' (not
+    // 'zh-Hans'): the plugin maps its own locale codes. docsRouteBasePath '/'
+    // matches docs served at the root of /docs/.
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
