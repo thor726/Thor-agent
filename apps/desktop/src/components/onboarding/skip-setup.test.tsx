@@ -1,5 +1,5 @@
-import type { OnboardingEndedPayload } from '@thor/shared'
 import { act, cleanup, render, screen } from '@testing-library/react'
+import type { OnboardingEndedPayload } from '@thor/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { $onboardingPhase } from '@/store/onboarding-phase'

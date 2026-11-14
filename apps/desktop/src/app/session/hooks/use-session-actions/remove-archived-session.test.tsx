@@ -9,9 +9,9 @@ import type { MutableRefObject } from 'react'
 import { useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { deleteSession, type SessionInfo } from '@/thor'
 import { setSessions } from '@/store/session'
 import { $archivedSessions } from '@/store/sidebar-archive'
+import { deleteSession, type SessionInfo } from '@/thor'
 
 import type { ClientSessionState } from '../../../types'
 

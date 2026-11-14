@@ -44,7 +44,9 @@ export function registerPluginFilesIpc(deps: PluginFilesIpcDeps): PluginFiles {
         title: label(labels?.title, 'Choose a folder')
       }
 
-      const picked = window ? await deps.dialog.showOpenDialog(window, options) : await deps.dialog.showOpenDialog(options)
+      const picked = window
+        ? await deps.dialog.showOpenDialog(window, options)
+        : await deps.dialog.showOpenDialog(options)
 
       if (picked.canceled || !picked.filePaths[0]) {
         return { ok: true, folder: null }
@@ -72,9 +74,7 @@ export function registerPluginFilesIpc(deps: PluginFilesIpcDeps): PluginFiles {
     return revoked
   })
 
-  deps.ipcMain.handle('thor:pluginFiles:op', async (_event, pluginId: unknown, request) =>
-    files.run(pluginId, request)
-  )
+  deps.ipcMain.handle('thor:pluginFiles:op', async (_event, pluginId: unknown, request) => files.run(pluginId, request))
 
   return files
 }

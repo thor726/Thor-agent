@@ -1,12 +1,11 @@
-import type { GatewayEvent } from '@thor/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, render } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { useMessageStream } from '@/app/session/hooks/use-message-stream'
 import { useSessionStateCache } from '@/app/session/hooks/use-session-state-cache'
-import { getLatestSessionMessages } from '@/thor'
 import { chatMessageText, toChatMessages } from '@/lib/chat-messages'
 import { resetLiveSync } from '@/store/live-sync'
 import {
@@ -18,6 +17,7 @@ import {
 } from '@/store/session'
 import { $sessionStates, clearAllSessionStates } from '@/store/session-states'
 import { clearSessionTodos } from '@/store/todos'
+import { getLatestSessionMessages } from '@/thor'
 import type { SessionMessage } from '@/types/thor'
 
 import { reconcileActiveTranscript } from './use-background-sync'

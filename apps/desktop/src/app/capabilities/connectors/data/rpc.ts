@@ -8,8 +8,8 @@ import type {
 } from '@thor/shared'
 import { JsonRpcGatewayError } from '@thor/shared'
 
-import type { ProfileScope } from '@/thor'
 import { requestGatewayForAgent } from '@/store/gateway'
+import type { ProfileScope } from '@/thor'
 
 export type { ConnectorErrorReason }
 

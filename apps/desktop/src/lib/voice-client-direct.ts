@@ -1,4 +1,4 @@
-import { thorApiAs, type OwnerScope, ownerScoped, type ResolvedOwner } from '@/api/client'
+import { type OwnerScope, ownerScoped, type ResolvedOwner, thorApiAs } from '@/api/client'
 import { getApiRequestConnection, getApiRequestProfile, thorApi } from '@/thor'
 
 /**

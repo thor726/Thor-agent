@@ -188,7 +188,10 @@ export function launcherInstallRoot(launcher: string): Promise<string | undefine
 
   const cached = launcherInstallRoots.get(launcher)
 
-  if (cached) {return cached}
+  if (cached) {
+    return cached
+  }
+
   const flight = launcherInstallDirectoryAsync(launcher).then(root => {
     if (root === null) {
       launcherInstallRoots.delete(launcher)
@@ -207,7 +210,11 @@ export function launcherInstallRoot(launcher: string): Promise<string | undefine
   return flight
 }
 
-interface LauncherVersionProbe { command: string; args: string[]; options: SpawnSyncOptions }
+interface LauncherVersionProbe {
+  command: string
+  args: string[]
+  options: SpawnSyncOptions
+}
 
 // Node refuses to exec a .cmd directly (CVE-2024-27980), and `shell:true`
 // would hand an interpolated path to cmd.exe wholesale. Invoke cmd.exe
@@ -244,8 +251,13 @@ export function launcherInstallDirectory(launcher: string, root?: string): strin
   try {
     const probe: LauncherVersionProbe | null = launcherVersionProbe(launcher, root)
 
-    if (!probe) {return null}
-    const result: SpawnSyncReturns<string> = spawnSync(probe.command, probe.args, { ...probe.options, encoding: 'utf8' })
+    if (!probe) {
+      return null
+    }
+    const result: SpawnSyncReturns<string> = spawnSync(probe.command, probe.args, {
+      ...probe.options,
+      encoding: 'utf8'
+    })
 
     return result.error || result.status !== 0 ? null : reportedInstallDirectory(result.stdout)
   } catch {
@@ -257,17 +269,24 @@ export function launcherInstallDirectory(launcher: string, root?: string): strin
 function launcherInstallDirectoryAsync(launcher: string, root?: string): Promise<string | null> {
   const probe: LauncherVersionProbe | null = launcherVersionProbe(launcher, root)
 
-  if (!probe) {return Promise.resolve(null)}
+  if (!probe) {
+    return Promise.resolve(null)
+  }
 
   return new Promise(resolve => {
     try {
-      execFile(probe.command, probe.args, { ...probe.options, encoding: 'utf8' } as ExecFileOptions, (error, stdout) => {
-        try {
-          resolve(error ? null : reportedInstallDirectory(String(stdout)))
-        } catch {
-          resolve(null)
+      execFile(
+        probe.command,
+        probe.args,
+        { ...probe.options, encoding: 'utf8' } as ExecFileOptions,
+        (error, stdout) => {
+          try {
+            resolve(error ? null : reportedInstallDirectory(String(stdout)))
+          } catch {
+            resolve(null)
+          }
         }
-      })
+      )
     } catch {
       resolve(null)
     }
@@ -560,10 +579,7 @@ function stagedFileMtimeMs(candidate: string): number | null {
  * Null on Windows too when nothing is staged (a dev/source run, or a CLI
  * install that never went through the installer); callers degrade gracefully.
  */
-export function resolveStagedUpdaterBinary(
-  thorHome: string,
-  deps: ResolveStagedUpdaterBinaryDeps = {}
-): string | null {
+export function resolveStagedUpdaterBinary(thorHome: string, deps: ResolveStagedUpdaterBinaryDeps = {}): string | null {
   const isWindows = deps.isWindows ?? process.platform === 'win32'
 
   if (!isWindows) {

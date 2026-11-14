@@ -1,7 +1,7 @@
-import { getTerminalBackends, selectTerminalBackend } from '@/thor'
 import { translateNow } from '@/i18n'
 import { notify, notifyError } from '@/store/notifications'
 import { requestRoute } from '@/store/recovery-requests'
+import { getTerminalBackends, selectTerminalBackend } from '@/thor'
 import type { TerminalBackendInfo } from '@/types/thor'
 
 /**

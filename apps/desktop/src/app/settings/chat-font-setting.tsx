@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { saveThorConfig } from '@/thor'
 import { useI18n } from '@/i18n'
 import { notifyError } from '@/store/notifications'
 import {
@@ -10,6 +9,7 @@ import {
   resolveChatFontFamily,
   setChatFontFamilyFromConfig
 } from '@/themes/chat-font'
+import { saveThorConfig } from '@/thor'
 import type { ThorConfigRecord } from '@/types/thor'
 
 import { setThorConfigCache, useThorConfigRecord } from '../hooks/use-config-record'

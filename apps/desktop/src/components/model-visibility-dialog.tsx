@@ -1,6 +1,6 @@
-import type { ModelOptionProvider, ModelOptionsResult } from '@thor/shared'
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
+import type { ModelOptionProvider, ModelOptionsResult } from '@thor/shared'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,6 @@ import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { HighlightMatches } from '@/components/ui/highlight-matches'
 import { RowButton } from '@/components/ui/row-button'
 import { Switch } from '@/components/ui/switch'
-import type { ThorGateway } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Plus, Search, X } from '@/lib/icons'
 import { modelOptionsQueryKey, requestModelOptions } from '@/lib/model-options'
@@ -41,6 +40,7 @@ import { $collapsedProviders, toggleCollapsedProvider } from '@/store/provider-c
 import { ambientRequestFor } from '@/store/session-gone-latch'
 import { sessionOwnerIsKnown } from '@/store/session-owner-resolution'
 import { knownOwnerForSession, requestForOwnedSession } from '@/store/session-states'
+import type { ThorGateway } from '@/thor'
 
 /** A session-scoped `model.options` goes to the session's OWNER: the ambient
  *  socket refuses a secondary profile's session_id and the dialog fell back to

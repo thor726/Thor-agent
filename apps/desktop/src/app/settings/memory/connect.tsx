@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { getMemoryProviderOAuthStatus, startMemoryProviderOAuth } from '@/thor'
 import { Check, ExternalLink, Loader2 } from '@/lib/icons'
 import { refreshMemoryStatus } from '@/store/memory-status'
 import { notifyError } from '@/store/notifications'
+import { getMemoryProviderOAuthStatus, startMemoryProviderOAuth } from '@/thor'
 import type { MemoryProviderOAuthStatus } from '@/types/thor'
 
 const POLL_MS = 1500

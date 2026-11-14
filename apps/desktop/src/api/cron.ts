@@ -9,13 +9,7 @@ import type {
   SessionInfo
 } from '@/types/thor'
 
-import {
-  connectionScoped,
-  getApiRequestConnection,
-  thorApi,
-  profileScoped,
-  STARTUP_REQUEST_TIMEOUT_MS
-} from './client'
+import { connectionScoped, getApiRequestConnection, profileScoped, STARTUP_REQUEST_TIMEOUT_MS, thorApi } from './client'
 
 // The cron trigger endpoint intentionally waits for the whole job so its
 // response reflects the persisted execution result. Agent jobs can run far

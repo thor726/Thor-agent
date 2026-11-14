@@ -4,11 +4,11 @@ import { useMemo, useState } from 'react'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { DesktopRosterAgent } from '@/global'
-import { getProfiles, type ProfileScope, profileScopeKey } from '@/thor'
 import { useI18n } from '@/i18n'
 import { cn } from '@/lib/utils'
 import { activeGatewayConnectionId } from '@/store/gateway'
 import { $activeGatewayProfile, normalizeProfileKey } from '@/store/profile'
+import { getProfiles, type ProfileScope, profileScopeKey } from '@/thor'
 
 import { useOnProfileSwitch } from '../hooks/use-on-profile-switch'
 
@@ -197,12 +197,7 @@ export function CapabilityScopeSelector({
   }
 
   return (
-    <div
-      className={cn(
-        'flex min-w-0 items-center gap-2',
-        compact && 'flex-1'
-      )}
-    >
+    <div className={cn('flex min-w-0 items-center gap-2', compact && 'flex-1')}>
       {!compact && (
         <span className="text-[0.7rem] font-medium text-(--ui-text-tertiary)">{t.skills.configuringProfile}</span>
       )}

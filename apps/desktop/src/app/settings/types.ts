@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 
-import type { ThorGateway } from '@/thor'
 import type { IconComponent } from '@/lib/icons'
+import type { ThorGateway } from '@/thor'
 import type { EnvVarInfo } from '@/types/thor'
 
 export type SettingsView =

@@ -57,10 +57,10 @@ import { chipTypedUrlOnSpace, linkifyUrls } from '@/app/chat/composer/url-refs'
 import { type DropFailure, dropWarning } from '@/app/chat/hooks/drop-warning'
 import {
   extractDroppedFiles,
-  THOR_PATHS_MIME,
   isImagePath,
   partitionDroppedFiles,
-  stageDroppedFilePath
+  stageDroppedFilePath,
+  THOR_PATHS_MIME
 } from '@/app/chat/hooks/use-composer-actions'
 import { uploadComposerAttachment } from '@/app/session/hooks/use-prompt-actions'
 import { thorDirectiveFormatter } from '@/components/assistant-ui/directive-text'
@@ -72,7 +72,6 @@ import {
   USER_BUBBLE_BASE_CLASS
 } from '@/components/assistant-ui/thread/user-message'
 import { Codicon } from '@/components/ui/codicon'
-import type { ThorGateway } from '@/thor'
 import { useI18n } from '@/i18n'
 import { attachmentDisplayText, attachmentId, pathLabel } from '@/lib/chat-runtime'
 import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
@@ -88,6 +87,7 @@ import { ambientRequestFor } from '@/store/session-gone-latch'
 import { isSessionRemote, requestForOwnedSession } from '@/store/session-states'
 import { useForcedTextDirection } from '@/store/text-direction'
 import { notifyThreadEditClose } from '@/store/thread-scroll'
+import type { ThorGateway } from '@/thor'
 
 interface UserEditComposerProps {
   cwd: string | null

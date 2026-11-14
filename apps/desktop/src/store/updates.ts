@@ -17,7 +17,6 @@ import type {
   DesktopVersionInfo,
   ThorConnection
 } from '@/global'
-import { checkThorUpdate, getActionStatus, updateThor } from '@/thor'
 import { translateNow } from '@/i18n'
 import { persistString, storedString } from '@/lib/storage'
 import { cloudOwnsUpdates, updateTargetFor } from '@/store/cloud-updates'
@@ -25,6 +24,7 @@ import { $connectionsRegistry, refreshConnectionsRegistry } from '@/store/connec
 import { reconnectGateway } from '@/store/gateway-reconnect'
 import { dismissNotification, notify } from '@/store/notifications'
 import { $connection } from '@/store/session'
+import { checkThorUpdate, getActionStatus, updateThor } from '@/thor'
 import type { BackendUpdateCheckResponse, UpdateReceiptSummary } from '@/types/thor'
 
 /** Keyed per retired-channel revision: a new retirement (or a revision bump on

@@ -8,5 +8,8 @@ export const idAppTour: Translations['appTour'] = {
   modelLocal: 'Komputer ini bisa menjalankannya secara lokal: Pengaturan > Provider > Model Lokal.',
   capabilities: { title: 'Capabilities', text: 'Skill, tool, dan plugin yang bisa dipakai Thor. Tambah lagi di sini.' },
   messaging: { title: 'Pesan', text: 'Jangkau Thor dari Telegram, Slack, Discord, dan lainnya.' },
-  rightPane: { title: 'Panel kerja', text: 'Membuka file, terminal, review, dan browser dalam aplikasi di sebelah kanan.' }
+  rightPane: {
+    title: 'Panel kerja',
+    text: 'Membuka file, terminal, review, dan browser dalam aplikasi di sebelah kanan.'
+  }
 }

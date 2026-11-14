@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorApi from '@/thor'
 import type { FreeTierRequester } from '@/store/free-tier'
+import type * as ThorApi from '@/thor'
 import type { AppHandoffStatus } from '@/types/thor'
 
 const startOAuthLogin = vi.fn()

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { ThorReadDirResult } from '@/global'
-import type * as ThorModule from '@/thor'
 import { $previewScriptGrants, grantPreviewScript } from '@/store/plugin-preview-grants'
+import type * as ThorModule from '@/thor'
 
 import { emitGatewayEvent } from './events'
 import { $pluginRecords, publishPlugin, setPluginEnabled } from './plugins-store'

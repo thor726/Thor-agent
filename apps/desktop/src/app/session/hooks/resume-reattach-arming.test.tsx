@@ -3,7 +3,6 @@ import { cleanup, render, waitFor } from '@testing-library/react'
 import { useEffect, useRef } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages } from '@/thor'
 import { recordFriction } from '@/store/desktop-metrics'
 import { $notifications, clearNotifications, notify } from '@/store/notifications'
 import {
@@ -18,6 +17,7 @@ import {
   setSelectedStoredSessionId
 } from '@/store/session'
 import { clearAllSessionStates } from '@/store/session-states'
+import { getLatestSessionMessages } from '@/thor'
 
 import { useSessionActions } from './use-session-actions'
 import { useSessionStateCache } from './use-session-state-cache'

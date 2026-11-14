@@ -24,7 +24,6 @@
 import { atom } from 'nanostores'
 
 import { ambientOwnerConnectionId } from '@/api/client'
-import { setSessionPinnedRemote } from '@/thor'
 import { onConnectionScopeChange } from '@/lib/connection-scoped'
 import { $primaryGatewayRoute } from '@/store/gateway-primary-route'
 import { $pinnedSessionIds, pinSession, unpinSession } from '@/store/layout'
@@ -41,6 +40,7 @@ import {
   setSessions
 } from '@/store/session'
 import { isSessionRemovalPending } from '@/store/session-removal'
+import { setSessionPinnedRemote } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 // pin ids we've successfully PATCHed pinned=true this session.

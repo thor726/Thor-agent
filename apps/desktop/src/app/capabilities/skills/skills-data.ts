@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { getSkills, type ProfileScope, profileScopeKey } from '@/thor'
 import { normalize } from '@/lib/text'
+import { getSkills, type ProfileScope, profileScopeKey } from '@/thor'
 import type { OfficialSkillInfo, SkillInfo } from '@/types/thor'
 
 import { asText, includesQuery } from '../../settings/helpers'

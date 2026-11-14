@@ -16,5 +16,5 @@ export const idClarify: ClarifyCopy = {
   oneQuestion: '1 pertanyaan',
   questionProgress: (answered, total) => `${answered} dari ${total} terjawab`,
   notDelivered:
-    "Pertanyaan ini tidak sampai ke aplikasi, jadi tidak bisa dijawab di sini. Tekan Stop untuk mengakhiri turn, lalu balas di chat."
+    'Pertanyaan ini tidak sampai ke aplikasi, jadi tidak bisa dijawab di sini. Tekan Stop untuk mengakhiri turn, lalu balas di chat.'
 }

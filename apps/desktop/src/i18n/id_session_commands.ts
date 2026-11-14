@@ -10,8 +10,7 @@ export const idSessionCommands: SessionCommandNotices = {
   retryUnsupported: '/retry: coba ulang tidak mendukung media atau bagian konten yang tidak dikenal',
   busy: (command: string) =>
     `sesi sibuk — Thor masih membalas. Hentikan balasan saat ini dulu (tombol Stop, atau Ctrl+C di terminal), lalu jalankan /${command}.`,
-  busyCompressing: (command: string) =>
-    `sesi sibuk — /compress sedang berjalan; jalankan /${command} saat selesai.`,
+  busyCompressing: (command: string) => `sesi sibuk — /compress sedang berjalan; jalankan /${command} saat selesai.`,
   steerUsage: 'penggunaan: /steer <prompt>',
   steerQueued: (preview: string) => `steer masuk antrean — sampai setelah panggilan tool berikutnya: "${preview}"`,
   steerNoActiveTurn: (preview: string) => `tidak ada turn aktif — masuk antrean untuk berikutnya: "${preview}"`,

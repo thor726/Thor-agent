@@ -1,5 +1,5 @@
-import type { ModelOptionProvider, ModelOptionsResult } from '@thor/shared'
 import { QueryClient, type QueryKey, replaceEqualDeep } from '@tanstack/react-query'
+import type { ModelOptionProvider, ModelOptionsResult } from '@thor/shared'
 
 // Shared React Query client. Lives in its own module (not main.tsx) so non-React
 // code — e.g. the profile store on a gateway swap — can invalidate cached,

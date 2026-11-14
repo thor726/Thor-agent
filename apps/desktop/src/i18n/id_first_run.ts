@@ -22,7 +22,7 @@ export const idFirstRun: FirstRunCopy = {
   tours: {
     quick: 'Tur singkat',
     full: 'Tunjukkan semuanya',
-    skip: "Lewati, langsung kita bikin sesuatu"
+    skip: 'Lewati, langsung kita bikin sesuatu'
   },
   skippedAll: 'Penyiapan dilewati',
   skip: 'Lewati penyiapan',
@@ -32,13 +32,14 @@ export const idFirstRun: FirstRunCopy = {
   slashOffBody: 'Berfungsi seperti biasa setelah penyiapan selesai.',
   localModel: {
     title: 'Komputer ini bisa menjalankan model secara lokal',
-    text: (model, size) => `${model} (${size}) cocok dengan perangkat kamu. Berjalan gratis, dan chat kamu tetap di komputer ini.`,
+    text: (model, size) =>
+      `${model} (${size}) cocok dengan perangkat kamu. Berjalan gratis, dan chat kamu tetap di komputer ini.`,
     setUp: 'Siapkan',
     notNow: 'Nanti saja'
   },
   intro: {
-    greeting: "Hai, saya Thor.",
-    plan: "Kita siapkan dulu semuanya untuk kamu. Setelah itu kita kerjakan sesuatu yang keren."
+    greeting: 'Hai, saya Thor.',
+    plan: 'Kita siapkan dulu semuanya untuk kamu. Setelah itu kita kerjakan sesuatu yang keren.'
   },
   rerun: {
     title: 'Jalankan onboarding lagi',

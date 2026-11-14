@@ -6,7 +6,7 @@ import type {
   ProfilesResponse
 } from '@/types/thor'
 
-import { capabilityScoped, thorApi, type ProfileScope, STARTUP_REQUEST_TIMEOUT_MS } from './client'
+import { capabilityScoped, type ProfileScope, STARTUP_REQUEST_TIMEOUT_MS, thorApi } from './client'
 
 export function getProfiles(scope?: ProfileScope): Promise<ProfilesResponse> {
   return thorApi<ProfilesResponse>({
@@ -28,7 +28,9 @@ export function getConnectionServedProfiles(connectionId: string): Promise<{ gat
   })
 }
 
-export function createProfile(body: ProfileCreatePayload): Promise<{ name: string; ok: boolean; path: string; soul_set?: boolean }> {
+export function createProfile(
+  body: ProfileCreatePayload
+): Promise<{ name: string; ok: boolean; path: string; soul_set?: boolean }> {
   return thorApi<{ name: string; ok: boolean; path: string; soul_set?: boolean }>({
     path: '/api/profiles',
     method: 'POST',

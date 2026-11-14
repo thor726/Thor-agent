@@ -1,5 +1,5 @@
-import { Box, Text } from '@thor/ink'
 import { useStore } from '@nanostores/react'
+import { Box, Text } from '@thor/ink'
 import { memo, useEffect, useState } from 'react'
 
 import { $pasteSectionsOpen } from '../app/pasteStore.js'

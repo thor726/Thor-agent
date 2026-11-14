@@ -1,11 +1,11 @@
-import type { ModelOptionsResult } from '@thor/shared'
 import { useQuery } from '@tanstack/react-query'
+import type { ModelOptionsResult } from '@thor/shared'
 import type * as React from 'react'
 import { useMemo } from 'react'
 
-import type { ThorGateway } from '@/thor'
 import { quickModelOptions } from '@/lib/chat-runtime'
 import { currentModelCapabilities, modelOptionsQueryKey, requestModelOptions } from '@/lib/model-options'
+import type { ThorGateway } from '@/thor'
 
 import type { ChatBarState } from './composer/types'
 

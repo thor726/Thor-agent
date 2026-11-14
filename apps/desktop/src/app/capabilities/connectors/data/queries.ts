@@ -1,14 +1,14 @@
-import type { ConnectorAccountRow, ConnectorToolsResult } from '@thor/shared'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import type { ConnectorAccountRow, ConnectorToolsResult } from '@thor/shared'
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { GATEWAY_NOT_CONNECTED_MESSAGE } from '@/api/client'
-import type { ProfileScope } from '@/thor'
 import { translateNow } from '@/i18n'
 import { isMissingRpcMethod, isOutOfSyncRpcParams } from '@/lib/gateway-rpc'
 import { queryClient } from '@/lib/query-client'
 import { $freeTierTurnCompleted, noteFreeTierAppConnected } from '@/store/free-tier-sign-in'
 import { notifyError } from '@/store/notifications'
+import type { ProfileScope } from '@/thor'
 
 import { hostedPhase } from '../derive'
 import { toolReadStatus } from '../derive-tools'

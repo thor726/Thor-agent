@@ -27,9 +27,7 @@ function isExpectedNotFoundSentinel(value: unknown): value is Record<string, str
   const keys = Object.keys(value as Record<string, unknown>)
 
   return (
-    keys.length === 1 &&
-    keys[0] === THOR_API_EXPECTED_404 &&
-    typeof (value as any)[THOR_API_EXPECTED_404] === 'string'
+    keys.length === 1 && keys[0] === THOR_API_EXPECTED_404 && typeof (value as any)[THOR_API_EXPECTED_404] === 'string'
   )
 }
 
@@ -43,4 +41,4 @@ function unwrapExpectedNotFound(value: unknown): unknown {
   return value
 }
 
-export { THOR_API_EXPECTED_404, isExpectedNotFoundSentinel, unwrapExpectedNotFound }
+export { isExpectedNotFoundSentinel, THOR_API_EXPECTED_404, unwrapExpectedNotFound }

@@ -1,7 +1,7 @@
-import type { ConnectorAccountRow, ConnectorAccountsRenameParams, ConnectorAccountsResult } from '@thor/shared'
-import { JsonRpcGatewayError } from '@thor/shared'
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { ConnectorAccountRow, ConnectorAccountsRenameParams, ConnectorAccountsResult } from '@thor/shared'
+import { JsonRpcGatewayError } from '@thor/shared'
 import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 

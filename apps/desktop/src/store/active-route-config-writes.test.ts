@@ -1,8 +1,8 @@
 import { atom } from 'nanostores'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorModule from '@/thor'
 import { $activeGatewayProfile } from '@/store/profile'
+import type * as ThorModule from '@/thor'
 
 // Voice mode and the Appearance display toggles write `config.set` for the
 // route the window is on. A profile served only by a remote gateway (`gamma` on

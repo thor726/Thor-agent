@@ -10,8 +10,7 @@ export const enSessionCommands: SessionCommandNotices = {
   retryUnsupported: '/retry: retry does not support media or unknown content parts',
   busy: (command: string) =>
     `session busy — Thor is still replying. Stop the current reply first (Stop button, or Ctrl+C in a terminal), then run /${command}.`,
-  busyCompressing: (command: string) =>
-    `session busy — a /compress is running; run /${command} when it finishes.`,
+  busyCompressing: (command: string) => `session busy — a /compress is running; run /${command} when it finishes.`,
   steerUsage: 'usage: /steer <prompt>',
   steerQueued: (preview: string) => `steer queued — arrives after next tool call: "${preview}"`,
   steerNoActiveTurn: (preview: string) => `no active turn — queued for next: "${preview}"`,
@@ -23,6 +22,5 @@ export const enSessionCommands: SessionCommandNotices = {
   queueEditKeptTitle: 'Queued message not changed',
   queueEditKept: 'It started or was refused before your edit was saved. Your edited text is in the composer.',
   queueEditUnconfirmedTitle: 'Edit not confirmed',
-  queueEditUnconfirmed:
-    'Thor could not confirm your edit. Save again to retry the same edit; it is never queued twice.'
+  queueEditUnconfirmed: 'Thor could not confirm your edit. Save again to retry the same edit; it is never queued twice.'
 }

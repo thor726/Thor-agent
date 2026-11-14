@@ -1,17 +1,17 @@
-import type { ModelOptionProvider } from '@thor/shared'
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
+import type { ModelOptionProvider } from '@thor/shared'
 import { type ReactNode, useMemo } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { getGlobalModelOptions, type ProfileScope, profileScopeKey } from '@/thor'
 import { useI18n } from '@/i18n'
 import { findCatalogProvider } from '@/lib/model-options'
 import { cn } from '@/lib/utils'
 import { $customModels, withCustomModels } from '@/store/custom-models'
+import { getGlobalModelOptions, type ProfileScope, profileScopeKey } from '@/thor'
 
 import { CONTROL_TEXT } from './constants'
 import {

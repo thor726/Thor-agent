@@ -6,12 +6,12 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { setApiRequestConnection } from '@/api/client'
 import { useSessionListActions } from '@/app/session/hooks/use-session-list-actions'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import type { SessionInfo, SidebarSessionsResponse } from '@/thor'
 import { $connectionsRegistry } from '@/store/connection-registry-state'
 import { setSidebarGrouping } from '@/store/layout'
 import { $profiles, $showAllProfiles } from '@/store/profile'
 import { $sessions } from '@/store/session'
 import { makeSessionInfo } from '@/test/session-info'
+import type { SessionInfo, SidebarSessionsResponse } from '@/thor'
 
 import { ChatSidebar } from './index'
 

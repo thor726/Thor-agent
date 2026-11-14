@@ -1,5 +1,5 @@
-import type { SystemBatteryResponse } from '@thor/shared/gateway-types'
 import { useStore } from '@nanostores/react'
+import type { SystemBatteryResponse } from '@thor/shared/gateway-types'
 import { useEffect } from 'react'
 
 import type { GatewayClient } from '../gatewayClient.js'

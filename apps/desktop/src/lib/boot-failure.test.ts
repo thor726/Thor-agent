@@ -1,5 +1,5 @@
-import collapseBold from '@thor/ui/fonts/Collapse-Bold.woff2?url'
 import { within } from '@testing-library/dom'
+import collapseBold from '@thor/ui/fonts/Collapse-Bold.woff2?url'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import { showBootFailure } from './boot-failure'

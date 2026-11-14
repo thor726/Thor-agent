@@ -12,9 +12,9 @@
  *    every later open after a create or cancel silently started fresh.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import type { ReactNode } from 'react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -446,9 +446,13 @@ describe('cancelling New Bot discards its draft profile', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
     await waitFor(() =>
-      expect(mocks.requestProfile).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 'studio' }), 'cli.exec', {
-        argv: ['profile', 'delete', 'inbox-triage', '--yes']
-      })
+      expect(mocks.requestProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ connectionId: 'studio' }),
+        'cli.exec',
+        {
+          argv: ['profile', 'delete', 'inbox-triage', '--yes']
+        }
+      )
     )
     expect(mocks.deleteBot).not.toHaveBeenCalled()
   })

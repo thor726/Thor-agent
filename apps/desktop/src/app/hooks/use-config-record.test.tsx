@@ -3,17 +3,12 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { createElement } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import type * as ThorApi from '@/thor'
-import { bindConfigReadOrigin, getThorConfigRecord } from '@/thor'
 import { queryClient } from '@/lib/query-client'
 import { $connection } from '@/store/session'
+import type * as ThorApi from '@/thor'
+import { bindConfigReadOrigin, getThorConfigRecord } from '@/thor'
 
-import {
-  THOR_CONFIG_KEY,
-  thorConfigCacheWriter,
-  setThorConfigCache,
-  useThorConfigRecord
-} from './use-config-record'
+import { setThorConfigCache, THOR_CONFIG_KEY, thorConfigCacheWriter, useThorConfigRecord } from './use-config-record'
 
 vi.mock('@/thor', async importOriginal => ({
   ...(await importOriginal<typeof ThorApi>()),

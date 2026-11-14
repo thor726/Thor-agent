@@ -2,7 +2,8 @@ import type { UpdateChannelCopy } from './types_update_channel'
 
 export const idUpdateChannel: UpdateChannelCopy = {
   title: 'Channel update',
-  description: 'Instalasi stabil hanya memakai rilis yang dipublikasikan. Setiap commit mengikuti branch main seiring perubahan masuk.',
+  description:
+    'Instalasi stabil hanya memakai rilis yang dipublikasikan. Setiap commit mengikuti branch main seiring perubahan masuk.',
   stable: 'Rilis stabil',
   main: 'Setiap commit',
   stableConfirmTitle: 'Beralih ke rilis stabil?',

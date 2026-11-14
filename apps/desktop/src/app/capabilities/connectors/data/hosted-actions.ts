@@ -1,8 +1,8 @@
 import { useStore } from '@nanostores/react'
 
-import type { ProfileScope } from '@/thor'
 import { useI18n } from '@/i18n'
 import { notifyError } from '@/store/notifications'
+import type { ProfileScope } from '@/thor'
 
 import type { AccountRow, ConnectorCardModel } from '../types'
 

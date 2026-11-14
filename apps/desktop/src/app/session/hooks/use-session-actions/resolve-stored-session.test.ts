@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorModule from '@/thor'
-import { getSession } from '@/thor'
 import { $activeGatewayProfile, $profiles } from '@/store/profile'
 import { $projectTree } from '@/store/projects'
 import { $cronSessions, $messagingSessions, $sessions, $unlistedSessionOwnerRows } from '@/store/session'
 import { $removedSessionIds, tombstoneSessions, untombstoneSessions } from '@/store/session-removal'
+import type * as ThorModule from '@/thor'
+import { getSession } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 import { cachedSessionRow, resolveStoredSession } from './utils'

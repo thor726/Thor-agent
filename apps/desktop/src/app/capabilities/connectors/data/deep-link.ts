@@ -1,5 +1,5 @@
-import { type ProfileScope, profileScopeKey } from '@/thor'
 import { activeGatewayConnectionId } from '@/store/gateway'
+import { type ProfileScope, profileScopeKey } from '@/thor'
 
 import { CAPABILITIES_ROUTE } from '../../../routes'
 

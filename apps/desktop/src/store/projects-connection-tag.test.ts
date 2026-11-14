@@ -2,12 +2,12 @@ import { atom } from 'nanostores'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { SidebarProjectTree } from '@/app/chat/sidebar/projects/workspace-groups'
-import { thorApi } from '@/thor'
 import { $gateway, activeGateway, activeGatewayConnectionId, isActivePrimary } from '@/store/gateway'
 import { $activeGatewayProfile, $profiles, setShowAllProfiles } from '@/store/profile'
 import { $sessions } from '@/store/session'
 import { sessionOwnerRouteFromRow } from '@/store/session-request-router'
 import { deferred } from '@/test/deferred'
+import { thorApi } from '@/thor'
 
 import { $projectTree, fetchProjectSessions, refreshProjectTree } from './projects'
 

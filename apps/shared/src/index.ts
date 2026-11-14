@@ -67,7 +67,6 @@ export { fileUrlToNativePath } from './file-url'
 export { compactNumber } from './format'
 export { type FuzzyMatch, fuzzyRank, fuzzyScore, fuzzyScoreMulti, type RankedItem } from './fuzzy'
 export * from './gateway-events'
-export { THOR_CLOUD_MANAGED, isThorCloudUrl } from './thor-cloud'
 export {
   applyDocumentLocale,
   type EndonymLocale,
@@ -137,13 +136,13 @@ export {
 export { randomUuid } from './session-http-mutations'
 export { skillInvocationText } from './skill-scaffold'
 export {
-  type ThorSkin,
   SKIN_BRANDING_TOKENS,
   SKIN_COLOR_TOKENS,
   type SkinBranding,
   type SkinBrandingToken,
   type SkinColors,
-  type SkinColorToken
+  type SkinColorToken,
+  type ThorSkin
 } from './skin'
 export {
   type AliasCommandDispatchResponse,
@@ -158,13 +157,14 @@ export {
   type SkillCommandDispatchResponse,
   SLASH_COMMAND_RE
 } from './slash'
-
 export {
   THEME_PRESET_PALETTES,
   type ThemePresetColors,
   type ThemePresetName,
   type ThemePresetPalette
 } from './theme-presets'
+
+export { isThorCloudUrl, THOR_CLOUD_MANAGED } from './thor-cloud'
 export {
   backgroundMaterialFor,
   clampIntensity,
@@ -207,10 +207,10 @@ export {
   GatewayReauthRequiredError,
   type GatewayWsConnection,
   type GatewayWsUrlResult,
-  type ThorWebSocketUrlOptions,
   isGatewayReauthRequired,
   normalizeBasePath,
   resolveGatewayWsUrl,
   type ResolveGatewayWsUrlDeps,
+  type ThorWebSocketUrlOptions,
   type WebSocketAuthParam
 } from './websocket-url'
