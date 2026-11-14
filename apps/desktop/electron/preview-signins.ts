@@ -93,11 +93,13 @@ export function runSigninExport(
     }
 
     const env = { ...parentEnv, THOR_HOME: home, ...backend.env }
+
     const child = spawn(
       windowsShellCommand(backend.command, Boolean(backend.shell)),
       backend.args,
       hiddenWindowsChildOptions({ cwd, env, shell: backend.shell, stdio: ['ignore', 'pipe', 'pipe'] })
     )
+
     const chunks: Buffer[] = []
     let size = 0
     let stderr = ''
@@ -601,8 +603,10 @@ export function registerPreviewSigninsIpc(ipc: Pick<Electron.IpcMain, 'handle'>,
   ipc.handle('thor:preview-signins:sync', (event, payload: unknown) => {
     const body = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {}
     const profile = typeof body.profile === 'string' && body.profile.trim() ? body.profile.trim() : null
+
     const connectionId =
       typeof body.connectionId === 'string' && body.connectionId.trim() ? body.connectionId.trim() : null
+
     const request = { connectionId, enabled: body.enabled === true, profile }
 
     return serialize(() => syncPreviewSignins(deps, event.sender, request)).catch((error: unknown) =>

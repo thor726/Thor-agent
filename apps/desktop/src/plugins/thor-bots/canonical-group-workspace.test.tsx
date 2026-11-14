@@ -54,6 +54,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
   vi.useRealTimers()
 })
+
 // What gateway/session_group_controls.py answers for groups.send.
 const receipt = (params: { event_id?: string }) => ({
   event: {},
@@ -83,10 +84,12 @@ it('preserves the draft and full hover name when only the room display name chan
 
 it('restores a frozen send after remount and retires only its acknowledged exact retry', async () => {
   const binding = { connectionId: 'remote', profile: 'team', roomId: 'restore' }
+
   const entry = await prepareCanonicalGroupSend(binding, {
     text: 'Original',
     attachments: [{ path: '/owner/image.png', mime_type: 'image/png' }]
   })
+
   request.mockImplementation(async (_route, method) => {
     if (method === 'groups.state') {
       return { room: { name: 'Room' }, driver_status: {} }
@@ -242,10 +245,12 @@ it('reads back retry on the same authority and sends only through the group driv
 
     return {}
   })
+
   const group = registerCanonicalGroup(
     { connectionId: 'local', profile: 'default' },
     { room_id: 'r', name: 'Room', members: [] }
   )
+
   render(<GroupChatWorkspace group={group} members={[]} origin="key" />)
   fireEvent.click(await screen.findByRole('button', { name: 'Retry' }))
   await waitFor(() => expect(request.mock.calls.filter(c => c[1] === 'groups.state').length).toBeGreaterThan(1))
@@ -314,9 +319,11 @@ it('describes only a send restored from the journal as restored, never an ordina
           })
         : {})
   )
+
   const view = render(
     <CanonicalGroupWorkspace binding={{ connectionId: 'remote', profile: 'team', roomId: 'ordinary' }} />
   )
+
   await waitFor(() => expect((screen.getByRole('textbox') as HTMLTextAreaElement).disabled).toBe(false))
   fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Hello' } })
   fireEvent.click(screen.getByRole('button', { name: 'Send' }))
@@ -396,10 +403,12 @@ it('leaves the in-panel room after a disband even though no tab supplies onBack'
     async (_route, method) =>
       roomReads()(method) ?? (method === 'groups.disband' ? { tombstone: { room_id: 'panel', disbanded_at: 1 } } : {})
   )
+
   const group = registerCanonicalGroup(
     { connectionId: 'local', profile: 'default' },
     { room_id: 'panel', name: 'Room', members: [] }
   )
+
   $groupChatWorkspace.set(group)
   render(<GroupChatWorkspace group={group} members={[]} origin="key" />)
   const disband = (await screen.findByRole('button', { name: /disband/i })) as HTMLButtonElement
@@ -457,9 +466,11 @@ it('uploads pasted and dropped files through the room upload and previews commit
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
   const image = { attachment_id: 'img', kind: 'image', name: 'shot.png', mime: 'image/png', size: 1 }
   const large = { ...image, attachment_id: 'large', name: 'large.png', size: 6 * 1024 * 1024 }
+
   const events = [
     { seq: 1, room_id: 'paste', event_id: 'e1', kind: 'message.member', payload: { attachments: [image, large] } }
   ]
+
   request.mockImplementation(
     async (_route, method, params) =>
       roomReads([], events)(method) ??
@@ -507,9 +518,11 @@ it('re-gates previews on the observer after the room is hidden and shown, instea
   Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:preview') })
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
   const image = { attachment_id: 'img', kind: 'image', name: 'shot.png', mime: 'image/png', size: 1 }
+
   const events = [
     { seq: 1, room_id: 'toggle', event_id: 'e1', kind: 'message.member', payload: { attachments: [image] } }
   ]
+
   request.mockImplementation(
     async (_route, method) =>
       roomReads([], events)(method) ??
@@ -543,6 +556,7 @@ it('re-gates previews on the observer after the room is hidden and shown, instea
 it('keeps automatic preview downloads bounded and never requests one file twice at once', async () => {
   Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:preview') })
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
+
   const image = (n: number) => ({
     attachment_id: `img-${n}`,
     kind: 'image',
@@ -550,6 +564,7 @@ it('keeps automatic preview downloads bounded and never requests one file twice 
     mime: 'image/png',
     size: 4 * 1024 * 1024
   })
+
   const events = Array.from({ length: 20 }, (_, n) => ({
     seq: n + 1,
     room_id: 'bound',
@@ -557,6 +572,7 @@ it('keeps automatic preview downloads bounded and never requests one file twice 
     kind: 'message.member',
     payload: { attachments: [image(n)] }
   }))
+
   const held: Array<() => void> = []
   request.mockImplementation(
     async (_route, method) =>
@@ -584,6 +600,7 @@ it('keeps automatic preview downloads bounded and never requests one file twice 
 
   const downloads = () =>
     request.mock.calls.filter(c => c[1] === 'groups.attachment.download').map(c => c[2].attachment_id)
+
   const binding = { connectionId: 'remote', profile: 'team', roomId: 'bound' }
   const view = render(<CanonicalGroupWorkspace binding={binding} />)
   await waitFor(() => expect(observers).toHaveLength(20))
@@ -593,6 +610,7 @@ it('keeps automatic preview downloads bounded and never requests one file twice 
     seen(callback, true)
     seen(callback, false)
   }
+
   expect(downloads()).toEqual(['img-0', 'img-1'])
   // Hidden and shown again while img-0 is pending, with a slot free: the same file is not requested twice.
   await act(async () => {
@@ -617,6 +635,7 @@ it('keeps automatic preview downloads bounded and never requests one file twice 
 it('starts waiting previews in order as downloads succeed or fail, never more than two at once', async () => {
   Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:preview') })
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
+
   const image = (n: number) => ({
     attachment_id: `img-${n}`,
     kind: 'image',
@@ -624,6 +643,7 @@ it('starts waiting previews in order as downloads succeed or fail, never more th
     mime: 'image/png',
     size: 1
   })
+
   const events = Array.from({ length: 6 }, (_, n) => ({
     seq: n + 1,
     room_id: 'drain',
@@ -631,6 +651,7 @@ it('starts waiting previews in order as downloads succeed or fail, never more th
     kind: 'message.member',
     payload: { attachments: [image(n)] }
   }))
+
   const held = new Map<string, (ok: boolean) => void>()
   let running = 0
   let peak = 0
@@ -663,12 +684,15 @@ it('starts waiting previews in order as downloads succeed or fail, never more th
       disconnect() {}
     }
   )
+
   const downloads = () =>
     request.mock.calls.filter(c => c[1] === 'groups.attachment.download').map(c => c[2].attachment_id)
+
   const settle = (outcomes: Record<string, boolean>) =>
     act(async () => {
       Object.entries(outcomes).forEach(([id, ok]) => held.get(id)?.(ok))
     })
+
   render(<CanonicalGroupWorkspace binding={{ connectionId: 'remote', profile: 'team', roomId: 'drain' }} />)
   await waitFor(() => expect(observers).toHaveLength(6))
 
@@ -676,6 +700,7 @@ it('starts waiting previews in order as downloads succeed or fail, never more th
   for (const callback of observers) {
     act(() => callback([{ isIntersecting: true }] as IntersectionObserverEntry[], {} as IntersectionObserver))
   }
+
   await waitFor(() => expect(downloads()).toEqual(['img-0', 'img-1']))
   // A finished and a failed download each hand their slot to the next waiting preview.
   await settle({ 'img-0': true, 'img-1': false })
@@ -691,6 +716,7 @@ it('lets a connection whose downloads never settle stall only its own previews',
   Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:preview') })
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
   const image = (id: string) => ({ attachment_id: id, kind: 'image', name: `${id}.png`, mime: 'image/png', size: 1 })
+
   const message = (id: string, seq: number) => ({
     seq,
     room_id: id[0],
@@ -698,6 +724,7 @@ it('lets a connection whose downloads never settle stall only its own previews',
     kind: 'message.member',
     payload: { attachments: [image(id)] }
   })
+
   request.mockImplementation(async (route, method, params) =>
     route.connectionId === 'hung'
       ? (roomReads([], [message('a0', 1), message('a1', 2)])(method) ??
@@ -716,8 +743,10 @@ it('lets a connection whose downloads never settle stall only its own previews',
       disconnect() {}
     }
   )
+
   const seen = (callback: IntersectionObserverCallback) =>
     act(() => callback([{ isIntersecting: true }] as IntersectionObserverEntry[], {} as IntersectionObserver))
+
   const stuck = render(<CanonicalGroupWorkspace binding={{ connectionId: 'hung', profile: 'team', roomId: 'a' }} />)
   await waitFor(() => expect(observers).toHaveLength(2))
   observers.forEach(seen)
@@ -735,6 +764,7 @@ it('lets a connection whose downloads never settle stall only its own previews',
 
 it('uploads a file pasted while another upload runs once that one finishes, instead of dropping it', async () => {
   let release!: () => void
+
   const receipt = (params: Record<string, string>) => ({
     attachment_id: `att-${params.name}`,
     kind: params.kind,
@@ -742,6 +772,7 @@ it('uploads a file pasted while another upload runs once that one finishes, inst
     mime: params.mime,
     size: 1
   })
+
   request.mockImplementation(
     async (_route, method, params) =>
       roomReads()(method) ??
@@ -887,12 +918,14 @@ it('reads only new log events, and the whole log again when the room authority c
   // The room polls every two seconds; the test moves the clock instead of waiting.
   vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ['setTimeout', 'clearTimeout'] })
   const nextPoll = () => act(() => vi.advanceTimersByTimeAsync(2_000))
+
   const message = (seq: number, text: string) => ({
     seq,
     kind: 'message.member',
     actor: { kind: 'member', id: 'ops' },
     payload: { text }
   })
+
   let epoch = 1
   let log = [message(1, 'First reply')]
   request.mockImplementation(async (_route, method, params) =>
@@ -951,9 +984,11 @@ it('says what the room waits on beside the live work, never instead of it', asyn
         ? { events: [] }
         : {}
   )
+
   const view = render(
     <CanonicalGroupWorkspace binding={{ connectionId: 'local', profile: 'team', roomId: 'waiting' }} />
   )
+
   const approvalLink = await screen.findByRole('button', { name: '1 waiting for approval' })
   expect(approvalLink.parentElement?.textContent).toBe('Blocked · 1 waiting for approval · Needs attention: 1')
   expect(screen.getByRole('status').textContent).toBe('Working: Ops')
@@ -1188,10 +1223,12 @@ it('holds the next Send until a Stop still fencing behind the last one has finis
 it('reopens a message the gateway proved unsent as an editable draft, not a restored unconfirmed Send, on plain HTTP', async () => {
   vi.stubGlobal('crypto', { getRandomValues: crypto.getRandomValues.bind(crypto) })
   const binding = { connectionId: 'remote', profile: 'team', roomId: 'refused-reopen' }
+
   const refusedBefore = Object.assign(new Error('refused'), {
     code: 4001,
     data: { reason: 'refused', admitted: false }
   })
+
   request.mockImplementation(async (_route, method) =>
     method === 'groups.state'
       ? { room: { name: 'Room' }, driver_status: { working: true } }
@@ -1245,6 +1282,7 @@ const frame = (message: string, code: number, data?: Record<string, unknown>) =>
 
 const MAYBE = 'This message may already have been sent. Retry sends the same message; it will not be posted twice.'
 const REFUSED = 'The gateway refused this message. Edit it and send again.'
+
 const FINISHED_ELSEWHERE =
   'Another Desktop window already finished with this message. Check the conversation before sending it again.'
 
@@ -1298,6 +1336,7 @@ function nativeJournal(beforeMutation?: (call: number, entry: string | null) => 
 
 const sentIds = () =>
   request.mock.calls.filter(call => call[1] === 'groups.send').map(call => call[2].event_id as string)
+
 const editor = (scope: HTMLElement) => within(scope).getByRole('textbox') as HTMLTextAreaElement
 
 async function openRoom(binding: { connectionId: string; profile: string; roomId: string }) {
@@ -1522,12 +1561,15 @@ it('does not dispatch a Send still preparing when Stop is pressed, and keeps its
   const binding = { connectionId: 'local', profile: 'team', roomId: 'stop-while-preparing' }
   let entered!: () => void
   let release!: () => void
+
   const preparing = new Promise<void>(resolve => {
     entered = resolve
   })
+
   const gate = new Promise<void>(resolve => {
     release = resolve
   })
+
   nativeJournal(async call => {
     if (call === 1) {
       entered()
@@ -1697,6 +1739,7 @@ it('names the Bot behind each pending action and shows what an approval would al
   const guarded = screen
     .getByText('Guard Bot is asking for approval. You decide.')
     .closest('[data-task-id]') as HTMLElement
+
   expect(within(guarded).getByText('Approve running pwd')).toBeTruthy()
   expect(within(guarded).queryByText(/plugin approval rule/)).toBeNull()
   expect(within(guarded).queryByText('Action details are unavailable. Check again before allowing this.')).toBeNull()

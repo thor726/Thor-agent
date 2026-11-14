@@ -79,6 +79,7 @@ const clock = {
   listeners: new Set<() => void>(),
   timer: undefined as ReturnType<typeof setInterval> | undefined
 }
+
 const clockSeconds = () => clock.now
 
 const publishClock = () => {
@@ -87,6 +88,7 @@ const publishClock = () => {
   if (now === clock.now) {
     return
   }
+
   clock.now = now
   clock.listeners.forEach(notify => notify())
 }
@@ -116,6 +118,7 @@ function useClockSeconds(live: boolean): number {
     if (!live) {
       return
     }
+
     publishClock()
     // useSyncExternalStore subscribes passively; the joining leaf must also reread before paint.
     redraw()
@@ -168,6 +171,7 @@ export function memberStatusText(status: ShownStatus, labels: RoomStatusLabels):
     // A stalled member shows one timer: how long it has been quiet.
     const elapsed =
       status.kind === 'working' && status.elapsedS !== undefined ? formatElapsed(status.elapsedS) : undefined
+
     const lead =
       status.kind === 'stalled' ? fill(labels.statusStalled, { time: formatElapsed(status.quietS ?? 0) }) : ''
 

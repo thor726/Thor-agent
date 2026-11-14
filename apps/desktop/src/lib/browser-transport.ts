@@ -271,6 +271,7 @@ export async function fileEndpointUrl(
     if (!ticket) {
       throw new Error('Thor did not return a file ticket')
     }
+
     url.searchParams.set('ticket', ticket)
   }
 

@@ -493,6 +493,7 @@ export function closeTerminal(id: string): void {
   if (closingTerminals.has(id)) {
     return
   }
+
   closingTerminals.add(id)
   // Keep the tab and its resume handle until the server confirms termination.
   void closeSaved(id)
@@ -500,6 +501,7 @@ export function closeTerminal(id: string): void {
       if (!closed) {
         throw new Error('Terminal close was not confirmed; retry closing this tab')
       }
+
       removeExitedTerminal(id)
     })
     .catch(error => notifyError(error, 'Could not close terminal'))

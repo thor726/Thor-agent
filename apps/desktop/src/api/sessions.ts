@@ -402,6 +402,7 @@ export function mutateSessionFenced<T>(
         if (isUnroutedRestPath(error)) {
           throw new MissingMutationSnapshotRoute(String(error), { cause: error })
         }
+
         throw error
       }),
     send
