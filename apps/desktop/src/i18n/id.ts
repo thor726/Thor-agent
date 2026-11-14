@@ -44,10 +44,10 @@ export const idOverrides = {
   },
   assistant: {
     thread: {
-      ...idErrorLayers,
-      clarify: idClarify,
-      themePicker: idThemePicker
-    }
+      ...idErrorLayers
+    },
+    clarify: idClarify,
+    themePicker: idThemePicker
   }
 } satisfies TranslationOverrides
 
