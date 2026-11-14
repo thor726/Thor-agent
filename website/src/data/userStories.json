@@ -1,0 +1,178 @@
+[
+  {
+    "id": "cli-recovery",
+    "source": "github",
+    "author": "@devopsdan",
+    "url": "https://github.com/thor726/Thor-agent/discussions",
+    "date": "2026-10-02",
+    "category": "dev-workflow",
+    "headline": "Turned a 40-minute release checklist into one command",
+    "quote": "I described the release process once; now `thor cron` runs the checklist every Friday and files the PR before I'm back from coffee.",
+    "size": "lg"
+  },
+  {
+    "id": "wsrl-onboarding",
+    "source": "hn",
+    "author": "throwaway_wsrl",
+    "url": "https://news.ycombinator.com/item?id=42000001",
+    "date": "2026-09-18",
+    "category": "dev-workflow",
+    "headline": "Set up Thor Agent on WSL in a lunch break",
+    "quote": "install.sh on WSL just worked. By the end of lunch it had read our repo, wired up the LSP, and was fixing lint errors with me.",
+    "size": "md"
+  },
+  {
+    "id": "inbox-zero",
+    "source": "x",
+    "author": "@solo_pete",
+    "url": "https://x.com/solo_pete",
+    "date": "2026-10-11",
+    "category": "personal-assistant",
+    "headline": "My inbox finally stays at zero",
+    "quote": "Thor triages mail overnight, drafts replies for anything routine, and leaves me the three messages that actually need a human.",
+    "size": "md"
+  },
+  {
+    "id": "newsletter-pipeline",
+    "source": "blog",
+    "author": "Mara Writes",
+    "url": "https://example.com/blog",
+    "date": "2026-08-27",
+    "category": "content-creation",
+    "headline": "Weekly newsletter, written by a pipeline I trust",
+    "quote": "It drafts from my notes, keeps my voice, and flags anything it is unsure about instead of inventing quotes.",
+    "size": "sm"
+  },
+  {
+    "id": "invoice-chase",
+    "source": "reddit",
+    "author": "u/freelance_fay",
+    "url": "https://www.reddit.com/r/freelance",
+    "date": "2026-09-30",
+    "category": "business-ops",
+    "headline": "Late invoices stopped being my problem",
+    "quote": "Polite reminder emails, on schedule, every time. Cash flow got boring — in the best way.",
+    "size": "sm"
+  },
+  {
+    "id": "earnings-digest",
+    "source": "x",
+    "author": "@quant_carla",
+    "url": "https://x.com/quant_carla",
+    "date": "2026-10-05",
+    "category": "trading",
+    "headline": "Earnings digest before the market opens",
+    "quote": "Every morning my dashboard has the overnight filings summarized with the numbers that matter to my positions.",
+    "size": "md"
+  },
+  {
+    "id": "lit-review",
+    "source": "github",
+    "author": "@phd_maya",
+    "url": "https://github.com/thor726/Thor-agent/discussions",
+    "date": "2026-09-12",
+    "category": "research",
+    "headline": "Literature review that actually cites correctly",
+    "quote": "It reads the papers I point at, extracts the methods, and every citation links back to the source. No hallucinated references.",
+    "size": "md"
+  },
+  {
+    "id": "game-jam",
+    "source": "youtube",
+    "author": "PixelSmith",
+    "url": "https://www.youtube.com/@pixelsmith",
+    "date": "2026-08-15",
+    "category": "creative",
+    "headline": "Shipped a game-jam build with an agent pair-programming",
+    "quote": "I designed; Thor implemented. 48 hours later we had a playable build and a clean commit history.",
+    "size": "sm"
+  },
+  {
+    "id": "launch-posts",
+    "source": "producthunt",
+    "author": "IndieHQ",
+    "url": "https://www.producthunt.com",
+    "date": "2026-10-01",
+    "category": "marketing",
+    "headline": "One launch, every platform, consistent message",
+    "quote": "The changelog became the announcement post, the thread, and the newsletter blurb — all reviewed by me in one pass.",
+    "size": "sm"
+  },
+  {
+    "id": "alarm-routing",
+    "source": "gist",
+    "author": "sre_kim",
+    "url": "https://gist.github.com",
+    "date": "2026-09-22",
+    "category": "integrations",
+    "headline": "Pager messages now arrive with a diagnosis attached",
+    "quote": "Thor correlates the alert with the deploy and recent logs, so the page I get at 3am already says what broke and why.",
+    "size": "md"
+  },
+  {
+    "id": "compliance-export",
+    "source": "linkedin",
+    "author": "Dana Okoye, IT Director",
+    "url": "https://www.linkedin.com",
+    "date": "2026-08-30",
+    "category": "enterprise",
+    "headline": "Audit evidence collection on autopilot",
+    "quote": "For the first time, the evidence pack assembled itself. My team spent the audit answering questions, not hunting screenshots.",
+    "size": "md"
+  },
+  {
+    "id": "family-schedule",
+    "source": "discord",
+    "author": "jules&co",
+    "url": "https://discord.com",
+    "date": "2026-10-08",
+    "category": "messaging",
+    "headline": "The group chat has a secretary now",
+    "quote": "It watches the family Discord, keeps the shared calendar honest, and reminds everyone about the school play.",
+    "size": "sm"
+  },
+  {
+    "id": "self-hosted-switch",
+    "source": "reddit",
+    "author": "u/homelab_hugo",
+    "url": "https://www.reddit.com/r/selfhosted",
+    "date": "2026-09-05",
+    "category": "privacy",
+    "headline": "My agent, my hardware, my keys",
+    "quote": "Docker Compose on a mini-PC with local models for the easy work. Nothing leaves the house unless I say so.",
+    "size": "md"
+  },
+  {
+    "id": "token-budget",
+    "source": "hn",
+    "author": "cost_conscious",
+    "url": "https://news.ycombinator.com/item?id=42000002",
+    "date": "2026-09-25",
+    "category": "cost-optimization",
+    "headline": "Same results, a third of the tokens",
+    "quote": "Skill routing picks small models for boilerplate and the big one only for gnarly refactors. The bill dropped and I didn't change how I work.",
+    "size": "sm"
+  },
+  {
+    "id": "plugin-tinker",
+    "source": "github",
+    "author": "@maker_maria",
+    "url": "https://github.com/thor726/Thor-agent",
+    "date": "2026-10-14",
+    "category": "meta",
+    "headline": "Wrote my first plugin in an evening",
+    "quote": "The plugin contract is small and honest. By midnight my internal tool was callable from chat like everything else.",
+    "size": "sm"
+  },
+  {
+    "id": "first-hour",
+    "source": "x",
+    "author": "@newbie_nate",
+    "url": "https://x.com/newbie_nate",
+    "date": "2026-10-12",
+    "category": "general",
+    "headline": "Never got past the README before. This time I did",
+    "quote": "The installer set up the model, search, and voice in one command. My first conversation was useful in the first five minutes.",
+    "size": "lg"
+  }
+]
