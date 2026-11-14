@@ -21,7 +21,8 @@ import time
 import urllib.error
 import urllib.request
 from email.message import Message
-from urllib.parse import urljoin
+from pathlib import Path
+from urllib.parse import urlsplit, urljoin
 
 DEFAULT_URL = "https://thor-agent.thor-agent.local/docs/api/plugins.json"
 ORIGIN = "null"
@@ -77,6 +78,15 @@ def check(url: str) -> str:
 
 def main(argv: list[str]) -> int:
     url = argv[1] if len(argv) > 1 else DEFAULT_URL
+    # Placeholder docs host (.local) never resolves in public DNS: until the
+    # real docs domain exists there is no deployed catalog to check, so skip
+    # cleanly instead of reporting "unreachable" (which files an issue).
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from scripts.ci.live_site_guard import is_placeholder_host
+
+    if is_placeholder_host(url):
+        print(f"skip: docs host {urlsplit(url).hostname} is a placeholder (.local) — no deployed catalog to check yet")
+        return 0
     for attempt in range(1, ATTEMPTS + 1):
         try:
             print(f"ok: {check(url)}")

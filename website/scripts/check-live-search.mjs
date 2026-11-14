@@ -20,6 +20,18 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 
 const DOCS_URL = (process.env.DOCS_URL || 'https://thor-agent.thor-agent.local/docs').replace(/\/$/, '');
+// Placeholder docs host (.local) never resolves in public DNS: until the real
+// docs domain exists there is no deployed site to probe, so skip cleanly
+// instead of failing every scheduled run with ENOTFOUND. Set DOCS_URL to the
+// real domain (or replace this default) to re-enable the probe.
+if (new URL(DOCS_URL).hostname.endsWith('.local')) {
+  const notice = `SKIP: live docs search probe disabled — docs host ${new URL(DOCS_URL).hostname} is a placeholder (.local), no deployed site to check yet. Set DOCS_URL to the real docs domain to enable.`;
+  console.log(notice);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Docs search (${DOCS_URL})\n- ${notice}\n`);
+  }
+  process.exit(0);
+}
 const ORIGIN = new URL(DOCS_URL).origin;
 // Terms that must always match many pages; one per major area of the docs.
 const QUERIES = ['telegram', 'install', 'skills'];
