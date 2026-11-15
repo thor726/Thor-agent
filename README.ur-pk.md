@@ -4,7 +4,7 @@
   <img src="assets/banner.png" alt="Thor Agent" width="100%">
 </p>
 
-# ہرمیس ایجنٹ ☤ (Thor Agent)
+# ہرمیس ایجنٹ ⚡ (Thor Agent)
 
 <p align="center">
   <a href="https://thor-agent.thor-agent.local/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>

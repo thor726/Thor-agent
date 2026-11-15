@@ -1041,7 +1041,7 @@ def _platform_menu_label(config: dict, pkey: str) -> str:
 def _print_tools_summary(config: dict, enabled_platforms: list[str]) -> None:
     """``thor tools --summary``: enabled toolsets per platform, non-interactive."""
     total = len(_get_effective_configurable_toolsets())
-    print(color("☤ Tool Summary", Colors.CYAN, Colors.BOLD))
+    print(color("⚡ Tool Summary", Colors.CYAN, Colors.BOLD))
     print()
     for pkey, enabled in _platform_toolset_summary(config, enabled_platforms).items():
         print(color(f"  {PLATFORMS[pkey]['label']}", Colors.BOLD) + color(f"  ({len(enabled)}/{total})", Colors.DIM))
@@ -1148,7 +1148,7 @@ def tools_command(args=None, first_install: bool = False, config: dict | None = 
     if getattr(args, "summary", False):
         _print_tools_summary(config, enabled_platforms)
         return
-    print(color("☤ Thor Tool Configuration", Colors.CYAN, Colors.BOLD))
+    print(color("⚡ Thor Tool Configuration", Colors.CYAN, Colors.BOLD))
     print(color("  Enable or disable tools per platform.", Colors.DIM))
     print(color("  Tools that need API keys will be configured when enabled.", Colors.DIM))
     print(color("  Guide: https://thor-agent.thor-agent.local/docs/user-guide/features/tools", Colors.DIM))

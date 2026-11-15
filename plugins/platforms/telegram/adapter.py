@@ -3837,7 +3837,7 @@ class TelegramAdapter(TelegramContactMixin, TelegramHeldInboundMixin, TelegramRe
         """Send an inline-keyboard Yes/No prompt for the gateway ``/update`` watcher."""
         def build():
             default_hint = t("platform.telegram.prompt.default_hint", default=default) if default else ""
-            text = self.format_message(f"☤ *{t('platform.telegram.prompt.update_header')}*\n\n{prompt}{default_hint}")
+            text = self.format_message(f"⚡ *{t('platform.telegram.prompt.update_header')}*\n\n{prompt}{default_hint}")
             if not hasattr(self, "_update_prompt_counter"):
                 self._update_prompt_counter = prompt_id_counter()
             prompt_id = next(self._update_prompt_counter)  # an old /update card must not answer this one
@@ -4560,7 +4560,7 @@ class TelegramAdapter(TelegramContactMixin, TelegramHeldInboundMixin, TelegramRe
         self._update_prompt_id = ""  # answered: no card answers again until the next prompt is sent
         await answer_callback(query, _toast("platform.telegram.prompt.update_sent", answer=answer))
         word = t("platform.telegram.prompt.affirm_word" if answer == "y" else "platform.telegram.prompt.negate_word")
-        await self._edit_md_quiet(query, f"☤ {t('platform.telegram.prompt.update_answered', answer=f'*{word}*')}")
+        await self._edit_md_quiet(query, f"⚡ {t('platform.telegram.prompt.update_answered', answer=f'*{word}*')}")
 
     # `gt:<verb>` -> (script in ~/.thor/scripts/gmail-triage/, extra-args, success-label, is_state). The callback
     # `arg` is always the first positional arg. is_state=True keeps the keyboard tappable (sticky sender rule);

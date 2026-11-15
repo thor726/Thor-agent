@@ -26,7 +26,7 @@ class SkinConfig:
     tool_prefix: str = "┊"
     tool_emojis: dict[str, str] = field(default_factory=dict)  # per-tool emoji overrides
     banner_logo: str = ""    # Rich-markup ASCII art logo (replaces THOR_AGENT_LOGO)
-    banner_hero: str = ""    # Rich-markup hero art (replaces THOR_CADUCEUS)
+    banner_hero: str = ""    # Rich-markup hero art (replaces THOR_MJOLNIR)
     custom_css: str = ""     # Raw CSS injected as a <style> tag on the desktop GUI (32 KiB cap)
 
     def get_color(self, key: str, fallback: str = "") -> str:
@@ -58,7 +58,7 @@ def _wings(*glyphs) -> list[list[str]]:
 
 # Branding shared by every Thor-named built-in (mono/daylight override help_header).
 _THOR_BRANDING: dict[str, str] = _branding(
-    "Thor", "☤", "Goodbye! ☤", prompt="❯", help_header="(^_^)? Available Commands")
+    "Thor", "⚡", "Goodbye! ⚡", prompt="❯", help_header="(^_^)? Available Commands")
 
 _BUILTIN_SKINS: dict[str, dict[str, Any]] = {
     "default": {
@@ -491,7 +491,7 @@ def get_active_help_header(fallback: str = "(^_^)? Available Commands") -> str:
     return _active_branding("help_header", fallback)
 
 
-def get_active_goodbye(fallback: str = "Goodbye! ☤") -> str:
+def get_active_goodbye(fallback: str = "Goodbye! ⚡") -> str:
     return _active_branding("goodbye", fallback)
 
 

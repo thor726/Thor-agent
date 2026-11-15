@@ -2,7 +2,7 @@
   <img src="assets/banner.png" alt="Thor Agent" width="100%">
 </p>
 
-# Thor Agent ☤
+# Thor Agent ⚡
 <p align="center">
   <a href="https://thor-agent.thor-agent.local/">Thor Agent</a> | <a href="https://thor-agent.thor-agent.local/">Thor Desktop</a>
 </p>
