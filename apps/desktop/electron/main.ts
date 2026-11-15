@@ -363,8 +363,8 @@ import { resolveDesktopClientVersion } from './local-runtime-version'
 import { localSkinProfileKey, registerLocalSkinIpc } from './local-skin'
 import { ACTIVE_LOG_POLL_MS, planLogRotation, reclaimActiveLogIfOversized } from './log-rotation'
 import { registerMachineProfile } from './machine-profile'
-import { resolveMainThorHome } from './main-thor-home'
 import { createMainProcessLagWatchdog } from './main-process-lag-watchdog'
+import { resolveMainThorHome } from './main-thor-home'
 import { activateWindow, ensureMainWindow, shouldQuitOnLastChatClosed } from './main-window-lifecycle'
 import {
   assertManagedUpdatePreflightClear,
@@ -9932,7 +9932,8 @@ async function requestJsonForProfile(profile: string, path: string, method: stri
 const globalRemoteSessions = createGlobalRemoteSessionRoute({
   globalRemoteActive,
   primaryHasRemoteOverride: () => Boolean(profileHasRemoteOverride(primaryProfileKey())),
-  request: (conn, path, method, body) => fetchJsonForBackend(conn, path, { method, body, timeoutMs: DEFAULT_FETCH_TIMEOUT_MS }),
+  request: (conn, path, method, body) =>
+    fetchJsonForBackend(conn, path, { method, body, timeoutMs: DEFAULT_FETCH_TIMEOUT_MS }),
   requestPrimary: (path, method, body) => requestJsonForProfile(null, path, method, body as string),
   resolveGlobalRemote: () => resolveRemoteBackend(null),
   resolvePrimary: () => ensureBackend(null, { passive: true }),
