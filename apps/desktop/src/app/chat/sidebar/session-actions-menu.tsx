@@ -777,7 +777,9 @@ function RenameSessionDialog({ open, onOpenChange, sessionId, currentTitle, prof
       // Same all-slices resolution as above: a messaging row's rename must
       // carry its owning bot profile, not the ambient gateway profile.
       const targetProfile =
-        (profile ?? '').trim() || ownerLookupSessionRows().find(s => sessionMatchesStoredId(s, sessionId))?.profile || undefined
+        (profile ?? '').trim() ||
+        ownerLookupSessionRows().find(s => sessionMatchesStoredId(s, sessionId))?.profile ||
+        undefined
 
       const result = await renameSessionPreferringRpc(sessionId, next, targetProfile)
       const finalTitle = result.title || next || ''
