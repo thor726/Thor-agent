@@ -198,7 +198,7 @@ acknowledge it before continuing. Do not resend the queued input.
 │ +def multiply(a, b):
 │ +    return a * b
 ✗ $ pytest -q  0.4s [exit 1]
-☤ Thor
+⚡ Thor
 Added multiply; pytest isn't installed here, so I ran the tests directly: 2 passed.
 ─ 15.0s · edited 1 file +4 -0 · read 2 files · 8:27 AM
 ── ⠹ Running tests · 14s ─────────────────────────── Add multiply to calc.py ─
@@ -207,7 +207,7 @@ Added multiply; pytest isn't installed here, so I ran the tests directly: 2 pass
  gpt-5-mini · ctx [░░░░░░░░] 4% · ~/project (main)     enter interrupt · tab queue · ctrl+c stop
 ```
 
-- A 40-column bar opens each user message and answer (accent) and each reasoning block (dim); reasoning streams live as in classic and ends with a `∴ Thought for 3s · <title>` line. `❯` your message, a finished tool call led by its emoji (`📖 Read`, `💻 $`; `✗` in red when it failed, with its exit code; a refused `skill_manage` write keeps its emoji and shows the reason dim, since the agent retries it itself), `│` an edit's diff under its row, `☤` the answer, and `─` the turn's summary line.
+- A 40-column bar opens each user message and answer (accent) and each reasoning block (dim); reasoning streams live as in classic and ends with a `∴ Thought for 3s · <title>` line. `❯` your message, a finished tool call led by its emoji (`📖 Read`, `💻 $`; `✗` in red when it failed, with its exit code; a refused `skill_manage` write keeps its emoji and shows the reason dim, since the agent retries it itself), `│` an edit's diff under its row, `⚡` the answer, and `─` the turn's summary line.
 - The composer's top rule carries the live activity (spinner, what's running, elapsed time, streamed tokens) on the left and the session title on the right; no spinner row is printed into the scrollback.
 - The status line sits under the composer: the same fields as the classic status bar (model, context, cache hit, latency, tokens/s, background work, goal, duration, YOLO…) plus the working directory (with git branch) on the left; the keys that do something right now on the right.
 - The welcome banner is the same in both layouts.
@@ -221,7 +221,7 @@ The welcome banner shows your model, terminal backend, working directory, availa
 In the `classic` layout a persistent status bar sits above the input area, updating in real time (the `modern` layout's status line under the composer reads the same data; an explicit `display.status_bar.fields` list chooses its left side too):
 
 ```
- ☤ claude-sonnet-4-20250514 │ 12.4K/200K │ [██████░░░░] 6% │ $0.06 │ 15m
+ ⚡ claude-sonnet-4-20250514 │ 12.4K/200K │ [██████░░░░] 6% │ $0.06 │ 15m
 ```
 
 | Element | Description |
@@ -656,7 +656,7 @@ Each `/bg` prompt spawns a **completely separate agent session** in a daemon thr
 When a background task finishes, the result appears as a panel in your terminal:
 
 ```
-╭─ ☤ Thor (background #1) ──────────────────────────────────╮
+╭─ ⚡ Thor (background #1) ──────────────────────────────────╮
 │ Found 3 errors in syslog from today:                         │
 │ 1. OOM killer invoked at 03:22 — killed process nginx        │
 │ 2. Disk I/O error on /dev/sda1 at 07:15                      │

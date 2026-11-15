@@ -593,13 +593,13 @@ gateway:
     thor_cmd_not_found: "✗ Impossible de localiser la commande `thor`. Thor est en cours d'exécution, mais la commande de mise à jour n'a pas pu trouver l'exécutable dans le PATH ni via l'interpréteur Python actuel. Essayez d'exécuter `thor update` manuellement dans votre terminal."
     start_failed: "✗ Échec du démarrage de la mise à jour : {error}"
     already_running: "⏳ Une mise à jour est déjà en cours ; seule la personne qui l'a lancée peut répondre à ses questions. Attendez qu'elle se termine, puis relancez /update."
-    starting: "☤ Démarrage de la mise à jour Thor… Je diffuserai la progression ici."
+    starting: "⚡ Démarrage de la mise à jour Thor… Je diffuserai la progression ici."
     reply_failed: "✗ Échec de l'envoi de la réponse au processus de mise à jour : {error}"
     reply_sent: "✓ `{label}` envoyé au processus de mise à jour."
     failed_notice: "❌ La mise à jour d'Thor a échoué ; la version précédente tourne toujours. Lancez `thor update` sur l'hôte pour voir l'erreur complète, ou réessayez /update plus tard."
     prompt_default: " (par défaut : {default})"
     prompt: |-
-      ☤ **La mise à jour a besoin de votre réponse :**
+      ⚡ **La mise à jour a besoin de votre réponse :**
 
       {prompt}{default_hint}
 
@@ -1616,7 +1616,7 @@ platform:
       resolved_fallback: "Résolu"
       resolved_by_user: "{icon} **{label}** par {user}"
     update_prompt:
-      title: "☤ La mise à jour attend votre réponse"
+      title: "⚡ La mise à jour attend votre réponse"
       default_hint: |2-
 
 
@@ -2785,7 +2785,7 @@ cli:
     run_model_or_setup: "Exécutez 'thor model' pour choisir un fournisseur, ou 'thor setup' pour la configuration initiale."
     empty_base_url: "⚠️  Le résolveur de fournisseur a renvoyé une URL de base vide. Vérifiez la configuration de votre fournisseur ou exécutez : thor setup"
     switching_to_fallback: "⚠️  {reason} — bascule vers le fournisseur de secours : {provider} / {model}"
-    first_run_no_provider: "☤ Aucun fournisseur d'inférence n'est encore configuré — réglons cela."
+    first_run_no_provider: "⚡ Aucun fournisseur d'inférence n'est encore configuré — réglons cela."
     first_run_pick_provider: "Vous allez choisir un fournisseur (Thor Portal OAuth est le plus rapide ; aucune clé API requise) puis un modèle."
     first_run_prompt: "Configurer un fournisseur maintenant ? [Y/n] :"
     first_run_skipped: "Ignoré. Exécutez 'thor model' ou 'thor setup' à tout moment."
@@ -2898,7 +2898,7 @@ cli:
     compress_plain: "🗜️  Compression de {count} messages..."
     compress_failed: "❌ Échec de la compression : {error}"
     persist_prompt_summary: "{icon} {label} : {detail} → {outcome}"
-    goodbye: "Au revoir ! ☤"
+    goodbye: "Au revoir ! ⚡"
     exit_resume_hint: "Reprenez cette session avec :"
     exit_label_session: "Session :       {session_id}"
     exit_label_title: "Titre :         {title}"
@@ -3464,10 +3464,10 @@ cli:
       choice_update_desc: "quitter la session actuelle et mettre à jour Thor Agent"
       choice_cancel: "Annuler"
       choice_cancel_desc: "conserver la session actuelle"
-      title: "☤  Mettre à jour Thor Agent"
+      title: "⚡  Mettre à jour Thor Agent"
       detail: "Cela quittera la session actuelle et exécutera `thor update`."
       cancelled: "🟡 /update annulé."
-      launching: "☤ Lancement de la mise à jour..."
+      launching: "⚡ Lancement de la mise à jour..."
     voice:
       unknown_subcommand: "Sous-commande voice inconnue : {subcommand}"
       usage: "Usage : /voice [on|off|tts|status]"
