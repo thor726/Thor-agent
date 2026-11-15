@@ -55,7 +55,11 @@ jobs:
 
       - name: Open or update the delisting PR
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # github.token (job grants pull-requests: write): the GitHub App
+          # installation cannot create PRs ("Resource not accessible by
+          # integration"). The App token stays on the scan step above, where
+          # its higher rate limit matters and read access is enough.
+          GH_TOKEN: ${{ github.token }}
           BOT_BRANCH: bot/catalog-dead-repos
         run: |
           set -euo pipefail

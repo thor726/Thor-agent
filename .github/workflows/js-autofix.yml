@@ -7,11 +7,18 @@ name: auto-fix lint issues & formatting
 # auto-corrected on merge so PRs aren't blocked by them. The PR-time eslint
 # check in typecheck.yml fails only when un-fixable errors remain.
 #
-# NOTE: App token pushes DO trigger further workflow runs (unlike
-# secrets.GITHUB_TOKEN). The concurrency group (ts-autofix-${{ github.ref }})
-# with cancel-in-progress: true prevents an infinite loop — a re-triggered
-# run cancels the in-flight one, and since the second run finds no new fixes
-# (the first run already applied them), it exits with an empty patch.
+# NOTE: the PR-facing steps use github.token (the job-scoped GITHUB_TOKEN with
+# pull-requests: write). The repo's GitHub App token (vars.APP_CLIENT_ID +
+# secrets.APP_PRIVATE_KEY) is deliberately NOT used here: its installation
+# grants contents but not pull-requests, so `gh pr create` fails with
+# "Resource not accessible by integration". GITHUB_TOKEN-based PRs don't
+# re-trigger CI (the squash merge lands without a CI run — the next real push
+# runs it); to restore the App-based flow, grant the App "Pull requests:
+# Read & write" in its installation settings and point these steps back at
+# steps.app-token.outputs.token.
+#
+# The concurrency group (ts-autofix-${{ github.ref }}) with
+# cancel-in-progress: true prevents a run loop on the bot branch.
 #
 # ── Security model: two-job split ───────────────────────────────────────────
 #
@@ -143,13 +150,6 @@ jobs:
     steps:
       - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
 
-      - name: Get GitHub App token
-        id: app-token
-        uses: ./.github/actions/get-app-token
-        with:
-          client-id: ${{ vars.APP_CLIENT_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Download patch
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
@@ -192,7 +192,10 @@ jobs:
 
       - name: Create/update PR and enable auto-merge
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # github.token (pull-requests: write): the App installation lacks
+          # PR permissions — see the header note. PR #6 predates the App
+          # credentials and proves this token works end-to-end here.
+          GH_TOKEN: ${{ github.token }}
           BOT_BRANCH: bot/js-autofix
         run: |
           set -euo pipefail
@@ -215,7 +218,7 @@ jobs:
 
       - name: Wait for merge, auto-close on failure or stale
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           START_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
