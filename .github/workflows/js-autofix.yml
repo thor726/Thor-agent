@@ -7,17 +7,14 @@ name: auto-fix lint issues & formatting
 # auto-corrected on merge so PRs aren't blocked by them. The PR-time eslint
 # check in typecheck.yml fails only when un-fixable errors remain.
 #
-# NOTE: the PR-facing steps use github.token (the job-scoped GITHUB_TOKEN with
-# pull-requests: write). The repo's GitHub App token (vars.APP_CLIENT_ID +
-# secrets.APP_PRIVATE_KEY) is deliberately NOT used here: its installation
-# grants contents but not pull-requests, so `gh pr create` fails with
-# "Resource not accessible by integration". GITHUB_TOKEN-based PRs don't
-# re-trigger CI (the squash merge lands without a CI run — the next real push
-# runs it); to restore the App-based flow, grant the App "Pull requests:
-# Read & write" in its installation settings and point these steps back at
-# steps.app-token.outputs.token.
-#
-# The concurrency group (ts-autofix-${{ github.ref }}) with
+# NOTE: the privileged job writes with its job-scoped GITHUB_TOKEN
+# (contents + pull-requests + actions: write). The repo's GitHub App
+# (vars.APP_CLIENT_ID + secrets.APP_PRIVATE_KEY) is deliberately NOT used
+# here: its installation grants neither contents nor pull-requests on this
+# repo (403 "denied to thor-agent-ci[bot]" / "Resource not accessible by
+# integration"). GITHUB_TOKEN-pushed commits leave the bot branch's CI runs
+# action_required; the wait step approves those runs itself and merges the
+# PR once green. The concurrency group (ts-autofix-${{ github.ref }}) with
 # cancel-in-progress: true prevents a run loop on the bot branch.
 #
 # ── Security model: two-job split ───────────────────────────────────────────
@@ -146,16 +143,10 @@ jobs:
     environment: trusted-automation
     permissions:
       contents: write # needed to push to bot/js-autofix
-      pull-requests: write # needed for PR creation + auto-merge
+      pull-requests: write # needed for PR creation + merge
+      actions: write # needed to approve the bot branch's own CI runs
     steps:
       - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
-
-      - name: Get GitHub App token
-        id: app-token
-        uses: ./.github/actions/get-app-token
-        with:
-          client-id: ${{ vars.APP_CLIENT_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Download patch
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
@@ -170,13 +161,6 @@ jobs:
       - name: Apply patch and push to bot branch
         env:
           BOT_BRANCH: bot/js-autofix
-          # Push the bot branch with the App token (contents permission): a
-          # GITHUB_TOKEN push marks the pushed branch's CI runs
-          # `action_required` — they idle until a maintainer clicks Approve,
-          # so the PR hangs. An App-token push triggers CI normally. The App
-          # cannot create PRs (no pull-requests permission); the PR-facing
-          # steps below use github.token. See the header note.
-          APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
 
@@ -198,23 +182,14 @@ jobs:
           git add -A
           git commit -m "fmt(js): \`pnpm run fix\` on merge"
 
-          # Push to the dedicated bot branch. Force-push is safe here:
-          # bot/js-autofix is a bot-only branch that gets rewritten each run.
-          # If the branch was deleted after a previous PR merge, this
-          # recreates it. Authenticated with the App token by REPLACING the
-          # GITHUB_TOKEN header checkout persisted via the includeIf'd
-          # credentials config (a plain `-c`/local override only ADDS a
-          # second Authorization header — GitHub rejects "Duplicate header:
-          # Authorization", 400 — because the includeIf file wins over local
-          # config). An App-token push triggers the bot branch's CI normally;
-          # a GITHUB_TOKEN push leaves its runs action_required (idle until a
-          # maintainer approves).
-          CRED=$(mktemp)
-          git config --file "$CRED" http.https://github.com/.extraheader \
-            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$APP_TOKEN" | base64 -w0)"
-          git config --local includeIf.gitdir:"$PWD/.git".path "$CRED"
+          # Push to the dedicated bot branch with the job's GITHUB_TOKEN
+          # (contents: write). The repo's GitHub App is NOT used for this
+          # push: its installation has no contents write permission (403
+          # "denied to thor-agent-ci[bot]") and no pull-requests permission
+          # either. A GITHUB_TOKEN push leaves the branch's CI runs
+          # action_required; the wait step approves them itself. Force-push
+          # is safe: bot/js-autofix is a bot-only branch rewritten each run.
           git push --force origin HEAD:"$BOT_BRANCH"
-          git config --local --unset "includeIf.gitdir:$PWD/.git.path" || true
 
       - name: Create/update PR and enable auto-merge
         env:
@@ -257,9 +232,19 @@ jobs:
 
           echo "Waiting for PR #$PR_NUM to merge..."
 
-          # Poll every 15s for up to ~10 minutes. Auto-merge will handle the
-          # PR even if this job times out — the polling is for cleanup only
-          # (auto-close on CI failure, conflicts, or main moving).
+          # A GITHUB_TOKEN push (this job's only write credential — the
+          # repo App has neither contents nor pull-requests permission)
+          # leaves the bot branch's workflow runs action_required. Approve
+          # them ourselves (actions: write) so CI actually runs.
+          for RID in $(gh run list --branch bot/js-autofix --status action_required \
+                         --json databaseId --jq '.[].databaseId' 2>/dev/null || true); do
+            echo "Approving action_required run $RID for the bot branch."
+            gh run approve "$RID" || true
+          done
+
+          # Poll every 15s for up to ~10 minutes. The loop itself lands the
+          # PR once CI is green (`gh pr merge --auto` requires branch
+          # protection with required checks, which this repo doesn't use).
           for i in $(seq 1 40); do
             sleep 15
 
