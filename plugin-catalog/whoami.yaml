@@ -1,5 +1,5 @@
 name: whoami
-repo: https://github.com/atostivint/thor-whoami
+repo: https://github.com/atostivint/hermes-whoami
 sha: 0b70c85489bc00b88f893cab9a4acc74b545d5ec
 description: "Coloured pill in the composer showing which Thor profile a new session will use."
 maintainer: atostivint

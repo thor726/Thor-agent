@@ -38,7 +38,7 @@
 <div dir="ltr">
 
 ```bash
-curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 </div>
@@ -52,7 +52,7 @@ curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash
 <div dir="ltr">
 
 ```powershell
-iex (irm https://thor-agent.thor-agent.local/install.ps1)
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
 ```
 
 </div>

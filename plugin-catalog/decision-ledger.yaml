@@ -1,6 +1,6 @@
 name: decision-ledger
 title: Decision Ledger
-repo: https://github.com/GeoffP17/thor-decision-ledger
+repo: https://github.com/GeoffP17/hermes-decision-ledger
 sha: 6e63bcf929a3118b3a4b77750647f1ea22397975
 description: "Exact decision receipts with a read-only web dashboard; models draft, a human confirms in a separate terminal. Not an execution gate."
 maintainer: GeoffP17

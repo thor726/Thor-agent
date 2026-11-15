@@ -1,6 +1,6 @@
 name: day-panel
 title: Today (day panel)
-repo: https://github.com/brunosouzas/thor-day-panel
+repo: https://github.com/brunosouzas/hermes-day-panel
 sha: 2a971fec47d16829b73c95fe053eac6f12389903
 description: "A Today page in Thor Desktop, plus thor day show and check, built from sections you list in a YAML file: any program that prints JSON (your tracker, a script of yours), your open GitHub pull requests and review requests through gh, one read-only tool of an MCP server you already configured, and your AI providers' limit windows from thor usage. Items can carry a colour, a progress bar and a relative time; the page follows the Desktop theme. Ships a demo page that needs no login or network. Read-only and no model calls; merging a pull request from the page is off by default and needs a preview and a confirmation pinned to the head commit. Disclosure — runs the programs your sources file names (no shell), plus gh and thor usage, as your user with your existing logins; calls a configured MCP server's tool only when the server marks it readOnlyHint, in a child process that imports three undocumented Thor MCP modules (there is no public seam for this yet); reads only the sources file; writes nothing to disk; logs carry section names and exit statuses, not source output. No credentials stored, no telemetry."
 maintainer: brunosouzas

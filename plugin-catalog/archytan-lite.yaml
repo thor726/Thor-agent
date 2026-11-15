@@ -1,6 +1,6 @@
 name: archytan-lite
 title: Archytan Lite
-repo: https://github.com/High-ArchyTech-Solutions/thor-archytan-lite
+repo: https://github.com/High-ArchyTech-Solutions/hermes-archytan-lite
 sha: 38748165b089f776acf9d6119eaeafdb76eed83e
 subdir: archytan-lite
 version: "0.1.0"

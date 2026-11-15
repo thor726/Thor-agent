@@ -1,5 +1,5 @@
 name: groundcontrol
-repo: https://github.com/teckedd-code2save/thor-groundcontrol
+repo: https://github.com/teckedd-code2save/hermes-groundcontrol
 sha: d2905e9cdd710aaa20217e1c24a8091cdf8b9dcc
 version: "0.2.0"
 requires_thor: ">=0.17.0"

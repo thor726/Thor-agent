@@ -1,6 +1,6 @@
 name: opencode-free-acp
 title: OpenCode Free (ACP)
-repo: https://github.com/cryptobredda/thor-opencode-free-acp
+repo: https://github.com/cryptobredda/hermes-opencode-free-acp
 sha: 0ef669a84c024661c03d34768c118275e93aa713
 version: "0.4.0"
 requires_thor: ">=0.22.2"

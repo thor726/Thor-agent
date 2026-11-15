@@ -36,8 +36,8 @@ _PRE_UPDATE_SNAPSHOT_MAX_FILE_SIZE = 1 << 30  # 1 GiB
 #: Reinstalling through the official installer swaps in a Python whose SQLite is safe; the
 #: one-liner differs per OS (mirrors ``uninstall._REINSTALL_HINT``). windows -> command
 _REINSTALL_ONE_LINER = {
-    True: "iex (irm https://thor-agent.thor-agent.local/install.ps1)",
-    False: "curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash",
+    True: "iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)",
+    False: "curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash",
 }
 
 
@@ -70,9 +70,9 @@ def _purge_stale_thor_modules() -> None:
 
 def _reload_updated_runtime_modules() -> None:
     # Historical updater hook: dependency activation belongs to the next process.
-    from thor_cli._old_updater import stop_for_relaunch
+    from thor_cli._old_updater import stop_historical_updater
 
-    stop_for_relaunch()
+    stop_historical_updater("thor_cli.update_cmd_maint._reload_updated_runtime_modules")
 
 
 def _print_curator_first_run_notice() -> None:
@@ -270,9 +270,9 @@ def _finish_dashboard_update_cleanup(
     node_failures: list[str], already_restarted_units: set[str] | None = None
 ) -> None:
     """Historical updater hook; do not continue a pre-PM update after the swap."""
-    from thor_cli._old_updater import stop_for_relaunch
+    from thor_cli._old_updater import stop_historical_updater
 
-    stop_for_relaunch()
+    stop_historical_updater("thor_cli.update_cmd_maint._finish_dashboard_update_cleanup")
 
 
 def _refresh_dashboard_after_update(*, already_restarted_units: set[str] | None = None) -> set[int]:
@@ -404,9 +404,9 @@ def _print_verified_update_completion(message: str) -> bool:
 
 def _print_update_summary(*, node_failures: list, desktop_build_ok: bool, pre_update_version: str | None) -> bool:
     """Historical updater hook; old soft-build results cannot establish completion."""
-    from thor_cli._old_updater import stop_for_relaunch
+    from thor_cli._old_updater import stop_historical_updater
 
-    stop_for_relaunch()
+    stop_historical_updater("thor_cli.update_cmd_maint._print_update_summary")
 
 
 def _restore_state_db_from_snapshot(state_path: Path, snap_state: Path) -> bool:

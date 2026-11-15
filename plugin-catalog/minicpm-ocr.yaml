@@ -5,7 +5,7 @@
 # own files. Its only network calls are the configured OCR/Jev backend and, when
 # the user passes one, the public https document URL being read.
 name: minicpm-ocr
-repo: https://github.com/PovedaAqui/minicpm-ocr-thor
+repo: https://github.com/PovedaAqui/minicpm-ocr-hermes
 sha: 5ebb76905a65fe425e229d278dc63ce67840fe69
 subdir: minicpm_ocr
 title: MiniCPM-OCR

@@ -1,5 +1,5 @@
 name: tool-call-salvage
-repo: https://github.com/Julientalbot/thor-tool-call-salvage
+repo: https://github.com/Julientalbot/hermes-tool-call-salvage
 sha: eae346510d680c3e6de211ef254e69b29ab95e4a
 version: "0.2.0"
 title: Tool Call Salvage

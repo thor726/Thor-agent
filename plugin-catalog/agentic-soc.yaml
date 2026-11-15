@@ -1,6 +1,6 @@
 name: agentic-soc
 title: Thor Agentic SOC
-repo: https://github.com/CyStrat-Services-GmbH/thor-agentic-soc
+repo: https://github.com/CyStrat-Services-GmbH/hermes-agentic-soc
 sha: 7206d9e1d4a4a5ba1dd843e45ada77214f06119c
 description: "Evidence-first SOC and DFIR work for Thor: six defense specialist personas (L1 triage, L2 incident response, threat hunting, DFIR compromise assessment, detection engineering, vulnerability management), 39 skills, 25 technology scaffolds and deterministic THOR Lite triage with exact event counts, correlation, audit trail and human approval. Everything is local file work. Disclosure — runs the user's own separately licensed THOR Lite executable (path set in plugin settings) on operator-allowed scan directories, and can create a new Thor profile through the local `thor` CLI that gets a persona SOUL.md and a copy of the plugin's skills; both actions run only after Thor approval, and child processes get a minimal environment (PATH, locale and temp vars; THOR_HOME for the `thor` CLI). Reads evidence files only inside operator-configured roots and writes reports, a pseudonym salt and an audit log under the plugin's data directory; no network calls."
 maintainer: CyStrat-Services-GmbH

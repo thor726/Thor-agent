@@ -1,5 +1,5 @@
 name: runcrate-provider
-repo: https://github.com/runcrateai/thor-runcrate
+repo: https://github.com/runcrateai/hermes-runcrate
 sha: c0023f37820e05147f1dcd1cb8ebd712e6b122e2
 subdir: model-providers/runcrate
 title: "Runcrate"

@@ -1,5 +1,5 @@
 name: antigravity-agy
-repo: https://github.com/Realtyxxx/thor-plugin-antigravity-agy
+repo: https://github.com/Realtyxxx/hermes-plugin-antigravity-agy
 sha: f85003d3ce0de3844e2d5c23174d630ff3586e5d
 description: >-
   Run Thor on a Google Antigravity subscription through the official agy CLI, with agy as the

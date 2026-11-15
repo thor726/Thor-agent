@@ -709,6 +709,10 @@ class TestMediaDeliveryDefaultMode:
         monkeypatch.setattr("gateway.platforms.base._THOR_ROOT", thor_dir)
 
         assert BasePlatformAdapter.validate_media_delivery_path(str(token)) is None
+        client_secret = thor_dir / "google_client_secret.json"  # the skill's other credential (#149056)
+        client_secret.write_text('{"installed": {"client_secret": "***"}}')
+        monkeypatch.setenv("THOR_MEDIA_TRUST_RECENT_FILES", "1")  # fresh mtime must not make it deliverable
+        assert BasePlatformAdapter.validate_media_delivery_path(str(client_secret)) is None
 
 
     def test_denylist_blocks_non_cache_file_under_thor_home(self, tmp_path, monkeypatch):

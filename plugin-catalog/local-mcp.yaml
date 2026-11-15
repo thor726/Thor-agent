@@ -1,5 +1,5 @@
 name: local-mcp
-repo: https://github.com/colibird-ai/local-mcp-thor-plugin
+repo: https://github.com/colibird-ai/local-mcp-hermes-plugin
 sha: 6d6da7722af2243aa6f92fc363405c629e162cf6
 description: >-
   Mac apps for Thor through a separately installed LMCP app: Apple Mail,

@@ -1,5 +1,5 @@
 name: document-reader
-repo: https://github.com/lEWFkRAD/thor-document-reader
+repo: https://github.com/lEWFkRAD/hermes-document-reader
 sha: f3a0bed28e6c289942b899924d9e7cf8b93045e8
 description: Profile-scoped document OCR for Thor Desktop and HUD, with a guarded per-profile Windows
   service.

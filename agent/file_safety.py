@@ -16,8 +16,15 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from thor_cli.home_data_layout import SECRET_CACHE_STORES
+from thor_cli.home_data_layout import CREDENTIAL_STORE_DIRS, HOME_ENV_FILES, SECRET_CACHE_STORES
 from thor_platform.host.facts import os_family
+
+
+# The bundled google-workspace skill's OAuth stores at the THOR_HOME root: the live refresh token,
+# the OAuth client secret and the in-flight PKCE exchange state. Only the skill's own scripts touch
+# them (direct file I/O, never through these guards); tools.credential_files still mounts the two
+# the skill declares in required_credential_files.
+GOOGLE_WORKSPACE_CREDENTIAL_FILES = ("google_token.json", "google_client_secret.json", "google_oauth_pending.json")
 
 
 def _constants_path(getter_name: str) -> Path:
@@ -264,7 +271,7 @@ def build_write_denied_paths(home: str) -> set[str]:
     # approval gate instead (build_write_approval_paths).
     home_files = (
         (".ssh", "authorized_keys"), (".ssh", "id_rsa"), (".ssh", "id_ed25519"),
-        (".netrc",), (".pgpass",), (".npmrc",), (".pypirc",), (".git-credentials",),
+        *((name,) for name in HOME_CREDENTIAL_FILES),
     )
     # Secret material under THOR_HOME, on the active profile, every sibling profile
     # and the global root: overwriting the root .env leaks credentials across every profile that
@@ -277,8 +284,8 @@ def build_write_denied_paths(home: str) -> set[str]:
     # ("true containment belongs in Docker/remote backends and OS permissions,
     # not an expanding hardcoded denylist"). They stay read-denied, not write-denied.
     thor_files = (
-        ".env", ".anthropic_oauth.json",
-        os.path.join("auth", "google_oauth.json"),
+        *HOME_ENV_FILES, ".anthropic_oauth.json",
+        os.path.join("auth", "google_oauth.json"), *GOOGLE_WORKSPACE_CREDENTIAL_FILES,
         *SECRET_CACHE_STORES,
     )
     paths = [
@@ -289,8 +296,25 @@ def build_write_denied_paths(home: str) -> set[str]:
     return {os.path.realpath(p) for p in paths}
 
 
-# Home-relative credential directories (POSIX paths). Also dropped from profile exports (thor_cli.profiles).
+# Home-root single-file credential stores. Also hidden by the dashboard Files API (thor_cli.web_routers.files);
+# agent/redact.py treats a read of one as secret-bearing output. ``_netrc`` is the name curl and git use on Windows.
+HOME_CREDENTIAL_FILES = (".netrc", "_netrc", ".pgpass", ".npmrc", ".pypirc", ".git-credentials")
+
+# Home-relative credential directories (POSIX paths). Also dropped from profile exports (thor_cli.profiles)
+# and hidden by the dashboard Files API.
 HOME_CREDENTIAL_DIRS = (".ssh", ".aws", ".gnupg", ".kube", ".docker", ".azure", ".config/gh", ".config/gcloud")
+
+
+def resolved_home_credential_stores() -> tuple[set[str], list[str]]:
+    """``(files, dirs)``: the home credential stores (HOME_CREDENTIAL_FILES / _DIRS) of every guard
+    home, realpath'd, so a caller can refuse a path whose resolved form lands in one even when a
+    symlink gave the store an innocuous name (``~/.ssh -> ~/keys``)."""
+    files: set[str] = set()
+    dirs: list[str] = []
+    for home in _guard_homes():
+        files.update(os.path.realpath(os.path.join(home, name)) for name in HOME_CREDENTIAL_FILES)
+        dirs.extend(os.path.realpath(os.path.join(home, *d.split("/"))) for d in HOME_CREDENTIAL_DIRS)
+    return files, dirs
 
 
 def build_write_denied_prefixes(home: str) -> list[str]:
@@ -325,13 +349,17 @@ def build_write_approval_paths(home: str) -> set[str]:
 # THOR_HOME / root subpaths that the agent's generic file tools must not
 # rewrite. Session transcripts (state.db, sessions/) are application-owned
 # state whose rewrite can falsify history and break resume/compression;
-# mcp-tokens/, pairing/, vault/ (key + ciphertext side by side),
+# CREDENTIAL_STORE_DIRS (vault/ holds key + ciphertext side by side),
 # browser-profile/ (copied cookies / Login Data) and webapp/ (the Webapp's
 # browser credential and its grants to native apps) hold credential material.
+# skills/ and memories/ are deliberately NOT here: they are user-editable
+# content, and write approval for them (memory/skills ``write_approval``) is
+# enforced by the memory/skill subsystem tools, not the generic write path
+# (#60440 tracks closing that gap for write_file/patch).
 # Control files (auth.json, config.yaml, webhook_subscriptions.json) are
 # deliberately NOT here (#45947): read-denied, but the user may ask to edit them.
 _THOR_PROTECTED_SUBPATHS = (
-    "state.db", "sessions", "mcp-tokens", "pairing", "vault", "browser-profile", "webapp")
+    "state.db", "sessions", "browser-profile", "webapp", *CREDENTIAL_STORE_DIRS)
 
 
 def _classify_write_denial(path: str, *, entry: bool = False) -> Optional[str]:
@@ -383,7 +411,7 @@ def _classify_resolved_write_denial(homes: set[str], resolved: str) -> Optional[
     for base in _credential_store_dirs():
         for sub in _THOR_PROTECTED_SUBPATHS:
             with suppress(Exception):
-                if deny_path_under(resolved, os.path.realpath(os.path.join(str(base), sub))):
+                if deny_path_under(resolved, os.path.realpath(os.path.join(str(base), *sub.split("/")))):
                     return "credential"
 
     safe_roots = get_safe_write_roots()
@@ -432,8 +460,10 @@ _DID_SUFFIX = (
 # Exact-file credential stores under THOR_HOME / <root>. The agent never
 # needs these directly — provider tools consume them through internal channels.
 _CREDENTIAL_FILE_NAMES = (
-    "auth.json", "auth.lock", ".anthropic_oauth.json", ".env", "webhook_subscriptions.json",
+    "auth.json", "auth.json.corrupt", "auth.lock", ".anthropic_oauth.json", *HOME_ENV_FILES,
+    "webhook_subscriptions.json",
     os.path.join("auth", "google_oauth.json"), *SECRET_CACHE_STORES,
+    *GOOGLE_WORKSPACE_CREDENTIAL_FILES,
 )
 
 # Directory-prefix read denies under THOR_HOME / <root>: (subdir, message for
@@ -456,6 +486,11 @@ _READ_DENIED_DIRS = (
      "is the Thor Webapp sign-in directory and cannot be read directly.",
      "is a Thor Webapp sign-in file (the browser credential or its sign-in records) and cannot be read directly."),
 )
+# The other credential trees (pairing, messaging-platform sessions) get a generic message.
+_READ_DENIED_DIRS += tuple(
+    (store, "is a Thor credential store directory and cannot be read directly.",
+     "is inside a Thor credential store and cannot be read directly.")
+    for store in CREDENTIAL_STORE_DIRS if store not in {entry[0] for entry in _READ_DENIED_DIRS})
 
 
 # Device/fd paths whose reads hang the process. Checked by path only — no I/O.

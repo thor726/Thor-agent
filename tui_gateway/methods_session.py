@@ -1445,9 +1445,7 @@ def _(rid, params: dict, session: dict) -> dict:
     usage: dict = _session_usage_snapshot(session)
     if session.get("agent") is None and not usage:
         usage = {"calls": 0, "input": 0, "output": 0, "total": 0}
-    # Thor credits are agent-independent (portal fetch); fail-open when absent.
-    from agent.account_usage import thor_credits_usage_fields  # never raises (fail-open inside)
-    usage.update(thor_credits_usage_fields(session.get("agent")))
+    usage.update(_usage_thor_fields(session))
     return _ok(rid, usage)
 
 

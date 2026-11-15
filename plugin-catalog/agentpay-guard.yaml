@@ -1,6 +1,6 @@
 name: agentpay-guard
 title: AgentPay Guard
-repo: https://github.com/tmdry4530/thor-guard-plugin
+repo: https://github.com/tmdry4530/hermes-guard-plugin
 sha: 84c44e53ec43d3bac2c1a43d6a21aea0d58d4051
 subdir: ""
 version: "0.3.0"

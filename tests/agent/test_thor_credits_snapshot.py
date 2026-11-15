@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from agent.account_usage import build_thor_credits_snapshot
+from agent.account_usage_thor import build_thor_credits_snapshot
 from thor_cli.thor_account import (
     ThorPaidServiceAccessInfo,
     ThorPortalAccountInfo,

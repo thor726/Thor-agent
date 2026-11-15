@@ -109,7 +109,7 @@ _THOR_MODEL_WARNING = (
 # tool-capable local Modelfiles like the ``*-brain:qwen3-14b-ctx16k`` pattern.
 #   match:    the third-party chat-only family IDs served by aggregators
 #   no match: unrelated local Modelfiles, qwen3:14b, claude-opus-4-6
-_THOR_THOR_NON_AGENTIC_RE = re.compile(r"(?:^|[/:])thor[-_ ]?[34](?:[-_.:]|$)", re.IGNORECASE)
+_THOR_THOR_NON_AGENTIC_RE = re.compile(r"(?:^|[/:])hermes[-_ ]?[34](?:[-_.:]|$)", re.IGNORECASE)
 
 
 # Opaque proxy model IDs (Palantir Foundry: ``ri.language-model-service..language-model.<slug>``)

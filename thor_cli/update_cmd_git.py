@@ -503,10 +503,10 @@ def _damaged_checkout_message(root: Path) -> str:
     would rebuild the default directory and leave a ``--dir`` install broken)."""
     if sys.platform == "win32":
         quoted = "'" + str(root).replace("'", "''") + "'"
-        repair = ("& ([scriptblock]::Create((irm https://thor-agent.thor-agent.local/install.ps1)))"
+        repair = ("& ([scriptblock]::Create((irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)))"
                   f" -InstallDir {quoted}")
     else:
-        repair = f"curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash -s -- --dir {shlex.quote(str(root))}"
+        repair = f"curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --dir {shlex.quote(str(root))}"
     return (f"✗ This Thor checkout's git data is damaged (git no longer recognizes {root / '.git'}),"
             " so it cannot be updated in place.\n"
             "  Run the installer again to repair it; it moves the damaged checkout aside and keeps"
@@ -607,24 +607,36 @@ def _git_is_trampoline(git_cmd: list) -> bool:
     report False so a probe failure can't block an update.
 
     Git for Windows ships two ~46KB shims (``bin\\git.exe``, ``cmd\\git.exe``) that re-exec the real
-    ``mingw64\\libexec\\git-core\\git.exe``. See #87876.
+    ``<prefix>\\libexec\\git-core\\git.exe`` (``ucrt64`` from 2.56 on x64, ``mingw64`` before). See #87876.
     """
     return _probe_fork_bomb(git_cmd) is True
 
 
 def _portable_git_candidates() -> list:
-    """PortableGit candidates: shared root first (where the managed tree actually lives, not the
-    profile-scoped THOR_HOME), then profile home as a fallback for custom layouts.
+    """PortableGit candidates: legacy ``<root>/git`` trees (shared root first, then profile home), then
+    the pm store entries ``<store>/git-<version>-<target>/`` newest first, each under every MSYS2 prefix.
 
-    The Thor-managed PortableGit tree lives under the SHARED root (``<root>/git/...``), not the
-    profile-scoped THOR_HOME (``<root>/profiles/<name>``), so a profile-scoped ``thor update`` must look
-    there (monerostar review, #87876).
+    Pre-pm trees lived under the SHARED root (``<root>/git/...``), not the profile-scoped THOR_HOME
+    (``<root>/profiles/<name>``), so a profile-scoped ``thor update`` must look there (monerostar
+    review, #87876). install.ps1 (``Get-PinnedGit``) and pm stage the managed tree in the store.
     """
     from thor_constants import get_default_thor_root, get_thor_home
-    candidates = []
+    trees = []
     with suppress(Exception):
-        candidates += [root / "git" / "mingw64" / "libexec" / "git-core" / "git.exe" for root in (get_default_thor_root(), Path(get_thor_home()))]
-    return candidates
+        trees += [root / "git" for root in (get_default_thor_root(), Path(get_thor_home()))]
+    with suppress(Exception):  # install.ps1 and pm stage it at <store>/git-<version>-<target>/
+        import re
+        from pm.paths import store_root
+        trees += sorted(
+            store_root().glob("git-*-win32-*"),
+            key=lambda entry: [int(n) for n in re.findall(r"\d+", entry.name)],  # 2.56.10 before 2.56.9
+            reverse=True,
+        )
+    return [
+        tree / prefix / "libexec" / "git-core" / "git.exe"
+        for tree in trees
+        for prefix in ("ucrt64", "clangarm64", "mingw64")
+    ]
 
 
 def _locate_real_git() -> Optional[Path]:
@@ -639,7 +651,7 @@ def _locate_real_git() -> Optional[Path]:
     candidates = [
         Path(base) / "Git" / arch / "libexec" / "git-core" / "git.exe"
         for base in (r"C:\Program Files", r"C:\Program Files (x86)")
-        for arch in ("clangarm64", "mingw64", "mingw32")
+        for arch in ("clangarm64", "ucrt64", "mingw64", "mingw32")
     ] + _portable_git_candidates()
     return next((c for c in candidates if c.exists() and _probe_fork_bomb([str(c)]) is False), None)
 

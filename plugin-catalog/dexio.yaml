@@ -1,5 +1,5 @@
 name: dexio
-repo: https://github.com/dexio-wiki/thor-plugin
+repo: https://github.com/dexio-wiki/hermes-plugin
 sha: d05715098148e0335ceaf87a58caaa22d19ff3ff
 title: Dexio
 version: "0.2.0"

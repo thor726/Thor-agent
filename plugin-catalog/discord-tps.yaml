@@ -1,5 +1,5 @@
 name: discord-tps
-repo: https://github.com/tuancookiez-hub/thor-discord-tokenpersec
+repo: https://github.com/tuancookiez-hub/hermes-discord-tokenpersec
 sha: 056fcd331d9be03c287f293854b715b17b637203
 subdir: discord-tps
 version: "1.0.3"

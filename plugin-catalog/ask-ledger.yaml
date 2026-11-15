@@ -1,6 +1,6 @@
 name: ask-ledger
 version: "0.2.0"
-repo: https://github.com/bhaskarduvvuri/thor-ask-ledger
+repo: https://github.com/bhaskarduvvuri/hermes-ask-ledger
 sha: 1986b146f7fbddf5437744ec9d72bf8caa88cb8a
 subdir: plugin
 title: Ask Ledger

@@ -1,5 +1,5 @@
 name: memory-review
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: a10fb2b55ed38e6cdb0cf2faff1056443db57c5f
 subdir: public/memory-review
 description: "Checkbox staged memory writes and approve or reject the selection from a dialog."

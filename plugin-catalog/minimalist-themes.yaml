@@ -1,6 +1,6 @@
 name: minimalist-themes
 title: Minimalist Themes
-repo: https://github.com/mykeura/minimalist-themes-for-thor
+repo: https://github.com/mykeura/minimalist-themes-for-hermes
 sha: 54fa3ffb9728a42faf842758f20aa64c01acdb76
 description: "Eighteen warm, readable palettes for Thor Desktop, assigned natively per profile, with one embedded type system (Figtree + Geist Mono), matching terminal colors and a CLI banner painted per palette. Disclosure — theme-only plugin: it registers eighteen themes through the plugin SDK, and its stylesheet adjusts a few Desktop surfaces (profile-rail glyph contrast, Capabilities metadata, the MCP JSON editor and the Manage Profiles overlay) only while a Minimalist theme is active. It also ships optional CLI/TUI skins as plain YAML files the user copies; the Desktop side never reads them. Fonts are bundled; no network requests, no agent tools or hooks, no background processes. The package also ships an inert Agent entrypoint whose register() does nothing, so Thor Agent imports it cleanly instead of reporting a missing module."
 maintainer: mykeura

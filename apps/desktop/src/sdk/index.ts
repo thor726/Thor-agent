@@ -1957,8 +1957,8 @@ export { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 export type { GatewayEvent as RpcEvent } from '@thor/shared'
 /** Bot Screen wire shapes, generated from `tui_gateway/contracts/display.py`. */
 export type { DisplayLease, DisplayObserveResult, DisplayStatus, DisplayThumbnailResult } from '@thor/shared'
-/** `session.list` / `profiles.list` session rows, generated from `tui_gateway/contracts`. */
-export type { ProfileSessionPreview, SessionListRow } from '@thor/shared'
+/** Profile creation and session rows, generated from `tui_gateway/contracts`. */
+export type { ProfilesCreateResult, ProfileSessionPreview, SessionListRow } from '@thor/shared'
 /** THE compact-number formatter — every user-facing count/token figure goes
  *  through here (1230 → "1.2k", 1_500_000 → "1.5M"). Don't hand-roll `/1000`. */
 export { compactNumber } from '@thor/shared'

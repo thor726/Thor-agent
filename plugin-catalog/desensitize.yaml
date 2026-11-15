@@ -1,5 +1,5 @@
 name: desensitize
-repo: https://github.com/yubingz/thor-desensitize
+repo: https://github.com/yubingz/hermes-desensitize
 sha: 4f6697c1e45bb224e40b556372f33794f9326c0f
 subdir: src/thor_desensitize
 description: "Chinese-context desensitization for Thor chats. Replaces PII and business-sensitive

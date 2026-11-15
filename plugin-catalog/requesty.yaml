@@ -1,5 +1,5 @@
 name: requesty
-repo: https://github.com/requestyai/thor-provider-requesty
+repo: https://github.com/requestyai/hermes-provider-requesty
 sha: "aa4e37d7f09dfc1e98b915d740d09e8b1b44c98d"
 subdir: requesty
 title: Requesty

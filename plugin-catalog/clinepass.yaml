@@ -1,5 +1,5 @@
 name: clinepass
-repo: https://github.com/Adolanium/thor-clinepass
+repo: https://github.com/Adolanium/hermes-clinepass
 sha: 3853e895482d3171ff3a8144344b74cfa3a7dd67
 version: "1.2.3"
 image: https://raw.githubusercontent.com/Adolanium/thor-clinepass/3853e895482d3171ff3a8144344b74cfa3a7dd67/assets/catalog-banner.png

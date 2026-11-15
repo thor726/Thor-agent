@@ -1,5 +1,5 @@
 name: modal
-repo: https://github.com/modal-projects/modal-thor
+repo: https://github.com/modal-projects/modal-hermes
 sha: 4d6bfd79ff3bcdd13eec04f39681d05f0c235d3e
 description: Modal Endpoints for OpenAI-compatible APIs
 maintainer: modal-labs

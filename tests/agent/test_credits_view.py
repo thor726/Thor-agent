@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from agent.account_usage import build_credits_view
+from agent.account_usage_thor import build_credits_view
 from thor_cli.thor_account import ThorPortalAccountInfo, ThorPaidServiceAccessInfo
 
 def _account(**kwargs) -> ThorPortalAccountInfo:

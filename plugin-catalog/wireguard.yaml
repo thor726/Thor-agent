@@ -1,5 +1,5 @@
 name: wireguard
-repo: https://github.com/lEWFkRAD/thor-plugin-wireguard
+repo: https://github.com/lEWFkRAD/hermes-plugin-wireguard
 sha: "dcb810fab7e98d8824da4b0d3078c1f195db87e1"
 version: "0.1.0"
 image: "https://raw.githubusercontent.com/lEWFkRAD/thor-plugin-wireguard/dcb810fab7e98d8824da4b0d3078c1f195db87e1/docs/banner.jpg"

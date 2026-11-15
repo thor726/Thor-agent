@@ -1,5 +1,5 @@
 name: margin
-repo: https://github.com/pratikpoddar/thor-margin
+repo: https://github.com/pratikpoddar/hermes-margin
 sha: 29a84672f49fdf295e6a27af1bbcd27a14e0c47a
 version: "0.1.0"
 requires_thor: ">=0.22.7"

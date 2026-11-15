@@ -1,5 +1,5 @@
 name: cost-forecast
-repo: https://github.com/mr-jude-justin/thor-plugin
+repo: https://github.com/mr-jude-justin/hermes-plugin
 sha: "dce09d9bf4fca14467246cb90ee87b6ef34c792b"
 subdir: plugin
 version: "0.1.0"

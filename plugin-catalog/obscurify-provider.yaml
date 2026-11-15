@@ -1,6 +1,6 @@
 name: obscurify-provider
 title: Obscurify.ai
-repo: https://github.com/Obscurify-ai/thor-obscurify-provider
+repo: https://github.com/Obscurify-ai/hermes-obscurify-provider
 sha: 72ce6f5cf6d297c01d23198a84c21b561fa0698c
 description: >-
   Obscurify.ai as a Thor model provider (`--provider obscurify`, or Obscurify.ai in `thor model`):

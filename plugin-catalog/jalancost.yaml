@@ -1,5 +1,5 @@
 name: jalancost
-repo: https://github.com/Apihpih96/thor-jalancost
+repo: https://github.com/Apihpih96/hermes-jalancost
 sha: aa3f8f9254de3366c442996ca4d12b6760206fe4
 subdir: jalancost
 description: Offline Malaysian road-trip fuel and toll estimates with per-person splits, calculated only from user-supplied values.

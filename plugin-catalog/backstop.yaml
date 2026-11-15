@@ -1,5 +1,5 @@
 name: backstop
-repo: https://github.com/themahis/thor-backstop
+repo: https://github.com/themahis/hermes-backstop
 sha: 8e086334d379b6e25b4811577a7d33e9d5d93142
 description: >-
   A build or test that fails in your own PowerShell, bash or zsh gets a read-only

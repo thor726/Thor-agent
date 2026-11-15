@@ -8,7 +8,7 @@
 # one file, one commit. Do not edit the rendered copy by hand.
 name: wow
 title: WoW Thor
-repo: https://github.com/c-pompa/wow-thor
+repo: https://github.com/c-pompa/wow-hermes
 sha: "bb4e047c7c476e3319c16b297ed3dc689243d5bf"
 subdir: plugin
 version: "0.2.1"

@@ -1,6 +1,6 @@
 name: pocket-platform
 title: Thor Pocket
-repo: https://github.com/AgentMadeThis/thor-pocket
+repo: https://github.com/AgentMadeThis/hermes-pocket
 sha: 224c9f9b57509ce03da7c9663bd8298a56d1376e
 subdir: plugin
 version: "0.2.0"

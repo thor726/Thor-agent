@@ -1,6 +1,6 @@
 name: cli-session-tabs
 title: CLI Session Tabs
-repo: https://github.com/cryptobredda/thor-cli-tabs
+repo: https://github.com/cryptobredda/hermes-cli-tabs
 sha: 8568381f410535660086e59215ba106de9f0c058
 subdir: ""
 description: "Directory-scoped native TUI tabs when the public core capability contract is advertised, with isolated tmux fallback. Disclosure — the tmux backend requires OS-installed tmux; explicit `thor tabs` commands probe the Thor CLI (`--help`, `--tui-capabilities`) and start private, long-running TUI or tmux/Thor clients only when invoked, passing the selected profile and the current terminal's pane identity through a credential/bypass-filtered environment; the tmux backend stores non-secret workspace metadata in profile plugin-data and confirms closes; native-tab persistence stays in core. Does not patch Thor or read conversations/credentials."

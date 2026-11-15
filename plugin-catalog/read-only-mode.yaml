@@ -1,5 +1,5 @@
 name: read-only-mode
-repo: https://github.com/chengyimingvb/ThorPlugins
+repo: https://github.com/chengyimingvb/HermesPlugins
 sha: c6fd56fe90c9bb762bd67d512f2089778626b772
 screenshots:
   - https://raw.githubusercontent.com/chengyimingvb/ThorPlugins/c6fd56fe90c9bb762bd67d512f2089778626b772/read-only-mode/docs/images/read-only-mode-off.png

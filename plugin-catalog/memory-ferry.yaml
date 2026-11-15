@@ -1,6 +1,6 @@
 name: memory-ferry
 title: Memory Ferry
-repo: https://github.com/gnanam1990/thor-memory-ferry
+repo: https://github.com/gnanam1990/hermes-memory-ferry
 sha: 28438fc3fb540ad5e0e255c8a26cca9100445a77
 version: "0.1.0"
 description: "Migrates built-in Thor MEMORY.md and USER.md records into a profile-local SQLite memory provider with an integrity-checked dry run, idempotent recovery, deterministic retrieval-parity evidence and migration-scoped rollback. Disclosure — reads the active profile's memories/MEMORY.md and memories/USER.md; writes plaintext memories and full mode-0600 plan/export artifacts under $THOR_HOME/plugin-data/memory-ferry (policy-blocked records remain in planning artifacts but are not imported or recalled); recalled snippets reach the user's configured model provider. No network calls, shell commands, credentials, telemetry or background process."

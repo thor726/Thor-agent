@@ -1,5 +1,5 @@
 name: agentwalletapi
-repo: https://github.com/openclawcash/agentwalletapi-thor
+repo: https://github.com/openclawcash/agentwalletapi-hermes
 sha: ae547a9c51dfc6060fe2441411f9ec846250ef75
 version: "1.31.0"
 image: https://raw.githubusercontent.com/openclawcash/agentwalletapi-thor/ae547a9c51dfc6060fe2441411f9ec846250ef75/assets/catalog-banner.png

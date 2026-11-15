@@ -1144,8 +1144,8 @@ def _perform_uninstall(
 
 
 _REINSTALL_HINT = {
-    True: "  iex (irm https://thor-agent.thor-agent.local/install.ps1)",
-    False: "  curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash"}
+    True: "  iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)",
+    False: "  curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash"}
 # windows -> [(line, color or None)]
 _RELOAD_HINT = {
     True: [("Open a new terminal (PowerShell / Windows Terminal) to pick up", Colors.YELLOW),

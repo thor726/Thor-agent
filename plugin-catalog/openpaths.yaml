@@ -1,6 +1,6 @@
 name: openpaths
 title: OpenPaths
-repo: https://github.com/lee101/thor-openpaths
+repo: https://github.com/lee101/hermes-openpaths
 sha: d1e55ac08dabaae1e399d4a3a9da9f68346efd00
 version: "0.1.0"
 maintainer: lee101

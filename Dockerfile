@@ -543,8 +543,13 @@ COPY --chmod=0644 docker/profile-thor-path.sh /etc/profile.d/thor.sh
 # image these are shared, non-secret package metadata, read by UID 10000.
 # uv's environment locks are build-only and may be world-writable. Remove
 # them after all builds; never relax permissions on mutable PM/home state.
+# uv also creates its cache locks 0666 (the root .lock and one <entry>.lock
+# per wheel/sdist entry), and the seed copy into $THOR_HOME/cache/uv keeps
+# modes. Drop the world bit instead of deleting by name: "*.lock" also matches
+# files inside unpacked wheels (setuptools/_vendor/.lock).
 RUN mkdir -p /opt/data && chmod 0644 /opt/thor/tools/facts.json && \
-    rm -f /opt/thor/.venv/.lock /opt/thor/pm-runtime/.lock
+    rm -f /opt/thor/.venv/.lock /opt/thor/pm-runtime/.lock && \
+    find /opt/thor/uv-cache ! -type l -perm -0002 -exec chmod o-w {} +
 # Build helpers use system Python above; TUI gateway children need the sealed runtime.
 ENV THOR_PYTHON=/opt/thor/.venv/bin/python
 VOLUME [ "/opt/data" ]

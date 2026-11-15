@@ -1,6 +1,6 @@
 # Independent implementation; does not replace the existing provider-usage entry.
 name: jg-provider-usage
-repo: https://github.com/jerrygooch/thor-provider-usage
+repo: https://github.com/jerrygooch/hermes-provider-usage
 sha: "543afc7c3dc4ac27d601a3a84389032d12db1415"
 version: "0.10.0"
 maintainer: jerrygooch

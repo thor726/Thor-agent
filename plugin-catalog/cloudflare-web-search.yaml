@@ -1,5 +1,5 @@
 name: cloudflare-web-search
-repo: https://github.com/Adolanium/thor-cloudflare-web-search
+repo: https://github.com/Adolanium/hermes-cloudflare-web-search
 sha: 259783bf335cfffbfe16e2ef16efa301beb6db14
 description: "Cloudflare Web Search backend for Thor' existing web_search tool, with Ceramic, Exa, or Linkup selected in plugin settings. Search only; keep a separate extract backend. Disclosure — sends queries, result limits, gateway IDs, and optional BYOK aliases to api.cloudflare.com, which forwards searches to the selected provider and records them in AI Gateway logs. Requests can consume gateway credits or provider quota. Reads its own settings and CLOUDFLARE_WEB_SEARCH_API_TOKEN through Thor' profile-scoped APIs. Registers one web provider, with no new tools, hooks, background processes, file writes, or self-updater. Independent community plugin."
 maintainer: Adolanium

@@ -1,5 +1,5 @@
 name: proving-ground
-repo: https://github.com/dmustapha/thor-proving-ground
+repo: https://github.com/dmustapha/hermes-proving-ground
 sha: "7e2d489b51e53a2b572bdb3a933633e7935e4dea"
 description: "A wiring test for your plugin stack: known, harmless test calls go through every installed plugin in a throwaway child Thor home with the model never called, and each cell shows which plugin blocked, rewrote, changed the result, gated for approval, or passed it through. Disclosure — Runs every enabled directory plugin's own code in child Thor processes under the system temp dir with your file permissions (approvals forced to deny, model never called, plugin settings with secret-shaped names withheld); the first warm-up copies your local Thor runtime or, if none exists, lets Thor's installer download about 650 MB."
 maintainer: dmustapha

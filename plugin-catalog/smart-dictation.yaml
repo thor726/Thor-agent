@@ -1,6 +1,6 @@
 name: smart-dictation
 title: Smart Dictation
-repo: https://github.com/metamindedu/thor-smart-dictation
+repo: https://github.com/metamindedu/hermes-smart-dictation
 sha: e62b98787d4d056b8d7c333e05a80c6779f9ba2a
 version: "0.5.0"
 description: Native local dictation with opt-in proofreading and an advanced contextual review workflow.

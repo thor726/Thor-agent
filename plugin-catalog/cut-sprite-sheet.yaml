@@ -1,5 +1,5 @@
 name: cut-sprite-sheet
-repo: https://github.com/TakeshiTGAL/thor-plugin-sprite-sheet
+repo: https://github.com/TakeshiTGAL/hermes-plugin-sprite-sheet
 sha: abb003f824e1b2fe89682237a4e01d6227248683
 version: "0.1.2"
 requires_thor: ">=0.21.6"

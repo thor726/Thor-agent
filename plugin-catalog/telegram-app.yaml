@@ -1,5 +1,5 @@
 name: telegram-app
-repo: https://github.com/aimanmalib/thor-telegram-miniapp
+repo: https://github.com/aimanmalib/hermes-telegram-miniapp
 sha: 0fd15e2a6b6468fb938789c43c05e17df0c90735
 subdir: plugin
 title: Telegram Mini App

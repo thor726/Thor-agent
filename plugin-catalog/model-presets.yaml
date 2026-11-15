@@ -1,6 +1,6 @@
 name: model-presets
 title: Model Presets
-repo: https://github.com/will-lynas/thor-model-presets
+repo: https://github.com/will-lynas/hermes-model-presets
 sha: 27eec57bc17d92d931a025ed333b330dd17636e5
 description: Named model, provider and reasoning presets for gateway /model commands. Uses only the pre_gateway_dispatch hook; no network calls, credential access, shell commands, background processes or self-updating.
 maintainer: will-lynas

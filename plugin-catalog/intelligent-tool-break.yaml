@@ -1,5 +1,5 @@
 name: intelligent-tool-break
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: 2d72584692123172705769b9de7fcee00af6a0d7
 subdir: public/intelligent-tool-break
 description: "Abort a stalled in-flight tool call with /break, send a note with /break {message}, or retry it with /again without cancelling the rest of the task."

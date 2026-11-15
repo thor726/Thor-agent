@@ -1,5 +1,5 @@
 name: cloudgpu-provider
-repo: https://github.com/mrhy7176/thor-cloudgpu
+repo: https://github.com/mrhy7176/hermes-cloudgpu
 sha: 8094603d776e185cfe362618d353841e6b453189
 subdir: model-providers/cloudgpu
 title: "CloudGPU"

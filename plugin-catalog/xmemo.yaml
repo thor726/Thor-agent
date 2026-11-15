@@ -1,5 +1,5 @@
 name: xmemo
-repo: https://github.com/yonro/thor-xmemo-plugin
+repo: https://github.com/yonro/hermes-xmemo-plugin
 sha: 499a383778647e897d30db3e92e8c8ad4397c799
 subdir: src/thor_xmemo/xmemo
 description: >-

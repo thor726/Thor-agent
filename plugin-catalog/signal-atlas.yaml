@@ -1,6 +1,6 @@
 name: signal-atlas
 title: Dive In
-repo: https://github.com/RahmelJackson/dive-in-thor
+repo: https://github.com/RahmelJackson/dive-in-hermes
 sha: d449239595f66b25974b4e8f4430781a4fd5cad5
 version: "0.26.1"
 description: Turn a public source into a visual investigation with source-linked claims, charts, and follow-ups.

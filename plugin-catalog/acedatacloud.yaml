@@ -1,6 +1,6 @@
 name: acedatacloud
 title: Ace Data Cloud
-repo: https://github.com/AceDataCloud/AceDataCloudModelProviderThor
+repo: https://github.com/AceDataCloud/AceDataCloudModelProviderHermes
 sha: 568763ee21fe081562bb9bcd91e7323f8f81d6ff
 image: https://raw.githubusercontent.com/AceDataCloud/AceDataCloudModelProviderThor/568763ee21fe081562bb9bcd91e7323f8f81d6ff/assets/catalog.png
 description: Ace Data Cloud GPT models with streaming and tool calling.

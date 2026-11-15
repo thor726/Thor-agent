@@ -1,6 +1,6 @@
 name: gemini-live
 title: Gemini Live for Thor
-repo: https://github.com/cineglobe/thor-gemini-live
+repo: https://github.com/cineglobe/hermes-gemini-live
 sha: b6c2f24354aeed1a8b5651b62944d14ed96a472d
 description: >-
   Full-duplex Gemini Live voice calls in Thor Desktop and the web dashboard. The voice takes the

@@ -1,5 +1,5 @@
 name: profile-picker
-repo: https://github.com/weltmaister/thor-profile-picker
+repo: https://github.com/weltmaister/hermes-profile-picker
 sha: 9a38fa52616c8b1be5397c4d922e80a2c754613d
 description: "Pick the profile for a new chat right in the composer, next to the model pill, and see which profile a running chat belongs to."
 maintainer: weltmaister

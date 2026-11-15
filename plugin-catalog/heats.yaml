@@ -1,5 +1,5 @@
 name: heats
-repo: https://github.com/EconLearn/thor-heats
+repo: https://github.com/EconLearn/hermes-heats
 sha: 2bcee10e9ca6489b7fd23bb0362a36eacdae269f
 description: >-
   Your tests, not the model, decide when a fix is done. A pre_verify referee runs the repo's check when

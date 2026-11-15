@@ -1,5 +1,5 @@
 name: game-editor
-repo: https://github.com/TakeshiTGAL/thor-plugin-game-editor
+repo: https://github.com/TakeshiTGAL/hermes-plugin-game-editor
 sha: 03faf61b18e3fa3a6be3e1051c9e9ef9e8ee6612
 version: "2.0.0"
 requires_thor: ">=0.21.6"

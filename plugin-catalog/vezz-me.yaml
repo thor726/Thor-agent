@@ -1,6 +1,6 @@
 name: vezz-me
 title: "Vezz me — AI Reading & Context Assistant"
-repo: https://github.com/mosmn/thor-plugin-vezz
+repo: https://github.com/mosmn/hermes-plugin-vezz
 sha: ea438e1d5df1c289827d4c7f0d7c7f61b64d055b
 description: "Contextual AI reading assistant, webpage text extraction, and prompt preset engine for Thor Agent. Powered by Vezz me."
 maintainer: mosmn

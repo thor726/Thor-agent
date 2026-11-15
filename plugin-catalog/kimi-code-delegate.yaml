@@ -1,5 +1,5 @@
 name: kimi-code-delegate
-repo: https://github.com/s-a-s-k-i-a/thor-kimi-code
+repo: https://github.com/s-a-s-k-i-a/hermes-kimi-code
 sha: 72c741cc166ec1db2aec4cd5316f7b7281a74b40
 description: Delegate-only, fail-closed Kimi Code ACP integration for Thor Agent
 maintainer: s-a-s-k-i-a

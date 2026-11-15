@@ -1,6 +1,6 @@
 name: locus-codegraph
 title: Locus Codegraph
-repo: https://github.com/atikur/thor-locus
+repo: https://github.com/atikur/hermes-locus
 sha: "e083a7c6df70f4f4d54a5247890deb14015d689e"
 version: "0.2.0"
 description: >-

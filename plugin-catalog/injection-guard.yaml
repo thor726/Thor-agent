@@ -1,5 +1,5 @@
 name: injection-guard
-repo: https://github.com/moneya/thor-injection-guard
+repo: https://github.com/moneya/hermes-injection-guard
 sha: 33a44c7331cde46f34aae0b3d44a6d5fd0f0feb3
 description: >-
   Prompt-injection firewall for tool output. A tool_execution middleware scans results from web,

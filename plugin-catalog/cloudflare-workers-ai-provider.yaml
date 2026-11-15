@@ -1,5 +1,5 @@
 name: cloudflare-workers-ai-provider
-repo: https://github.com/AhmetArif0/thor-cloudflare-workers-ai-provider
+repo: https://github.com/AhmetArif0/hermes-cloudflare-workers-ai-provider
 sha: f6821d058d504ee6324b0d3217564b93124c09f9
 subdir: cloudflare-workers-ai-provider
 description: >-

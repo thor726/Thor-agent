@@ -1,6 +1,6 @@
 name: tameru
 title: Tameru
-repo: https://github.com/0xWhiteMage/thor-tameru-plugin
+repo: https://github.com/0xWhiteMage/hermes-tameru-plugin
 sha: b4429d72f30fcdcd0f5660f99d0e098d555e4af4
 subdir: thor_tameru_plugin
 version: "1.9.1"

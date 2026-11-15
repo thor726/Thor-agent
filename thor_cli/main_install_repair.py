@@ -83,8 +83,8 @@ _UPDATE_REEXEC_ENV = "THOR_UPDATE_REEXEC"
 
 def _reexec_dependency_sync_off_windows_shim() -> NoReturn:
     """Stop a mixed old-code/new-files updater at the retired sync boundary."""
-    from thor_cli._old_updater import stop_for_relaunch
-    stop_for_relaunch()
+    from thor_cli._old_updater import stop_historical_updater
+    stop_historical_updater("thor_cli.main_install_repair._reexec_dependency_sync_off_windows_shim")
 
 
 def _is_windows() -> bool:

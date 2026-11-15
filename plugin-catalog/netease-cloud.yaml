@@ -1,5 +1,5 @@
 name: netease-cloud
-repo: https://github.com/BoosterCore/thor-netease-cloud
+repo: https://github.com/BoosterCore/hermes-netease-cloud
 sha: 2e6a5a192e0021ec976a2bd060a2836dd6eb39f2
 version: "0.5.0"
 title: NetEase Cloud Music

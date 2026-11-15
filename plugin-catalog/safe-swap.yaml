@@ -1,5 +1,5 @@
 name: safe-swap
-repo: https://github.com/itsolaph/thor-safe-swap
+repo: https://github.com/itsolaph/hermes-safe-swap
 sha: "6e66f5fe6651e25951fcd3592a7ac2e75787e7f6"
 description: >-
   Rewrites destructive shell commands into safe twins before they run instead of snapshotting afterwards:

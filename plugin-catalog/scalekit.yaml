@@ -1,6 +1,6 @@
 name: scalekit
 title: Scalekit
-repo: https://github.com/scalekit-inc/thor-tools
+repo: https://github.com/scalekit-inc/hermes-tools
 sha: 35bfcedf59442377a930c4c3ed1c818ca425c11a
 description: >-
   Call any Scalekit connector from Thor: 500+ connectors and 20,000+ tools.

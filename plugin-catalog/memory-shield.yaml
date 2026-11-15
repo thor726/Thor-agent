@@ -1,6 +1,6 @@
 name: memory-shield
 title: Memory Shield
-repo: https://github.com/churnast/thor-memory-shield
+repo: https://github.com/churnast/hermes-memory-shield
 sha: 347ab18408da52937f7e808a6e88a52b74184225
 description: >-
   Keeps your agent from rewriting or wiping what it remembers about you: by default the agent may add facts

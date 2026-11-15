@@ -1,5 +1,5 @@
 name: remarkable
-repo: https://github.com/cygnostik/thor-plugin-remarkable
+repo: https://github.com/cygnostik/hermes-plugin-remarkable
 sha: 5f841248b068d49f8a04208bf3471e00acd933f3
 description: >-
   Unofficial reMarkable cloud transfers, library management, backups, typed text, and bounded native notebook rendering.

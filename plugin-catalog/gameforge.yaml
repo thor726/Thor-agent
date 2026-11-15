@@ -1,5 +1,5 @@
 name: gameforge
-repo: https://github.com/DECRUX9812/thor-plugin-gameforge
+repo: https://github.com/DECRUX9812/hermes-plugin-gameforge
 sha: ee4a07a7fdf26139ae53ad23156b8b275e99743b   # tag v1.1.2
 version: "1.1.2"
 title: GameForge

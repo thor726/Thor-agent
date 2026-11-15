@@ -260,6 +260,51 @@ canonical_method("session.stats", params=SessionStatsParams, result=SessionStats
                  doc="The session.usage dict on demand: what main's classic CLI read off its agent.")
 
 
+class SessionAccountUsageParams(Params):
+    session_id: str
+
+
+class ThorUsageBar(Result):
+    """``agent.billing_usage.UsageBar``: one dollar bar (``topup`` has no cap, so total == remaining)."""
+
+    kind: Literal["plan", "topup"]
+    remaining_usd: float
+    total_usd: float
+    spent_usd: float = 0.0
+
+
+class ThorUsageDollars(Result):
+    """``agent.billing_usage.UsageModel`` in numbers: the classic CLI's two-bar Thor balance block."""
+
+    available: bool
+    status: str = "free"
+    plan_name: str | None = None
+    renews_at: str | None = None
+    renews_display: str | None = None
+    subscription_remaining_usd: float | None = None
+    topup_remaining_usd: float | None = None
+    total_spendable_usd: float | None = None
+    plan_bar: ThorUsageBar | None = None
+    topup_bar: ThorUsageBar | None = None
+
+
+class SessionAccountUsage(Result):
+    """``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the
+    route's provider plan limits. ``thor_lines``: the Thor balance whenever Thor is signed in on the
+    profile, after them (headed as a separate account off a Thor route). ``thor_route``: the route is
+    Thor inference, so the ``/topup`` CTA applies. ``thor_usage``: on a Thor route, the same account
+    read's dollar model, so the CLI draws its two bars without reading the account again."""
+
+    lines: list[str]
+    thor_lines: list[str] = []
+    thor_route: bool
+    thor_usage: ThorUsageDollars | None = None
+
+
+canonical_method("session.account_usage", params=SessionAccountUsageParams, result=SessionAccountUsage,
+                 doc="The /usage account blocks for this session's route: provider plan limits, then the Thor balance.")
+
+
 class RollbackSessionDiffParams(Params):
     session_id: str
     profile: str | None = None

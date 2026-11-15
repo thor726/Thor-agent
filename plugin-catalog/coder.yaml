@@ -1,5 +1,5 @@
 name: coder
-repo: https://github.com/perqin/thor-plugin-coder
+repo: https://github.com/perqin/hermes-plugin-coder
 sha: 4bab3bb699f645597612c804a3465095279b1e29
 version: "0.1.1"
 description: "Run Thor terminal commands in an existing remote Coder workspace. Disclosure — runs terminal commands inside your Coder workspace at CODER_URL using CODER_API_KEY; starts a stopped workspace automatically; forwards only the env vars you list in TERMINAL_CODER_FORWARD_ENV."

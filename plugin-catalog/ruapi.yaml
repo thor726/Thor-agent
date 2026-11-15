@@ -1,6 +1,6 @@
 name: ruapi
 title: RuAPI
-repo: https://github.com/RuAPI-ai/thor-provider-ruapi
+repo: https://github.com/RuAPI-ai/hermes-provider-ruapi
 sha: 51e7b46ba602ff4ed64a8f5c0a16a967eebca056
 subdir: ruapi
 description: >-

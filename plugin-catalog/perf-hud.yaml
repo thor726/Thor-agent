@@ -1,5 +1,5 @@
 name: perf-hud
-repo: https://github.com/g3org3yo/thor-perf-hud
+repo: https://github.com/g3org3yo/hermes-perf-hud
 sha: bb97f8f73175a22b75f21204cf9fd4394f18077b
 version: "1.0.0"
 title: Perf HUD

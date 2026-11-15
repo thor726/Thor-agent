@@ -1,5 +1,5 @@
 name: needs-you
-repo: https://github.com/aydnOktay/thor-needs-you
+repo: https://github.com/aydnOktay/hermes-needs-you
 sha: f903b8eb8f166b609e2ee3c535209fb4602b60d3
 description: Thor is waiting — full Desktop page for pending approvals.
   Queue, chip, OS notify. Redacted previews only. No API keys.

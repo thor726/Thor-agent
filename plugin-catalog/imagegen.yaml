@@ -1,6 +1,6 @@
 name: imagegen
 title: ImageGen
-repo: https://github.com/phdigital01/imagegen-thor
+repo: https://github.com/phdigital01/imagegen-hermes
 sha: f879503f8cc0e5965ad49f2a61a2dfa5e4f0a8c2
 description: >-
   Image studio for Thor Desktop: generate, compose from references, edit and

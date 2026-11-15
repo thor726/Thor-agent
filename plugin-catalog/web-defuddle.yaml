@@ -1,5 +1,5 @@
 name: web-defuddle
-repo: https://github.com/annalinneajohansson82/thor-defuddle
+repo: https://github.com/annalinneajohansson82/hermes-defuddle
 sha: d28bd52eed30c397a45f0b2aba869a28ca4789c4
 description: Defuddle content extraction — local, free, no API key. Shells out to the defuddle CLI for
   clean article markdown. Extract-only; pair with SearXNG or another search provider.

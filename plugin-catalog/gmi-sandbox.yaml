@@ -1,6 +1,6 @@
 name: gmi-sandbox
 title: GMI Cloud Sandbox
-repo: https://github.com/avinxshKD/thor-gmi-sandbox
+repo: https://github.com/avinxshKD/hermes-gmi-sandbox
 subdir: ""
 sha: 593d6425e7d0e4d966b7dd96b16f738534e42d6f
 description: "GMI Cloud Sandbox terminal backend: Thor's terminal, file and code tools run inside an ephemeral cloud sandbox created from a ready template you provide (`thor config set terminal.backend gmi_sandbox`). Commands are polled to completion and cancelled on interrupt; truncated output is reported as a failure. Disclosure — community plugin, not a GMI product. With `terminal.backend: gmi_sandbox`, every terminal command, file path and file content the agent handles goes to console.gmicloud.ai and the GMI sandbox data plane with your GMI_SANDBOX_API_KEY (read per sandbox through Thor secret scope), tagged with the plugin name and the Thor task id. The first terminal call creates a billed sandbox with no Thor approval prompt, and a crash can leave it running until its lifetime (default 900 s, renewed per command) expires; the plugin creates and deletes only its own sandboxes. Not yet verified against the live GMI service (offline tests only)."

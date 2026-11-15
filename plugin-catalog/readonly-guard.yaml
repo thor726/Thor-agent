@@ -1,5 +1,5 @@
 name: readonly-guard
-repo: https://github.com/mciocchi/thor-readonly-guard
+repo: https://github.com/mciocchi/hermes-readonly-guard
 sha: "1f2d12e215fe95c7b2ecf743ef06e12f07a0ff68"
 subdir: ""
 description: >-

@@ -1,6 +1,6 @@
 name: sheets
 title: Thor Sheets
-repo: https://github.com/Adolanium/thor-sheets
+repo: https://github.com/Adolanium/hermes-sheets
 sha: 6c63095c148ade472a8a9b5d8815ef4ad3f028bc
 description: >-
   An agentic spreadsheet. Ask for a sheet and a Thor agent finds the rows on

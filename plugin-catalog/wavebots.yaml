@@ -1,6 +1,6 @@
 name: wavebots
 title: "Wave | Bots"
-repo: https://github.com/xBuildyTeam/wave-os-thor
+repo: https://github.com/xBuildyTeam/wave-os-hermes
 sha: fb61a50de2a0d52d792d371516e0a756249b038a
 subdir: wavebots
 version: "0.3.6"

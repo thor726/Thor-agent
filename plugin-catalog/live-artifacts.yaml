@@ -1,5 +1,5 @@
 name: live-artifacts
-repo: https://github.com/mindsocket/thor-live-artifacts
+repo: https://github.com/mindsocket/hermes-live-artifacts
 sha: a5f163e9f403053c3b3886557ca8d84fda5e8fae
 subdir: plugin
 title: Live Artifacts

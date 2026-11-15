@@ -1,5 +1,5 @@
 name: pastdotdev
-repo: https://github.com/pastdotdev/thor-plugin
+repo: https://github.com/pastdotdev/hermes-plugin
 sha: 22f7abdd1e73bebda6f876cd1f07fe383c25ada4
 subdir: past_thor
 version: "0.2.0"

@@ -1,5 +1,5 @@
 name: fine-print
-repo: https://github.com/Joko-F/thor-fine-print
+repo: https://github.com/Joko-F/hermes-fine-print
 sha: 7b574f1b5c8dc8eafe3ea9f87ae6b0111853f0ba
 title: Fine Print
 description: 'Shows where Thor silently shrinks, cuts, swaps or hides what the model sees. When a turn ends in which

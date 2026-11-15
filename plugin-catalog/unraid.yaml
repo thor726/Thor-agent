@@ -1,6 +1,6 @@
 name: unraid
 title: Unraid
-repo: https://github.com/Anunnaki-Astronaut/thor-unraid
+repo: https://github.com/Anunnaki-Astronaut/hermes-unraid
 sha: 48deec3dfd9bbc0b00731412635fa2dc06263d03
 description: "Read-only Unraid monitoring for Thor Desktop: server metadata, array capacity, Docker containers, virtual machines, and grouped alerts. Disclosure — sends fixed GraphQL queries to the user-configured Unraid host and stores a VIEWER key through Thor secret scope; no telemetry, background process, shell, SSH, MCP, or mutations."
 maintainer: Anunnaki-Astronaut

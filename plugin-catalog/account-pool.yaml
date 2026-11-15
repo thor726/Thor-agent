@@ -1,5 +1,5 @@
 name: account-pool
-repo: https://github.com/roqianjas/thor-account-pool
+repo: https://github.com/roqianjas/hermes-account-pool
 sha: 7a4fc9fd976ed68de9e6f70ba326ef2053741e69
 subdir: plugins/account-pool
 version: "4.0.2"

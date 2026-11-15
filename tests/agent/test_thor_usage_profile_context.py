@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from agent import account_usage, billing_usage
+from agent import account_usage_thor, billing_usage
 from thor_constants import (
     get_thor_home,
     reset_thor_home_override,
@@ -12,7 +12,7 @@ from thor_constants import (
 
 @pytest.mark.parametrize(
     "fetcher",
-    [account_usage._fetch_portal_account, billing_usage.fetch_thor_account],
+    [account_usage_thor._fetch_portal_account, billing_usage.fetch_thor_account],
 )
 def test_thor_account_fetch_preserves_profile_home_in_timeout_worker(
     monkeypatch, tmp_path: Path, fetcher

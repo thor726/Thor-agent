@@ -1,5 +1,5 @@
 name: fusion
-repo: https://github.com/BoredSexyJordan/thor-fusion
+repo: https://github.com/BoredSexyJordan/hermes-fusion
 sha: edab6a6d17838d4d9a1525a2a7d3500c62694e17
 description: >-
   Multi-model fusion router for Thor: detects the model fleet your harnesses

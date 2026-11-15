@@ -1,5 +1,5 @@
 name: gigamail
-repo: https://github.com/adecubed/thor-plugin-gigamail
+repo: https://github.com/adecubed/hermes-plugin-gigamail
 sha: a056fe1a5ac09595a97952ab6062dba7504b57af
 description: >-
   Email and calendar through an existing local GigaMail MCP server, with a

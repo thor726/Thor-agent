@@ -1,5 +1,5 @@
 name: omnivoice
-repo: https://github.com/ThaungThanHan/thor-omnivoice
+repo: https://github.com/ThaungThanHan/hermes-omnivoice
 sha: 21d2900c392247dc52d706fee956f08dbfc3c5ea
 description: OmniVoice TTS provider for Thor Agent
 maintainer: ThaungThanHan

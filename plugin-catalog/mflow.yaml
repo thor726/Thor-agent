@@ -1,6 +1,6 @@
 name: mflow
 title: mFlow
-repo: https://github.com/vladyslavpatrick/mflow-thor
+repo: https://github.com/vladyslavpatrick/mflow-hermes
 sha: 9e6428e78413a0fd7b3afdbb29d5001378acad24
 description: >-
   Manage mFlow (m-flow.io) from Thor: boards and tasks, Knowledge Base/ADRs, and

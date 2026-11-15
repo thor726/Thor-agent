@@ -1,5 +1,5 @@
 name: cdp-manager
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: 185f8465f8c97e0252e85ca07f3655d1bd96cea4
 subdir: public/cdp-manager
 description: "Local Chrome CDP debug ports in the status bar (probe, launch, stop, recheck)
