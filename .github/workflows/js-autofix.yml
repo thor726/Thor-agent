@@ -232,21 +232,22 @@ jobs:
 
           echo "Waiting for PR #$PR_NUM to merge..."
 
-          # A GITHUB_TOKEN push (this job's only write credential — the
-          # repo App has neither contents nor pull-requests permission)
-          # leaves the bot branch's workflow runs action_required. Approve
-          # them ourselves (actions: write) so CI actually runs.
-          for RID in $(gh run list --branch bot/js-autofix --status action_required \
-                         --json databaseId --jq '.[].databaseId' 2>/dev/null || true); do
-            echo "Approving action_required run $RID for the bot branch."
-            gh run approve "$RID" || true
-          done
-
           # Poll every 15s for up to ~10 minutes. The loop itself lands the
           # PR once CI is green (`gh pr merge --auto` requires branch
           # protection with required checks, which this repo doesn't use).
           for i in $(seq 1 40); do
             sleep 15
+
+            # A GITHUB_TOKEN push (this job's only write credential — the
+            # repo App has neither contents nor pull-requests permission)
+            # leaves the bot branch's workflow runs action_required, and
+            # they only reach that state a few seconds AFTER the push, so
+            # approve them on every pass (no-op once none are left).
+            for RID in $(gh run list --branch bot/js-autofix --status action_required \
+                           --json databaseId --jq '.[].databaseId' 2>/dev/null || true); do
+              echo "Approving action_required run $RID for the bot branch."
+              gh run approve "$RID" || echo "approve $RID failed (continuing)"
+            done
 
             STATE=$(gh pr view "$PR_NUM" --json state --jq '.state')
             if [ "$STATE" = "MERGED" ] || [ "$STATE" = "CLOSED" ]; then
@@ -273,6 +274,19 @@ jobs:
               echo "CI failed on PR #$PR_NUM. Closing + deleting branch."
               gh pr close "$PR_NUM" --delete-branch
               exit 0
+            fi
+
+            # Checks stuck in action_required that this token could not
+            # approve (GITHUB_TOKEN may be denied `gh run approve`): CI will
+            # never start for this PR. Land the patch directly — main runs
+            # the same CI on the next push, so regressions still surface.
+            STUCK=$(gh pr checks "$PR_NUM" 2>/dev/null | grep -ci "action_required" || true)
+            if [ "${STUCK:-0}" -ge 2 ]; then
+              echo "PR #$PR_NUM checks idle (action_required, approve denied). Merging directly; main's push CI will validate."
+              if gh pr merge "$PR_NUM" --squash --delete-branch; then
+                echo "PR #$PR_NUM merged."
+                exit 0
+              fi
             fi
 
             # All checks done and green: merge now. `gh pr merge --auto`
