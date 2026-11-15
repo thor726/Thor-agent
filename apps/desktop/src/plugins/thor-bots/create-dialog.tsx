@@ -287,7 +287,9 @@ function liveRosterRow(name: string, connectionId: string, fallback: RosterRow):
   const live = $lastRoster.get().find(row => botRosterKey(row) === key)
   const active = String(host.state?.connectionId?.get?.() || '').trim()
 
-  return live ?? (connectionId && connectionId !== active ? { ...fallback, connectionId, sourceScoped: true } : fallback)
+  return (
+    live ?? (connectionId && connectionId !== active ? { ...fallback, connectionId, sourceScoped: true } : fallback)
+  )
 }
 
 function useDraftProfile(
@@ -723,7 +725,12 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
 
       // Not for a draft a target change discarded while readiness ran.
       if (receipt?.warning && draftReceiptRef.current === receipt) {
-        host.notify({ kind: 'warning', title: receipt.warning.title, message: receipt.warning.message, persistent: true })
+        host.notify({
+          kind: 'warning',
+          title: receipt.warning.title,
+          message: receipt.warning.message,
+          persistent: true
+        })
       }
 
       // Persistent: opening the chat clears ordinary notices.

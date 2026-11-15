@@ -8,12 +8,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  listAllProfileSessions,
-  listSidebarSessions,
-  resetSidebarBatchCapability,
-  setApiRequestProfile
-} from '@/thor'
+import { listAllProfileSessions, listSidebarSessions, resetSidebarBatchCapability, setApiRequestProfile } from '@/thor'
 
 describe('single-profile list reads carry that profile as the request scope', () => {
   let api: ReturnType<typeof vi.fn>
