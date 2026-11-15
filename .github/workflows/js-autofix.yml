@@ -204,10 +204,12 @@ jobs:
           # recreates it. Authenticated with the App token via a URL-scoped
           # extraheader: checkout persists GITHUB_TOKEN under the URL-scoped
           # key http.https://github.com/.extraheader, which BEATS a generic
-          # -c http.extraheader — the scope must match exactly. An App-token
-          # push lets the bot branch's CI run normally; a GITHUB_TOKEN push
-          # leaves its runs action_required (idle until a maintainer approves).
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$APP_TOKEN" | base64)" \
+          # -c http.extraheader — the scope must match exactly. base64 -w0:
+          # a wrapped (multi-line) header value makes libcurl abort with
+          # "A libcurl function was given a bad argument". An App-token push
+          # lets the bot branch's CI run normally; a GITHUB_TOKEN push leaves
+          # its runs action_required (idle until a maintainer approves).
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$APP_TOKEN" | base64 -w0)" \
             push --force origin HEAD:"$BOT_BRANCH"
 
       - name: Create/update PR and enable auto-merge
