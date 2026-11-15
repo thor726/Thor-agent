@@ -7,15 +7,15 @@ name: auto-fix lint issues & formatting
 # auto-corrected on merge so PRs aren't blocked by them. The PR-time eslint
 # check in typecheck.yml fails only when un-fixable errors remain.
 #
-# NOTE: the privileged job writes with its job-scoped GITHUB_TOKEN
-# (contents + pull-requests + actions: write). The repo's GitHub App
-# (vars.APP_CLIENT_ID + secrets.APP_PRIVATE_KEY) is deliberately NOT used
-# here: its installation grants neither contents nor pull-requests on this
-# repo (403 "denied to thor-agent-ci[bot]" / "Resource not accessible by
-# integration"). GITHUB_TOKEN-pushed commits leave the bot branch's CI runs
-# action_required; the wait step approves those runs itself and merges the
-# PR once green. The concurrency group (ts-autofix-${{ github.ref }}) with
-# cancel-in-progress: true prevents a run loop on the bot branch.
+# NOTE: the privileged job prefers the repo's GitHub App token
+# (vars.APP_CLIENT_ID + secrets.APP_PRIVATE_KEY): an App push and PR let
+# the bot branch's CI start normally. If the App installation lacks the
+# permission (403), it falls back to the job's GITHUB_TOKEN (contents +
+# pull-requests + actions: write) — that path leaves the branch's CI runs
+# action_required, which the wait step approves itself via the REST API
+# before merging once green. The concurrency group
+# (ts-autofix-${{ github.ref }}) with cancel-in-progress: true prevents a
+# run loop on the bot branch.
 #
 # ── Security model: two-job split ───────────────────────────────────────────
 #
@@ -158,9 +158,18 @@ jobs:
           # in the run step below.
           path: ${{ runner.temp }}
 
+      - name: Get GitHub App token
+        id: app-token
+        uses: ./.github/actions/get-app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Apply patch and push to bot branch
+        id: push-bot-branch
         env:
           BOT_BRANCH: bot/js-autofix
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
 
@@ -182,21 +191,37 @@ jobs:
           git add -A
           git commit -m "fmt(js): \`pnpm run fix\` on merge"
 
-          # Push to the dedicated bot branch with the job's GITHUB_TOKEN
-          # (contents: write). The repo's GitHub App is NOT used for this
-          # push: its installation has no contents write permission (403
-          # "denied to thor-agent-ci[bot]") and no pull-requests permission
-          # either. A GITHUB_TOKEN push leaves the branch's CI runs
-          # action_required; the wait step approves them itself. Force-push
-          # is safe: bot/js-autofix is a bot-only branch rewritten each run.
-          git push --force origin HEAD:"$BOT_BRANCH"
+          # Push with the App token when its installation grants contents
+          # write: an App push makes the bot branch's CI runs start
+          # normally, while a GITHUB_TOKEN push leaves them action_required
+          # (idle until approved — the wait step then approves them itself).
+          # The App header rides its own includeIf'd credentials file — a
+          # local override cannot reach it (includeIf beats local config)
+          # and a second header makes GitHub reject the request (400).
+          # When the App push is denied (403), fall back to GITHUB_TOKEN.
+          # Force-push is safe: bot/js-autofix is a bot-only branch
+          # rewritten from main on every run.
+          USED_APP=false
+          CRED=$(mktemp)
+          git config --file "$CRED" http.https://github.com/.extraheader \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$APP_TOKEN" | base64 -w0)"
+          git config --local includeIf.gitdir:"$PWD/.git".path "$CRED"
+          if git push --force origin HEAD:"$BOT_BRANCH"; then
+            USED_APP=true
+            echo "Pushed bot branch with the App token (CI will start normally)."
+          else
+            echo "App push failed — retrying with GITHUB_TOKEN (CI runs will need approval)."
+            git config --local --unset "includeIf.gitdir:$PWD/.git.path" || true
+            git push --force origin HEAD:"$BOT_BRANCH"
+          fi
+          echo "used_app=$USED_APP" >> "$GITHUB_OUTPUT"
 
       - name: Create/update PR and enable auto-merge
         env:
-          # github.token (pull-requests: write): the App installation lacks
-          # PR permissions — see the header note. PR #6 predates the App
-          # credentials and proves this token works end-to-end here.
-          GH_TOKEN: ${{ github.token }}
+          # Same credential that pushed: an App push + App PR keeps the
+          # whole bot flow on the App identity; the GITHUB_TOKEN fallback
+          # covers an installation whose permissions are not yet granted.
+          GH_TOKEN: ${{ steps.push-bot-branch.outputs.used_app == 'true' && steps.app-token.outputs.token || github.token }}
           BOT_BRANCH: bot/js-autofix
         run: |
           set -euo pipefail
@@ -238,15 +263,14 @@ jobs:
           for i in $(seq 1 40); do
             sleep 15
 
-            # A GITHUB_TOKEN push (this job's only write credential — the
-            # repo App has neither contents nor pull-requests permission)
-            # leaves the bot branch's workflow runs action_required, and
-            # they only reach that state a few seconds AFTER the push, so
-            # approve them on every pass (no-op once none are left).
+            # A GITHUB_TOKEN push (the App fallback path) leaves the bot
+            # branch's workflow runs action_required. Approve them via the
+            # REST API — the gh CLI has no `gh run approve` subcommand.
             for RID in $(gh run list --branch bot/js-autofix --status action_required \
                            --json databaseId --jq '.[].databaseId' 2>/dev/null || true); do
               echo "Approving action_required run $RID for the bot branch."
-              gh run approve "$RID" || echo "approve $RID failed (continuing)"
+              gh api -X POST "repos/${{ github.repository }}/actions/runs/$RID/approve" \
+                || echo "approve $RID failed (continuing)"
             done
 
             STATE=$(gh pr view "$PR_NUM" --json state --jq '.state')
