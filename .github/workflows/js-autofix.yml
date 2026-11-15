@@ -201,9 +201,13 @@ jobs:
           # Push to the dedicated bot branch. Force-push is safe here:
           # bot/js-autofix is a bot-only branch that gets rewritten each run.
           # If the branch was deleted after a previous PR merge, this
-          # recreates it. Authenticated with the App token via an extra
-          # header so its push (not GITHUB_TOKEN's) is what CI sees.
-          git -c http.extraheader="Authorization: Basic $(printf "x-access-token:%s" "$APP_TOKEN" | base64)" \
+          # recreates it. Authenticated with the App token via a URL-scoped
+          # extraheader: checkout persists GITHUB_TOKEN under the URL-scoped
+          # key http.https://github.com/.extraheader, which BEATS a generic
+          # -c http.extraheader — the scope must match exactly. An App-token
+          # push lets the bot branch's CI run normally; a GITHUB_TOKEN push
+          # leaves its runs action_required (idle until a maintainer approves).
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$APP_TOKEN" | base64)" \
             push --force origin HEAD:"$BOT_BRANCH"
 
       - name: Create/update PR and enable auto-merge
@@ -278,6 +282,22 @@ jobs:
               echo "CI failed on PR #$PR_NUM. Closing + deleting branch."
               gh pr close "$PR_NUM" --delete-branch
               exit 0
+            fi
+
+            # All checks done and green: merge now. `gh pr merge --auto`
+            # needs branch-protection required checks, which this repo
+            # doesn't use (maintainers push straight to main), so the wait
+            # loop itself lands the PR once CI finishes. Pending or
+            # action_required (never triggered) is not done — keep waiting.
+            CHECKS=$(gh pr checks "$PR_NUM" 2>/dev/null || true)
+            if [ -n "$CHECKS" ] \
+              && ! echo "$CHECKS" | grep -qi "pending" \
+              && ! echo "$CHECKS" | grep -qi "action_required"; then
+              echo "CI green on PR #$PR_NUM. Merging (squash)."
+              if gh pr merge "$PR_NUM" --squash --delete-branch; then
+                echo "PR #$PR_NUM merged."
+                exit 0
+              fi
             fi
 
             # If PR is conflicted, close + delete the branch.
