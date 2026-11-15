@@ -202,17 +202,19 @@ jobs:
           # bot/js-autofix is a bot-only branch that gets rewritten each run.
           # If the branch was deleted after a previous PR merge, this
           # recreates it. Authenticated with the App token by REPLACING the
-          # GITHUB_TOKEN header checkout persisted in local config
-          # (http.https://github.com/.extraheader): a second header via
-          # `-c` makes GitHub reject the request ("Duplicate header:
-          # Authorization", 400), and the GITHUB_TOKEN push would leave the
-          # bot branch's CI runs action_required (idle until a maintainer
-          # approves). An App-token push triggers that CI normally. base64
-          # -w0: a wrapped (multi-line) value makes libcurl abort. The
-          # checkout post-step unsets this key, so the overwrite is contained.
-          git config --local --replace-all http.https://github.com/.extraheader \
+          # GITHUB_TOKEN header checkout persisted via the includeIf'd
+          # credentials config (a plain `-c`/local override only ADDS a
+          # second Authorization header — GitHub rejects "Duplicate header:
+          # Authorization", 400 — because the includeIf file wins over local
+          # config). An App-token push triggers the bot branch's CI normally;
+          # a GITHUB_TOKEN push leaves its runs action_required (idle until a
+          # maintainer approves).
+          CRED=$(mktemp)
+          git config --file "$CRED" http.https://github.com/.extraheader \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$APP_TOKEN" | base64 -w0)"
+          git config --local includeIf.gitdir:"$PWD/.git".path "$CRED"
           git push --force origin HEAD:"$BOT_BRANCH"
+          git config --local --unset "includeIf.gitdir:$PWD/.git.path" || true
 
       - name: Create/update PR and enable auto-merge
         env:
