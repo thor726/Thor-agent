@@ -107,21 +107,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: trusted-automation
+    # Workflow-level permissions already carry actions: write for this
+    # dispatch; the GitHub App token is not used because its installation
+    # lacks actions/pull-requests permissions ("Resource not accessible by
+    # integration" on `gh workflow run` / `gh pr create`).
     steps:
-      # Required: `Get GitHub App token` is a LOCAL composite action
-      # (./.github/actions/get-app-token) and cannot resolve without the repo
-      # checked out. `build-index` above already does this; this job did not,
-      # so the scheduled deploy re-trigger never fired.
       - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
-
-      - name: Get GitHub App token
-        id: app-token
-        uses: ./.github/actions/get-app-token
-        with:
-          client-id: ${{ vars.APP_CLIENT_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Trigger Deploy Site workflow
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         run: gh workflow run deploy-site.yml --repo ${{ github.repository }} -f skills_index_run_id=${{ github.run_id }}
