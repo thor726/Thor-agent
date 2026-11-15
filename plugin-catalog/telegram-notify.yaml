@@ -1,5 +1,5 @@
 name: telegram-notify
-repo: https://github.com/madpower2000/thor-telegram-notify
+repo: https://github.com/madpower2000/hermes-telegram-notify
 sha: d7cab7dfb154425118129b0086032e873a832576
 description: >-
   Remote Telegram lifecycle notifications for the main Thor agent: turn

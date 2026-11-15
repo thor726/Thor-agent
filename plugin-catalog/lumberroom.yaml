@@ -1,5 +1,5 @@
 name: lumberroom
-repo: https://github.com/lumberroom/lumberroom-thor
+repo: https://github.com/lumberroom/lumberroom-hermes
 sha: 87c697f31e0015c64900c2cc40f88beb3ead4a11
 version: "1.0.2"
 description: lumberroom memory provider. One durable store shared with every agent you use, recalled on

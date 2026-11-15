@@ -5,7 +5,7 @@
 # loadable, declared tools/hooks match registrations, security scan safe, no
 # core override, desktop surface inside the SDK). No self-updating code (rule 3).
 name: second-hands
-repo: https://github.com/zaxcoraider/thor-second-hands
+repo: https://github.com/zaxcoraider/hermes-second-hands
 sha: "b9cd7437726b8452ea697d226174fdaf8597ea03"
 description: >-
   Hands-on task coach: a live camera pane in Thor Desktop watches your hands

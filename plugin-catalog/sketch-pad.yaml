@@ -1,5 +1,5 @@
 name: sketch-pad
-repo: https://github.com/aydnOktay/thor-sketch-pad
+repo: https://github.com/aydnOktay/hermes-sketch-pad
 sha: de7cd07ff29666ca1bcc3897f13b39f9472fab55
 description: Draw a shape on a Desktop pad and attach the PNG to the next Thor
   chat message. For "what is this shape" when you have no photo.

@@ -1,6 +1,6 @@
 name: capturekit
 title: CaptureKit
-repo: https://github.com/capturekitdev/thor-plugin-capturekit
+repo: https://github.com/capturekitdev/hermes-plugin-capturekit
 sha: 22a177b360314bad6cc265e484dc71afc3de911e
 version: "1.1.0"
 description: "Web pages for Thor through the CaptureKit API: page content as Markdown with metadata and links, screenshots and PDFs (full page, one element or a mobile view), and an AI profile of a page. Also a backend for the built-in web_extract tool. Disclosure — sends each URL and the tool arguments to api.capturekit.dev with your CAPTUREKIT_API_KEY, and calls use CaptureKit credits (1 per call; usage is free). capturekit_analyze has CaptureKit read the page with an AI model on its side. Reads the key only through Thor's secret scope. Registers 4 tools and a web_extract backend, no hooks or middleware, writes one image or PDF per capturekit_screenshot call under $THOR_HOME/cache/screenshots/ and no other files, starts no processes, has no telemetry or self-updater, and uses only the Python standard library."

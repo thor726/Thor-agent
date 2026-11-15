@@ -1,5 +1,5 @@
 name: better-session-appearance
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: 3ee270029f9d13a0997215f09294c1e02a1f28ae
 subdir: public/better-session-appearance
 description: "Set a color for each session and show an idle glyph to make rows easier to scan."

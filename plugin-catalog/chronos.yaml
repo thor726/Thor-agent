@@ -1,5 +1,5 @@
 name: chronos
-repo: https://github.com/Shikhyy/thor-agent
+repo: https://github.com/Shikhyy/hermes-agent
 sha: "5b2a4b4a2c43e8a9b1e7bf8d32484a651bffedf0"
 subdir: plugins/chronos
 title: Chronos

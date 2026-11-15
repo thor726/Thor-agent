@@ -1,5 +1,5 @@
 name: tether
-repo: https://github.com/Zek-Takai/thor-tether
+repo: https://github.com/Zek-Takai/hermes-tether
 sha: adc4bfdc679c0514bc6d26e4241d6975493a8f87
 subdir: plugin/tether
 title: Thor Tether

@@ -1,5 +1,5 @@
 name: opaque-composer
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: 953732a9fb52b6fd89e73fc96d910aab63163e07
 subdir: public/opaque-composer
 description: "Keep the desktop composer solid while scrolling so conversation text stays readable."

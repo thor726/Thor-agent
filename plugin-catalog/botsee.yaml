@@ -1,6 +1,6 @@
 name: botsee
 title: BotSee
-repo: https://github.com/sidekickjanet/thor-product-plugins
+repo: https://github.com/sidekickjanet/hermes-product-plugins
 sha: f79c213703b600a48a1d4f949bbd82c113d117f0
 subdir: plugins/botsee
 version: "0.1.0"

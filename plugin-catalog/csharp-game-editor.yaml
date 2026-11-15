@@ -1,5 +1,5 @@
 name: csharp-game-editor
-repo: https://github.com/TakeshiTGAL/thor-plugin-csharp-game-editor
+repo: https://github.com/TakeshiTGAL/hermes-plugin-csharp-game-editor
 sha: 87f7217f4baae369dbf1df405418c0f7ad711336
 version: "0.6.0"
 requires_thor: ">=0.21.6"

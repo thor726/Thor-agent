@@ -1,5 +1,5 @@
 name: mcp-plugin-creator
-repo: https://github.com/tonbistudio/thor-mcp-plugin-creator
+repo: https://github.com/tonbistudio/hermes-mcp-plugin-creator
 sha: 0bcd7023ce9764a01551753a3b6800c4fe695047
 description: 'Turn any MCP server into a portable Agent Plugin (mcp.json + workflow skill) built from
   evidence: the server''s self-description, your past sessions with it, its docs and a read-only probe.

@@ -55,7 +55,7 @@ ALLOWED_RAW_SPAWN_ENV_FILES = {
     # These children are Thor itself and need its full environment: the gateway respawn
     # watcher (generated script source), the launchd stderr-timestamp wrapper around the
     # gateway command, and the skills sync that seeds a new profile.
-    "thor_cli/gateway.py",
+    "thor_cli/gateway_restart_watcher.py",
     "thor_cli/stderr_timestamp.py",
     "thor_cli/profiles.py",
     # The compute host runs agent turns for the dashboard: Home Assistant tools, Modal/Daytona

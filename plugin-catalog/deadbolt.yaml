@@ -1,5 +1,5 @@
 name: deadbolt
-repo: https://github.com/seanebones-lang/deadbolt-thor-plugin
+repo: https://github.com/seanebones-lang/deadbolt-hermes-plugin
 sha: 177fff79a8b6308f8d182146ed8a6e21dc84c565
 description: "Review and approve exact text-artifact writes through a local DeadBolt sidecar. Protects this plugin's commit tool only."
 maintainer: seanebones-lang

@@ -1,5 +1,5 @@
 name: tensorfold
-repo: https://github.com/atakann/thor-tensorfold
+repo: https://github.com/atakann/hermes-tensorfold
 sha: 2d8bf58b5b7684092b86877271b8ffaba88d0326
 description: >-
   TensorFold's native server (github.com/ashhart/TensorFold) as a Thor model provider (`--provider

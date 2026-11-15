@@ -1,5 +1,5 @@
 name: pdf-shrink
-repo: https://github.com/Hazem-Samak/thor-pdf-shrink
+repo: https://github.com/Hazem-Samak/hermes-pdf-shrink
 sha: 6145a74a9e9e2a0d0d03ba859d8ea59a6d448a4c
 description: >-
   Shrink a PDF to a size limit (2 MB, 500 KB, whatever the upload form says) with

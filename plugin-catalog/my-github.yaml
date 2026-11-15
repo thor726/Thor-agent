@@ -1,5 +1,5 @@
 name: my-github
-repo: https://github.com/tomekdot/thor-my-github-plugin
+repo: https://github.com/tomekdot/hermes-my-github-plugin
 sha: 639f0cf0eb580d209b8bc55bbb05d316501ca77c
 description: 'Desktop and dashboard plugin: statusbar chip, palette command, and dashboard tab listing your GitHub repos (public + private) via the gh CLI.'
 maintainer: tomekdot

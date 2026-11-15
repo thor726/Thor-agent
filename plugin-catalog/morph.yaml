@@ -5,7 +5,7 @@
 # SHAs) and the image/screenshot URLs re-pinned to that same SHA. Everything here
 # is checked against the code at that commit by `thor plugins validate`.
 name: morph
-repo: https://github.com/timioni001/morph-thor
+repo: https://github.com/timioni001/morph-hermes
 sha: "1a3a8bce10d5d5b14bd3ae3cddc908199fe2f90c"
 title: "MORPH"
 description: >-

@@ -1,5 +1,5 @@
 name: enhance-prompt
-repo: https://github.com/tuancookiez-hub/thor-enhance-prompt
+repo: https://github.com/tuancookiez-hub/hermes-enhance-prompt
 sha: 07d60168481bb95f575892472db90ad76714e200
 version: "0.8.0"
 requires_thor: ">=0.23.0"

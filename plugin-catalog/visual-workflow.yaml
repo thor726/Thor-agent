@@ -1,5 +1,5 @@
 name: visual-workflow
-repo: https://github.com/Printaga/Thor-Workflow
+repo: https://github.com/Printaga/Hermes-Workflow
 sha: 3f7a6a185e489ff4d75a0e8c1a9050c300f602d5
 description: "Visual drag-and-drop agent-workflow designer for Thor: Trigger, Agent, Condition, Approval, Output nodes on a canvas, executed by a plugin-owned sequential runner. Disclosure — Workflow Output nodes send text to messaging channels through Thor's send-message path; a model-started run of a design with a delivering Output node first asks for your approval, and scheduled runs that would send are blocked unless approvals.cron_mode allows them; scheduled workflows run as Thor cron jobs created from the dashboard; agent steps run Thor subagents or the plugin LLM facade on your configured models; designs and run records are stored under THOR_HOME/workflow-designs and THOR_HOME/workflow-runs."
 maintainer: Printaga Publishing LLC

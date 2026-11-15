@@ -171,8 +171,8 @@ def test_logout_ends_a_refresh_the_gate_cached_just_before_it(gated_basic):
     login that has since signed out."""
     provider, client = gated_basic
     s = provider.complete_password_login(username="admin", password="old-pw")
-    copied = {"thor_session_at": "lapsed", "thor_session_rt": s.refresh_token,
-              "thor_session_provider": "basic"}
+    copied = {"__Host-thor_session_at": "lapsed", "__Host-thor_session_rt": s.refresh_token,
+              "__Host-thor_session_provider": "basic"}
 
     def me():
         client.cookies.clear()
@@ -190,7 +190,7 @@ def test_logout_ends_a_refresh_the_gate_cached_just_before_it(gated_basic):
 
 def _cookie_request(client, cookies, method="get", path="/api/auth/me", **kw):
     client.cookies.clear()
-    client.cookies.update({"thor_session_provider": "basic", **cookies})
+    client.cookies.update({"__Host-thor_session_provider": "basic", **cookies})
     return getattr(client, method)(path, **kw)
 
 
@@ -206,10 +206,10 @@ def test_logout_with_the_browsers_current_rt_ends_a_copied_rts_cached_replay(gat
     provider, client = gated_basic
     s = provider.complete_password_login(username="admin", password="old-pw")
     browser_rt = provider.refresh_session(refresh_token=s.refresh_token).refresh_token
-    copied = {"thor_session_at": "lapsed", "thor_session_rt": s.refresh_token}
+    copied = {"__Host-thor_session_at": "lapsed", "__Host-thor_session_rt": s.refresh_token}
 
     assert _cookie_request(client, copied).status_code == 200  # replayed just before logout
-    _logout(client, {"thor_session_at": "lapsed", "thor_session_rt": browser_rt})
+    _logout(client, {"__Host-thor_session_at": "lapsed", "__Host-thor_session_rt": browser_rt})
 
     assert _cookie_request(client, copied).status_code == 401
 
@@ -222,7 +222,7 @@ def test_logout_after_the_refresh_cookie_expired_ends_a_long_lived_access_token(
     provider._ttl = 60 * day  # session_ttl_seconds above the 30-day refresh lifetime
     s = provider.complete_password_login(username="admin", password="old-pw")
     now[0] += 31 * day  # the refresh token and its 30-day cookie are gone; only the AT cookie is left
-    copied = {"thor_session_at": s.access_token}
+    copied = {"__Host-thor_session_at": s.access_token}
     assert _cookie_request(client, copied).status_code == 200
 
     _logout(client, copied)

@@ -1,5 +1,5 @@
 name: keln-provider
-repo: https://github.com/kris-holy/thor-keln-provider
+repo: https://github.com/kris-holy/hermes-keln-provider
 sha: e468413c29a5ecadba9e623ef55d31237e90c760
 subdir: keln-provider
 description: "Keln as a Thor model provider (`--provider keln`): open models through an OpenAI-compatible API, with the live catalog and a tool-calling fallback list. Sends requests to api.keln.ai using your KELN_API_KEY."

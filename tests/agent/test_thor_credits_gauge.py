@@ -10,7 +10,8 @@ from thor_cli.thor_account import (
     ThorPortalSubscriptionInfo,
     _subscription_from_payload,
 )
-from agent.account_usage import build_thor_credits_snapshot, render_account_usage_lines
+from agent.account_usage import render_account_usage_lines
+from agent.account_usage_thor import build_thor_credits_snapshot
 
 
 def _acct(**kwargs):

@@ -1,6 +1,6 @@
 name: taint-sentry
 title: Taint Sentry
-repo: https://github.com/YAN-XBT/thor-sentry
+repo: https://github.com/YAN-XBT/hermes-sentry
 sha: 30cf647a80fb3d57eb3383bf6fb4f33326cfe668
 version: "0.1.0"
 image: "https://raw.githubusercontent.com/YAN-XBT/thor-sentry/30cf647a80fb3d57eb3383bf6fb4f33326cfe668/assets/banner.jpg"

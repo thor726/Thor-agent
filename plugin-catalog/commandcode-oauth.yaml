@@ -1,5 +1,5 @@
 name: commandcode-oauth
-repo: https://github.com/NanamiMio/thor-commandcode-oauth
+repo: https://github.com/NanamiMio/hermes-commandcode-oauth
 sha: e51eb61613604aefbcf3203c8fcce531706232ee
 description: Command Code CLI-key model provider with a live OAuth catalog property bridge, plan limits and failover classification. Disclosure — uses the CLI-internal api.commandcode.ai/alpha/generate endpoint and CLI client headers, sends the full conversation, tool schemas, cwd path and OS/Python version, and imports a static key from the read-only CLI credential file or a browser hand-off; no OAuth exchange takes place. Thor also bundles commandcode for the documented Provider API.
 maintainer: NanamiMio

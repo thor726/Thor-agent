@@ -1,6 +1,6 @@
 name: brainvault
 title: "Wave | BrainVault Mint"
-repo: https://github.com/xBuildyTeam/wave-os-thor
+repo: https://github.com/xBuildyTeam/wave-os-hermes
 sha: 3bb8a91fc1d1bfd909d59700a91adf3d3bf99aab
 subdir: brainvault
 version: "0.6.2"

@@ -1,6 +1,6 @@
 name: alibaba-token-plan-media
 title: "Token Plan Media"
-repo: https://github.com/oliver-mee/thor-alibaba-token-plan
+repo: https://github.com/oliver-mee/hermes-alibaba-token-plan
 sha: 7b85246880f3dbcc082cd0f34753ee605d770aa5
 subdir: alibaba-token-plan-media
 version: "2.0.1"

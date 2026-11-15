@@ -227,6 +227,40 @@ def snapshot_usage(authority, ref, agent) -> dict | None:
     return tui_usage(_stored_stats(row)) if row else None
 
 
+async def account_usage(connection, ref, params):
+    """``session.account_usage {session_id}``: the CLI's /usage account blocks for the route this
+    session runs (``_session_runtime``: its agent's, else the one its next turn resolves, so
+    ``provider: auto`` is the saved login), fetched off the loop in the owning profile's scope:
+    the provider's plan limits, then the Thor section whenever Thor is signed in (``thor_usage_view``), with
+    the same read's dollar model on a Thor route (``thor_usage``: the classic CLI's two-bar block)."""
+    import asyncio
+    from agent.account_usage import account_limit_lines
+    from agent.account_usage_thor import thor_usage_view
+    from agent.billing_usage import usage_model_wire
+    from agent.billing_links import is_thor_inference_route
+    from gateway.session_authorities import owner_scope
+    from gateway.session_llm_oneshot import _session_runtime
+    from thor_cli.auth import AuthError
+    await connection.authority.resolve(connection.actor, ref)
+    authority = connection.authority
+    runtime = _session_runtime(authority, ref)
+    credits_state = getattr(authority.agent(ref), "_credits_state", None)  # the last reply's Thor gauges
+
+    def fetch():
+        with owner_scope(authority):
+            try:
+                route = runtime() or {}
+            except AuthError:  # signed out: no route to report limits or a Thor balance for
+                route = {}
+            provider, base_url = route.get("provider") or "", route.get("base_url") or ""
+            lines = account_limit_lines(provider, base_url=base_url or None, api_key=route.get("api_key"))
+            thor_route = is_thor_inference_route(provider, base_url)
+            thor, usage = thor_usage_view(thor_route=thor_route, credits_state=credits_state)
+        dollars = usage_model_wire(usage)
+        return {"lines": lines, "thor_lines": thor, "thor_route": thor_route} | ({"thor_usage": dollars} if dollars else {})
+    return await asyncio.to_thread(fetch)
+
+
 async def stats(connection, ref, params):
     """``session.stats {session_id}``: the same dict ``session.usage`` carries."""
     from thor_state_runtime import RuntimeStoreError

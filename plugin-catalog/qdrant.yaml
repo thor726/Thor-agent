@@ -1,5 +1,5 @@
 name: qdrant
-repo: https://github.com/kuehnberger/thor-qdrant-memory
+repo: https://github.com/kuehnberger/hermes-qdrant-memory
 sha: c16cf4473ed3051686b9283f1cd2e8941d9d140f
 version: "0.2.0"
 image: https://raw.githubusercontent.com/kuehnberger/thor-qdrant-memory/c16cf4473ed3051686b9283f1cd2e8941d9d140f/docs/banner.jpg

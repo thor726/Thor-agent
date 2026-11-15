@@ -1,6 +1,6 @@
 name: roster-compiler
 title: "Roster Compiler"
-repo: https://github.com/COSMICnoob80/thor-roster-compiler
+repo: https://github.com/COSMICnoob80/hermes-roster-compiler
 sha: 08704c949483475397e1efd4b61dab3d51d467d2
 description: >-
   Reads a hospital duty roster (CSV, plain text, Excel or a text-layer PDF), flags uncovered shifts,

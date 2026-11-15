@@ -1,6 +1,6 @@
 name: model-fallback-heuristic
 title: "Fallback — Model Switching Heuristics"
-repo: https://github.com/tomkubik/thor-fallback
+repo: https://github.com/tomkubik/hermes-fallback
 sha: ce150572ea10de682a2c67902b314590b55683b3
 version: "0.2.0"
 description: >-

@@ -1,6 +1,6 @@
 name: nostr
 title: Thor Nostr Gateway
-repo: https://github.com/dadofsambonzuki/thor-nostr-gateway
+repo: https://github.com/dadofsambonzuki/hermes-nostr-gateway
 sha: 271b4afe544f1a07d2abc56684d0da2fe22698e7
 subdir: integrations/thor-plugin
 description: "Nostr platform adapter for Thor, backed by the local Thor Nostr Gateway daemon: NIP-17 and NIP-04 DMs, kind-1 mentions and feeds, Concord channels and Marmot groups arrive as one message stream, with reach and authority decided by the gateway's policy. Disclosure — Needs the separately installed thor-nostr-gateway daemon (not covered by this pin), which holds the Nostr keys, talks to relays and decides which senders are trusted; on load the adapter writes the Thor command list and that write's outcome to commands.json and commands.status.json in the catalogue directory (default ~/.local/state/thor-nostr-gateway/, or NOSTR_GATEWAY_COMMANDS), and with an npub home/control channel it runs the `nak` CLI to decode it."

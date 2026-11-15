@@ -1,5 +1,5 @@
 name: camel-guard
-repo: https://github.com/nativ3ai/thor-camel-guard-plugin
+repo: https://github.com/nativ3ai/hermes-camel-guard-plugin
 sha: 4cbfca3a5f1d46f5d152280cccc496d0df14d097
 subdir: plugin
 title: CaMeL Guard

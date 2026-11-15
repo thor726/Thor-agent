@@ -1,5 +1,5 @@
 name: voicestudio-tts
-repo: https://github.com/EternalShade3D/voicestudio-thor-plugin
+repo: https://github.com/EternalShade3D/voicestudio-hermes-plugin
 sha: "40ee4663df7c81190bc02c79f09369466ddab1f6"
 description: >-
   VoiceStudio TTS provider for Thor: registers a TTS provider so replies can be read aloud, or

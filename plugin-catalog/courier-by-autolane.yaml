@@ -1,6 +1,6 @@
 name: courier-by-autolane
 title: Courier by Autolane
-repo: https://github.com/Autolane/thor-courier-plugin
+repo: https://github.com/Autolane/hermes-courier-plugin
 sha: 65027e6025cdf51d25e2ac3223aecfd373ea7925
 description: >-
   Restaurant pickup delivery in Austin, Texas: the user places a pickup order, and an Autolane

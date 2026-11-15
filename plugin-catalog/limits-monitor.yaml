@@ -1,5 +1,5 @@
 name: limits-monitor
-repo: https://github.com/zzhan1q/thor-limits-monitor
+repo: https://github.com/zzhan1q/hermes-limits-monitor
 sha: "bd6810701442e2b2a91a4be2ea9811a88e1236aa"
 screenshots:
   - https://raw.githubusercontent.com/zzhan1q/thor-limits-monitor/bd6810701442e2b2a91a4be2ea9811a88e1236aa/screenshots/limits-monitor.png

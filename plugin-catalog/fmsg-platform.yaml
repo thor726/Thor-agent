@@ -1,5 +1,5 @@
 name: fmsg-platform
-repo: https://github.com/markmnl/thor-fmsg
+repo: https://github.com/markmnl/hermes-fmsg
 sha: 562f45a48a6b10504c8d6ff5c677f1ec990e6b7b
 description: fmsg platform adapter for Thor Agent. Real-time inbound over the fmsg-webapi WebSocket
   (/fmsg/ws), outbound via its JSON REST routes. Authenticates with an fmsg API key (fmsgk_...) exchanged

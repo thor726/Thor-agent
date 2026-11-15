@@ -1,6 +1,6 @@
 name: kestra-oncall
 title: Kestra On-Call
-repo: https://github.com/zkasuran/thor-kestra-oncall
+repo: https://github.com/zkasuran/hermes-kestra-oncall
 sha: "9714ac0d65ec1c887c7b250ec6f8709791ee5e25"
 description: >-
   Puts Thor on call for Kestra. When an execution in an allowed namespace fails, Thor reads the failed

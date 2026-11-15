@@ -1,6 +1,6 @@
 name: sentinel-vision
 version: "0.1.0"
-repo: https://github.com/StarAtNyte/thor-sentinel
+repo: https://github.com/StarAtNyte/hermes-sentinel
 sha: 059c91740ee65dd3df55c9744c4c76ecb28654d9
 subdir: sentinel-vision
 title: Sentinel Vision

@@ -1,6 +1,6 @@
 name: linkedcamp
 title: LinkedCamp
-repo: https://github.com/LinkedCamp/thor-plugin
+repo: https://github.com/LinkedCamp/hermes-plugin
 sha: 76b6045ac43d1f6c394d84341a8e8c278fd72e84
 version: "1.0.0"
 image: https://raw.githubusercontent.com/LinkedCamp/thor-plugin/0ad9177df7071123b6251e90dcb0a80eefddfe35/assets/banner.png

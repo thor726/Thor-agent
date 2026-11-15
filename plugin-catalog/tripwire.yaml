@@ -1,5 +1,5 @@
 name: tripwire
-repo: https://github.com/percyhendrux123-prog/thor-tripwire
+repo: https://github.com/percyhendrux123-prog/hermes-tripwire
 sha: 5a8b5bab040d782e5d9111a7e1b8439e9c501226
 subdir: tripwire
 version: "0.1.3"

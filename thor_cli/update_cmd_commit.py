@@ -91,6 +91,7 @@ POST_MOVE_MODULES = (
     "gateway.session_context",
     "gateway.shutdown_forensics",
     "gateway.status",
+    "thor_cli.config_backups",
     "thor_cli.gateway",
     "thor_cli.gateway_runtime_start",
     "thor_cli.gateway_windows",

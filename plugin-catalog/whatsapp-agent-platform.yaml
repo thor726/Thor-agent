@@ -1,5 +1,5 @@
 name: whatsapp-agent-platform
-repo: https://github.com/ahtishamdilawar/thor-whatsapp-agent-platform
+repo: https://github.com/ahtishamdilawar/hermes-whatsapp-agent-platform
 sha: 3a57b1da04499279d1af6c7d979c9c2d8b658ce0
 version: "0.2.1"
 requires_thor: ">=0.21.4"

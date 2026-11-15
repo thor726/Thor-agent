@@ -1,5 +1,5 @@
 name: replaid
-repo: https://github.com/replaid-pro/replaid-thor
+repo: https://github.com/replaid-pro/replaid-hermes
 sha: 3f8881f2f9f6ee27b59515ff9fef0afee33b87e0
 description: Connect Replaid with OAuth to read, triage, and draft replies in your social inbox.
 maintainer: replaid-pro

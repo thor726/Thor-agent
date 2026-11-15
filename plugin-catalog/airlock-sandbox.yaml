@@ -1,6 +1,6 @@
 name: airlock-sandbox
 title: Airlock Sandbox
-repo: https://github.com/justrunme/thor-airlock-plugin
+repo: https://github.com/justrunme/hermes-airlock-plugin
 sha: a35cf831045450e4f207a6843e2cbf912151236c
 subdir: ""
 description: >-

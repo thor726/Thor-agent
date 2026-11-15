@@ -1,5 +1,5 @@
 name: sidebar-manager
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: 6e65021e0fa4e5de678f2dba67dda6fe097703d9
 subdir: public/sidebar-manager
 description: "Hide and reorder core sidebar navigation rows from a statusbar dialog."

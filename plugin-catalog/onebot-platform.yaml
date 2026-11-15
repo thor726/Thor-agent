@@ -1,5 +1,5 @@
 name: onebot-platform
-repo: https://github.com/mario841859784/thor-plugin-onebot
+repo: https://github.com/mario841859784/hermes-plugin-onebot
 sha: cbdc8a6d27503c4859d6cf16cace0cb7fec920f8
 version: "1.10.0"
 title: QQ (OneBot)

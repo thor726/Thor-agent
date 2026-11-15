@@ -1,6 +1,6 @@
 name: multiverse
 title: Multiverse
-repo: https://github.com/vdimarco/thor-plugin-hackathon
+repo: https://github.com/vdimarco/hermes-plugin-hackathon
 subdir: plugins/multiverse
 sha: a3e6c9aa8d2033382400fb94db26892c45fdc643
 version: "1.1.0"

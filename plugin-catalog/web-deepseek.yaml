@@ -1,5 +1,5 @@
 name: web-deepseek
-repo: https://github.com/Leegenux/thor-web-deepseek
+repo: https://github.com/Leegenux/hermes-web-deepseek
 sha: 49151d34b7030a08de1c3f16033a62a951b9c1d7
 description: "DeepSeek Search + Fetch — routes web_search and web_extract through
   DeepSeek's in-house AI search engine and server-side fetcher on api.deepseek.com

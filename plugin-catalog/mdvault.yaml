@@ -1,6 +1,6 @@
 name: mdvault
 title: Markdown Vault
-repo: https://github.com/kailashrajh/thor-mdvault
+repo: https://github.com/kailashrajh/hermes-mdvault
 sha: 46de6b47ab0772a7a6566f362304c41e1768fa6b
 subdir: plugins/mdvault
 version: "1.0.0"

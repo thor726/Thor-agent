@@ -1,6 +1,6 @@
 name: mapdesk
 title: MapDesk
-repo: https://github.com/mackydubzz/thor-mapdesk
+repo: https://github.com/mackydubzz/hermes-mapdesk
 sha: eaaea7102e5d6396840850ee968fe46aea025f41
 description: >-
   A GIS workspace inside Thor Desktop. Import GeoJSON, CSV, KML/KMZ, GPX,

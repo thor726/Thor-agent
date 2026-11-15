@@ -1,6 +1,6 @@
 name: accessible-session-list
 title: Accessible Session List
-repo: https://github.com/denis-skripnik/thor-accessible-session-list
+repo: https://github.com/denis-skripnik/hermes-accessible-session-list
 sha: 7f2c7a17e377348a6a6a72785a9d3a4c0631e8e0
 description: >-
   Keyboard-first, screen-reader-friendly native session picker for Thor Desktop.

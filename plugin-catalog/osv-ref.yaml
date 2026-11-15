@@ -1,5 +1,5 @@
 name: osv-ref
-repo: https://github.com/EloquentBrush0x/thor-context-refs
+repo: https://github.com/EloquentBrush0x/hermes-context-refs
 sha: 43ab2b75e660db5edcfe2f215776294c45408b40
 subdir: osv-ref
 description: >-

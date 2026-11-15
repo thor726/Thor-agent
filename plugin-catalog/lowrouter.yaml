@@ -1,5 +1,5 @@
 name: lowrouter
-repo: https://github.com/carboniferio/thor-lowrouter-provider
+repo: https://github.com/carboniferio/hermes-lowrouter-provider
 sha: 93a8353d495443d8157c423979ac9df2a8589db6
 subdir: lowrouter
 description: >-

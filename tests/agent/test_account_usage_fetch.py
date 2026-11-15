@@ -9,10 +9,10 @@ import pytest
 from agent.account_usage import (
     AccountUsageSnapshot,
     AccountUsageWindow,
-    _fetch_portal_account,
     fetch_account_usage,
     render_account_usage_lines,
 )
+from agent.account_usage_thor import _fetch_portal_account
 from agent.billing_usage import fetch_thor_account as _billing_fetch_thor_account
 from providers.base import ProviderProfile
 

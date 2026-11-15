@@ -1,5 +1,5 @@
 name: openrouter-balance
-repo: https://github.com/maeinomatic/thor-plugin-openrouter-balance
+repo: https://github.com/maeinomatic/hermes-plugin-openrouter-balance
 sha: ba9f24929ef80f19487a50dcc05bcd61201fc8ce
 description: >-
   Live OpenRouter credit balance in the Thor desktop status bar — "OR $12.34 left", with

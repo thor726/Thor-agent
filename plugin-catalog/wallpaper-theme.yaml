@@ -1,5 +1,5 @@
 name: wallpaper-theme
-repo: https://github.com/strnadchristopher/thor-wallpaper-theme
+repo: https://github.com/strnadchristopher/hermes-wallpaper-theme
 sha: 40ebeaac235be5751f44491540b7b41d35d41da1
 description: >-
   A Thor Desktop theme that follows your wallpaper. Reads Pywal's ~/.cache/wal/colors.json by

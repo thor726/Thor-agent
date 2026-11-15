@@ -1,5 +1,5 @@
 name: xray
-repo: https://github.com/cipoklean/thor-xray
+repo: https://github.com/cipoklean/hermes-xray
 sha: 21ca5f6fb5e46fb6d1a0ec2e179d055b96c69f52
 subdir: xray
 title: "Plugin X-Ray"

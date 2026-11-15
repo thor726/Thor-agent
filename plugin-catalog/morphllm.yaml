@@ -1,5 +1,5 @@
 name: morphllm
-repo: https://github.com/morphllm/morph-thor
+repo: https://github.com/morphllm/morph-hermes
 sha: a5ca3475a09a31f7334bdd3722725aa8cda8716f
 title: "Morph"
 description: Morph's OpenAI-compatible API for open models (Kimi, GLM, DeepSeek)

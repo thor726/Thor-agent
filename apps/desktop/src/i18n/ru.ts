@@ -1212,7 +1212,7 @@ export const ruOverrides = {
       sshErrHostKey:
         'Ключ хоста ИЗМЕНИЛСЯ с последнего подключения. Убедитесь, что это ожидаемо, затем выполните ssh-keygen -R <host> и переподключитесь.',
       sshErrNotInstalled:
-        'Thor не установлен на удалённой машине. Установите его там (curl -fsSL https://thor-agent.thor-agent.local/install.sh | sh) или задайте путь к Thor.',
+        'Thor не установлен на удалённой машине. Установите его там (curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | sh) или задайте путь к Thor.',
       sshErrPlatform:
         'Неподдерживаемая удалённая платформа. SSH-режим Thor Desktop поддерживает удалённые хосты Linux, macOS и Windows.',
       sshErrTimeout: 'SSH-соединение истекло. Хост может быть недоступен или «спит».',

@@ -1,5 +1,5 @@
 name: orcaslicer
-repo: https://github.com/mazzanfar/thor-orcaslicer
+repo: https://github.com/mazzanfar/hermes-orcaslicer
 sha: 8fc3a5a40ef4e0c639b76cefd90ad9a48a1a51ec
 version: "0.5.1"
 title: OrcaSlicer for Thor

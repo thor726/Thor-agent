@@ -3,7 +3,7 @@
 # Validated with `thor plugins validate` + `thor plugins doctor --ci`
 # at this exact commit against a fresh clone.
 name: privacy-shield
-repo: https://github.com/MOTHR/thor-security-suite
+repo: https://github.com/MOTHR/hermes-security-suite
 sha: ec34c448db2ca22551c36f3e0092dbf25cf0c0d5
 subdir: "privacy-shield"
 description: "Privacy-Shield — tokenizes personal data (PII) in LLM output before sending it to cloud providers, with encrypted AES-256-GCM mapping and whitelisted restore. Modes: off / audit / restore. Configurable via Desktop-Controls or YAML."

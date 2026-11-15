@@ -347,6 +347,8 @@ export interface SessionUsageResponse {
   credits_usage_window?: boolean
   input?: number
   model?: string
+  // The route is Thor inference: the /topup CTA applies (the balance shows whenever Thor is signed in).
+  thor_route?: boolean
   output?: number
   total?: number
   // Shared dollar usage model (two-bar view) so /usage renders the same bars

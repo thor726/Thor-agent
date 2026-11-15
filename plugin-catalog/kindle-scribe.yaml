@@ -1,6 +1,6 @@
 name: kindle-scribe
 title: Kindle Scribe
-repo: https://github.com/lEWFkRAD/thor-agents-guide-to-the-galaxy
+repo: https://github.com/lEWFkRAD/hermes-agents-guide-to-the-galaxy
 subdir: kindle-plugin
 sha: dfe76f39b6c2094d6b42d3b952c39bea55368498
 version: "0.2.0"

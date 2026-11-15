@@ -1,5 +1,5 @@
 name: tam
-repo: https://github.com/vbcherepanov/thor-tam-memory
+repo: https://github.com/vbcherepanov/hermes-tam-memory
 sha: 9a6e51839fb0619c6e41804ac201272e857ea825
 subdir: thor_tam_memory
 version: "0.1.1"

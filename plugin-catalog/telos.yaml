@@ -1,7 +1,7 @@
 # Submit as plugin-catalog/telos.yaml. Keep sha, version and requires_thor in step with the published release.
 name: telos
 title: Telos
-repo: https://github.com/TelosPlatforms/thor-telos-provider
+repo: https://github.com/TelosPlatforms/hermes-telos-provider
 sha: 799052a87f84bf7d99cdcc3da783b3f0f991543e
 version: "0.4.0"
 description: Telos — workspace routers and canonical models through one OpenAI-compatible endpoint; browser sign-in (PKCE) or an existing Telos API key. Disclosure — sends your prompts, model discovery and your Telos key to app.telosplatforms.com (or TELOS_BASE_URL), which routes inference to the upstream providers your workspace policy allows; requests carry the Thor conversation ID as metadata.conversation_id.

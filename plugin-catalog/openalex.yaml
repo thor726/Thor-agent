@@ -1,5 +1,5 @@
 name: openalex
-repo: https://github.com/Adolanium/thor-plugin-openalex
+repo: https://github.com/Adolanium/hermes-plugin-openalex
 sha: d38a1ee2fb04df0f7ad136bd30bff5f2136fe0cd
 description: Scholarly search, citation traversal, grouped counts, and fulltext access through OpenAlex with session spending limits.
 maintainer: Adolanium

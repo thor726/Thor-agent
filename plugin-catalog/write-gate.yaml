@@ -1,6 +1,6 @@
 name: write-gate
 title: Write Gate
-repo: https://github.com/2vic1/thor-write-gate
+repo: https://github.com/2vic1/hermes-write-gate
 sha: dedc9220d9bce5fb395fe61a8ab0c0cdcf85f6b6
 description: >-
   Deterministic pre-write content gate for Thor Agent. A pre_tool_call hook

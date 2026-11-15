@@ -1,6 +1,6 @@
 name: otari
 title: Otari
-repo: https://github.com/mozilla-ai/thor-provider-otari
+repo: https://github.com/mozilla-ai/hermes-provider-otari
 sha: 9d9ba9a55ddb713195d77d1931a4970769de7ae1
 subdir: otari
 description: Use Otari, the open-source LLM gateway by Mozilla.ai, as a model provider, with one key for every model your gateway serves.

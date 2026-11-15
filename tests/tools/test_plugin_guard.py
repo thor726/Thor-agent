@@ -919,7 +919,7 @@ class TestCatalogSweepFalsePositives:
         ("README.md", "When done, `rm -rf ~/.thor/profiles/lancedb-demo` removes all trace.\n"),
         ("server.js", "env = env || new SchemaEnv({ schema });\n"),
         ("build.py", "build_env = env | {'X': '1'}\n"),
-        ("README.md", "```\ncurl -fsSL https://thor-agent.thor-agent.local/install.sh | bash\n```\n"),
+        ("README.md", "```\ncurl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash\n```\n"),
         ("locales/it.desktop.yaml", 'k: "Install (curl -fsSL https://ollama.com/install.sh | sh)"\n'),
         ("__init__.py", 'def h():\n    return "sudo apt install pass"\n'),
         ("skills/x/SKILL.md", "Never ask the user for a sudo password in chat.\n"),
@@ -962,7 +962,7 @@ class TestCatalogSweepFalsePositives:
 
     def test_scanner_version_contract(self):
         # A bump un-blocks previously-quarantined packages; assert the contract (changed), not a literal.
-        assert PLUGIN_SCANNER_VERSION != "plugin-guard-v11"
+        assert PLUGIN_SCANNER_VERSION not in ("plugin-guard-v11", "plugin-guard-v13")
         assert PLUGIN_SCANNER_VERSION.startswith("plugin-guard-v")
 
 

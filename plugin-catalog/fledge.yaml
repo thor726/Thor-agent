@@ -1,6 +1,6 @@
 name: fledge
 title: Fledge
-repo: https://github.com/12burb/thor-fledge
+repo: https://github.com/12burb/hermes-fledge
 sha: 4fa935b5bd3dce420c8266c4b2ebce3c13414fec
 version: "0.1.0"
 description: >-

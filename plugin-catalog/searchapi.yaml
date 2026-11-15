@@ -1,5 +1,5 @@
 name: searchapi
-repo: https://github.com/christofilojohn/thor-searchapi
+repo: https://github.com/christofilojohn/hermes-searchapi
 sha: c82b6f7e9967fab049b13f16c176b6f4f0d64ff7
 subdir: thor_searchapi
 title: "SearchApi"

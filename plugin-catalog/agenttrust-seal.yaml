@@ -1,6 +1,6 @@
 name: agenttrust-seal
 title: "AgentTrust Seal"
-repo: https://github.com/Syrup-Labs-AI/thor-agenttrust-seal
+repo: https://github.com/Syrup-Labs-AI/hermes-agenttrust-seal
 sha: 66003a3e0216d000502b18fa7cf3748c837d01cb
 description: >-
   Seal a file and verify the seal later, so one Thor agent can prove to the next that a

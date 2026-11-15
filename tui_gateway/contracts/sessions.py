@@ -509,6 +509,8 @@ class SessionUsageParams(SessionParams):
 class SessionUsageResult(Usage):
     credits_lines: list[str] | None = None
     credits_usage_window: bool | None = None
+    # The route is Thor inference: the /topup CTA applies (the balance shows whenever Thor is signed in).
+    thor_route: bool | None = None
 
 
 method("session.usage", params=SessionUsageParams, result=SessionUsageResult,

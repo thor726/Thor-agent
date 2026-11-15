@@ -1,5 +1,5 @@
 name: web-octen
-repo: https://github.com/Octen-Team/thor-octen-plugin
+repo: https://github.com/Octen-Team/hermes-octen-plugin
 sha: 3af8a3fe200d93934c823485f66c3375a4508474
 description: Octen web search with query-focused highlights and page extraction.
 maintainer: Octen-Team

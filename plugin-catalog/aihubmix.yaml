@@ -1,5 +1,5 @@
 name: aihubmix
-repo: https://github.com/AIhubmix/thor-provider-aihubmix
+repo: https://github.com/AIhubmix/hermes-provider-aihubmix
 sha: b55e916362ebd0528c5d8981d12f3b8f7268b847
 subdir: aihubmix
 description: AIHubMix — unified OpenAI-compatible access to 400+ models; /model picker filtered to tool-capable routes.

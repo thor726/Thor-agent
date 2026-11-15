@@ -1,5 +1,5 @@
 name: zaprite
-repo: https://github.com/welliv/thor-zaprite
+repo: https://github.com/welliv/hermes-zaprite
 # Full SHA of the commit that landed this plugin tree on main.
 # Not the commit that writes this pin. Branches, tags, and short SHAs are rejected.
 sha: "2422546b20ed0d4b59e931061d0017e8f9004583"

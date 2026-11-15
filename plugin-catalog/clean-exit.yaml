@@ -1,6 +1,6 @@
 name: clean-exit
 title: Clean Exit
-repo: https://github.com/ladyFaye1998/thor-clean-exit
+repo: https://github.com/ladyFaye1998/hermes-clean-exit
 sha: 1df8501113e5a195fef3794e660ac3839900987f
 description: >-
   Review the new files one Thor run wrote to a local project folder. Keep the

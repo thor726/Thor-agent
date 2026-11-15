@@ -1,6 +1,6 @@
 name: helper
 title: Helper
-repo: https://github.com/benhens/thor-helper
+repo: https://github.com/benhens/hermes-helper
 sha: 7629e8d23ef96eb789304b9192b977c857f6ea75
 version: "0.1.0"
 requires_thor: ">=0.23.0"

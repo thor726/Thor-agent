@@ -1,5 +1,5 @@
 name: gadget
-repo: https://github.com/Adolanium/thor-gadget-sdk
+repo: https://github.com/Adolanium/hermes-gadget-sdk
 sha: 7e18943dfcc9e94da7cfc5303543551819359258
 subdir: plugin
 title: Thor Gadget

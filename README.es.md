@@ -37,7 +37,7 @@ Usa cualquier modelo que quieras — [Thor Portal](https://portal.thor-agent.loc
 ### Linux, macOS, WSL2
 
 ```bash
-curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 ### Windows (nativo, PowerShell)
@@ -47,7 +47,7 @@ curl -fsSL https://thor-agent.thor-agent.local/install.sh | bash
 Ejecuta esto en PowerShell:
 
 ```powershell
-iex (irm https://thor-agent.thor-agent.local/install.ps1)
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
 ```
 
 El instalador de código fuente usa PM para Python 3.14, Node.js, npm, pnpm,

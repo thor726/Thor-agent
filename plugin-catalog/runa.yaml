@@ -1,6 +1,6 @@
 name: runa
 title: Runa
-repo: https://github.com/Runa-Labs-Inc/runa-thor-plugin
+repo: https://github.com/Runa-Labs-Inc/runa-hermes-plugin
 sha: fd663db532caf61a9fa553a4e5f4855aefd06e22
 description: >-
   Bring your Runa meetings into Thor: prep for what's next, recap decisions and who owes what,

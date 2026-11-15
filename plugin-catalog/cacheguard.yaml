@@ -1,6 +1,6 @@
 name: cacheguard
 title: Cacheguard
-repo: https://github.com/AIverflow/thor-cacheguard
+repo: https://github.com/AIverflow/hermes-cacheguard
 sha: 4648bc056c28b9453d92089ffd9db09f11dc3392
 version: "0.6.0"
 description: >-

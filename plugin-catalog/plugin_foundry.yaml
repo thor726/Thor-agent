@@ -1,6 +1,6 @@
 name: plugin_foundry
 title: Plugin Foundry
-repo: https://github.com/dolepee/thor-plugin-foundry
+repo: https://github.com/dolepee/hermes-plugin-foundry
 sha: 9345a56954d219f923a05712a7a68e44df5099a2
 description: >-
   Turn a narrow plugin request into a native Thor plugin: manifest, entry

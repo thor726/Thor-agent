@@ -1,5 +1,5 @@
 name: underwriting
-repo: https://github.com/johnnyminer/thor-underwriting
+repo: https://github.com/johnnyminer/hermes-underwriting
 sha: a98c126953989cbcedd00bd3572760b2bcea890a
 description: >-
   Commercial real estate underwriting that shows its work: rebuilds net operating income from the

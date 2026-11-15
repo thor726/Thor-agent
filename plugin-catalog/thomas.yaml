@@ -1,5 +1,5 @@
 name: thomas
-repo: https://github.com/keppy/thor-plugin-thomas
+repo: https://github.com/keppy/hermes-plugin-thomas
 sha: 7302ab947f99e3adb16e78e139794fe1696134f8
 description: >-
   Fine-tune a small calibrated encoder classifier on Modal and rate it with gonogo. Every GPU launch

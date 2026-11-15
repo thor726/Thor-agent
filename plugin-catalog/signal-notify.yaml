@@ -1,5 +1,5 @@
 name: signal-notify
-repo: https://github.com/dbrosnan/thor-signal-notify
+repo: https://github.com/dbrosnan/hermes-signal-notify
 sha: 78151657d0c96c308c465d472a73d47ac209f629
 description: >-
   Signal texts when a Thor turn pauses, fails or is interrupted, and when Thor

@@ -1,6 +1,6 @@
 name: sourcebind
 title: SourceBind
-repo: https://github.com/blucca/thor-sourcebind
+repo: https://github.com/blucca/hermes-sourcebind
 sha: "66d22478ae1526b269f968872b865e2a43843ec1"
 version: "0.1.2"
 description: >-

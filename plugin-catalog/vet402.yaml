@@ -1,5 +1,5 @@
 name: vet402
-repo: https://github.com/kzmttkc/vet402-thor
+repo: https://github.com/kzmttkc/vet402-hermes
 sha: 04c7fdd1ac9d6ddabdb0fabd23a1a0557474b51e
 version: "0.2.0"
 subdir: vet402

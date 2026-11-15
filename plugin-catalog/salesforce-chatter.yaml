@@ -1,5 +1,5 @@
 name: salesforce-chatter
-repo: https://github.com/zenplace-system/thor-plugin-salesforce-chatter
+repo: https://github.com/zenplace-system/hermes-plugin-salesforce-chatter
 sha: 16ff469ffb1484e37053315e799846d3c4d7c9d8
 subdir: salesforce_chatter
 title: Salesforce Chatter

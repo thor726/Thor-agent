@@ -1,5 +1,5 @@
 name: reasoning-switch
-repo: https://github.com/apoapostolov/thor-agent-awesome-plugins
+repo: https://github.com/apoapostolov/hermes-agent-awesome-plugins
 sha: 953732a9fb52b6fd89e73fc96d910aab63163e07
 subdir: public/reasoning-switch
 description: Rotate the focused session reasoning effort from the status bar. A dialog sets the levels,

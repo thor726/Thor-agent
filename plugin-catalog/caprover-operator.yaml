@@ -1,6 +1,6 @@
 name: caprover-operator
 title: CapRover Operator
-repo: https://github.com/fmercurio/thor-caprover-operator
+repo: https://github.com/fmercurio/hermes-caprover-operator
 sha: 1d813b6e23c88c8641f8c891b46c2ae3f065e890
 description: >-
   Read-only setup diagnostics and human-approved, state-bound immutable-image

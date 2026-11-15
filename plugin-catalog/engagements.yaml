@@ -1,6 +1,6 @@
 name: engagements
 title: Thor Engagements
-repo: https://github.com/latentoperator/thor-engagements-plugin
+repo: https://github.com/latentoperator/hermes-engagements-plugin
 sha: a74ae82b6e4a5b416ef93705dbd696e4bc138a62
 version: "1.0.0-rc1"
 description: >-
