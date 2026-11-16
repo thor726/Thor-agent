@@ -165,8 +165,8 @@ const config: Config = {
     // Local search (@easyops-cn/docusaurus-search-local): the index is built
     // at build time and search runs entirely in the visitor's browser — no
     // Algolia account, no crawler, no domain verification. Reverted from
-    // DocSearch because the Algolia credentials/index belong to the upstream
-    // hermes project and were dead weight here. language uses 'zh' (not
+    // DocSearch because the Algolia credentials/index belong to the previous
+    // upstream project and were dead weight here. language uses 'zh' (not
     // 'zh-Hans'): the plugin maps its own locale codes. docsRouteBasePath '/'
     // matches docs served at the root of /docs/.
     colorMode: {
