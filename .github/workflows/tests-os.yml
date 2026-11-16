@@ -95,16 +95,14 @@ jobs:
           - name: Windows-only tests
             runner: windows-latest
             marker: windows
-          - name: Windows-only tests (arm64, 1/2)
-            runner: windows-latest-32-arm-core
-            marker: windows
-            timeout: 60
-            slice: 1/2
-          - name: Windows-only tests (arm64, 2/2)
-            runner: windows-latest-32-arm-core
-            marker: windows
-            timeout: 60
-            slice: 2/2
+          # The two windows-latest-32-arm-core slices were removed: that
+          # runner label never provisioned in this environment, so both
+          # shards sat `queued` for hours at the tail of every push-to-main
+          # CI run — wedging the run (and with it the ci-refs/heads/main
+          # concurrency group; see the 2026-11-15 08:13 run). The x64
+          # Windows-only job above runs the SAME `windows` marker test set
+          # un-sliced, so no coverage is lost — only the ARM parallelism.
+          # Restore both slices when ARM runners are actually available.
     steps:
       - name: Checkout code
         uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
