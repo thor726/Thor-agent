@@ -95,6 +95,18 @@ jobs:
           - name: Windows-only tests
             runner: windows-latest
             marker: windows
+            # The windows-2025 CI image runs the whole PowerShell-heavy suite
+            # several times slower than the image the runner's flat 300s
+            # per-file cap was sized for (cold PS 5.1 children under
+            # Defender scanning). Four heavy files -- the update-CI routing
+            # suite, the desktop-update marker suite, the install.ps1 suites
+            # and the pinned-git extract -- were SIGKILL'd mid-run at 300s
+            # with every visible test PASSING, and a timeout (rc 124) is
+            # deliberately not retried, so they can never bootstrap the
+            # runner's duration-scaler cache either. Raise the flat cap for
+            # this lane and give the job wall-clock headroom for it.
+            file_timeout: 1200
+            timeout: 45
           # The two windows-latest-32-arm-core slices were removed: that
           # runner label never provisioned in this environment, so both
           # shards sat `queued` for hours at the tail of every push-to-main
@@ -211,6 +223,10 @@ jobs:
           # starves cold child startup before the fixture's idle deadline.
           THOR_TEST_WORKERS: ${{ matrix.marker == 'windows' && (runner.arch == 'ARM64' && '16' || '16') || '' }}
           THOR_TEST_SLICE: ${{ matrix.slice || '' }}
+          # Per-file pytest cap; the windows row raises it (see the matrix
+          # comment there) because that image runs far slower than the cap's
+          # calibration host.
+          THOR_TEST_FILE_TIMEOUT: ${{ matrix.file_timeout || '300' }}
           # Belt-and-suspenders with tests/conftest.py's env blanking: no
           # test may reach a real provider API.
           OPENROUTER_API_KEY: ''
