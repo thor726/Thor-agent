@@ -80,6 +80,64 @@ def _kill(identity):
         proc.wait(timeout=10)
 
 
+def _thread_states(pid: int) -> list[tuple[int, int]]:
+    """``[(ThreadState, WaitReason), ...]`` for every thread of *pid*, from the same
+    ``NtQuerySystemInformation(SystemProcessInformation)`` snapshot psutil reads.
+
+    Raises on any snapshot or walk failure: a struct drift on a new Windows build must
+    fail loudly here, never silently pass the suspension assertion that uses it.
+    """
+    import ctypes
+
+    ntdll = ctypes.WinDLL('ntdll')
+    size = 1 << 20
+    while True:
+        buf = ctypes.create_string_buffer(size)
+        status = ntdll.NtQuerySystemInformation(5, buf, size, None) & 0xFFFFFFFF
+        if status == 0:
+            break
+        if status != 0xC0000004:  # STATUS_INFO_LENGTH_MISMATCH
+            raise OSError(f'NtQuerySystemInformation failed: {status:#x}')
+        size *= 2
+    # x64 layout: each SYSTEM_PROCESS_INFORMATION entry is followed by its
+    # NumberOfThreads SYSTEM_THREAD_INFORMATION records (80 bytes each on x64:
+    # ..., ContextSwitches +64, ThreadState +68, WaitReason +72, Reserved +76).
+    # The record array starts at entry+256, and UniqueProcessId sits at entry+80.
+    entry, found, states = 0, False, []
+    while True:
+        raw = buf.raw
+        next_offset = int.from_bytes(raw[entry:entry + 4], 'little')
+        count = int.from_bytes(raw[entry + 4:entry + 8], 'little')
+        if int.from_bytes(raw[entry + 80:entry + 88], 'little') == pid:
+            found = True
+            for index in range(count):
+                base = entry + 256 + index * 80
+                state = int.from_bytes(raw[base + 68:base + 72], 'little')
+                reason = int.from_bytes(raw[base + 72:base + 76], 'little')
+                states.append((state, reason))
+            break
+        if not next_offset:
+            break
+        entry += next_offset
+    if not found:
+        raise OSError(f'pid {pid} missing from the system snapshot')
+    return states
+
+
+def _not_started_or_suspended(pid: int) -> bool:
+    """True when every thread of *pid* is unstarted or suspended.
+
+    psutil's Windows ``status()`` answers ``stopped`` only when every thread is Waiting
+    with WaitReason Suspended. A thread that has never run — the single thread of a
+    ``CREATE_SUSPENDED`` child before its first instruction — can be reported by the
+    kernel as Initialized instead, and psutil then answers ``running`` (seen on the
+    CI windows-2025 image). This probe accepts the true not-running states:
+    ThreadState Initialized (0), or Waiting (5) with WaitReason Suspended (5).
+    Any Ready/Running/Standby/Transition thread answers False.
+    """
+    return all(state == 0 or (state == 5 and reason == 5) for state, reason in _thread_states(pid))
+
+
 @pytest.mark.platforms("windows")
 @pytest.mark.parametrize('stop_mode', ['graceful', 'abrupt'])
 @pytest.mark.parametrize('nested', [False, True])
@@ -174,7 +232,9 @@ def test_failed_setup_never_runs_child_and_releases_handles(tmp_path, monkeypatc
 
     def assign(job, proc):
         children.append(proc)
-        assert psutil.Process(proc.pid).status() == psutil.STATUS_STOPPED
+        status = psutil.Process(proc.pid).status()
+        assert status == psutil.STATUS_STOPPED or _not_started_or_suspended(proc.pid), (
+            'child not suspended at assignment', status, _thread_states(proc.pid))
         assert not marker.exists()
         # Query the actual kernel object, not implementation source/constants.
         limits = processes._ExtendedLimits()
