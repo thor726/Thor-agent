@@ -438,7 +438,26 @@ def terminate_pid(
         return
     if result.returncode != 0:
         details = (result.stderr or result.stdout or "").strip()
+        # ``/T`` enumerates the tree at call time: a member that exits on its own between
+        # the enumeration and the kill is reported as a failure ("There is no running
+        # instance of the task") with a non-zero exit, even though the goal — nothing
+        # left running — is achieved (live-lane flake: a short-lived venv launcher child).
+        # Verify the target instead of trusting the batch report; a live (or reused) PID
+        # still raises, so this only widens the already-dead case.
+        if "no running instance" in details.lower() and not _pid_is_live(pid):
+            return
         raise OSError(details or f"taskkill failed for PID {pid}")
+
+
+def _pid_is_live(pid: int) -> bool:
+    """Whether *pid* names a running process right now (PID reuse counts as live)."""
+    import psutil
+
+    try:
+        psutil.Process(pid)
+    except psutil.NoSuchProcess:
+        return False
+    return True
 
 
 def _start_times_agree(current: Any, *recorded: Any) -> bool:
