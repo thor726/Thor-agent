@@ -362,7 +362,7 @@ describe('BootFailureOverlay', () => {
       expect(screen.getByRole('button', { name: /use local gateway/i })).toBeTruthy()
       // The electron-built error message (portal / local mode / Discord) is
       // still surfaced in the error box.
-      expect(screen.getByText(/ares-3009\.agents\.thorlabs\.com/i)).toBeTruthy()
+      expect(screen.getByText(/ares-3009\.agents\.thor-agent\.local/i)).toBeTruthy()
     } finally {
       restore()
     }

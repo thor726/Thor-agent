@@ -6,6 +6,7 @@ import { defineLocale, type TranslationOverrides } from './define-locale'
 import { idAppTour } from './id_app_tour'
 import { idBoot } from './id_boot'
 import { idClarify } from './id_clarify'
+import { idComposer } from './id_composer'
 import { idConnectorAccounts } from './id_connector_accounts'
 import { idConnectorCard } from './id_connector_card'
 import { idCronControl } from './id_cron_control'
@@ -28,6 +29,7 @@ export const idOverrides = {
   connectorsPage: {
     accounts: idConnectorAccounts
   },
+  composer: idComposer,
   boot: idBoot.boot,
   ...idNotices,
   settings: {

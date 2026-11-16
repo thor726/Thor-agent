@@ -27,7 +27,7 @@ PLANE_CREDENTIAL_ENV_NAMES = frozenset({
     # on-prem workload identity
     *(IDP_ENV_PREFIX + k.upper() for k in _IDP_KEYS),
     # Cloud: where auth.json lives and where its refresh token is sent
-    "THOR_SHARED_AUTH_DIR", "THOR_PORTAL_BASE_URL", "THOR_PORTAL_BASE_URL",
+    "THOR_SHARED_AUTH_DIR", "THOR_PORTAL_BASE_URL",
 })
 
 _HTTP_TIMEOUT_S = 15.0
