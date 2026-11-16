@@ -1936,5 +1936,205 @@ export const CANONICAL_GROUP_LOCALES = {
     peerStartWithout: 'Iniciar nuevo chat de grupo sin {name}',
     peerStartWithoutConfirm:
       'Se crea un nuevo chat de grupo con los demás bots. El original solo termina cuando todos se unen y cada miembro original confirma la detención y la revocación de acceso. Si falla algún paso, se conservan ambos chats. Los mensajes anteriores no se copian. Usar esta acción de nuevo tras la creación genera otro chat de grupo.'
+  },
+  id: {
+    ...GROUP_REASON_LOCALES['id'],
+    roomStopped: 'Penghentian diminta',
+    roomDisbanded: 'Grup dibubarkan',
+    authorityLost: 'Kepemilikan grup berubah',
+    workLimitReached: 'Batas kerja grup tercapai',
+    turnFailed: 'Giliran gagal',
+    turnCancelled: 'Giliran dibatalkan',
+    turnDeferred: 'Giliran ditunda',
+    turnNoAnswer: 'bot tidak menjawab tepat waktu',
+    memberUnavailable: 'Anggota tidak tersedia',
+    members: 'Anggota',
+    openGroup: 'Buka obrolan grup',
+    loadingGroup: 'Memuat grup…',
+    loadingGroups: 'Memuat obrolan grup…',
+    emptyGroups: 'Tidak ada obrolan grup.',
+    driverUnavailable: 'Obrolan grup ini tidak tersedia. Perbarui atau sambungkan ulang gateway yang mengelolanya.',
+    invalidLogCursor: 'Tidak bisa memuat lebih banyak riwayat obrolan grup ini.',
+    allowOnce: 'Izinkan sekali',
+    deny: 'Tolak',
+    discardUnknown: 'Buang giliran',
+    discardWarning:
+      'Efek samping mungkin sudah terjadi. Membuang tidak membatalkannya. Untuk bot di komputer lain, Buang menunggu komputer tersebut mengonfirmasi gilirannya telah berhenti atau tidak pernah dimulai.',
+    discardStopPending:
+      '{name} belum mengonfirmasi bahwa gilirannya telah berhenti. Giliran tetap disimpan. Coba Buang lagi saat komputernya merespons.',
+    retryBusy: '{name} mungkin masih mengerjakan giliran ini. Coba lagi setelah selesai.',
+    discardPeerUnreachable:
+      'Komputer {name} tidak merespons. Giliran tetap disimpan. Sambungkan ulang komputer itu, lalu coba Buang lagi.',
+    discardPeerUpdateRequired:
+      'Thor di komputer {name} terlalu tua untuk mengonfirmasi bahwa giliran ini tidak pernah dimulai. Giliran tetap disimpan. Perbarui Thor di komputer itu, lalu coba Buang lagi.',
+    confirmDiscard: 'Konfirmasi buang',
+    unconfirmedSend: 'Pengiriman sebelumnya belum terkonfirmasi. Kirim ulang teks aslinya sebelum mengirim pesan lain.',
+    restoredPendingSend: 'Pengiriman yang belum terkonfirmasi dipulihkan. Kirim ulang sebelum mengirim pesan lain.',
+    groupMessage: 'Pesan grup',
+    attachFiles: 'Lampirkan berkas',
+    removeAttachment: 'Hapus lampiran',
+    uploadFailed: 'Unggahan gagal',
+    memberWorking: 'Bekerja',
+    memberQueued: 'dalam antrean',
+    groupWorking: 'Grup sedang bekerja…',
+    statusWorking: 'bekerja',
+    statusStalled: 'tanpa kemajuan selama {time}',
+    statusReplied: 'sudah balas',
+    statusPassed: 'diteruskan',
+    statusFailed: 'gagal',
+    statusCancelled: 'dibatalkan',
+    statusUnavailable: 'tidak tersedia',
+    statusIdle: 'menganggur',
+    you: 'Anda',
+    roundOf: 'Putaran {n} dari {max}',
+    round: 'Putaran {n}',
+    cycleWorking: 'Bekerja: {names}',
+    cycleSettled: 'Selesai — tidak ada yang ingin menambah lagi',
+    cycleBounded: 'Batas putaran tercapai',
+    cycleMessageCap: 'Batas pesan tercapai',
+    cycleStopped: 'Berhenti',
+    typing: '{name} sedang bekerja…',
+    typingTool: '{name} menjalankan {tool}…',
+    handoff: '{from} menugaskan {to}',
+    replyTo: 'Balas ke {name}',
+    replyingTo: 'Membalas {name}',
+    cancelReply: 'Batalkan balasan',
+    composerPlaceholder: 'Kirim pesan ke grup — @sebut untuk menugaskan',
+    groupDetails: 'Detail grup',
+    stopGroup: 'Hentikan grup',
+    pendingApproval: '{name} meminta persetujuan. Anda yang memutuskan.',
+    pendingRetry: 'Giliran {name} belum selesai. Kirim ulang?',
+    pendingDiscard: 'Buang giliran {name}? Pekerjaan yang sudah selesai tidak akan dibatalkan.',
+    membersFixed: 'Anggota ditetapkan saat grup dibuat.',
+    rowWorking: 'Bekerja',
+    rowFailed: 'Ada anggota yang gagal',
+    rowNeedsYou: 'Butuh Anda',
+    lead: 'Pemimpin',
+    roomSettings: 'Pengaturan obrolan grup',
+    purposeLabel: 'Tujuan',
+    purposePlaceholder: 'Untuk apa obrolan grup ini, dalam satu baris',
+    notesLabel: 'Catatan bersama',
+    notesPlaceholder: 'Fakta yang perlu diingat setiap anggota',
+    deliveryTarget: 'Tugas terjadwal dapat mengirim ke sini dengan deliver:',
+    scheduledPost: 'Terjadwal',
+    routingLabel: 'Siapa menjawab pesan yang tidak menyebut siapa pun',
+    routingEveryone: 'Semua menjawab',
+    routingLead: 'Pemimpin: {name}',
+    routingEveryoneHint: 'Setiap anggota mendapat giliran, seperti sekarang.',
+    routingLeadHint:
+      'Pemimpin memilih yang mengerjakannya; @sebutan dan @everyone tetap langsung menuju anggota tersebut.',
+    leadBadge: 'Pemimpin',
+    assignment: '{lead} memberikan ini ke {names}',
+    assignmentFallback: '{lead} yang mengerjakan ini',
+    routedTo: 'Ditugaskan ke {names}',
+    routedEveryone: 'Ditugaskan ke semua',
+    routedFallback: 'Tidak bisa memilih siapa yang menjawab, jadi semuanya akan menjawab',
+    pausedAfter: 'Dijeda setelah {count} pesan',
+    continueDiscussion: 'Lanjutkan',
+    continued: 'Dilanjutkan',
+    routingAuto: 'Pilih siapa yang menjawab secara otomatis',
+    routingAutoHint:
+      'Panggilan model singkat memilih untuk siapa sebuah pesan. @sebutan tetap langsung menuju orang yang Anda sebut.',
+    statusBlocked: 'Diblokir',
+    statusApprovals: '{count} menunggu persetujuan',
+    statusAttention: 'Perlu perhatian: {count}',
+    stopped:
+      'Permintaan berhenti dikirim. Giliran yang menunggu konfirmasi tetap tampil; gunakan Kirim ulang atau Buang bila tersedia.',
+    pendingActionUnconfirmed:
+      'Kami tidak bisa mengonfirmasi tindakan ini. Segarkan obrolan grup untuk memeriksa statusnya.',
+    sendRefused: 'Gateway menolak pesan ini. Edit lalu kirim lagi.',
+    sendStopped: 'Dihentikan sebelum terkirim. Pesan Anda masih ada di sini.',
+    sendMaybe: 'Pesan ini mungkin sudah terkirim. Kirim ulang mengirim pesan yang sama; tidak akan dikirim dua kali.',
+    sendSettledElsewhere:
+      'Jendela Desktop lain sudah menyelesaikan pesan ini. Periksa percakapan sebelum mengirimnya lagi.',
+    journalLoadFailed:
+      'Pesan tersimpan tidak bisa dimuat. Pengiriman dijeda agar pesan tersimpan tidak pernah terkirim dua kali.',
+    journalReload: 'Coba muat lagi',
+    approvalAction: 'Tindakan',
+    approvalCommand: 'Perintah',
+    approvalDetailsMissing: 'Detail tindakan tidak tersedia. Periksa lagi sebelum mengizinkan ini.',
+    checkingDriver: 'Memeriksa obrolan grup di koneksi ini…',
+    legacyRoom:
+      'Desktop sendiri yang menjalankan obrolan grup ini, jadi tidak bisa dilanjutkan di gateway ini. Mulai grup baru dengan bot yang sama: grup itu tetap bekerja saat Desktop ditutup. Pesan lama tidak disalin ke sana.',
+    startGatewayGroup: 'Mulai grup baru',
+    createRefused: 'Gateway tidak bisa membuat obrolan grup ini.',
+    createGroupSize: 'Obrolan grup yang di-hosting di gateway ini membutuhkan dua sampai enam bot.',
+    createOtherConnection: 'Obrolan grup yang di-hosting di gateway ini hanya dapat memuat bot pada koneksi ini.',
+    createDuplicateMember:
+      'Obrolan grup yang di-hosting di gateway ini membutuhkan bot dengan profil dan handle yang berbeda; @all dan @everyone sudah dipakai.',
+    createUncertain:
+      'Gateway tidak menjawab, jadi obrolan grup ini mungkin sudah ada. Coba lagi untuk membukanya. Obrolan tidak akan dibuat dua kali.',
+    createEnded:
+      'Gateway menolak obrolan grup ini, jadi obrolan mungkin telah diubah atau dihapus di tempat lain. Coba lagi untuk memulai yang baru.',
+    legacyRoomElsewhere:
+      'Obrolan grup ini tidak bisa dilanjutkan di sini: ada bot di komputer lain, sedangkan obrolan grup yang di-hosting di gateway ini hanya memuat bot dari satu koneksi. Beralihlah ke koneksi tempat bot itu berjalan dan mulai grup di sana, atau mulai obrolan grup baru dengan bot dari koneksi ini. Pesan lama tidak disalin ke grup baru.',
+    otherConnections: 'Bot di koneksi lain: {connections}',
+    legacyRoomBlocked:
+      'Desktop sendiri yang menjalankan obrolan grup ini, jadi tidak bisa dilanjutkan di gateway ini, dan bot-bot ini tidak dapat membentuk obrolan grup yang di-hosting di gateway ini dalam kondisi sekarang (alasannya di bawah). Mulai obrolan grup baru dan pilih botnya. Pesan lama tidak disalin ke sana.',
+    groupsUnsupported:
+      'Obrolan grup tidak bisa dibuka di sini: Thor di komputer koneksi ini terlalu tua untuk obrolan grup. Perbarui Thor di komputer itu dan sambungkan ulang, lalu coba lagi. Tidak ada yang hilang: pesan lama tetap di tempatnya.',
+    groupDriverStopped:
+      'Obrolan grup tidak bisa dibuka di sini saat ini: obrolan grup tidak sedang berjalan di gateway koneksi ini. Mulai ulang atau perbarui Thor di komputer itu, lalu coba lagi. Tidak ada yang hilang: pesan lama tetap di tempatnya.',
+    groupsUnreachable:
+      'Gateway koneksi ini tidak dapat dijangkau untuk membuka obrolan grup ini. Pastikan Thor berjalan di sana dan Anda terhubung, lalu coba lagi. Tidak ada yang hilang: pesan lama tetap di tempatnya.',
+    earlierMessages: 'Pesan lama, hanya-baca. Pesan itu tetap di Desktop ini dan tidak disalin ke grup baru.',
+    peerTargetSetup: '{connection} belum bisa meng-hosting bot untuk obrolan grup di komputer lain. {reason}',
+    peerSetupUpdate: 'Thor di sana terlalu tua untuk ini. Perbarui Thor di komputer itu, lalu periksa lagi.',
+    peerSetupApiServer:
+      'Server API-nya mati. Nyalakan server API di sana (gateway.platforms.api_server), mulai ulang Thor di komputer itu, lalu periksa lagi.',
+    peerSetupRunStorage:
+      'Server API-nya tidak bisa menyimpan catatan jalannya, sehingga pesan bisa berjalan dua kali. Pastikan Thor dapat menulis ke folder datanya di komputer itu, mulai ulang Thor di sana, lalu periksa lagi.',
+    peerSetupRoomKey:
+      'Thor di sana tidak bisa membuat kunci yang melindungi akses ke obrolan grup. Pastikan Thor dapat menulis ke folder datanya di komputer itu, mulai ulang Thor di sana, lalu periksa lagi.',
+    peerSetupApprovals:
+      'Persetujuan perintah di sana mati, atau pengaturannya tidak terbaca. Atur persetujuan ke manual atau smart di komputer itu (approvals.mode), lalu periksa lagi.',
+    peerSetupAddress:
+      'Tidak ada alamat yang dapat dijangkau komputer yang menjalankan obrolan grup ini. Atur gateway.room_link_url di komputer itu, mulai ulang Thor di sana, lalu periksa lagi.',
+    peerSetupBackground:
+      'Thor di sana berhenti saat Desktop-nya ditutup. Jalankan gateway-nya secara terpisah di sana (thor gateway run, atau pasang sebagai layanan), lalu periksa lagi.',
+    peerSetupGeneric:
+      'Perbarui Thor di sana, nyalakan server API-nya dengan alamat yang dapat dijangkau komputer yang menjalankan obrolan grup ini (gateway.room_link_url), dan biarkan persetujuan menyala.',
+    peerJoinFailed: '{name} belum bergabung: {reason}',
+    peerJoinUnconfirmed:
+      'Tidak bisa mengonfirmasi apakah {name} sudah bergabung. Periksa obrolan grup saat komputernya dapat dijangkau.',
+    peerJoinUnreachable:
+      '{name} belum bergabung: komputer yang menjalankan obrolan grup ini tidak dapat menjangkau komputernya. Pastikan komputernya dapat dijangkau dari sana tanpa Desktop, lalu coba lagi.',
+    peerJoinChanged:
+      '{name} tidak bisa bergabung ke obrolan grup ini: pengaturan bot di komputernya berubah sejak obrolan grup ini dibuat. Mulai obrolan grup baru untuk memasukkannya.',
+    readTimedOut:
+      'Gateway tidak menjawab tepat waktu. Mungkin sedang menunggu komputer sebuah bot. Pilih Segarkan untuk mencoba lagi.',
+    disbandUnconfirmed:
+      'Kami tidak bisa mengonfirmasi bahwa obrolan grup telah berakhir. Komputer sebuah bot mungkin tidur atau luring. Coba lagi setelah kembali.',
+    disbandKept: 'Obrolan grup tetap dipertahankan. {reason}',
+    disbandPeerUnreachable:
+      'Pekerjaannya telah dihentikan. Komputer salah satu anggota tidak merespons. Sambungkan ulang komputer itu, lalu coba Bubarkan lagi.',
+    disbandStopPending:
+      'Belum semua bot di obrolan grup ini mengonfirmasi bahwa mereka telah berhenti. Coba Bubarkan lagi setelah semuanya berhenti. Untuk giliran yang menunggu, gunakan Kirim ulang atau Buang bila tersedia di obrolan grup.',
+    disbandMemberHomeUnknown:
+      'Obrolan grup mungkin masih bekerja, tetapi salah satu profil botnya tidak lagi terpasang di komputer yang menjalankan obrolan grup. Tambahkan profil itu kembali ke hosted_rooms.profiles agar penghentiannya bisa dikonfirmasi, lalu coba Bubarkan lagi.',
+    disbandInProgress:
+      'Pembubaran tidak selesai. Tunggu sebentar, periksa obrolan grup, lalu coba Bubarkan lagi bila perlu.',
+    disbandRevokeUnsupported:
+      'Pekerjaannya telah dihentikan. Salah satu anggota tidak dapat menghapus aksesnya ke obrolan grup ini. Perbarui Thor di komputer anggota itu, lalu coba Bubarkan lagi.',
+    disbandServiceRequired:
+      'Thor harus berjalan di komputer yang menjalankan obrolan grup ini untuk menghentikan bot-nya dan menghapus akses mereka. Jalankan atau sambungkan ulang Thor di sana, lalu coba Bubarkan lagi.',
+    peerStartWithoutRetry: 'Gunakan Kirim ulang untuk bot-bot ini di obrolan grup baru.',
+    peerStartWithoutKept:
+      'Obrolan grup baru telah dibuat dan obrolan grup asli tetap dipertahankan. {reason} Bubarkan yang asli saat Anda siap.',
+    createdNotJoined:
+      'Obrolan grup telah dibuat, tetapi {names} belum bergabung. Obrolan grup itu menjelaskan alasannya; gunakan Kirim ulang di sana.',
+    peerNotJoinedBadge: 'belum gabung',
+    peerOfflineBadge: 'luring',
+    peerRejoinBadge: 'akses kedaluwarsa',
+    peerNotJoined: '{name} belum bergabung ke obrolan grup ini.',
+    peerRejoin:
+      'Akses {name} ke obrolan grup ini telah berakhir. Untuk mengundangnya lagi, gunakan Kirim ulang dari Desktop yang tersambung ke komputernya.',
+    peerAway: 'Komputer {name} tidak dapat dijangkau. Pesan berikutnya untuknya akan mencoba lagi.',
+    peerRetryFailed:
+      'Kami tidak bisa menyambungkan ulang {name}. Pastikan Thor berjalan di komputernya, lalu coba lagi.',
+    peerJoinConnect: '{name} belum bergabung: sambungkan ke komputer tempatnya berjalan, lalu pilih Kirim ulang.',
+    peerStartWithout: 'Mulai obrolan grup baru tanpa {name}',
+    peerStartWithoutConfirm:
+      'Obrolan grup baru dimulai dengan bot lainnya. Obrolan asli hanya berakhir setelah semuanya bergabung dan setiap anggota asli mengonfirmasi Penghentian dan pencabutan akses. Jika salah satu langkah gagal, kedua obrolan grup tetap ada. Pesan lama tidak disalin. Memakai tindakan ini lagi setelah pembuatan akan membuat obrolan grup lain.'
   }
 } satisfies Record<string, CanonicalGroupMessages>

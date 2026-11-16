@@ -219,5 +219,27 @@ export const GROUP_REASON_LOCALES = {
     reasonSlotWait: 'Hay demasiados bots en ejecución',
     reasonTargetBusy: 'El bot está ocupado',
     reasonGatewayRestarted: 'La pasarela del bot se reinició'
+  },
+  id: {
+    reasonMemberUnavailable: 'Bot tidak tersedia',
+    reasonRuntimeOffline: 'Bot sedang luring',
+    reasonQueuedExpired: 'Giliran yang diantrekan telah kedaluwarsa',
+    reasonDeliveryTimeout: 'Balasan tidak datang tepat waktu',
+    reasonAgentBlocked: 'Bot sedang diblokir',
+    reasonCancelled: 'Giliran dibatalkan',
+    reasonProviderAuth: 'Provider menolak akses',
+    reasonProviderQuota: 'Kuota provider telah habis',
+    reasonProviderRate: 'Provider menerima terlalu banyak permintaan',
+    reasonProviderServer: 'Provider mengalami galat',
+    reasonContextOverflow: 'Percakapan terlalu panjang untuk model',
+    reasonMissingConfig: 'Pengaturan wajib belum ada',
+    reasonModelUnavailable: 'Model yang dipilih tidak tersedia',
+    reasonTargetScope: 'Bot tidak dapat mengakses kredensialnya',
+    reasonSuperseded: 'Pesan lebih baru menggantikan giliran ini',
+    reasonDeadline: 'Giliran melebihi batas waktunya',
+    reasonPrepareFailed: 'Bot-bot tidak dapat dijalankan',
+    reasonSlotWait: 'Terlalu banyak bot yang berjalan',
+    reasonTargetBusy: 'Bot sedang sibuk',
+    reasonGatewayRestarted: 'Gateway bot dimulai ulang'
   }
 } satisfies Record<string, GroupReasonMessages>

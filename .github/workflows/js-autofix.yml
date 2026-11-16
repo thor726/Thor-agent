@@ -139,7 +139,9 @@ jobs:
     # avoids a redundant checkout/download, and keeps the job graph honest.
     if: needs.generate-patch.outputs.has-fixes == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 15 min was too tight: generate (~5 min) + the wait loop below, whose
+    # window is ~35 min because the JS & TS checks job alone runs ~20 min.
+    timeout-minutes: 45
     environment: trusted-automation
     permissions:
       contents: write # needed to push to bot/js-autofix
@@ -257,10 +259,12 @@ jobs:
 
           echo "Waiting for PR #$PR_NUM to merge..."
 
-          # Poll every 15s for up to ~10 minutes. The loop itself lands the
-          # PR once CI is green (`gh pr merge --auto` requires branch
-          # protection with required checks, which this repo doesn't use).
-          for i in $(seq 1 40); do
+          # Poll every 15s for up to ~35 minutes — the JS & TS checks job
+          # alone runs ~20 minutes, so a shorter window always times out
+          # before CI can go green. The loop itself lands the PR once CI is
+          # green (`gh pr merge --auto` requires branch protection with
+          # required checks, which this repo doesn't use).
+          for i in $(seq 1 140); do
             sleep 15
 
             # A GITHUB_TOKEN push (the App fallback path) leaves the bot

@@ -46,9 +46,13 @@ export function useSkinCommand() {
       const normalized = arg.toLowerCase()
       const targetName = ALIASES[normalized] || normalized
 
-      const target = availableThemes.find(
-        t => t.name.toLowerCase() === targetName || t.label.toLowerCase() === normalized
-      )
+      // An alias wins: it must never be re-interpreted as a theme label
+      // (`/skin thor` means Classic Thor even though the default theme's
+      // label is also "Thor"). The raw label only matches when the
+      // name-target (alias or literal) found no theme.
+      const target =
+        availableThemes.find(t => t.name.toLowerCase() === targetName) ??
+        availableThemes.find(t => t.label.toLowerCase() === normalized)
 
       if (!target) {
         return `Unknown desktop theme: ${arg}\nAvailable: ${availableThemes.map(t => t.name).join(', ')}`
