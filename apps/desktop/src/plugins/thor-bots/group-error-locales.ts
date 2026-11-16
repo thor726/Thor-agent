@@ -91,5 +91,14 @@ export const GROUP_CHAT_ERRORS = {
     attachmentTooLarge: name => `${name}: حجمه كبير جدًا (الحد الأقصى 15 ميغابايت).`,
     attachmentFallback: 'مرفق',
     pastedImage: 'صورة ملصقة'
+  },
+  id: {
+    sendRouteRequired: 'Mengirim ke chat grup ini memerlukan koneksi, profil, dan ID chat grupnya',
+    savedMessagesUnreadable: 'Pesan tersimpan chat grup tidak dapat dibaca',
+    savedMessageUnreadable: 'Sebuah pesan tersimpan chat grup tidak dapat dibaca',
+    sendNeedsUpdate: 'Pengiriman ke chat grup ini memerlukan Desktop yang diperbarui; mulai ulang Thor Desktop',
+    attachmentTooLarge: name => `${name}: terlalu besar (maks 15MB).`,
+    attachmentFallback: 'lampiran',
+    pastedImage: 'gambar yang ditempel'
   }
 } satisfies Record<keyof typeof CANONICAL_GROUP_LOCALES, GroupChatErrorMessages>

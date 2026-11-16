@@ -111,5 +111,16 @@ export const ROSTER_CHROME = {
     allGateways: 'كل البوابات',
     currentGateway: 'البوابة الحالية',
     hidden: 'مخفي'
+  },
+  id: {
+    title: 'Bot',
+    toastsOn: 'Notifikasi aktivitas aktif — klik untuk membisukan',
+    toastsOff: 'Notifikasi aktivitas nonaktif — klik untuk mengaktifkan',
+    newMenu: 'Baru…',
+    filter: 'Saring daftar',
+    filtersActive: count => `Saring daftar, ${count} aktif`,
+    allGateways: 'Semua gateway',
+    currentGateway: 'Gateway saat ini',
+    hidden: 'Disembunyikan'
   }
 } satisfies Record<keyof typeof CANONICAL_GROUP_LOCALES, RosterChromeMessages>

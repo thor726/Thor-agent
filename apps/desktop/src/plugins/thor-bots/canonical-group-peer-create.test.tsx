@@ -730,7 +730,8 @@ it.each(Object.keys(CANONICAL_GROUP_LOCALES) as (keyof typeof CANONICAL_GROUP_LO
       ru: 'группового чата',
       fr: 'discussion de groupe',
       de: 'Gruppenchat',
-      es: 'chat de grupo'
+      es: 'chat de grupo',
+      id: 'Obrolan grup'
     }
 
     const message = canonicalGroupCreateError(

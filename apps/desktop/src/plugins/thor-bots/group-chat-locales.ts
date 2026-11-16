@@ -429,5 +429,46 @@ export const GROUP_CHAT_LOCALES = {
     unpinGroup: 'Dejar de fijar',
     groupPinned: group => `Grupo «${group}» fijado arriba`,
     groupUnpinned: group => `Grupo «${group}» ya no está fijado`
+  },
+  id: {
+    ...GROUP_CHAT_CHROME['id'],
+    ...GROUP_CHAT_ERRORS['id'],
+    mentionBot: 'Bot di chat grup ini',
+    mentionEveryone: 'Semua anggota chat grup',
+    mentionUser: 'Anda — chat grup menunggu jawaban manusia',
+    createDesc: max =>
+      `Pilih 2–${max} bot. Keanggotaan lokal disinkronkan melalui profil tiap bot; untuk bot di komputer lain, keanggotaan hanya disimpan di chat grup ini.`,
+    manageMembersDesc: (max, group) =>
+      `Pilih 2–${max} bot untuk "${group}". Chat grup, riwayatnya, dan sesi para anggotanya tetap seperti adanya.`,
+    deleteDesc: group =>
+      `Ini menghapus "${group}" dari bot-botnya dan membersihkan riwayat bersama chat grup. Bot dan chat individunya tetap ada.`,
+    memberSizeError: max => `Chat grup membutuhkan 2 sampai ${max} bot`,
+    manageMembers: 'Kelola anggota',
+    saveMembers: 'Simpan anggota',
+    deleted: group => `Grup "${group}" dihapus`,
+    globalCount: count => `${count} chat grup global`,
+    noBots: 'Tidak ada bot di chat grup ini',
+    noBotsMatch: query => `Tidak ada bot yang cocok dengan "${query}"`,
+    createBotFirst: 'Belum ada bot — buat dulu satu.',
+    startInComposer: () => 'Chat grup baru dimulai di kotak penyusun grup.',
+    memberAdded: (bot, group) => `${bot} ditambahkan ke "${group}"`,
+    memberRemoved: (bot, group) => `${bot} dikeluarkan dari "${group}"`,
+    newGroup: 'Grup baru…',
+    namePlaceholder: 'Nama grup (mis. Riset)',
+    created: (group, count) => `"${group}" dibuat dengan ${count} bot`,
+    memberGroups: groups => `di ${groups}`,
+    createAction: 'Buat grup',
+    browserCommentsAdded: (count, group) =>
+      `${count} komentar browser ditambahkan ke ${group}. Periksa draf utas baru sebelum mengirim.`,
+    memberCount: count => `${count} bot`,
+    allHeldStatus: count => (count === 1 ? 'Bot sedang dijeda' : `Semua ${count} bot dijeda`),
+    availableCount: (available, total) => `${available} dari ${total} tersedia`,
+    disbandDescPrefix: '',
+    disbandDescSuffix: count =>
+      `Pengelompokan ini dihapus dari ${count} bot-nya dan log bersama chat grup dibersihkan. Bot itu sendiri beserta sesi per-grupnya tetap ada.`,
+    pinGroup: 'Sematkan ke atas',
+    unpinGroup: 'Lepaskan sematan',
+    groupPinned: group => `${group} disematkan ke atas`,
+    groupUnpinned: group => `Sematan ${group} dilepas`
   }
 } satisfies Record<keyof typeof CANONICAL_GROUP_LOCALES, GroupChatMessages>
