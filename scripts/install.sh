@@ -659,7 +659,7 @@ chosen_channel() {
 # thor_cli.update_channel.default_channel decides.
 is_official_repo() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
-        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)thorlabs/thor-agent(\.git)?/?$'
+        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)thor726/thor-agent(\.git)?/?$'
 }
 
 # The latest published stable release (vX.Y.Z), the release `thor update` resolves for the

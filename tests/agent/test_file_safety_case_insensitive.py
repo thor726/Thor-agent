@@ -92,5 +92,5 @@ def test_case_variant_of_project_thor_config_still_needs_approval(tmp_path, thor
     monkeypatch.setenv("THOR_HOME", str(profile))
     repo = tmp_path.resolve() / "repo"
     (repo / ".thor").mkdir(parents=True)
-    target = str(repo / ".HERMES" / "config.yaml")
+    target = str(repo / ".THOR" / "config.yaml")
     assert write_guards._protected_instruction_reason(target, enabled=True, extra_patterns=[])
