@@ -191,9 +191,9 @@ stage_signal() {
 print_banner() {
     printf '\n%s%s' "$C_MAGENTA" "$C_BOLD"
     printf '%s\n' "┌─────────────────────────────────────────────────────────┐"
-    printf '%s\n' "│             ☤ Thor Agent Installer                    │"
+    printf '%s\n' "│             ⚡ Thor Agent Installer                     │"
     printf '%s\n' "├─────────────────────────────────────────────────────────┤"
-    printf '%s\n' "│  An open source AI agent by Thor Labs.              │"
+    printf '%s\n' "│  An open source AI agent by Thor Labs.                  │"
     printf '%s\n' "└─────────────────────────────────────────────────────────┘"
     printf '%s\n' "$C_NC"
 }
