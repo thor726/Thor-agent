@@ -72,10 +72,28 @@ def test_blocked_swap_names_the_foreign_holder_and_leaves_it_running(swap_fixtur
     assert (live_root / "Thor.exe").read_text(encoding="utf-8") == "old"
 
 
+def _cwd_inside_app_folder(proc: psutil.Process, desktop_dir: Path) -> bool:
+    """The production holder scan's own rule (find_release_cwd_holders): only a process
+    whose cwd is inside the app folder being renamed is a holder. An unreadable cwd is
+    skipped there, so it is not a holder here either."""
+    try:
+        cwd = proc.cwd()
+    except (psutil.Error, OSError):
+        return False
+    norm = desktop_release_holders._norm
+    return desktop_release_holders._inside(norm(cwd), norm(str(desktop_dir / "release" / "win-unpacked")))
+
+
 def _consent_for_run(desktop_dir: Path, helper, run_id: str) -> tuple[Path, list]:
-    # The venv python.exe may be a launcher with the real interpreter as its child, both inside
-    # the folder; the Desktop consents to every process the failure named, so this does too.
-    tree = [psutil.Process(helper.pid), *psutil.Process(helper.pid).children(recursive=True)]
+    # The venv python.exe may be a launcher with the real interpreter as its child. The
+    # Desktop consents to every process the failure named -- and the failure names
+    # exactly the processes whose cwd is inside the app folder. On the CI image the
+    # launcher's interpreter child can run with its cwd OUTSIDE the folder: it is not a
+    # holder, the consented close rightly leaves it alone, and it blocks no rename.
+    # Filter the family tree by the same rule or the survivor assertion below demands a
+    # kill the close contract never promised.
+    family = [psutil.Process(helper.pid), *psutil.Process(helper.pid).children(recursive=True)]
+    tree = [p for p in family if p.pid == helper.pid or _cwd_inside_app_folder(p, desktop_dir)]
     consent = desktop_dir / "release" / ".close-holders-consent.json"
     seen = [{"pid": p.pid, "start_time": p.create_time(), "exe": p.exe()} for p in tree]
     consent.write_text(json.dumps({"written_at": time.time(), "run_id": run_id,

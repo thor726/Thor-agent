@@ -129,13 +129,26 @@ def _not_started_or_suspended(pid: int) -> bool:
 
     psutil's Windows ``status()`` answers ``stopped`` only when every thread is Waiting
     with WaitReason Suspended. A thread that has never run — the single thread of a
-    ``CREATE_SUSPENDED`` child before its first instruction — can be reported by the
+    CREATE_SUSPENDED process before its first instruction — can be reported by the
     kernel as Initialized instead, and psutil then answers ``running`` (seen on the
     CI windows-2025 image). This probe accepts the true not-running states:
     ThreadState Initialized (0), or Waiting (5) with WaitReason Suspended (5).
     Any Ready/Running/Standby/Transition thread answers False.
+
+    A brand-new process's thread record can take a moment to settle in the
+    system snapshot (the CI failure showed one walk reading a not-suspended
+    record microseconds after spawn, and a second walk milliseconds later
+    returning the stable (5, 5) state), so poll briefly. Nothing can run
+    during the poll: the child is suspended and nothing resumes it.
     """
-    return all(state == 0 or (state == 5 and reason == 5) for state, reason in _thread_states(pid))
+    deadline = time.monotonic() + 2.0
+    while True:
+        if all(state == 0 or (state == 5 and reason == 5)
+               for state, reason in _thread_states(pid)):
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.02)
 
 
 @pytest.mark.platforms("windows")

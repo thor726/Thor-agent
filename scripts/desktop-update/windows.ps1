@@ -1578,8 +1578,17 @@ exit 3
     # rather than a timing coincidence: the pipe was demonstrably still open.
     $budget = $script:StepDrainGraceSeconds + 30
     # A sleep-per-chunk drain moves 16 KiB/150ms ~ 107 KB/s, so 8 MiB takes
-    # ~76s. Generous enough for a loaded CI runner, far under the trickle.
-    $floodBudget = 25
+    # ~76.8s. The old flat 25s budget was measured on Windows 11's PowerShell
+    # 5.1, where an unmetered drain moves megabytes per second. The CI
+    # windows-2025 image's PowerShell 5.1 completes each chunked ReadAsync in
+    # ~117ms even while the writer floods (measured: 8 MiB in 60.02s with every
+    # byte and the right exit code), so a healthy drain there runs ~140 KB/s --
+    # within a third of the metered rate, and only a budget between the two can
+    # still discriminate: 68s clears the measured 60.02s with ~13% headroom and
+    # stays under the deterministic 76.8s metered run (both rates are stable
+    # run-to-run). Scales with the env-tunable flood size; the 25s floor keeps
+    # the old fast-host semantics for smaller floods.
+    $floodBudget = [Math]::Max(25, [Math]::Ceiling($floodKb * 68 / 8192))
     $problems = @()
     if (-not $leakAlive) { $problems += "handle-holding grandchild was not alive on return (fixture did not reproduce the leak)" }
     if ($elapsed -ge $budget) { $problems += "leak arm returned in ${elapsed}s, over the ${budget}s budget" }
