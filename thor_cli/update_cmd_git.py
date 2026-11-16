@@ -639,6 +639,28 @@ def _portable_git_candidates() -> list:
     ]
 
 
+def _path_git_candidates() -> list[Path]:
+    """Real git-core candidates derived from the ``git`` on PATH. The fixed
+    Program Files roots miss runner images that stage Git elsewhere (a tools
+    cache, a scoop/choco prefix); PATH's shim — ``<root>\\cmd\\git.exe`` or
+    ``<root>\\bin\\git.exe`` — still reveals the install root, whose real
+    binary lives at ``<root>\\<arch>\\libexec\\git-core\\git.exe``.
+    """
+    import shutil
+    which = shutil.which("git")
+    if not which:
+        return []
+    exe = Path(which)
+    out = [exe]
+    if exe.parent.name.lower() in ("cmd", "bin"):
+        root = exe.parent.parent
+        out += [
+            root / arch / "libexec" / "git-core" / "git.exe"
+            for arch in ("clangarm64", "ucrt64", "mingw64", "mingw32")
+        ]
+    return out
+
+
 def _locate_real_git() -> Optional[Path]:
     """Find a real Git-for-Windows ``git-core/git.exe`` (standard locations + managed PortableGit) that runs
     without the trampoline guard. None when nothing suits — callers keep the broken command and let the
@@ -652,7 +674,7 @@ def _locate_real_git() -> Optional[Path]:
         Path(base) / "Git" / arch / "libexec" / "git-core" / "git.exe"
         for base in (r"C:\Program Files", r"C:\Program Files (x86)")
         for arch in ("clangarm64", "ucrt64", "mingw64", "mingw32")
-    ] + _portable_git_candidates()
+    ] + _path_git_candidates() + _portable_git_candidates()
     return next((c for c in candidates if c.exists() and _probe_fork_bomb([str(c)]) is False), None)
 
 
