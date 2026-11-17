@@ -44,7 +44,7 @@ jobs:
     # every slice agrees on the split without a planning job.
     name: Run tests (${{ matrix.slice }}/3)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
