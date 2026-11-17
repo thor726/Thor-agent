@@ -1,6 +1,9 @@
 """Welcome banner, ASCII art, skills summary, and update check for the CLI."""
+import json
 import logging
 import os
+import re
+import shutil
 import sys
 import threading
 from pathlib import Path
@@ -8,12 +11,15 @@ from thor_cli import source_check
 # Historical updater import (tests/compat/old_updater_surface.json). In-tree callers use the owner.
 from thor_cli.source_check import _github_compare_behind
 from thor_constants import get_thor_home
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from thor_cli._startup_fast import project_root_str
 
 # rich and prompt_toolkit are imported lazily: this module sits on the TUI gateway's critical
 # startup path purely for the lightweight update-check helpers, and eager rich/prompt_toolkit
 # imports cost ~50ms before ``gateway.ready`` could fire.
+if TYPE_CHECKING:
+    from rich.console import Console
+
 logger = logging.getLogger(__name__)
 
 # ANSI building blocks for conversation display (``_DIM``/``_RST`` are imported by callbacks.py).
@@ -49,40 +55,44 @@ def cprint(text: str):
         print(text)
 
 
+def _active_skin():
+    """The active skin object (raises when the skin engine is unavailable)."""
+    from thor_cli.skin_engine import get_active_skin
+    return get_active_skin()
 
+
+def _skin_color(key: str, fallback: str) -> str:
+    """Get a color from the active skin, or return fallback."""
+    return _quiet(lambda: _active_skin().get_color(key, fallback), fallback)
+
+
+# === ASCII Art & Branding ===
 
 from thor_cli import __release_date__ as RELEASE_DATE
 from thor_cli.version_info import get_version_info
 
+THOR_AGENT_LOGO = """[bold #FFD700]████████╗██╗  ██╗ ██████╗ ██████╗                  █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
+[bold #FFD700]╚══██╔══╝██║  ██║██╔═══██╗██╔══██╗                ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
+[#FFBF00]   ██║   ███████║██║   ██║██████╔╝                ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   [/]
+[#FFBF00]   ██║   ██╔══██║██║   ██║██╔══██╗                ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   [/]
+[#CD7F32]   ██║   ██║  ██║╚██████╔╝██║  ██║                ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   [/]
+[#CD7F32]   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝                ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   [/]"""
 
-
-
-
-def compute_toolset_availability(enabled_toolsets: list[str] | None = None) -> dict[str, Any]:
-    """Compute ``{"unavailable_toolsets", "lazy_tools", "disabled_tools"}``.
-
-    Used by the gateway session inventory (the TUI banner's data) to colour
-    lazy/disabled tools; the classic banner render is gone, this stays.
-    """
-    from model_tools import check_tool_availability, TOOLSET_REQUIREMENTS
-    enabled_toolsets = enabled_toolsets or []
-    _, unavailable_toolsets = check_tool_availability(quiet=True)
-    # The availability check walks the GLOBAL registry, so it includes toolsets outside this
-    # agent's platform set (e.g. `discord` on a CLI session) which must never surface in
-    # "Available Tools". Restrict to enabled toolsets; an enabled toolset with unmet deps
-    # legitimately shows as disabled/lazy below.
-    _enabled_ts = {str(t) for t in enabled_toolsets}
-    if _enabled_ts:
-        unavailable_toolsets = [
-            item for item in unavailable_toolsets if str(item.get("id", item.get("name", ""))) in _enabled_ts]
-    # Toolsets with a check_fn are lazy-initialized (e.g. honcho): unavailable at banner time
-    # because the check hasn't run yet, but not misconfigured.
-    lazy_tools, disabled_tools = set(), set()
-    for item in unavailable_toolsets:
-        is_lazy = TOOLSET_REQUIREMENTS.get(item.get("name", ""), {}).get("check_fn")
-        (lazy_tools if is_lazy else disabled_tools).update(item.get("tools", []))
-    return {"unavailable_toolsets": unavailable_toolsets, "lazy_tools": sorted(lazy_tools),
-            "disabled_tools": sorted(disabled_tools)}
+THOR_MJOLNIR = """[#FFD700]⠀⠀⠀⠀⠀⠀⠀⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⠀⠀⠀⠀⠀⠀⠀[/]
+[#FFD700]⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀[/]
+[#FFD700]⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀[/]
+[#FFBF00]⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀[/]
+[#FFBF00]⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀[/]
+[#FFBF00]⠀⠀⠀⠀⠀⠀⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠀⠀⠀⠀⠀⠀[/]
+[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#8B6508]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+[#8B6508]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⠿⠿⠿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
 
 # === Skills scanning ===
 
@@ -373,23 +383,385 @@ def _format_context_length(tokens: int) -> str:
     return str(tokens)
 
 
+def _display_toolset_name(toolset_name: str) -> str:
+    """Normalize internal/legacy toolset identifiers for banner display."""
+    return toolset_name.removesuffix("_tools") if toolset_name else "unknown"
 
 
+def _short_label(name: str) -> str:
+    """Truncate a model/preset slug to fit the banner's left column."""
+    return name[:25] + "..." if len(name) > 28 else name
 
 
+# === Banner snapshot — warm-launch fast path ===
+# The tool panel needs the full tool registry (~0.5-0.9s cold, the largest chunk of time-to-
+# banner). The list is a pure function of (config.yaml, .env, code checkout, enabled toolsets),
+# so the rendered inputs are snapshotted to disk and replayed when the fingerprint matches. The
+# agent's REAL tool list is still computed fresh at first message; the snapshot only feeds the
+# cosmetic panel, and a background refresh (cli.show_banner) re-verifies it right after render.
+
+_BANNER_SNAPSHOT_VERSION = 1
 
 
+def _banner_snapshot_path() -> Path:
+    return get_thor_home() / "cache" / "banner_snapshot.json"
 
 
+def banner_snapshot_fingerprint() -> Optional[str]:
+    """Fingerprint the inputs the banner tool panel depends on."""
+    import hashlib
+    def _inputs():
+        from thor_cli.config import get_config_path
+        return (get_config_path(), get_thor_home() / ".env")
+    paths = _quiet(_inputs)
+    if paths is None:
+        return None
+    parts = [f"v{_BANNER_SNAPSHOT_VERSION}"]
+    for p in paths:
+        st = _quiet(p.stat)
+        parts.append(f"{p.name}:{st.st_mtime_ns}:{st.st_size}" if st else f"{p.name}:absent")
+    # Code checkout: commit when known, otherwise its derived version.
+    version_info = get_version_info()
+    parts.append(version_info.commit or version_info.derived_version)
+    state = get_git_banner_state()
+    if state:
+        parts.append(str(state.get("local", "")))
+    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
 
 
+def load_banner_snapshot(enabled_toolsets: list[str] | None = None) -> Optional[dict[str, Any]]:
+    """Return the stored banner snapshot when its fingerprint is current."""
+    blob = _quiet(lambda: json.loads(_banner_snapshot_path().read_text(encoding="utf-8-sig")))
+    if not isinstance(blob, dict):
+        return None
+    fp = banner_snapshot_fingerprint()
+    if (not fp or blob.get("fingerprint") != fp
+            or blob.get("enabled_toolsets") != sorted(enabled_toolsets or [])
+            or not isinstance(blob.get("tools"), list)
+            or not all(isinstance(blob.get(k), dict)
+                       for k in ("toolset_map", "availability", "skills_by_category"))):
+        return None
+    return blob
 
 
+def save_banner_snapshot(tools: list[dict], enabled_toolsets: list[str], availability: dict[str, Any],
+                         toolset_map: dict[str, str]) -> None:
+    """Persist the banner tool panel inputs for next launch (best-effort)."""
+    fp = banner_snapshot_fingerprint()
+    if not fp:
+        return
+    payload = {
+        "fingerprint": fp,
+        "enabled_toolsets": sorted(enabled_toolsets or []),
+        "tools": [{"function": {"name": t["function"]["name"]}}
+                  for t in tools if isinstance(t, dict) and t.get("function", {}).get("name")],
+        "toolset_map": toolset_map,
+        "availability": {
+            "unavailable_toolsets": availability.get("unavailable_toolsets", []),
+            **{k: list(availability.get(k, [])) for k in ("lazy_tools", "disabled_tools")}},
+        "skills_by_category": get_available_skills(),
+    }
+
+    def _write():
+        from utils import atomic_json_write
+        atomic_json_write(_banner_snapshot_path(), payload, indent=None, mode=0o600)
+    _quiet(_write)
 
 
+def compute_toolset_availability(enabled_toolsets: list[str] | None = None) -> dict[str, Any]:
+    """Compute ``{"unavailable_toolsets", "lazy_tools", "disabled_tools"}`` for the banner.
+
+    Split out so the result can be snapshotted and replayed without importing ``model_tools``.
+    """
+    from model_tools import check_tool_availability, TOOLSET_REQUIREMENTS
+    enabled_toolsets = enabled_toolsets or []
+    _, unavailable_toolsets = check_tool_availability(quiet=True)
+    # The availability check walks the GLOBAL registry, so it includes toolsets outside this
+    # agent's platform set (e.g. `discord` on a CLI session) which must never surface in
+    # "Available Tools". Restrict to enabled toolsets; an enabled toolset with unmet deps
+    # legitimately shows as disabled/lazy below.
+    _enabled_ts = {str(t) for t in enabled_toolsets}
+    if _enabled_ts:
+        unavailable_toolsets = [
+            item for item in unavailable_toolsets if str(item.get("id", item.get("name", ""))) in _enabled_ts]
+    # Toolsets with a check_fn are lazy-initialized (e.g. honcho): unavailable at banner time
+    # because the check hasn't run yet, but not misconfigured.
+    lazy_tools, disabled_tools = set(), set()
+    for item in unavailable_toolsets:
+        is_lazy = TOOLSET_REQUIREMENTS.get(item.get("name", ""), {}).get("check_fn")
+        (lazy_tools if is_lazy else disabled_tools).update(item.get("tools", []))
+    return {"unavailable_toolsets": unavailable_toolsets, "lazy_tools": sorted(lazy_tools),
+            "disabled_tools": sorted(disabled_tools)}
 
 
+def _mcp_server_line(srv: dict, *, dim: str, text: str) -> str:
+    """One banner line for an MCP server status entry."""
+    name, transport = srv["name"], srv["transport"]
+    if srv["connected"]:
+        return f"[dim {dim}]{name}[/] [{text}]({transport})[/] [dim {dim}]—[/] [{text}]{srv['tools']} tool(s)[/]"
+    # Needs srv['tools'], so it cannot live in the suffix dict below. A registered but unspawned
+    # server has callable tools; falling through to the red "failed" line misreports a working setup.
+    if srv.get("status") == "lazy":
+        return (f"[dim {dim}]{name}[/] [{text}]({transport})[/] [dim {dim}]—[/] "
+                f"[{text}]{srv['tools']} tool(s)[/] [dim {dim}](lazy, starts on first use)[/]")
+    status = "disabled" if srv.get("disabled") else srv.get("status")
+    suffix = {"disabled": f"[dim {dim}]— disabled[/]", "connecting": "[yellow]— connecting[/]",
+              "configured": f"[dim {dim}]— configured[/]"}.get(status)
+    if suffix is not None:
+        return f"[dim {dim}]{name}[/] [dim]({transport})[/] {suffix}"
+    return _mcp_failed_line(name, transport, srv.get("error"))
 
 
+def _mcp_failed_line(name: str, transport: str, error: Optional[str]) -> str:
+    """Failed MCP connect: the short reason (already humanised by ``_format_connect_error``) and the
+    exact next command, so 'failed' is never the whole story."""
+    from rich.markup import escape
+    reason = escape(" ".join(str(error or "").split())[:120]) or "no details recorded"
+    next_cmd = (f"thor mcp login {name}" if re.search(r"\b401\b|unauthori[sz]ed", reason, re.IGNORECASE)
+                else f"thor mcp test {name}")
+    return (f"[red]{name}[/] [dim]({transport})[/] [red]— could not connect:[/] {reason} "
+            f"[dim]— run `{next_cmd}`[/]")
 
 
+def _truncate_tool_names(tool_names: list[str]) -> list[Optional[str]]:
+    """Cut a toolset's tool list to ~42 columns; ``None`` marks the elided tail."""
+    if len(", ".join(tool_names)) <= 45:
+        return list(tool_names)
+    short_names: list[Optional[str]] = []
+    length = 0
+    for name in tool_names:
+        if length + len(name) + 2 > 42:
+            short_names.append(None)
+            break
+        short_names.append(name)
+        length += len(name) + 2
+    return short_names
+
+
+def _pack_skill_names(skill_names: list[str], avail: int) -> str:
+    """Join skill names into ``avail`` columns, ending with ``+N more`` when they don't all fit."""
+    parts: list[str] = []
+    length = 0
+    for i, name in enumerate(skill_names):
+        needed = (2 if parts else 0) + len(name)
+        after = len(skill_names) - (i + 1)  # indicator size IF we add this skill then stop
+        ind_len = len(f", +{after} more") if after > 0 else 0
+        if parts and length + needed + ind_len > avail:
+            parts.append(f"+{len(skill_names) - len(parts)} more")
+            break
+        parts.append(name)
+        length += needed
+    return ", ".join(parts)
+
+
+def _moa_aggregator_label(preset_name: str) -> str:
+    """Short aggregator-model label for a MoA preset ("" when the preset has none)."""
+    from thor_cli.config import load_config
+    from thor_cli.moa_config import normalize_moa_config
+    preset = normalize_moa_config(load_config().get("moa") or {}).get("presets", {}).get(preset_name)
+    model = str(((preset or {}).get("aggregator") or {}).get("model") or "")
+    return model.split("/")[-1]
+
+
+def _mcp_configured() -> bool:
+    """Cheap probe: does config.yaml or the persisted plugin key cache name any MCP server?
+
+    The full ``get_mcp_status()`` path resolves portable plugin MCP servers, which JOINS the in-flight
+    background plugin discovery (~100ms on the startup path), so skip it when nothing is configured.
+    When either probe can't tell, take the full path.
+    """
+    def _native():
+        from thor_cli.config import load_config
+        return bool((load_config() or {}).get("mcp_servers"))
+
+    def _portable():
+        from thor_cli.plugins import get_portable_mcp_server_names_nowait
+        return bool(get_portable_mcp_server_names_nowait())
+    return _quiet(_native, True) or _quiet(_portable, True)
+
+
+def _probe_mcp_status() -> list:
+    from tools.mcp_tool_discovery import get_mcp_status
+    return get_mcp_status()
+
+
+def _codex_runtime_active() -> bool:
+    """True when the codex_app_server runtime is active (tool counts then live inside codex)."""
+    from thor_cli.codex_runtime_switch import get_current_runtime
+    from thor_cli.config import load_config
+    return get_current_runtime(load_config()) == "codex_app_server"
+
+
+def _active_profile_name() -> Optional[str]:
+    from thor_cli.profiles import get_active_profile_name
+    return get_active_profile_name()
+
+
+def _banner_left_lines(model: str, cwd: str, session_id, context_length, provider, *, accent: str, dim: str,
+                       context_pinned: bool = False, context_marker: str = "") -> list:
+    """Model / cwd / session lines under the hero art. ``context_pinned`` marks a
+    ``model.context_length`` pin so the user can tell it apart from provider metadata (#66168);
+    ``context_marker`` (``"pinned"`` / ``"fallback"``, agent.context_pin) also marks a defaulted window."""
+    def _dim_sep(label: str) -> str:
+        return f" [dim {dim}]·[/] [dim {dim}]{label}[/]"
+    lines = []
+    marker = context_marker or ("pinned" if context_pinned else "")
+    pin = f" ({marker})" if marker else ""
+    ctx_str = _dim_sep(f"{_format_context_length(context_length)} context{pin}") if context_length else ""
+    thor_str = _dim_sep("Thor Portal")
+    if (provider or "").strip().lower() == "moa":
+        # MoA virtual provider: ``model`` is a preset name; show it with its aggregator.
+        agg_label = _quiet(lambda: _moa_aggregator_label(model), "")
+        agg_str = _dim_sep(f"agg {agg_label}") if agg_label else ""
+        lines.append(f"[{accent}]MoA: {_short_label(model)}[/]{agg_str}{ctx_str}{thor_str}")
+    elif not (model or "").strip() or (model or "").strip().lower() == "unknown":
+        # Unconfigured install: the clearest place to say what is wrong and how to fix it.
+        lines.append(f"[bold red]no model configured[/] [dim {dim}]— run /model or thor setup[/]")
+    else:
+        model_short = model.split("/")[-1].removesuffix(".gguf")
+        lines.append(f"[{accent}]{_short_label(model_short)}[/]{ctx_str}{thor_str}")
+    if os.getenv("THOR_YOLO_MODE"):
+        lines.append(f"[bold red]⚠ YOLO mode[/] [dim {dim}]— all approval prompts bypassed[/]")
+    lines.append(f"[dim {dim}]{cwd}[/]")
+    if session_id:
+        lines.append(f"[dim {_skin_color('session_border', '#8B8682')}]Session: {session_id}[/]")
+    return lines
+
+
+def _banner_tool_lines(
+    tools: list, unavailable_toolsets: list, get_toolset_for_tool, *,
+    lazy_tools: set, disabled_tools: set, accent: str, dim: str, text: str) -> list:
+    """"Available Tools" section: up to 8 toolsets, each truncated to ~42 columns."""
+    lines = [f"[bold {accent}]Available Tools[/]"]
+    toolsets_dict: dict[str, list] = {}
+    for tool in tools:
+        tool_name = tool["function"]["name"]
+        toolset = _display_toolset_name(get_toolset_for_tool(tool_name) or "other")
+        toolsets_dict.setdefault(toolset, []).append(tool_name)
+    for item in unavailable_toolsets:
+        names = toolsets_dict.setdefault(_display_toolset_name(item.get("id", item.get("name", "unknown"))), [])
+        for tool_name in item.get("tools", []):
+            if tool_name not in names:
+                names.append(tool_name)
+
+    def _color_tool(name: Optional[str]) -> str:
+        if name is None:  # truncation marker
+            return "[dim]...[/]"
+        color = "red" if name in disabled_tools else "yellow" if name in lazy_tools else text
+        return f"[{color}]{name}[/]"
+    sorted_toolsets = sorted(toolsets_dict.keys())
+    for toolset in sorted_toolsets[:8]:
+        tool_names = _truncate_tool_names(sorted(toolsets_dict[toolset]))
+        lines.append(f"[dim {dim}]{toolset}:[/] {', '.join(_color_tool(n) for n in tool_names)}")
+    if len(sorted_toolsets) > 8:
+        lines.append(f"[dim {dim}](and {len(sorted_toolsets) - 8} more toolsets...)[/]")
+    return lines
+
+
+def _banner_skill_lines(skills_by_category: dict[str, list[str]], skills_enabled: bool, *, dim: str, text: str) -> list:
+    """"Available Skills" body, sized to ~60% of the terminal width (the right grid column)."""
+    if not skills_enabled:
+        return [f"[dim {dim}]Skills toolset disabled[/]"]
+    if not skills_by_category:
+        return [f"[dim {dim}]No skills installed[/]"]
+    right_col_width = max(int(shutil.get_terminal_size().columns * 0.6) - 10, 30)
+    lines = []
+    for category in sorted(skills_by_category.keys()):
+        # Account for the "category: " prefix.
+        skills_str = _pack_skill_names(sorted(skills_by_category[category]), max(right_col_width - len(category) - 2, 20))
+        lines.append(f"[dim {dim}]{category}:[/] [{text}]{skills_str}[/]")
+    return lines
+
+
+def build_welcome_banner(
+    console: "Console", model: str, cwd: str, tools: list[dict] | None = None, enabled_toolsets: list[str] | None = None,
+    session_id: str | None = None, get_toolset_for_tool=None, context_length: int | None = None, provider: str | None = None,
+    availability: dict[str, Any] | None = None, skills_by_category: dict[str, list[str]] | None = None,
+    context_pinned: bool = False, context_marker: str = "",
+):
+    """Build and print a welcome banner with Mjölnir on left and info on right.
+
+    When ``provider == "moa"``, ``model`` is a MoA preset name and the aggregator is rendered.
+    Passing a precomputed ``availability`` together with ``get_toolset_for_tool`` avoids any
+    ``model_tools`` import (banner snapshot replay).
+    """
+    from rich.panel import Panel
+    from rich.table import Table
+    if get_toolset_for_tool is None:
+        from model_tools import get_toolset_for_tool
+    tools = tools or []
+    enabled_toolsets = enabled_toolsets or []
+    if availability is None:
+        availability = compute_toolset_availability(enabled_toolsets)
+    _enabled_ts = {str(t) for t in enabled_toolsets}
+    # Resolve skin colors once for the entire banner
+    accent = _skin_color("banner_accent", "#FFBF00")
+    dim = _skin_color("banner_dim", "#B8860B")
+    text = _skin_color("banner_text", "#FFF8DC")
+    # Use skin's custom hero art if provided
+    _bskin = _quiet(_active_skin)
+    left_lines = ["", getattr(_bskin, "banner_hero", None) or THOR_MJOLNIR, ""]
+    left_lines += _banner_left_lines(model, cwd, session_id, context_length, provider, accent=accent, dim=dim,
+                                     context_pinned=context_pinned, context_marker=context_marker)
+    right_lines = _banner_tool_lines(
+        tools, availability.get("unavailable_toolsets", []), get_toolset_for_tool,
+        lazy_tools=set(availability.get("lazy_tools", [])), disabled_tools=set(availability.get("disabled_tools", [])),
+        accent=accent, dim=dim, text=text)
+    # MCP Servers section (only if configured) — see ``_mcp_configured`` for why the cheap probe.
+    mcp_status = _quiet(_probe_mcp_status, []) if _mcp_configured() else []
+    if mcp_status:
+        right_lines += ["", f"[bold {accent}]MCP Servers[/]"]
+        right_lines.extend(_mcp_server_line(srv, dim=dim, text=text) for srv in mcp_status)
+    right_lines += ["", f"[bold {accent}]Available Skills[/]"]
+    # The skills catalog is only reachable when the `skills` toolset is enabled (skill_view /
+    # skill_manage). When disabled (Blank Slate) the agent cannot load any skill, so advertising
+    # the on-disk catalog would be misleading — reflect the real state.
+    _skills_enabled = (not _enabled_ts) or ("skills" in _enabled_ts)
+    if not _skills_enabled:
+        skills_by_category = {}
+    elif skills_by_category is None:
+        skills_by_category = get_available_skills()
+    total_skills = sum(len(s) for s in skills_by_category.values())
+    right_lines += _banner_skill_lines(skills_by_category, _skills_enabled, dim=dim, text=text)
+    right_lines.append("")
+    mcp_connected = sum(1 for s in mcp_status if s["connected"])
+    summary_parts = [f"{len(tools)} tools", f"{total_skills} skills"]
+    if mcp_connected:
+        summary_parts.append(f"{mcp_connected} MCP servers")
+    summary_parts.append("/help for commands")
+    # Flag the codex_app_server runtime so users understand why tool counts may not match what's
+    # reachable (codex builds its own tool list inside the spawned subprocess).
+    if _quiet(_codex_runtime_active, False):
+        right_lines.append(f"[bold {accent}]Runtime:[/] [{text}]codex app-server[/] "
+                           f"[dim {dim}](terminal/file ops/MCP run inside codex)[/]")
+    # Show active profile name when not 'default'. Never break the banner over a profiles.py bug.
+    _profile_name = _quiet(_active_profile_name)
+    if _profile_name and _profile_name != "default":
+        right_lines.append(f"[bold {accent}]Profile:[/] [{text}]{_profile_name}[/]")
+    right_lines.append(f"[dim {dim}]{' · '.join(summary_parts)}[/]")
+    # Update check — NEVER block the banner on it: the prefetch does git/network work that rarely
+    # finishes before render, so a blocking wait adds its full timeout to every startup. If not
+    # ready, a daemon thread prints the same notice above the prompt when it lands.
+    def _update_line():
+        behind = get_update_result(timeout=0.05)
+        if behind is None and not _update_check_done.is_set():
+            _defer_update_notice()
+        elif behind is not None and behind != 0:
+            right_lines.append(_format_update_notice(behind))
+    _quiet(_update_line)  # Never break the banner over an update check
+    layout_table = Table.grid(padding=(0, 2))
+    layout_table.add_column("left", justify="left")
+    layout_table.add_column("right", justify="left")
+    layout_table.add_row("\n".join(left_lines), "\n".join(right_lines))
+    version_label = format_banner_version_label()
+    release_info = get_latest_release_tag()
+    if release_info:
+        version_label = f"[link={release_info[1]}]{version_label}[/link]"
+    outer_panel = Panel(
+        layout_table, title=f"[bold {_skin_color('banner_title', '#FFD700')}]{version_label}[/]",
+        border_style=_skin_color("banner_border", "#CD7F32"), padding=(0, 2))
+    console.print()
+    if shutil.get_terminal_size().columns >= 95:
+        console.print(getattr(_bskin, "banner_logo", None) or THOR_AGENT_LOGO)
+        console.print()
+    console.print(outer_panel)

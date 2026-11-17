@@ -10,6 +10,7 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 import os
+import shutil
 import threading
 import time
 from typing import Any, NamedTuple
@@ -93,29 +94,46 @@ def _skill_line(item: dict) -> str:
 
 
 class BannerPlan(NamedTuple):
-    """What startup (``show_banner``) and ``/clear`` need beyond the compact banner: the
-    gateway session store, its snapshot inventory (tool warnings), and the context length.
-    The full ASCII-art banner is retired — the classic CLI shows the compact banner only."""
+    """What the welcome banner draws, shared by startup (``show_banner``) and ``/clear`` so the two
+    cannot drift apart."""
     store: Any  # the gateway session store, or None off the gateway
-    inventory: dict | None  # a gateway session's tools snapshot, for its tool warnings
+    inventory: dict | None  # a gateway session's tools: its snapshot, never this process's registry
     ctx_len: int | None
+    banner_kw: dict | None  # build_welcome_banner's common kwargs; None → the compact banner
 
 
 def banner_plan(cli, console) -> BannerPlan:
-    """The compact banner needs no plan of its own; this gathers the warnings data that
-    prints around it (gateway tool warnings, low-context notice)."""
+    """The welcome banner's plan. The compact banner (``banner_kw`` None) is for a narrow terminal,
+    ``display.compact``, or a gateway session with no snapshot yet."""
+    from agent.context_pin import agent_context_marker
     from thor_cli.gateway_tools_notify import gateway_store
     store = gateway_store(cli)
     inventory = store.banner_inventory() if store is not None else None
     agent = getattr(cli, "agent", None)
     compressor = getattr(agent, "context_compressor", None)
     ctx_len = compressor.context_length if compressor is not None else None
-    return BannerPlan(store, inventory, ctx_len)
+    if cli.compact or shutil.get_terminal_size().columns < 80 or (store is not None and inventory is None):
+        return BannerPlan(store, inventory, ctx_len, None)
+    return BannerPlan(store, inventory, ctx_len, dict(
+        console=console, model=cli.model, cwd=os.getenv("TERMINAL_CWD", os.getcwd()),
+        enabled_toolsets=cli.enabled_toolsets, session_id=cli.session_id, context_length=ctx_len,
+        provider=cli.provider, context_marker=agent_context_marker(agent) if agent is not None else ""))
 
 
 class CLIInfoMixin:
     """Informational views and reload flows for the interactive CLI: banner, help, tools, usage,
     insights, MCP/skills reload, bang shell."""
+
+    def _show_gateway_banner(self, build_welcome_banner, inventory, banner_kw):
+        """Main's banner from the gateway session's snapshot (the TUI banner's data): the CLI
+        enumerates nothing. The canonical id shows as main's 8-character label (display only)."""
+        from thor_cli.gateway_session_store import session_label
+        build_welcome_banner(
+            tools=inventory["tools"], get_toolset_for_tool=inventory["get_toolset_for_tool"],
+            availability=inventory["availability"], skills_by_category=inventory["skills_by_category"],
+            **{**banner_kw, "cwd": inventory["cwd"] or banner_kw["cwd"],
+               "context_length": inventory["context_length"] or banner_kw["context_length"],
+               "session_id": session_label(self.session_id)})
 
     def _print_gateway_tool_warnings(self, lines):
         """Main's ``_show_tool_availability_warnings`` lines, computed by the gateway that resolved
@@ -126,20 +144,82 @@ class CLIInfoMixin:
                 self._console_print(line)
 
     def show_banner(self):
-        """Display the compact Thor Agent banner. The classic ASCII-art banner is retired;
-        the full banner lives in the TUI (ui-tui/src/components/branding.tsx)."""
-        from cli import _build_compact_banner
+        """Display the welcome banner in Claude Code style."""
+        from cli import _build_compact_banner, get_tool_definitions, logger
+        from thor_cli.banner import build_welcome_banner
         self.console.clear()
-        store, gateway_inventory, ctx_len = banner_plan(self, self.console)
-        self._console_print(_build_compact_banner())
-        self._show_status()
+        store, gateway_inventory, ctx_len, banner_kw = banner_plan(self, self.console)
+        on_gateway = store is not None  # its tools come from the gateway: never enumerated here
+
+        # Auto-compact for narrow terminals — the full banner needs ~80 columns to avoid wrapping.
+        if banner_kw is None:
+            self._console_print(_build_compact_banner())
+            self._show_status()
+        else:
+            # Warm-launch fast path: replay last launch's tool panel when the snapshot fingerprint
+            # (config.yaml + .env + checkout rev + toolsets) is unchanged, skipping the ~0.5-0.9s
+            # cold get_tool_definitions walk. The agent's REAL tool list is still computed fresh at
+            # first message; a background refresh re-verifies the snapshot so drift self-heals.
+            from thor_cli.banner import (
+                compute_toolset_availability, load_banner_snapshot, save_banner_snapshot)
+            try:
+                snapshot = load_banner_snapshot(self.enabled_toolsets)
+            except Exception:
+                snapshot = None
+
+            if gateway_inventory is not None:
+                self._show_gateway_banner(build_welcome_banner, gateway_inventory, banner_kw)
+            elif snapshot is not None:
+                self._defer_tool_warnings = True
+                toolset_map = snapshot["toolset_map"]
+                build_welcome_banner(
+                    tools=snapshot["tools"],
+                    get_toolset_for_tool=lambda name: toolset_map.get(name),
+                    availability=snapshot["availability"],
+                    skills_by_category=snapshot.get("skills_by_category"),
+                    **banner_kw)
+
+                def _refresh_banner_snapshot() -> None:
+                    try:
+                        from model_tools import get_toolset_for_tool
+                        tools = get_tool_definitions(
+                            enabled_toolsets=self.enabled_toolsets,
+                            disabled_toolsets=self.disabled_toolsets, quiet_mode=True)
+                        availability = compute_toolset_availability(self.enabled_toolsets)
+                        tmap = _toolset_map(tools, availability, get_toolset_for_tool)
+                        save_banner_snapshot(tools, self.enabled_toolsets, availability, tmap)
+                    except Exception:
+                        logger.debug("banner snapshot refresh failed", exc_info=True)
+
+                threading.Thread(
+                    target=_refresh_banner_snapshot, name="banner-snapshot-refresh", daemon=True,
+                ).start()
+            else:
+                # Cold path: compute live, then persist the snapshot for the next launch.
+                from model_tools import get_toolset_for_tool
+                tools = get_tool_definitions(enabled_toolsets=self.enabled_toolsets,
+                                             disabled_toolsets=self.disabled_toolsets, quiet_mode=True)
+                availability = compute_toolset_availability(self.enabled_toolsets)
+                build_welcome_banner(tools=tools, availability=availability, **banner_kw)
+                try:
+                    tmap = _toolset_map(tools, availability, get_toolset_for_tool)
+                    save_banner_snapshot(tools, self.enabled_toolsets, availability, tmap)
+                except Exception:
+                    logger.debug("banner snapshot save failed", exc_info=True)
 
         # Tool discovery is deferred on the Termux bare prompt path (warnings show once tools
-        # init). On the gateway path the warnings come from the session snapshot.
+        # init). On the snapshot fast path the check walks every check_fn (~180ms) — run it in
+        # the background and let its output land above the prompt (patch_stdout-safe).
         if isinstance((gateway_inventory or {}).get("tool_availability_warnings"), list):
             self._print_gateway_tool_warnings(gateway_inventory["tool_availability_warnings"])
-        elif store is None and os.environ.get("THOR_DEFER_AGENT_STARTUP") != "1":
-            self._show_tool_availability_warnings()
+        elif not on_gateway and os.environ.get("THOR_DEFER_AGENT_STARTUP") != "1":
+            if getattr(self, "_defer_tool_warnings", False):
+                threading.Thread(
+                    target=self._show_tool_availability_warnings,
+                    name="tool-availability-warnings",
+                    daemon=True).start()
+            else:
+                self._show_tool_availability_warnings()
 
         # Low context warning — tied to the runtime guard so guidance cannot drift.
         from agent.model_metadata import MINIMUM_CONTEXT_LENGTH
@@ -164,6 +244,34 @@ class CLIInfoMixin:
             else:
                 fix = t("cli.banner.fix_config")
             self._console_print(f"[dim]   {fix}[/]")
+
+        from thor_cli.model_switch import is_thor_thor_non_agentic
+        if is_thor_thor_non_agentic(getattr(self, "model", "") or ""):
+            self._console_print()
+            self._console_print(f"[bold yellow]{t('cli.banner.thor_models_not_agentic')}[/]")
+            self._console_print(f"[dim]   {t('cli.banner.thor_models_lack_tools')}[/]")
+            self._console_print(f"[dim]   {t('cli.banner.thor_models_switch_hint')}[/]")
+
+        # Project-local skills one-liner: trusted → count; untrusted-with-skills → point at
+        # `thor skills trust`. Never raises.
+        try:
+            from agent.skill_utils import (
+                get_project_skills_dirs, get_untrusted_project_skills_root, iter_skill_index_files)
+            _proj_dirs = get_project_skills_dirs()
+            if _proj_dirs:
+                _n = sum(sum(1 for _ in iter_skill_index_files(d, "SKILL.md")) for d in _proj_dirs)
+                if _n:
+                    self._console_print(f"[dim]{t('cli.banner.project_skills_loaded', count=str(_n))}[/]")
+            else:
+                _untrusted = get_untrusted_project_skills_root()
+                if _untrusted is not None:
+                    _root, _n = _untrusted
+                    self._console_print(
+                        f"[yellow]{t('cli.banner.project_skills_untrusted', count=str(_n), root=str(_root))}[/]")
+        except Exception:
+            logger.debug("project skills banner notice failed", exc_info=True)
+
+        self._console_print()
 
     def _fast_command_available(self) -> bool:
         try:

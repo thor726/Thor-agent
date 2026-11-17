@@ -397,7 +397,7 @@ class GatewaySessionStore:
     # -- banner --------------------------------------------------------------------------
     def banner_inventory(self):
         """The current session snapshot's banner fields (``gateway/session_local_inventory``), as
-        the session snapshot the banner warnings read; None until a session is open."""
+        ``build_welcome_banner`` kwargs; None until a session is open."""
         info = (self.current or {}).get("info") or {}
         if "tools" not in info:
             return None
