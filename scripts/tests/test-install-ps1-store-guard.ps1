@@ -104,18 +104,19 @@ try {
     # 1. Same path for both: refused, before any download.
     $r = Invoke-ResolvedPaths @('-ThorHome', $home1, '-InstallDir', $home1)
     Assert-True ($r.ExitCode -ne 0) 'same ThorHome and InstallDir is refused (non-zero exit)'
-    # pwsh 7's error formatter wraps a long thrown message at the host's
-    # (hidden-console) width, so on a CI image with a narrow console the
-    # refusal arrives with the phrase broken across lines, while Windows
-    # PowerShell 5.1 writes the message unwrapped. Flatten whitespace before
-    # matching: the assertion tests the WORDS of the refusal, not its line
-    # layout. The flattened capture rides into the failure label so a
-    # genuinely different refusal (an earlier throw) is visible in the lane
-    # log instead of just this label.
-    $flat = ($r.All -replace '\s+', ' ').Trim()
+    # pwsh 7's error formatter hard-wraps a long thrown message at the host's
+    # (hidden-console) width -- mid-word, not at spaces (seen on the CI image:
+    # "... the tool | store would land ins | ide the checkout") -- while Windows
+    # PowerShell 5.1 writes the message unwrapped. Compare with ALL whitespace
+    # removed on both sides: the assertion tests the LETTERS of the refusal, not
+    # its line layout. The collapsed capture rides into the failure label so a
+    # genuinely different refusal (an earlier throw) is visible in the lane log
+    # instead of just this label.
+    $flat = ($r.All -replace '\s', '')
+    $needle = 'tool store would land inside the checkout' -replace '\s', ''
     $causeLabel = 'refusal names the tool-store cause (captured: ' +
         $flat.Substring(0, [Math]::Min(400, $flat.Length)) + ')'
-    Assert-True ($flat -match 'tool store would land inside the checkout') $causeLabel
+    Assert-True ($flat -match $needle) $causeLabel
 
     # 2. ThorHome nested inside InstallDir: refused for the same reason.
     $r = Invoke-ResolvedPaths @('-ThorHome', $insideHome, '-InstallDir', $insideDir)
