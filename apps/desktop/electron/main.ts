@@ -11793,10 +11793,12 @@ function wireCommonWindowHandlers(win, { zoom = true }: { zoom?: boolean } = {})
     if ((DEV_SERVER && url.startsWith(DEV_SERVER)) || (!DEV_SERVER && url.startsWith('file:'))) {
       return
     }
+
     event.preventDefault()
     void openExternalUrl(url)
   })
 }
+
 /**
  * The guaranteed exit path for a fullscreened preview guest (#97213).
  *
