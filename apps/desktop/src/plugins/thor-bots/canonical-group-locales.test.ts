@@ -102,7 +102,8 @@ const bannedTerms = {
   ru: /комнат|групп[а-яё]* шлюза|исполнител[а-яё]* групп|драйвер[а-яё]*\s+групп[а-яё]*|каноническ/iu,
   fr: /chats? de groupe|\bsalons?\b|groupes? de (?:la )?passerelle|pilote de groupe|canonique/iu,
   de: /\b(?:gruppen|chat)?(?:raum|räume)|Gateway-Gruppe|Gruppentreiber|kanonisch/iu,
-  es: /chats? grupal(?:es)?|(?<![\p{L}\p{M}])salas?(?![\p{L}\p{M}])|grupos? de (?:la )?pasarela|controlador de grupo|canónic/iu
+  es: /chats? grupal(?:es)?|(?<![\p{L}\p{M}])salas?(?![\p{L}\p{M}])|grupos? de (?:la )?pasarela|controlador de grupo|canónic/iu,
+  id: /\bruang(?:-+ ?ruang)?\b|grup gateway|driver grup|kanonik|ruang yang di-?hosting/iu
 } satisfies Record<keyof typeof BOTS_LOCALES, RegExp>
 
 function visibleStrings(value: unknown): string[] {
@@ -142,7 +143,9 @@ it.each([
   ['de', 'Chaträume öffnen'],
   ['es', 'Abrir chat grupal'],
   ['es', 'Ajustes de la sala'],
-  ['es', 'Ajustes de las salas']
+  ['es', 'Ajustes de las salas'],
+  ['id', 'Buka grup gateway'],
+  ['id', 'Pengaturan ruang']
 ] as const)('rejects competing feature wording in %s: %s', (locale, text) => {
   expect(text).toMatch(bannedTerms[locale])
 })
@@ -156,7 +159,8 @@ it.each([
   ['ru', 'Обновите драйвер видеокарты.'],
   ['fr', 'Ouvrir la discussion de groupe'],
   ['de', 'Zeitraum auswählen'],
-  ['es', 'Úsalas para adjuntar archivos.']
+  ['es', 'Úsalas para adjuntar archivos.'],
+  ['id', 'Obrolan grup yang di-hosting di gateway ini']
 ] as const)('allows ordinary wording in %s: %s', (locale, text) => {
   expect(text).not.toMatch(bannedTerms[locale])
 })
