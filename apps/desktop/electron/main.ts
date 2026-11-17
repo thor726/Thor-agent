@@ -11786,7 +11786,9 @@ function wireCommonWindowHandlers(win, { zoom = true }: { zoom?: boolean } = {})
   installContextMenuBridge(win)
   // Always deny, never open as a side effect: GHSA-9f4c-93c8-jc8g. Trusted
   // links arrive via `thor:openExternal`, not here. See window-open-policy.ts.
-  win.webContents.setWindowOpenHandler(createWindowOpenHandler(origin => rememberLog(`[window-open] denied: ${origin}`)))
+  win.webContents.setWindowOpenHandler(
+    createWindowOpenHandler(origin => rememberLog(`[window-open] denied: ${origin}`))
+  )
   win.webContents.on('will-navigate', (event, url) => {
     if ((DEV_SERVER && url.startsWith(DEV_SERVER)) || (!DEV_SERVER && url.startsWith('file:'))) {
       return
