@@ -256,10 +256,10 @@ kittentts = [
   # raised to <3.15. Declaring it here makes KittenTTS's transitive
   # requirement resolve to the fork. Drop this line when upstream misaki
   # publishes a release that allows 3.14.
-  # NOTE: uv.lock pins this same commit on Thor Labs/misaki. Any rebrand to
+  # NOTE: uv.lock pins this same commit on NousResearch/misaki. Any rebrand to
   # a fork here must point at a repo that actually exists — a dead URL 404s
   # and breaks uv sync in CI (ThorResearch/misaki did exactly that).
-  "misaki[en] @ git+https://github.com/Thor Labs/misaki.git@f03fd2be7346952a83d3d4845c217fc7667f322d ; (platform_machine != 'ARM64' or sys_platform != 'win32') and (platform_machine != 'x86_64' or sys_platform != 'darwin') and sys_platform != 'android'",
+  "misaki[en] @ git+https://github.com/NousResearch/misaki.git@f03fd2be7346952a83d3d4845c217fc7667f322d ; (platform_machine != 'ARM64' or sys_platform != 'win32') and (platform_machine != 'x86_64' or sys_platform != 'darwin') and sys_platform != 'android'",
   "soundfile==0.14.0; (platform_machine != 'ARM64' or sys_platform != 'win32') and (platform_machine != 'x86_64' or sys_platform != 'darwin') and sys_platform != 'android'",
 ]
 # onnxruntime has no Intel macOS or Android wheel. Piper has no Windows ARM64 wheel.

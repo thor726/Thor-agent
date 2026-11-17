@@ -68,13 +68,13 @@ This release reworks how the brand uppercase + Mondwest styling and color hierar
 
 ### Added
 
-- Storybook autodocs enabled for all components ([#21](https://github.com/Thor Labs/design-language/pull/21)).
+- Storybook autodocs enabled for all components ([#21](https://github.com/thor726/Thor-agent/pull/21)).
 
 ## 0.14.2
 
 ### Added
 
-- `Checkbox` component built on Radix primitive ([#20](https://github.com/Thor Labs/design-language/pull/20)).
+- `Checkbox` component built on Radix primitive ([#20](https://github.com/thor726/Thor-agent/pull/20)).
 
 ### Fixed
 

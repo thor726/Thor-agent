@@ -74,7 +74,7 @@ pnpm build     # tsc → dist/ + copies css / fonts / assets
 releases are published automatically when PRs merge to `main`. the github
 workflow bumps the package version from the merged PR labels (`major`, `minor`,
 or `patch`), pushes the tag, publishes to npm via trusted publishing, and
-creates a [GitHub Release](https://github.com/Thor Labs/design-language/releases)
+creates a [GitHub Release](https://github.com/thor726/Thor-agent/releases)
 with notes from `CHANGELOG.md`.
 
 before merging:
