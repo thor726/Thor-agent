@@ -853,10 +853,9 @@ def test_resume_refusal_names_the_clashing_flag_and_the_way_forward(store):
                             {"info": {"launch_request": {"provider": "openrouter"}}})
 
 
-def test_clear_banner_shows_the_new_gateway_sessions_tools_and_short_label(store, monkeypatch):
-    """#134889 CLI-22: `/clear` inside the running CLI redraws the banner from the new gateway
-    session's snapshot (its MCP tools, main's 8-character label), as the startup banner does; this
-    process's own tool registry has no MCP servers and is never walked."""
+def test_clear_on_a_gateway_session_shows_the_compact_banner_and_never_walks_the_registry(store, monkeypatch):
+    """#134889 CLI-22: `/clear` inside the running CLI prints the compact banner (the full banner
+    is the TUI's); this process's own tool registry is never walked for it."""
     import cli as cli_mod
     from cli import ThorCLI
     db, client = store
@@ -868,11 +867,16 @@ def test_clear_banner_shows_the_new_gateway_sessions_tools_and_short_label(store
         client.calls.append((method, params))
         return created if method == "session.create" else {}
     client.rpc = rpc
-    banners = []
-    monkeypatch.setattr("thor_cli.banner.build_welcome_banner", lambda **kw: banners.append(kw))
+    printed = []
+
+    class _ChatConsole:
+        def print(self, *args, **_kw):
+            printed.extend(str(a) for a in args)
+
+    monkeypatch.setattr(cli_mod, "ChatConsole", _ChatConsole)
+    monkeypatch.setattr(cli_mod, "_build_compact_banner", lambda: "compact-banner")
     monkeypatch.setattr(cli_mod, "get_tool_definitions", lambda **_kw: pytest.fail("walked the CLI's registry"))
     monkeypatch.setattr(cli_mod, "_cprint", lambda *_a: None)
-    monkeypatch.setattr("shutil.get_terminal_size", lambda *_a: types.SimpleNamespace(columns=200, lines=50))
     shell = ThorCLI.__new__(ThorCLI)
     shell.__dict__.update(
         _session_db=db, session_id="local-old", compact=False, model="fake-model", provider="custom",
@@ -885,7 +889,4 @@ def test_clear_banner_shows_the_new_gateway_sessions_tools_and_short_label(store
 
     shell._cmd_clear("/clear")
 
-    (banner,) = banners
-    assert banner["session_id"] == "ab12cd34"
-    assert sorted(t["function"]["name"] for t in banner["tools"]) == ["mcp__zeta__ro_probe", "read_file"]
-    assert banner["get_toolset_for_tool"]("mcp__zeta__ro_probe") == "mcp-zeta"
+    assert any("compact-banner" in line for line in printed)

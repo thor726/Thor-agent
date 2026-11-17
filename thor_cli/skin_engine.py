@@ -25,8 +25,8 @@ class SkinConfig:
     branding: dict[str, str] = field(default_factory=dict)
     tool_prefix: str = "┊"
     tool_emojis: dict[str, str] = field(default_factory=dict)  # per-tool emoji overrides
-    banner_logo: str = ""    # Rich-markup ASCII art logo (replaces THOR_AGENT_LOGO)
-    banner_hero: str = ""    # Rich-markup hero art (replaces THOR_MJOLNIR)
+    banner_logo: str = ""    # legacy skin art field (the classic banner render is retired)
+    banner_hero: str = ""    # legacy skin art field (the classic banner render is retired)
     custom_css: str = ""     # Raw CSS injected as a <style> tag on the desktop GUI (32 KiB cap)
 
     def get_color(self, key: str, fallback: str = "") -> str:

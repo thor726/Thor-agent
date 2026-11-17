@@ -99,8 +99,7 @@ class CLILoopsMixin:
         _cprint(f"  {_DIM}{t('cli.display.ui_redrawn')}{_RST}")
 
     def _cmd_clear(self, cmd_original: str):
-        from cli import ChatConsole, _build_compact_banner, _clear_output_history, _cprint, get_tool_definitions
-        from thor_cli.banner import build_welcome_banner
+        from cli import ChatConsole, _build_compact_banner, _clear_output_history, _cprint
         if self._confirm_destructive_slash(
             "clear",
             "This clears the screen and starts a new session.\n"
@@ -124,19 +123,8 @@ class CLILoopsMixin:
         out.cursor_goto(0, 0)
         out.flush()
         cc = ChatConsole()
-        # The banner plan startup uses (show_banner): a gateway session's banner is the new
-        # session's snapshot (its tools, MCP included, and main's short label), never this
-        # process's registry.
-        from thor_cli.cli_info_mixin import banner_plan
-        plan = banner_plan(self, cc)
-        if plan.banner_kw is None:
-            cc.print(_build_compact_banner())
-        elif plan.inventory is not None:
-            self._show_gateway_banner(build_welcome_banner, plan.inventory, plan.banner_kw)
-        else:
-            tools = get_tool_definitions(enabled_toolsets=self.enabled_toolsets,
-                                         disabled_toolsets=self.disabled_toolsets, quiet_mode=True)
-            build_welcome_banner(tools=tools, **plan.banner_kw)
+        # The compact banner is the classic CLI's only banner; the full banner is the TUI's.
+        cc.print(_build_compact_banner())
         _cprint(_fresh_start())
         self._print_random_tip()
 

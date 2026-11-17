@@ -5,7 +5,7 @@ These pin the CLI cold-start contract established in the sub-400ms pass:
 - check_fn availability probes must not import the OpenAI SDK or build
   real HTTP clients (aux_probe_mode).
 - tools/mcp_tool must not import the `mcp` SDK at module import time.
-- build_welcome_banner must not block on the update-check prefetch.
+- the startup path must not block on the update-check prefetch.
 """
 
 import sys
@@ -131,20 +131,6 @@ class TestLazyMcpSdk:
         assert mcp_tool.StdioServerParameters is not None
 
 class TestBannerUpdateCheckNonBlocking:
-    def test_banner_does_not_block_on_pending_update_check(self):
-        """When the prefetch hasn't finished, the banner path must return in
-        well under the old 500ms blocking wait."""
-        from thor_cli import banner
-
-        with patch.object(banner, "_update_check_done", threading.Event()), \
-             patch.object(banner, "_deferred_update_notice_started", False):
-            start = time.perf_counter()
-            behind = banner.get_update_result(timeout=0.05)
-            if behind is None and not banner._update_check_done.is_set():
-                banner._defer_update_notice()
-            elapsed = time.perf_counter() - start
-        assert elapsed < 0.3, f"banner update check blocked {elapsed:.3f}s"
-
     def test_deferred_notice_prints_through_prompt_toolkit_renderer(self):
         """The late notice lands after patch_stdout owns stdout, where raw ESC bytes are
         sanitized into visible ``?[1;33m`` text (#83969). It must reach prompt_toolkit as a

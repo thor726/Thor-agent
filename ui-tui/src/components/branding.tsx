@@ -287,8 +287,8 @@ export function SessionPanel({ info, maxWidth, sid, t }: SessionPanelProps) {
   const toolsTotal = flat(tools).length
 
   // MCP headline counts *connected* servers, not configured-but-disabled ones,
-  // so it matches the classic CLI banner (`sum(s.connected)` in
-  // thor_cli/banner.py) and the "connected" label on the collapse toggle.
+  // so it matches the gateway session inventory's connected count and the
+  // "connected" label on the collapse toggle.
   const mcpServers = info.mcp_servers ?? []
   const mcpConnected = mcpServers.filter(s => s.connected).length
 

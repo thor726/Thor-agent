@@ -2,8 +2,7 @@
 
 ``tui_gateway/server.py::_session_info`` on main put the session's tools (by toolset), skills (by
 category), MCP servers, version / release date, update notice, git branch, project and provider on
-every ``session.info`` / create / resume ``info``; the Ink banner (``components/branding.tsx``) and
-the classic CLI banner (``thor_cli/banner.py::build_welcome_banner``) render them. A canonical
+every ``session.info`` / create / resume ``info``; the Ink banner (``components/branding.tsx``) renders them. A canonical
 session's agent is built on its first turn, so the inventory is computed here from the session's
 frozen policy (the toolsets that turn will run with), with main's own builders, in the owner
 process. Every builder does I/O (skills tree walk, tool ``check_fn`` probes, git), so callers run
