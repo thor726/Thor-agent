@@ -104,16 +104,17 @@ try {
     # 1. Same path for both: refused, before any download.
     $r = Invoke-ResolvedPaths @('-ThorHome', $home1, '-InstallDir', $home1)
     Assert-True ($r.ExitCode -ne 0) 'same ThorHome and InstallDir is refused (non-zero exit)'
-    # pwsh 7's error formatter hard-wraps a long thrown message at the host's
+    # pwsh 7's error renderer hard-wraps a long thrown message at the host's
     # (hidden-console) width -- mid-word, not at spaces (seen on the CI image:
-    # "... the tool | store would land ins | ide the checkout") -- while Windows
-    # PowerShell 5.1 writes the message unwrapped. Compare with ALL whitespace
-    # removed on both sides: the assertion tests the LETTERS of the refusal, not
-    # its line layout. The collapsed capture rides into the failure label so a
-    # genuinely different refusal (an earlier throw) is visible in the lane log
-    # instead of just this label.
-    $flat = ($r.All -replace '\s', '')
-    $needle = 'tool store would land inside the checkout' -replace '\s', ''
+    # "... the tool / store would land ins / ide the checkout") -- and prefixes
+    # every continuation line with its "| " frame, while Windows PowerShell 5.1
+    # writes the message unwrapped. Reduce BOTH sides to letters and digits:
+    # the assertion tests the CONTENT of the refusal, not any rendering
+    # artifact. The collapsed capture rides into the failure label so a
+    # genuinely different refusal (an earlier throw) is visible in the lane
+    # log instead of just this label.
+    $flat = ($r.All -replace '[^a-zA-Z0-9]', '')
+    $needle = 'tool store would land inside the checkout' -replace '[^a-zA-Z0-9]', ''
     $causeLabel = 'refusal names the tool-store cause (captured: ' +
         $flat.Substring(0, [Math]::Min(400, $flat.Length)) + ')'
     Assert-True ($flat -match $needle) $causeLabel
