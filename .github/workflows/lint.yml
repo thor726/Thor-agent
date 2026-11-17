@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v1
         with:
           ref: ${{ inputs.commit }}
           # Full history: the diff's merge base + base worktree, and the ratchet's HEAD^1 (the
@@ -110,6 +110,18 @@ jobs:
       - name: Forbid profile creation outside the provisioning entry point
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && inputs.python }}
         run: just check --only profile-create-entry
+
+      # Inside a tools/ package discovery imports only <pkg>/tool.py, so a tool registered from any
+      # other module in the package is missing with no error.
+      - name: Forbid tool registrations that discovery never imports
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' && inputs.python }}
+        run: just check --only tool-discovery
+
+      # A module turned into a folder ships only if pyproject's packages.find include matches the
+      # new package; otherwise the installed wheel cannot import it while a checkout still can.
+      - name: Forbid imports of packages the wheel would not ship
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' && inputs.python }}
+        run: just check --only packaged-imports
 
       # The OS lanes import only files carrying the matching marker, so a test that fakes
       # macOS (is_macos -> True, sys.platform -> "darwin") without `platforms("macos")` is green on

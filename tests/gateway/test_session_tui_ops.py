@@ -164,7 +164,7 @@ def test_session_export_json_restores_with_its_title_through_import_sessions(tmp
 def _checkpoint(home, cwd, reason):
     """A checkpoint in the owner profile's shared store (what the agent takes before a write)."""
     from thor_constants import reset_thor_home_override, set_thor_home_override
-    from tools.checkpoint_manager import CheckpointManager
+    from agent.checkpoints.manager import CheckpointManager
     token = set_thor_home_override(str(home))
     try:
         assert CheckpointManager(enabled=True).ensure_checkpoint(str(cwd), reason)
@@ -238,7 +238,7 @@ def test_rollback_lists_diffs_and_restores_the_session_cwd_and_rewinds_the_last_
 def _agent_write(home, path, text):
     """A file write Thor made (and recorded in the agent-write ledger that safe restore reads)."""
     from thor_constants import reset_thor_home_override, set_thor_home_override
-    from tools.checkpoint_manager import CheckpointManager
+    from agent.checkpoints.manager import CheckpointManager
     path.write_text(text)
     token = set_thor_home_override(str(home))
     try:

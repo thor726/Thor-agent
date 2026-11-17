@@ -24,7 +24,6 @@ _ENV = ("THOR_INTERACTIVE", "THOR_GATEWAY_SESSION", "THOR_EXEC_ASK", "THOR_YOLO_
 
 def _clear_approvals():
     approval_module._session_approved.clear()
-    approval_module._pending.clear()
     approval_module._permanent_approved.clear()
     approval_module._permanent_approved_by_home.clear()
 

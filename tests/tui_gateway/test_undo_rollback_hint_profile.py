@@ -7,7 +7,7 @@ import time
 from types import SimpleNamespace
 
 from thor_constants import reset_thor_home_override, set_thor_home_override
-from tools.checkpoint_manager import CheckpointManager
+from agent.checkpoints.manager import CheckpointManager
 from tui_gateway import server
 
 

@@ -472,21 +472,20 @@ def test_embedded_revision_keeps_https_ref_advertisement_recovery(installation, 
     monkeypatch.setenv("THOR_REVISION", head)
     monkeypatch.setattr("thor_cli.config.get_project_root", lambda: home)
     monkeypatch.setattr("thor_cli.config.detect_install_method", lambda root: "nix")
-    responses[MAIN_CHANNEL] = (200, source_channel("main", "thor726/thor-agent"))
-    original = subprocess.run
+    responses[MAIN_CHANNEL] = (200, source_channel("main", "thor726/Thor-agent"))
     probes = []
 
     def advertise(args, **kwargs):
-        if "ls-remote" in args:
-            probes.append((args, kwargs))
-            return subprocess.CompletedProcess(args, 0, head + "\trefs/heads/main\n", "")
-        return original(args, **kwargs)
+        probes.append((args, kwargs))
+        return subprocess.CompletedProcess(args, 0, head + "\trefs/heads/main\n", "")
 
-    monkeypatch.setattr(subprocess, "run", advertise)
+    # The remote probe runs owned and bounded (stdin is always DEVNULL there).
+    monkeypatch.setattr("thor_cli._subprocess_compat.bounded_probe_run", advertise)
     assert check_for_updates(home=home)["behind"] == 0
     assert len(probes) == 1
-    assert "https://github.com/thor726/thor-agent.git" in probes[0][0]
-    assert probes[0][1]["stdin"] == subprocess.DEVNULL
+    assert "ls-remote" in probes[0][0]
+    assert "https://github.com/thor726/Thor-agent.git" in probes[0][0]
+    assert probes[0][1]["owned"] is True
     assert probes[0][1]["env"]["GIT_TERMINAL_PROMPT"] == "0"
 
 

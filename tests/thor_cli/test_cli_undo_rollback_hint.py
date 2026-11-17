@@ -9,7 +9,7 @@ import pytest
 
 from thor_state import SessionDB
 from tests.thor_cli.test_cli_init import _make_cli
-from tools.checkpoint_manager import CheckpointManager
+from agent.checkpoints.manager import CheckpointManager
 
 
 @pytest.fixture

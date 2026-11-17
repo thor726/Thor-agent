@@ -162,13 +162,13 @@ def _setup_backend_modal(config: dict) -> None:
     _setup.print_success("Terminal backend: Modal")
     _setup.print_info("Serverless cloud sandboxes. Each session gets its own container.")
     from tools.managed_tool_gateway import is_managed_tool_gateway_ready
-    from tools.tool_backend_helpers import normalize_modal_mode
+    from tools.tool_backend_helpers import coerce_modal_mode
     from thor_cli import thor_subscription
     managed_modal_available = bool(
         tool_backend_helpers.managed_thor_tools_enabled()
         and thor_subscription.get_thor_subscription_features(config).thor_auth_present
         and is_managed_tool_gateway_ready("modal"))
-    modal_mode = normalize_modal_mode(_setup.cfg_get(config, "terminal", "modal_mode"))
+    modal_mode = coerce_modal_mode(_setup.cfg_get(config, "terminal", "modal_mode"))
     use_managed_modal = False
     if managed_modal_available:
         # Default to the configured mode; when unset, to "direct" only if Modal creds exist.

@@ -62,7 +62,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v1
         with:
           fetch-depth: 0  # extract-plugins.py derives each catalog entry's added/updated dates from git log
 
@@ -229,6 +229,10 @@ jobs:
           if [ -f website/build/llms-full.txt ]; then
             cp website/build/llms-full.txt _site/llms-full.txt
           fi
+          # GitHub Pages only honours a custom 404 at the artifact root. Without
+          # this copy, missing /docs/* paths get GitHub's generic 404 instead of
+          # the Docusaurus page (whose /docs/ asset URLs resolve via the proxy).
+          cp website/build/404.html _site/404.html
 
       # Pages serves exactly the newest artifact, so each deploy used to delete
       # the previous build's content-hashed JS/CSS while edge caches (Vercel →

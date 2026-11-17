@@ -326,7 +326,7 @@ def start(
     cfg["auth"] = "oauth"
     thor_home = str(get_thor_home().expanduser().resolve(strict=False))
     flow = DashboardOAuthFlow(
-        flow_id=secrets.token_urlsafe(24), server_name=server_name, profile=None,
+        flow_id=secrets.token_urlsafe(24), server_name=server_name,
         thor_home=thor_home, redirect_uri="", reconnect_live=False)
     with _COMMIT_GUARD:
         older = _ACTIVE.get((thor_home, server_name))
