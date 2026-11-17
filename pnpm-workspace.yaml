@@ -1,4 +1,5 @@
 packages:
+  - packages/thor-ui
   - apps/*
   - ui-tui
   - ui-tui/packages/*

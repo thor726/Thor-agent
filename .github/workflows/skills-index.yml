@@ -18,7 +18,7 @@ permissions:
 jobs:
   build-index:
     # Only run on the upstream repository, not on forks
-    if: github.repository == 'thor726/thor-agent'
+    if: github.repository == 'thor726/Thor-agent'
     runs-on: ubuntu-latest
     # Critical path (Sep 2026): clawhub walk ∥ github taps ~8 min, then skills.sh
     # resolve ~6 min, then a bounded 8 min owner enrichment. 15 min cancelled every
@@ -28,7 +28,7 @@ jobs:
     timeout-minutes: 120
     environment: trusted-automation
     steps:
-      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v1
 
       - name: Get GitHub App token
         id: app-token
@@ -112,7 +112,7 @@ jobs:
     # lacks actions/pull-requests permissions ("Resource not accessible by
     # integration" on `gh workflow run` / `gh pr create`).
     steps:
-      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v1
 
       - name: Trigger Deploy Site workflow
         env:

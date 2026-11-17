@@ -186,7 +186,7 @@ async fn run_update(app: AppHandle) -> Result<()> {
     );
 
     // ---- stage 1: wait for the old desktop to die ------------------------
-    // Windows process teardown is a____SYNCHROTHOR_UP____; the old app must release the
+    // Windows process teardown is asynchronous; the old app must release the
     // packaged payload before it can be replaced. Python readers are unrelated.
     let started = Instant::now();
     emit_stage(&app, "handoff", StageState::Running, None, None);
