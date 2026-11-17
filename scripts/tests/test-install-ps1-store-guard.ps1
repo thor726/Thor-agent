@@ -104,7 +104,18 @@ try {
     # 1. Same path for both: refused, before any download.
     $r = Invoke-ResolvedPaths @('-ThorHome', $home1, '-InstallDir', $home1)
     Assert-True ($r.ExitCode -ne 0) 'same ThorHome and InstallDir is refused (non-zero exit)'
-    Assert-True ($r.All -match 'tool store would land inside the checkout') 'refusal names the tool-store cause'
+    # pwsh 7's error formatter wraps a long thrown message at the host's
+    # (hidden-console) width, so on a CI image with a narrow console the
+    # refusal arrives with the phrase broken across lines, while Windows
+    # PowerShell 5.1 writes the message unwrapped. Flatten whitespace before
+    # matching: the assertion tests the WORDS of the refusal, not its line
+    # layout. The flattened capture rides into the failure label so a
+    # genuinely different refusal (an earlier throw) is visible in the lane
+    # log instead of just this label.
+    $flat = ($r.All -replace '\s+', ' ').Trim()
+    $causeLabel = 'refusal names the tool-store cause (captured: ' +
+        $flat.Substring(0, [Math]::Min(400, $flat.Length)) + ')'
+    Assert-True ($flat -match 'tool store would land inside the checkout') $causeLabel
 
     # 2. ThorHome nested inside InstallDir: refused for the same reason.
     $r = Invoke-ResolvedPaths @('-ThorHome', $insideHome, '-InstallDir', $insideDir)
