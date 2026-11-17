@@ -59,6 +59,7 @@ overrides:
   '@vitest/mocker': 4.1.12
 
 allowBuilds:
+  msw@2.15.0: true  # postinstall worker-script; dev toolchain penuh kini terinstal
   unicode-animations: false
   esbuild@0.28.2: true
   node-pty@1.1.0: true
