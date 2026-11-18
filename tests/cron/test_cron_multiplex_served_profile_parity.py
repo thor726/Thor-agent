@@ -1,0 +1,150 @@
+"""Standalone-vs-served parity for the cron subsystem under ``gateway.multiplex_profiles``.
+
+A profile served by the default multiplexer runs its ticks inside the default profile's process:
+``os.environ`` holds the DEFAULT profile's ``.env`` and the served profile's values exist only
+in its secret scope / home override. Every knob cron reads from ``.env`` and every child env it
+builds must resolve exactly as it would under a standalone ``thor -p <name> gateway run``.
+"""
+
+from pathlib import Path
+
+import pytest
+
+from agent.secret_scope import (
+    build_profile_secret_scope, reset_secret_scope, set_multiplex_active, set_secret_scope,
+)
+from thor_constants import reset_thor_home_override, set_thor_home_override
+
+
+@pytest.fixture
+def two_homes(tmp_path, monkeypatch):
+    root = tmp_path / "thor"
+    alpha = root / "profiles" / "alpha"
+    for home in (root, alpha):
+        (home / "cron").mkdir(parents=True)
+    (root / ".env").write_text(
+        "THOR_CRON_TIMEOUT=111\nTHOR_MODEL=default-model\nTERMINAL_ENV=docker\n"
+        "TERMINAL_DOCKER_IMAGE=default-only-image\nTHOR_LANGUAGE=en\n")
+    (alpha / ".env").write_text("THOR_CRON_TIMEOUT=222\nTHOR_LANGUAGE=zh\n")
+    # The launch (default) profile's .env is what the multiplexer process loaded into os.environ.
+    monkeypatch.setenv("THOR_HOME", str(root))
+    for key, val in (("THOR_CRON_TIMEOUT", "111"), ("THOR_MODEL", "default-model"),
+                     ("TERMINAL_ENV", "docker"), ("TERMINAL_DOCKER_IMAGE", "default-only-image"),
+                     ("THOR_LANGUAGE", "en")):
+        monkeypatch.setenv(key, val)
+    set_multiplex_active(True)
+    home_token = set_thor_home_override(str(alpha))
+    try:
+        yield root, alpha
+    finally:
+        reset_thor_home_override(home_token)
+        set_multiplex_active(False)
+
+
+def test_cron_env_settings_resolve_from_the_served_profile(two_homes):
+    """``THOR_CRON_TIMEOUT`` / ``THOR_MODEL`` are alpha's (or absent) both with the fire-time
+    secret scope installed and on the bare tick thread — never the default profile's environ."""
+    import cron.scheduler as sched
+    from cron.jobs import _oneshot_run_claim_ttl_seconds
+    from cron.scheduler_preflight import _preflight_check_provider_key
+
+    _root, alpha = two_homes
+    captured = {}
+
+    def fake_resolve(**kw):
+        captured.update(kw)
+        return {}
+
+    import thor_cli.runtime_provider as rp
+    original = rp.resolve_runtime_provider
+    rp.resolve_runtime_provider = fake_resolve
+    try:
+        # Tick thread: home override only (due-job scan, pool sizing, claim TTL).
+        assert sched._cron_inactivity_seconds() == 222.0
+        assert _oneshot_run_claim_ttl_seconds() == 1800.0  # 222*3 < floor -> floor, from alpha's value
+        # Fire: secret scope installed as _run_one_job_body does.
+        token = set_secret_scope(build_profile_secret_scope(alpha))
+        try:
+            assert sched._cron_inactivity_seconds() == 222.0
+            _preflight_check_provider_key({"id": "j"}, {"cron": {}})
+            assert captured["target_model"] == ""  # alpha has no THOR_MODEL; default's must not leak
+            with pytest.raises(RuntimeError, match="no model configured"):
+                sched._load_cron_job_config({"id": "j", "name": "j", "prompt": "x"}, "j", "j")
+        finally:
+            reset_secret_scope(token)
+    finally:
+        rp.resolve_runtime_provider = original
+
+
+def test_child_env_for_served_profile_drops_launch_profile_settings(two_homes):
+    """A worker/bot-chat child spawned for served alpha must not inherit the default profile's
+    non-credential ``.env`` settings or bridged ``TERMINAL_*`` policy — a standalone alpha never
+    had them. Alpha's own home pin and non-profile env survive."""
+    from tools.environments.local import build_subprocess_env, strip_launch_profile_env
+
+    root, alpha = two_homes
+    token = set_secret_scope(build_profile_secret_scope(alpha))
+    try:
+        env = strip_launch_profile_env(build_subprocess_env(scrub_secrets=True, inherit_profile_home=True))
+    finally:
+        reset_secret_scope(token)
+    for key in ("THOR_MODEL", "TERMINAL_ENV", "TERMINAL_DOCKER_IMAGE", "THOR_LANGUAGE", "THOR_CRON_TIMEOUT"):
+        assert key not in env, key
+    assert env["THOR_HOME"] == str(alpha)
+    assert "PATH" in env
+
+    # No-op when the scope IS the launch profile (standalone / default profile's own children).
+    reset_thor_home_override(set_thor_home_override(None))
+    home_token = set_thor_home_override(str(root))
+    try:
+        env = strip_launch_profile_env(build_subprocess_env(scrub_secrets=True, inherit_profile_home=True))
+    finally:
+        reset_thor_home_override(home_token)
+    assert env["TERMINAL_ENV"] == "docker"
+    assert env["THOR_MODEL"] == "default-model"
+
+
+def test_interpolated_satellite_cron_timeout_matches_tick_and_job_scope(two_homes):
+    """#137080 sibling: unscoped cron tick must expand dotenv references like the scoped fire.
+
+    Otherwise the literal template is not a float, so the tick silently uses the
+    600-second watchdog instead of the satellite's configured timeout.
+    """
+    import cron.scheduler as sched
+    from cron.env_settings import cron_env_setting
+
+    _root, satellite = two_homes
+    (satellite / ".env").write_text(
+        "PROFILE_TIMEOUT_SECONDS=1800\n"
+        "THOR_CRON_TIMEOUT=${PROFILE_TIMEOUT_SECONDS}\n",
+        encoding="utf-8",
+    )
+
+    assert cron_env_setting("THOR_CRON_TIMEOUT") == "1800"
+    assert sched._cron_inactivity_seconds() == 1800.0
+
+    token = set_secret_scope(build_profile_secret_scope(satellite))
+    try:
+        assert cron_env_setting("THOR_CRON_TIMEOUT") == "1800"
+        assert sched._cron_inactivity_seconds() == 1800.0
+    finally:
+        reset_secret_scope(token)
+
+
+def test_child_env_keeps_launch_managed_dir(two_homes, monkeypatch):
+    """``THOR_MANAGED_DIR`` is deployment bootstrap, not launch-profile residue: a served
+    profile's children keep the launch value even when the launch ``.env`` names the key
+    (pre-fix the leftover file entry would strip it and silently drop managed scope, #135200)."""
+    from tools.environments.local import build_subprocess_env, strip_launch_profile_env
+
+    root, alpha = two_homes
+    (root / ".env").write_text(
+        (root / ".env").read_text() + "THOR_MANAGED_DIR=/user/controlled\n")
+    monkeypatch.setenv("THOR_MANAGED_DIR", "/launch/admin-dir")
+
+    token = set_secret_scope(build_profile_secret_scope(alpha))
+    try:
+        env = strip_launch_profile_env(build_subprocess_env(scrub_secrets=True, inherit_profile_home=True))
+    finally:
+        reset_secret_scope(token)
+    assert env.get("THOR_MANAGED_DIR") == "/launch/admin-dir"
