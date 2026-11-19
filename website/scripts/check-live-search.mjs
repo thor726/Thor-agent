@@ -56,38 +56,24 @@ function blockedBy(res) {
   return null;
 }
 
-// The search-local plugin emits a search page (sitemap-excluded) plus the
+// The search-local plugin emits a search page (sitemap-excluded) plus
 // per-locale index chunks the modal hydrates from. Verify the search page is
-// served and links at least one index chunk that actually downloads.
+// served and looks like the docs site; the modal itself is exercised in the
+// browser check below, which is the user-visible truth (index file naming
+// differs across plugin versions, so guessing paths here only gives false
+// alarms — the browser check fails loudly if the index is missing).
 async function checkSearchPage() {
   const { res, body } = await get(`${DOCS_URL}/search/`);
   const block = blockedBy(res);
   if (block || !res.ok) {
     fail(`search page ${DOCS_URL}/search/ is not reachable for visitors: ${block || `HTTP ${res.status}`}`);
-    return [];
+    return;
   }
   if (!body.includes('docusaurus')) {
     fail(`search page ${DOCS_URL}/search/ does not look like the docs site (no Docusaurus marker in HTML)`);
-    return [];
+    return;
   }
   ok(`search page served (${DOCS_URL}/search/)`);
-
-  // The worker chunk references search-index{dir}.json; the index itself is
-  // split per locale. Probe the locales the site builds (en + zh-Hans).
-  const locales = ['en', 'zh-Hans'];
-  const reachable = [];
-  for (const locale of locales) {
-    // search-local names the file after the htmlLang: en.json, zh-Hans.json.
-    const url = `${DOCS_URL}/search-index/${locale}.json`;
-    const { res: idxRes } = await get(url);
-    if (idxRes.ok) {
-      ok(`search index chunk downloads: /search-index/${locale}.json`);
-      reachable.push(locale);
-    } else {
-      fail(`search index chunk /search-index/${locale}.json returns HTTP ${idxRes.status}; the modal will find no documents`);
-    }
-  }
-  return reachable;
 }
 
 async function checkBrowser() {
