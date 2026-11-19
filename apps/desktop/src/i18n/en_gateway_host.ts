@@ -16,7 +16,7 @@ export const enGatewayHost: GatewayHostTranslations = {
   },
   webAccess: {
     title: 'Web access',
-    intro: 'Open Thor on this computer from your phone or another computer, signed in with your Nous account. Whoever signs in can run commands on this computer.',
+    intro: 'Open Thor on this computer from your phone or another computer, signed in with your Thor account. Whoever signs in can run commands on this computer.',
     failed: "Couldn't change web access",
     running: 'Running',
     stopped: 'Stopped',
@@ -25,7 +25,7 @@ export const enGatewayHost: GatewayHostTranslations = {
     restartNeeded: 'Restart needed',
     unavailable: 'Unavailable',
     notRunningDetail: 'Start it to open Thor from another device.',
-    needsNous: 'Sign in to your Nous account under Providers first.',
+    needsThor: 'Sign in to your Thor account under Providers first.',
     runningLan: 'Open this address on a device on the same network.',
     runningPublic: 'Served through your URL.',
     runningLocal: 'Only this computer can open it. Stop it, then start it again to open it from other devices.',
@@ -40,7 +40,7 @@ export const enGatewayHost: GatewayHostTranslations = {
     startStages: {
       preparing: 'Getting the web app ready. Building it can take a few minutes.',
       building: 'Building the web app. This can take a few minutes.',
-      registering: 'Setting up Nous sign-in for this address.',
+      registering: 'Setting up Thor sign-in for this address.',
       restarting: 'Restarting the gateway to serve the web app.'
     },
     startElapsed: time => `${time} elapsed`,

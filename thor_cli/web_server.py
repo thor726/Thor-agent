@@ -931,7 +931,7 @@ def _no_auth_provider_message(host: str) -> str:
         "    (hash with: python -c \"from "
         "plugins.dashboard_auth.basic import hash_password; "
         "print(hash_password('your-password'))\")\n"
-        "  • OAuth: run `thor dashboard register` (Nous Portal) or "
+        "  • OAuth: run `thor dashboard register` (Thor Portal) or "
         "install a DashboardAuthProvider plugin.\n"
         "  • Deployment token: provision THOR_DASHBOARD_SESSION_TOKEN "
         "(a literal token, or 'file:<path>' naming a secret-manager-decrypted "
@@ -1468,7 +1468,7 @@ def _start_server_runtime(
 
         start_nous_auth_keepalive()
     except Exception as exc:
-        _log.debug("Nous auth keepalive did not start: %s", exc)
+        _log.debug("Thor auth keepalive did not start: %s", exc)
 
     _configure_auth_gate(host, allow_public, ssh_session_token, ssh_owner_nonce)
 

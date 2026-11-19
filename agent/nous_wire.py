@@ -1,4 +1,4 @@
-"""Nous Portal ``anthropic/*`` wire selection when ``nous.anthropic_wire`` is ``auto``.
+"""Thor Portal ``anthropic/*`` wire selection when ``nous.anthropic_wire`` is ``auto``.
 
 Portal serves Claude two ways and Thor cannot tell which from the request: an OpenRouter
 passthrough (today, for every ``anthropic/*`` id) or GMI/Vertex (planned once GMI is back). The

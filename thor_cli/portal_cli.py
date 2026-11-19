@@ -1,4 +1,4 @@
-"""``thor portal`` — the human-readable entry point for Nous Portal."""
+"""``thor portal`` — the human-readable entry point for Thor Portal."""
 from __future__ import annotations
 
 import sys
@@ -12,7 +12,7 @@ SUBSCRIPTION_URL = "https://portal.thor-agent.local/manage-subscription"
 DOCS_URL = "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tool-gateway"
 # Static `portal tools` catalog — the partners Tool Gateway routes to today: (key, label, partner).
 _CATALOG = [
-    ("web", "Web search & extract", "Nous-managed"),
+    ("web", "Web search & extract", "Thor-managed"),
     ("image_gen", "Image generation", "FAL"),
     ("tts", "Text-to-speech", "OpenAI TTS"),
     ("browser", "Browser automation", "Browser Use"),
@@ -47,7 +47,7 @@ def _cmd_status(args) -> int:
         auth = {}
     logged_in = bool(auth.get("logged_in"))
     free_tier = bool(auth.get("free_tier"))
-    _heading("Nous Portal")
+    _heading("Thor Portal")
     if free_tier:
         from thor_cli.anon_auth import FREE_TIER_LABEL, GUEST_MODEL, UPGRADE_HINT
         print(f"  Auth:    {color(f'{FREE_TIER_LABEL} · {GUEST_MODEL}', Colors.GREEN)}")
@@ -68,7 +68,7 @@ def _cmd_status(args) -> int:
     model_cfg = config.get("model") if isinstance(config.get("model"), dict) else {}
     provider = str(model_cfg.get("provider") or "").strip().lower()
     if provider == "nous":
-        print(f"  Model:   {color('✓ using Nous as inference provider', Colors.GREEN)}")
+        print(f"  Model:   {color('✓ using Thor as inference provider', Colors.GREEN)}")
     elif provider:
         print(f"  Model:   currently {provider} (switch with `thor model`)")
 
@@ -78,7 +78,7 @@ def _cmd_status(args) -> int:
     except Exception:
         print("  (could not resolve subscription state)")
         return 0
-    rows = [(feat.label, _feature_state(feat, via_nous="via Nous Portal")) for feat in features.items()]
+    rows = [(feat.label, _feature_state(feat, via_nous="via Thor Portal")) for feat in features.items()]
     width = max((len(r[0]) for r in rows), default=0)
     for label, state in rows:
         print(f"  {label:<{width}}   {state}")
@@ -115,7 +115,7 @@ def _cmd_tools(args) -> int:
 
     _heading("Tool Gateway catalog")
     if not features.nous_auth_present:
-        print(color("  Not logged into Nous Portal — sign in with `thor portal`.", Colors.YELLOW))
+        print(color("  Not logged into Thor Portal — sign in with `thor portal`.", Colors.YELLOW))
         print()
 
     label_width = max(len(label) for _, label, _ in _CATALOG)
@@ -123,7 +123,7 @@ def _cmd_tools(args) -> int:
         if key == "image_gen":
             partner = managed_image_partner(config) or partner
         feat = features.features.get(key)
-        state = color("unknown", Colors.DIM) if feat is None else _feature_state(feat, via_nous="✓ via Nous Portal")
+        state = color("unknown", Colors.DIM) if feat is None else _feature_state(feat, via_nous="✓ via Thor Portal")
         print(f"  {label:<{label_width}}  partner: {partner:<14} {state}")
 
     print()
@@ -133,7 +133,7 @@ def _cmd_tools(args) -> int:
 
 
 def _cmd_login(args) -> int:
-    """One-shot Nous Portal onboarding (login + model + provider + tools).
+    """One-shot Thor Portal onboarding (login + model + provider + tools).
 
     Reuses the exact wiring behind ``thor setup --portal`` so the commands stay in lockstep.
     """
@@ -177,10 +177,10 @@ def add_parser(subparsers) -> None:
     """Register `thor portal` on the given argparse subparsers object."""
     portal_parser = subparsers.add_parser(
         "portal",
-        help="Set up Nous Portal (login, model pick, Tool Gateway); see also `portal info`",
+        help="Set up Thor Portal (login, model pick, Tool Gateway); see also `portal info`",
         description=(
-            "Run `thor portal` with no subcommand to log in to Nous Portal "
-            "and set it up — pick a model, set Nous as your provider, and offer "
+            "Run `thor portal` with no subcommand to log in to Thor Portal "
+            "and set it up — pick a model, set Thor as your provider, and offer "
             "the Tool Gateway (the human-readable alias for `thor auth add "
             "nous --type oauth`, identical to `thor setup --portal`). "
             "Subcommands: login (default), info, open, tools."
@@ -190,11 +190,11 @@ def add_parser(subparsers) -> None:
 
     # `status` is a hidden (no help) back-compat alias; registration order = `thor portal -h` order.
     for name, help_text in (
-        ("login", "Log in to Nous Portal + set it up (default; one-shot onboarding)"),
+        ("login", "Log in to Thor Portal + set it up (default; one-shot onboarding)"),
         ("info", "Show Portal auth + Tool Gateway routing summary"),
         ("status", None),
         ("open", "Open the Portal subscription page in your default browser"),
-        ("tools", "List Tool Gateway tools and which are routed via Nous"),
+        ("tools", "List Tool Gateway tools and which are routed via Thor"),
     ):
         portal_sub.add_parser(name, **({} if help_text is None else {"help": help_text}))
 

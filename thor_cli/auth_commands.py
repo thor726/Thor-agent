@@ -337,14 +337,14 @@ def _add_nous_oauth_credential(args, provider: str) -> PooledCredential:
 
     if (shared := auth_mod._read_shared_nous_state()) and not is_guest_state(shared):
         try:
-            found = f"Found existing Nous OAuth credentials at {auth_mod._nous_shared_store_path()}"
+            found = f"Found existing Thor OAuth credentials at {auth_mod._nous_shared_store_path()}"
         except RuntimeError:
-            found = "Found existing shared Nous OAuth credentials"
+            found = "Found existing shared Thor OAuth credentials"
         print()
         print(found)
         do_import = _ask("Import these credentials? [Y/n]: ")
         if do_import is None or do_import.lower() in {"", "y", "yes"}:
-            print("Rehydrating Nous session from shared credentials...")
+            print("Rehydrating Thor session from shared credentials...")
             rehydrated = auth_mod._try_import_shared_nous_state(timeout_seconds=timeout)
             if rehydrated is not None:
                 return _persist(rehydrated, "Imported")
@@ -909,7 +909,7 @@ def _interactive_strategy() -> None:
 
 
 def auth_upgrade_command(args) -> None:
-    """``thor auth upgrade``: sign the free tier into a Nous account, keeping its connectors."""
+    """``thor auth upgrade``: sign the free tier into a Thor account, keeping its connectors."""
     from thor_cli.anon_auth import upgrade_guest
     code = upgrade_guest(args)
     if code:

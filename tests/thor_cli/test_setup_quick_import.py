@@ -38,7 +38,7 @@ def test_quick_setup_keeps_imported_model_unless_user_switches(switch, nous_runs
         # Enter on every menu (the mode menu's default is Quick Setup), except the keep/switch
         # question when the test switches.
         questions.append(question)
-        if switch and "switch to Nous Portal" in question:
+        if switch and "switch to Thor Portal" in question:
             return 1
         return default
 

@@ -16,7 +16,7 @@ export const frGatewayHost: GatewayHostTranslations = {
   },
   webAccess: {
     title: 'Accès web',
-    intro: "Ouvrez Thor sur cet ordinateur depuis votre téléphone ou un autre ordinateur, avec votre compte Nous. Toute personne connectée peut exécuter des commandes sur cet ordinateur.",
+    intro: "Ouvrez Thor sur cet ordinateur depuis votre téléphone ou un autre ordinateur, avec votre compte Thor. Toute personne connectée peut exécuter des commandes sur cet ordinateur.",
     failed: "Impossible de modifier l'accès web",
     running: 'En cours',
     stopped: 'Arrêté',
@@ -25,7 +25,7 @@ export const frGatewayHost: GatewayHostTranslations = {
     restartNeeded: 'Redémarrage requis',
     unavailable: 'Indisponible',
     notRunningDetail: 'Démarrez-le pour ouvrir Thor depuis un autre appareil.',
-    needsNous: "Connectez-vous d'abord à votre compte Nous dans Fournisseurs.",
+    needsThor: "Connectez-vous d'abord à votre compte Thor dans Fournisseurs.",
     runningLan: 'Ouvrez cette adresse sur un appareil du même réseau.',
     runningPublic: 'Servi via votre URL.',
     runningLocal: "Seul cet ordinateur peut ouvrir l'application web. Arrêtez-la, puis relancez-la pour l'ouvrir depuis d'autres appareils.",
@@ -40,7 +40,7 @@ export const frGatewayHost: GatewayHostTranslations = {
     startStages: {
       preparing: "Préparation de l'application web. Sa compilation peut prendre quelques minutes.",
       building: "Compilation de l'application web. Cela peut prendre quelques minutes.",
-      registering: 'Configuration de la connexion Nous pour cette adresse.',
+      registering: 'Configuration de la connexion Thor pour cette adresse.',
       restarting: "Redémarrage de la passerelle pour servir l'application web."
     },
     startElapsed: time => `Temps écoulé : ${time}`,

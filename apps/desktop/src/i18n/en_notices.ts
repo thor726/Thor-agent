@@ -40,7 +40,7 @@ export const enNotices = {
   },
   connectorOffer: {
     heading: 'Keep your connected apps',
-    body: 'Sign in with a free Nous account to keep the apps you connected, like Gmail or Slack, on your account.'
+    body: 'Sign in with a free Thor account to keep the apps you connected, like Gmail or Slack, on your account.'
   }
 } satisfies Pick<
   Translations,

@@ -162,7 +162,7 @@ def _pick_model_or_prompt(model_list, prompt: str, **kwargs):
 
 def _login_retry_context(args) -> tuple[str, str]:
     """(retry_command, service_host) for a login helper's failure copy, from the ``ProviderConfig``
-    among its positional args. Nous keeps ``thor portal``; every other OAuth provider is retried
+    among its positional args. Thor keeps ``thor portal``; every other OAuth provider is retried
     with ``thor auth add <provider>`` and named by its own portal host (``thor login`` no longer
     exists). Falls back to ``thor model`` when no provider config is in play."""
     pconfig = next((a for a in args if hasattr(a, "id") and hasattr(a, "portal_base_url")), None)

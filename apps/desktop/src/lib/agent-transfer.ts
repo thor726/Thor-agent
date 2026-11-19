@@ -1,7 +1,7 @@
 /**
  * Transfer this agent into a Thor Cloud agent: `thor backup` on the source, stream the archive
  * chunk by chunk to the cloud agent, which restores it with `thor import --keep-host` (it keeps
- * its own Nous Portal sign-in, model and provider, Thor Cloud tools and scheduler).
+ * its own Thor Portal sign-in, model and provider, Thor Cloud tools and scheduler).
  * Pure async over an injected `request`, so it is tested without Electron. Never opens a dialog.
  */
 

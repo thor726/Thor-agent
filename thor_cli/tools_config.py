@@ -222,7 +222,7 @@ def _key(key: str, prompt: str, url: str = "", **extra) -> dict:
 
 
 def _row(name: str, badge: str = "", tag: str = "", env_vars: list = (), **markers) -> dict:
-    """One TOOL_CATEGORIES provider row; ``markers`` are the ``*_provider`` / ``post_setup`` / Nous keys."""
+    """One TOOL_CATEGORIES provider row; ``markers`` are the ``*_provider`` / ``post_setup`` / Thor keys."""
     row = {"name": name}
     if badge:
         row["badge"] = badge
@@ -243,7 +243,7 @@ TOOL_CATEGORIES = {
         "name": "Text-to-Speech", "icon": "🔊",
         "providers": [
             _row("Microsoft Edge TTS", "★ recommended · free", "Good quality, no API key needed", tts_provider="edge"),
-            _row("Nous Subscription", "subscription", "Managed OpenAI TTS billed to your subscription", tts_provider="openai",
+            _row("Thor Subscription", "subscription", "Managed OpenAI TTS billed to your subscription", tts_provider="openai",
                  **_NOUS, managed_nous_feature="tts", override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
             _row("OpenAI TTS", "paid", "High quality voices", [_OPENAI_VOICE_KEY], tts_provider="openai"),
             _row("xAI TTS", tag="Grok voices — uses xAI Grok OAuth or XAI_API_KEY", tts_provider="xai", post_setup="xai_grok"),
@@ -266,7 +266,7 @@ TOOL_CATEGORIES = {
         "providers": [
             _row("Local Whisper", "★ recommended · free", "faster-whisper on-device, no API key", stt_provider="local",
                  post_setup="faster_whisper"),
-            _row("Nous Subscription", "subscription", "Managed OpenAI transcription billed to your subscription",
+            _row("Thor Subscription", "subscription", "Managed OpenAI transcription billed to your subscription",
                  stt_provider="openai", **_NOUS, managed_nous_feature="stt",
                  override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
             _row("OpenAI", "paid", "whisper-1, gpt-4o-transcribe, gpt-transcribe", [_OPENAI_VOICE_KEY], stt_provider="openai"),
@@ -287,7 +287,7 @@ TOOL_CATEGORIES = {
         # Provider rows come from plugins.web.<vendor> via _plugin_web_search_providers(). Only the two
         # non-provider firecrawl setup-flow rows live here: managed via Nous subscription, and self-hosted.
         "providers": [
-            {"name": "Nous Subscription", "badge": "subscription", "tag": "Managed web search and extract billed to your subscription",
+            {"name": "Thor Subscription", "badge": "subscription", "tag": "Managed web search and extract billed to your subscription",
              "web_backend": "firecrawl", "env_vars": [], **_NOUS, "managed_nous_feature": "web",
              "override_env_vars": ["FIRECRAWL_API_KEY", "FIRECRAWL_API_URL", "PERPLEXITY_API_KEY"]},
             {"name": "Firecrawl Self-Hosted", "badge": "free · self-hosted", "tag": "Run your own Firecrawl instance (Docker)",
@@ -302,8 +302,8 @@ TOOL_CATEGORIES = {
         # FAL, Krea and Portal gateways, whose union catalog is `imagegen_backend: "nous"`; the stored model id
         # picks the gateway at run time (tools/image_generation_managed.py).
         "providers": [
-            _row("Nous Subscription", "subscription",
-                 "Managed image generation (FAL, Krea 3 and Krea 2, Nous Portal models) billed to your subscription", **_NOUS,
+            _row("Thor Subscription", "subscription",
+                 "Managed image generation (FAL, Krea 3 and Krea 2, Thor Portal models) billed to your subscription", **_NOUS,
                  managed_nous_feature="image_gen", override_env_vars=["FAL_KEY"], imagegen_backend="nous"),
         ],
     },
@@ -313,7 +313,7 @@ TOOL_CATEGORIES = {
         # are injected at runtime by ``_plugin_video_gen_providers()`` in ``_visible_providers``. Picking this row
         # sets video_gen.provider = "fal" + use_gateway so the FAL plugin routes through the managed queue gateway.
         "providers": [
-            _row("Nous Subscription", "subscription", "Managed FAL video generation billed to your subscription", **_NOUS,
+            _row("Thor Subscription", "subscription", "Managed FAL video generation billed to your subscription", **_NOUS,
                  managed_nous_feature="video_gen", override_env_vars=["FAL_KEY"], video_gen_plugin_name="fal"),
         ],
     },
@@ -347,7 +347,7 @@ TOOL_CATEGORIES = {
                  browser_provider="local", browser_engine="lightpanda", post_setup="lightpanda"),
             # Browser Use hosts its own Chromium, so the local-Chromium install and readiness gate must not
             # apply (with "chromium" this row read "needs setup" forever on machines without a local build).
-            _row("Nous Subscription (Browser Use cloud)", "subscription", "Managed Browser Use billed to your subscription",
+            _row("Thor Subscription (Browser Use cloud)", "subscription", "Managed Browser Use billed to your subscription",
                  browser_provider="browser-use", **_NOUS, managed_nous_feature="browser",
                  override_env_vars=["BROWSER_USE_API_KEY"], post_setup="browserbase"),
         ],
@@ -996,7 +996,7 @@ def _shared_metrics_menu_label(config: dict) -> str:
     """Menu row for shared metrics. Collect-only is an answer the offer no longer has; a profile
     that chose it earlier keeps it, and the row names it rather than reading "off" while it collects."""
     enabled, send = _shared_metrics_state(config)
-    state = "off" if not enabled else ("sending to Nous" if send else "collecting locally")
+    state = "off" if not enabled else ("sending to Thor" if send else "collecting locally")
     return f"Configure shared metrics  ({state})"
 
 
@@ -1084,7 +1084,7 @@ def _first_install_flow(config: dict, enabled_platforms: list[str]) -> None:
         auto_configured = apply_nous_managed_defaults(config, enabled_toolsets=new_enabled, force_fresh=True)
         for ts_key in sorted(auto_configured):
             label = next((l for k, l, _ in CONFIGURABLE_TOOLSETS if k == ts_key), ts_key)
-            print(color(f"  ✓ {label}: using your Nous subscription defaults", Colors.GREEN))
+            print(color(f"  ✓ {label}: using your Thor subscription defaults", Colors.GREEN))
         # Walk through ALL selected tools with provider options or key requirements, so browser (Local vs
         # Browserbase), TTS (Edge vs OpenAI vs ElevenLabs), etc. are shown even when a free provider exists.
         _configure_list(

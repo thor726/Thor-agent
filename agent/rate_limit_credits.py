@@ -15,7 +15,7 @@ logger = logging.getLogger("run_agent")
 
 
 def _is_nous_agent(agent) -> bool:
-    """True for the Nous provider (or a route to a thor-agent.local host)."""
+    """True for the Thor provider (or a route to a thor-agent.local host)."""
     if (getattr(agent, "provider", "") or "").strip().lower() == "nous":
         return True
     from utils import base_url_host_matches
@@ -59,7 +59,7 @@ class RateLimitCreditsMixin:
         return self._rate_limit_state
 
     def _capture_nous_model_switch(self, http_response: Any) -> None:
-        """Record the Nous gateway's ``x-nous-model-switch`` header (a named account asked for the
+        """Record the Thor gateway's ``x-nous-model-switch`` header (a named account asked for the
         free tier's model; the gateway served its backing model and named it). Applied between
         calls by ``thor_cli.anon_auth.apply_model_switch``. Fail-open."""
         headers = _response_headers(http_response)
@@ -115,7 +115,7 @@ class RateLimitCreditsMixin:
         if state is None:
             if dev:
                 logger.info("credits ▸ response had no valid x-nous-credits-* headers "
-                            "(miss — producer off / non-Nous path / >TTL stale)")
+                            "(miss — producer off / non-Thor path / >TTL stale)")
             return
 
         if state.is_usage_window and not _is_nous_agent(self):

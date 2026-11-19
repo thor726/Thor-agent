@@ -382,7 +382,7 @@ def is_foreign_provider_endpoint(provider: Optional[str], base_url: Optional[str
     """True when ``base_url`` is another built-in provider's canonical endpoint, not ``provider``'s.
 
     A persisted session route that pairs one provider with another's endpoint is left over from a
-    switch that kept the old URL (openai-codex + the Nous Portal URL sent the Codex slug to the Portal).
+    switch that kept the old URL (openai-codex + the Thor Portal URL sent the Codex slug to the Portal).
     Only registered providers are judged: a custom or proxy URL is never another provider's canonical one.
     """
     pconfig = PROVIDER_REGISTRY.get(str(provider or "").strip().lower())
@@ -672,22 +672,22 @@ def _openrouter_should_use_pool(requested_provider, model_cfg, explicit_api_key,
 
 
 def _refresh_nous_pool_entry(pool: CredentialPool, entry: Any, pool_api_key: str):
-    """Nous pool entries carry the agent_key (an invoke JWT) which the pool does not refresh on
+    """Thor pool entries carry the agent_key (an invoke JWT) which the pool does not refresh on
     selection (avoids network calls in `thor auth list`); refresh here before falling back to
     singleton auth resolution. Returns (entry, pool_api_key) — key "" when still unusable."""
     min_ttl = _nous_min_key_ttl()
     if _nous_entry_key_usable(entry, min_ttl):
         return entry, pool_api_key
-    logger.debug("Nous pool entry agent_key expired/missing, refreshing selected pool entry")
+    logger.debug("Thor pool entry agent_key expired/missing, refreshing selected pool entry")
     try:
         refreshed = pool.try_refresh_current()
     except Exception as exc:
-        logger.debug("Nous pool entry refresh failed: %s", exc)
+        logger.debug("Thor pool entry refresh failed: %s", exc)
         refreshed = None
     if refreshed is not None:
         entry, pool_api_key = refreshed, _pool_entry_api_key(refreshed)
     if not pool_api_key or not _nous_entry_key_usable(entry, min_ttl):
-        logger.debug("Nous pool entry agent_key still unavailable, falling through to runtime resolution")
+        logger.debug("Thor pool entry agent_key still unavailable, falling through to runtime resolution")
         pool_api_key = ""
     return entry, pool_api_key
 
@@ -930,7 +930,7 @@ class _OAuthRuntimeSpec:
 # ``resolve_*_runtime_credentials`` names.
 _OAUTH_RUNTIME_PROVIDERS: dict[str, _OAuthRuntimeSpec] = {
     "nous": _OAuthRuntimeSpec(_resolve_nous_creds, nous_api_mode, "portal", "expires_at",
-                              "Auto-detected Nous provider but credentials failed"),
+                              "Auto-detected Thor provider but credentials failed"),
     "openai-codex": _OAuthRuntimeSpec(lambda: resolve_codex_runtime_credentials(), "codex_responses", "thor-auth-store",
                                       "last_refresh", "Auto-detected Codex provider but credentials failed"),
     "xai-oauth": _OAuthRuntimeSpec(lambda: resolve_xai_oauth_runtime_credentials(), "codex_responses", "thor-auth-store",

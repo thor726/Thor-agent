@@ -864,7 +864,7 @@ def _attach_nous_plan_usage(row: dict, *, warm: bool):
         from thor_cli.model_picker_usage import nous_picker_usage
         usage = nous_picker_usage(warm=warm, any_age=not warm)
     except Exception:
-        logging.getLogger(__name__).debug("Nous plan usage unavailable", exc_info=True)
+        logging.getLogger(__name__).debug("Thor plan usage unavailable", exc_info=True)
         return None
     if usage is not None:
         row["plan_usage"] = usage.to_payload()
@@ -894,9 +894,9 @@ def _plan_usage_window(g) -> dict:
 
 # health: allow CC -- usage-window plans: one branch attaches plan usage to the Nous row (built in _attach_nous_plan_usage); over target on main
 def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cached_only: bool = False) -> None:
-    """Set ``row["pricing"] = {model_id: {input, output, cache | None, free}}``; for Nous also
+    """Set ``row["pricing"] = {model_id: {input, output, cache | None, free}}``; for Thor also
     ``free_tier`` (account is free-tier) and ``unavailable_models`` (paid models a free user can't pick).
-    ``cached_only`` never hits the network: unknown Nous entitlement fails closed (``free_tier_pending``,
+    ``cached_only`` never hits the network: unknown Thor entitlement fails closed (``free_tier_pending``,
     all models locked) and missing pricing is marked ``pricing_pending``."""
     from thor_cli.models_pricing import (
         _format_price_per_mtok,
@@ -937,7 +937,7 @@ def _apply_pricing(rows: list[dict], *, force_fresh_nous_tier: bool = False, cac
                 row["free_tier_pending"] = True
                 row["unavailable_models"] = list(models)
                 if not row.get("warning"):  # say why every model renders locked
-                    row["warning"] = ("Checking Nous plan entitlement… models unlock on the "
+                    row["warning"] = ("Checking Thor plan entitlement… models unlock on the "
                                       "next picker open or refresh.")
                 continue
         if not raw_pricing:

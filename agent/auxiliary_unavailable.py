@@ -1,4 +1,4 @@
-"""Why an auxiliary client could not be built — and the Nous credential failure behind it.
+"""Why an auxiliary client could not be built — and the Thor credential failure behind it.
 
 ``_resolve_nous_runtime_api`` must swallow the resolver's ``AuthError`` and return None so the
 ladder can still fall back (stored token, fallback_chain). Swallowing it at DEBUG left the goal
@@ -223,9 +223,9 @@ def missing_provider_credentials_message(provider_id: str) -> str:
 
 
 def _nous_credential_present(exc: BaseException) -> bool:
-    """True when a Nous credential exists that failed — a coded error (``invalid_grant``, a quarantine
-    marker, ``refresh_failed``) or persisted Nous auth state. The uncoded "not logged into Nous Portal"
-    with no stored state is the normal condition for users who never chose Nous; the auto-route walk
+    """True when a Thor credential exists that failed — a coded error (``invalid_grant``, a quarantine
+    marker, ``refresh_failed``) or persisted Thor auth state. The uncoded "not logged into Thor Portal"
+    with no stored state is the normal condition for users who never chose Thor; the auto-route walk
     hits it on every discovery pass and must not warn (the ladder already logs its own summary).
     """
     if getattr(exc, "code", None):
@@ -238,10 +238,10 @@ def _nous_credential_present(exc: BaseException) -> bool:
 
 
 def record_nous_credential_failure(exc: BaseException) -> str:
-    """Remember *exc* as the latest Nous credential failure.
+    """Remember *exc* as the latest Thor credential failure.
 
     Logged once per distinct message: WARNING when a real credential failed, DEBUG when Thor was
-    simply never logged into Nous.
+    simply never logged into Thor.
     """
     from thor_cli.auth import format_auth_error
 
@@ -251,7 +251,7 @@ def record_nous_credential_failure(exc: BaseException) -> str:
     code = getattr(exc, "code", None)
     if code and str(code) not in message:
         message = f"{message} (code: {code})"
-    detail = f"Nous Portal runtime credentials unavailable: {message}"
+    detail = f"Thor Portal runtime credentials unavailable: {message}"
     global _last_nous_detail
     with _lock:
         _last_nous_detail = detail
@@ -259,7 +259,7 @@ def record_nous_credential_failure(exc: BaseException) -> str:
         _warned_nous_details.add(detail)
     if first_time:
         level = logging.WARNING if _nous_credential_present(exc) else logging.DEBUG
-        logger.log(level, "Auxiliary Nous client unavailable: %s", detail)
+        logger.log(level, "Auxiliary Thor client unavailable: %s", detail)
     return detail
 
 
@@ -270,6 +270,6 @@ def clear_nous_credential_failure() -> None:
 
 
 def nous_credential_failure_detail() -> Optional[str]:
-    """The latest recorded Nous credential failure, or None when the last resolution succeeded."""
+    """The latest recorded Thor credential failure, or None when the last resolution succeeded."""
     with _lock:
         return _last_nous_detail

@@ -1,7 +1,7 @@
 """``thor import --keep-host``: restore a backup over an agent whose host set part of it up.
 
-A Thor Cloud agent is provisioned by its platform: it is signed in to Nous Portal, its model and
-tools route through Nous, its dashboard is gated by the portal's OAuth client, and its scheduler is
+A Thor Cloud agent is provisioned by its platform: it is signed in to Thor Portal, its model and
+tools route through Thor, its dashboard is gated by the portal's OAuth client, and its scheduler is
 tuned for the container. Replacing that agent with someone's local backup must bring over
 everything that makes the agent theirs (memory, persona, skills, conversations, jobs, settings, and
 their other API keys and logins) while the host-owned pieces stay as the host set them.
@@ -14,7 +14,7 @@ included), under the same ``exclusive_maintenance`` reservation, so nothing here
   destination's value (or stay absent); every other key comes from the archive. Written with the
   comment-preserving config writer onto the archive's own document.
 * The root home's ``.env``: names :func:`host_env_key` matches keep the destination's line.
-* ``auth.json`` at the root and at each ``profiles/<name>/``: the destination's Nous Portal rows
+* ``auth.json`` at the root and at each ``profiles/<name>/``: the destination's Thor Portal rows
   (``providers.nous``, the ``nous`` pool rows, ``active_provider`` when either side used ``nous``);
   every other provider comes from the archive. Merged under the auth-store lock against the live
   store, so a token refresh racing the restore is never rolled back.
@@ -170,7 +170,7 @@ def merge_config(archive_cfg: dict[str, Any], host_cfg: dict[str, Any]) -> dict[
 
 
 def merge_auth(archive_store: dict[str, Any], host_store: dict[str, Any]) -> dict[str, Any]:
-    """The archive's auth store with the destination's Nous Portal sign-in in place of its own."""
+    """The archive's auth store with the destination's Thor Portal sign-in in place of its own."""
     merged = copy.deepcopy(archive_store)
     for section in ("providers", "credential_pool"):
         raw_ours = host_store.get(section)
@@ -301,7 +301,7 @@ def kept_summary(root: Path) -> list[str]:
     signed_in = _NOUS in (store.get("providers") or {})
     return [f"  config.yaml: {', '.join(k for k in HOST_CONFIG_KEYS if k in cfg) or '(none set here)'}",
             f"  .env: {', '.join(names) or '(none set here)'}",
-            f"  auth.json: {'its Nous Portal sign-in' if signed_in else '(not signed in to Nous Portal)'}"]
+            f"  auth.json: {'its Thor Portal sign-in' if signed_in else '(not signed in to Thor Portal)'}"]
 
 
 def create_undo_point(root: Path, external_members: tuple[str, ...] = ()) -> Optional[Path]:

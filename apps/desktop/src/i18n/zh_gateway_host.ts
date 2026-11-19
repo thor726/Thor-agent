@@ -16,7 +16,7 @@ export const zhGatewayHost: GatewayHostTranslations = {
   },
   webAccess: {
     title: '网页访问',
-    intro: '用手机或其他电脑，以你的 Nous 账户登录并打开这台电脑上的 Thor。登录的人可以在这台电脑上运行命令。',
+    intro: '用手机或其他电脑，以你的 Thor 账户登录并打开这台电脑上的 Thor。登录的人可以在这台电脑上运行命令。',
     failed: '无法更改网页访问',
     running: '运行中',
     stopped: '已停止',
@@ -25,7 +25,7 @@ export const zhGatewayHost: GatewayHostTranslations = {
     restartNeeded: '需要重启',
     unavailable: '不可用',
     notRunningDetail: '启动后即可从其他设备打开 Thor。',
-    needsNous: '请先在“提供商”中登录你的 Nous 账户。',
+    needsThor: '请先在“提供商”中登录你的 Thor 账户。',
     runningLan: '在同一网络中的设备上打开此地址。',
     runningPublic: '通过你的网址提供服务。',
     runningLocal: '只有这台电脑可以打开。要从其他设备打开，请先停止，再重新启动。',
@@ -40,7 +40,7 @@ export const zhGatewayHost: GatewayHostTranslations = {
     startStages: {
       preparing: '正在准备网页应用。构建可能需要几分钟。',
       building: '正在构建网页应用，可能需要几分钟。',
-      registering: '正在为此地址设置 Nous 登录。',
+      registering: '正在为此地址设置 Thor 登录。',
       restarting: '正在重启网关以提供网页应用。'
     },
     startElapsed: time => `已用时 ${time}`,

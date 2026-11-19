@@ -11,7 +11,7 @@ type Api = <T>(request: ThorApiRequest) => Promise<T>
 
 /**
  * Thor Cloud for the Webapp. Native Desktop lists cloud agents through its own portal browser
- * session; a browser tab has none, so the gateway serving it asks Nous Portal with its own sign-in
+ * session; a browser tab has none, so the gateway serving it asks Thor Portal with its own sign-in
  * (`GET /api/cloud/agents`). Signing in to one agent is the serving gateway's saved-connection
  * OAuth, the flow Settings ▸ Gateway already runs here.
  */
@@ -30,7 +30,7 @@ export function createBrowserCloudBridge({
 
   return {
     status,
-    // The install signs in to Nous Portal from Settings ▸ Providers; a browser tab cannot run it here.
+    // The install signs in to Thor Portal from Settings ▸ Providers; a browser tab cannot run it here.
     login: async () => ({ ...(await status()), ok: false }),
     logout: async () => ({ ...(await status()), ok: false }),
     discover: (org?: string) =>

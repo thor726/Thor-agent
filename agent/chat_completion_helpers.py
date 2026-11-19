@@ -498,7 +498,7 @@ def _prompt_cache_scope_for_agent(agent) -> str | None:
 
 
 def _merge_nous_portal_messages_extra_body(agent, anthropic_kwargs: dict, api_messages: list) -> dict:
-    """The Nous profile body on the Messages wire, which the profile hook never reaches; never
+    """The Thor profile body on the Messages wire, which the profile hook never reaches; never
     ``provider_preferences`` (OpenAI-wire routing the Portal 400s on)."""
     if getattr(agent, "provider", None) not in {"nous", "nous-portal", "nousresearch"}:
         return anthropic_kwargs
@@ -509,7 +509,7 @@ def _merge_nous_portal_messages_extra_body(agent, anthropic_kwargs: dict, api_me
             anthropic_kwargs.setdefault("extra_body", {}).update(nous_profile.build_extra_body(
                 session_id=getattr(agent, "session_id", None), data_use=data_use_requirement(api_messages)))
     except Exception as exc:
-        logger.debug("Nous Portal extra_body merge failed: %s", exc)
+        logger.debug("Thor Portal extra_body merge failed: %s", exc)
     return anthropic_kwargs
 
 

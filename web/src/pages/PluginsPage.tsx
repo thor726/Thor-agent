@@ -886,7 +886,7 @@ export default function PluginsPage() {
 
           <p className="text-xs tracking-[0.06em] text-text-tertiary">
             {t.pluginsPage.catalogHint ??
-              "Curated, Nous-reviewed plugins pinned to exact commits."}
+              "Curated, Thor-reviewed plugins pinned to exact commits."}
           </p>
 
           <Input

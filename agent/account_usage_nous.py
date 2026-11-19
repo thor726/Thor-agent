@@ -1,7 +1,7 @@
-"""``/usage``'s Nous account views: the portal fetch, the credits and usage-window snapshot (window bars,
+"""``/usage``'s Thor account views: the portal fetch, the credits and usage-window snapshot (window bars,
 Keep going and billing hints), the off-route section and the ``/topup`` balance view.
 
-Kept apart from ``agent.account_usage`` (snapshot types and the other providers' fetchers): only Nous
+Kept apart from ``agent.account_usage`` (snapshot types and the other providers' fetchers): only Thor
 reads the portal account. Late-imports the facade's snapshot types.
 """
 
@@ -42,11 +42,11 @@ def _is_finite_num(v: Any) -> TypeGuard[float]:
 
 def _nous_snapshot(windows: list, details: list, tail: list, *, source: str, plan: Optional[str] = None,
                    usage_window: bool = False) -> Optional[AccountUsageSnapshot]:
-    """Nous snapshot with *tail* lines appended, or None when there is nothing to show."""
+    """Thor snapshot with *tail* lines appended, or None when there is nothing to show."""
     from agent.account_usage import _snapshot
     if not windows and not details:
         return None
-    return _snapshot("nous", source, windows, details + tail, title="Nous credits", plan=plan, usage_window=usage_window)
+    return _snapshot("nous", source, windows, details + tail, title="Thor credits", plan=plan, usage_window=usage_window)
 
 
 def _bp_window(label: str, used_bp: Any, resets_at_ms: Any) -> Optional[AccountUsageWindow]:
@@ -73,7 +73,7 @@ def _window_top_tier_line(reset_at: Optional[datetime], keep_going_on_credits: A
     return f"{_WINDOW_TOP_TIER_USED_UP}{resets}{tail}"
 
 
-_WINDOW_KEEP_GOING_OFF_STATUS = "Keep going on credits: off. Nous sessions wait for the reset."
+_WINDOW_KEEP_GOING_OFF_STATUS = "Keep going on credits: off. Thor sessions wait for the reset."
 _WINDOW_KEEP_GOING_OFF_LINE = "Keep going on credits: off. Thor waits for the reset (turn on in /topup)."
 _WINDOW_KEEP_GOING_ON_LINE = "Keep going on credits: on. Uses your credits when included usage runs out."
 
@@ -175,7 +175,7 @@ def build_nous_credits_snapshot(account_info, *, cta: bool = True) -> Optional[A
 
 
 def _nous_logged_in() -> bool:
-    """Cheap local auth-state check: a Nous access token is present. Fail-open False."""
+    """Cheap local auth-state check: a Thor access token is present. Fail-open False."""
     try:
         from thor_cli.auth import get_provider_auth_state
         tok = (get_provider_auth_state("nous") or {}).get("access_token")
@@ -257,7 +257,7 @@ def apply_header_gauge(snapshot: Optional[AccountUsageSnapshot], credits_state: 
 
 def nous_credits_lines(*, markdown: bool = False, timeout: float = 10.0, credits_state: Any = None,
                        nous_route: bool = True) -> list[str]:
-    """Rendered Nous-credits /usage lines, or [] when there's nothing to show. Independent of any live agent
+    """Rendered Thor-credits /usage lines, or [] when there's nothing to show. Independent of any live agent
     (logged-in gate, then a bounded portal fetch); shared by CLI ``_show_usage`` and the TUI ``session.usage`` RPC.
     Fail-open: any hiccup or timeout → []. THOR_DEV_CREDITS_FIXTURE renders from the fixture instead of the portal.
     ``credits_state`` is the last response's header gauge; when it is ahead of the portal, the bars use it."""
@@ -300,8 +300,8 @@ def _nous_account_view(*, markdown: bool, timeout: float, credits_state: Any,
 
 
 def nous_credits_usage_fields(agent: Any = None, *, nous_route: bool = True) -> dict[str, Any]:
-    """The ``session.usage`` fields for the Nous credits block: ``credits_lines`` (when there are any) and
-    ``credits_usage_window`` for the usage-window layout. Reads *agent*'s live credits headers; off a Nous
+    """The ``session.usage`` fields for the Thor credits block: ``credits_lines`` (when there are any) and
+    ``credits_usage_window`` for the usage-window layout. Reads *agent*'s live credits headers; off a Thor
     route the lines are :func:`nous_usage_lines`' separate section. Never raises."""
     try:
         lines, is_window = nous_credits_view(credits_state=getattr(agent, "_credits_state", None) if agent else None,
@@ -314,12 +314,12 @@ def nous_credits_usage_fields(agent: Any = None, *, nous_route: bool = True) -> 
 
 
 # Heads the Nous section of a session another provider runs, so it never reads as that provider's balance.
-NOUS_OTHER_ROUTE_HEADING = "Nous Portal balance (a separate account: this session runs on another provider)"
+NOUS_OTHER_ROUTE_HEADING = "Thor Portal balance (a separate account: this session runs on another provider)"
 
 
 def nous_usage_lines(*, nous_route: bool, markdown: bool = False, credits_state: Any = None) -> list[str]:
-    """``/usage``'s Nous section, after the active provider's block: the balance whenever Nous is signed
-    in on this profile, whatever provider runs the session. Off a Nous route it carries its own heading,
+    """``/usage``'s Thor section, after the active provider's block: the balance whenever Thor is signed
+    in on this profile, whatever provider runs the session. Off a Thor route it carries its own heading,
     reads with the stored token only and has no top-up lines: that session spends another provider's
     quota, so a top-up nudge would point at the wrong account (a depleted balance keeps its status line)."""
     lines = nous_credits_lines(markdown=markdown, credits_state=credits_state, nous_route=nous_route)
@@ -329,7 +329,7 @@ def nous_usage_lines(*, nous_route: bool, markdown: bool = False, credits_state:
 
 
 def nous_usage_view(*, nous_route: bool, credits_state: Any = None) -> tuple[list[str], Any]:
-    """:func:`nous_usage_lines` and, on a Nous route, the same read's dollar model
+    """:func:`nous_usage_lines` and, on a Thor route, the same read's dollar model
     (``agent.billing_usage.UsageModel``: the classic CLI's two-bar block), so ``/usage`` reads the account once."""
     lines, _window, account = _nous_account_view(markdown=False, timeout=10.0, credits_state=credits_state,
                                                  nous_route=nous_route)

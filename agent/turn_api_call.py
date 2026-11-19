@@ -1,5 +1,5 @@
 """The provider call for the conversation turn's retry loop: ``nous_rate_limit_guard`` (skip
-the attempt while another session's Nous Portal rate limit is active), ``perform_api_call``
+the attempt while another session's Thor Portal rate limit is active), ``perform_api_call``
 (streaming decision, MoA prepared-request handshake, LLM execution middleware wrapper, the
 redirect ``_model_request_active`` bracket and the response-vs-redirect crossing check) and
 ``handle_api_interrupt`` (``InterruptedError`` mid-call). Nothing here imports
@@ -233,7 +233,7 @@ def nous_rate_limit_guard(
     agent: Any, *, _retry: Any, api_messages: Any, messages: Any, conversation_history: Any,
     active_system_prompt: Any, retry_count: Any, compression_attempts: Any, api_call_count: Any,
 ) -> NousRateGuardVerdict:
-    """Skip the call if another session recorded a Nous Portal rate limit: every attempt (incl.
+    """Skip the call if another session recorded a Thor Portal rate limit: every attempt (incl.
     SDK retries) counts against RPH. Never lets the guard itself break the agent loop."""
     from agent.conversation_loop import _arm_fallback_restart
 
@@ -264,11 +264,11 @@ def nous_rate_limit_guard(
                     _nous_msg = anon_auth.FREE_TIER_RATE_LIMIT_CHAT.format(
                         reset=anon_auth.friendly_wait(_nous_remaining))
                 else:
-                    _nous_msg = f"Your Nous account has hit its rate limit; it resets in {reset}."
+                    _nous_msg = f"Your Thor account has hit its rate limit; it resets in {reset}."
                 agent._buffer_vprint(f"⏳ {_nous_msg} Trying fallback...")
                 agent._buffer_diagnostic_status(f"⏳ {_nous_msg}")
                 if agent._try_activate_fallback():
-                    logger.warning("%sNous rate limit recorded (resets in %s) — switched to fallback", agent.log_prefix, reset)
+                    logger.warning("%sThor rate limit recorded (resets in %s) — switched to fallback", agent.log_prefix, reset)
                     active_system_prompt = _arm_fallback_restart(
                         agent, api_messages, active_system_prompt, _retry)
                     retry_count = 0

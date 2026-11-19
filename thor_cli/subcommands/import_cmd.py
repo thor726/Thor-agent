@@ -17,7 +17,7 @@ def build_import_cmd_parser(subparsers, *, cmd_import: Callable) -> None:
         "--force", "-f", action="store_true", help="Overwrite existing files without confirmation")
     import_parser.add_argument(
         "--keep-host", action="store_true",
-        help="Replace this agent with the backup but keep what its host set up: its Nous Portal "
+        help="Replace this agent with the backup but keep what its host set up: its Thor Portal "
         "sign-in, model/provider, tool-gateway, dashboard and scheduler settings, and NOUS_*/THOR_* "
         "keys. A full backup of this agent is written first (the undo point). For Thor Cloud agents")
     import_parser.add_argument(

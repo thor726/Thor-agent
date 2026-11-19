@@ -1,4 +1,4 @@
-"""Normalized Nous Portal account entitlement helpers."""
+"""Normalized Thor Portal account entitlement helpers."""
 
 from __future__ import annotations
 
@@ -91,8 +91,8 @@ class NousToolAccessInfo:
 
 _ANON_ACCOUNT_TIER = "anonymous"
 # Every billing / top-up / entitlement surface says exactly this for the free tier (R-USR-1).
-FREE_TIER_NEEDS_ACCOUNT = "This needs a Nous account. Run `thor auth upgrade`."
-FREE_TIER_NEEDS_ACCOUNT_CHAT = "This needs a Nous account. Use /login to sign in."
+FREE_TIER_NEEDS_ACCOUNT = "This needs a Thor account. Run `thor auth upgrade`."
+FREE_TIER_NEEDS_ACCOUNT_CHAT = "This needs a Thor account. Use /login to sign in."
 
 
 def _is_anonymous_tier(account_info: Optional[NousPortalAccountInfo]) -> bool:
@@ -146,7 +146,7 @@ class NousPortalAccountInfo:
 
     @property
     def is_anonymous_tier(self) -> bool:
-        """The free tier: no Nous account, so no billing, credits, or entitlement to speak of.
+        """The free tier: no Thor account, so no billing, credits, or entitlement to speak of.
         Compared case- and whitespace-insensitively — the claim is wire data."""
         return _normalize_tier(self.account_tier) == _ANON_ACCOUNT_TIER
 
@@ -171,7 +171,7 @@ class NousPortalAccountInfo:
 
 
 def nous_portal_billing_url(account_info: Optional[NousPortalAccountInfo] = None) -> str:
-    """Return the billing URL for a normalized Nous account snapshot."""
+    """Return the billing URL for a normalized Thor account snapshot."""
     try:
         from thor_cli.auth import DEFAULT_NOUS_PORTAL_URL
     except Exception:
@@ -234,7 +234,7 @@ def format_nous_portal_entitlement_message(
     include_refresh_hint: bool = True, coverage_category: Optional[str] = None,
     in_chat: bool = False,
 ) -> Optional[str]:
-    """User-facing guidance for a missing Nous tool-gateway entitlement; ``None`` when entitled.
+    """User-facing guidance for a missing Thor tool-gateway entitlement; ``None`` when entitled.
 
     Entitled = paid access OR a live free pool that covers it (normalized fields, not price:
     purchased credits without a subscription count as paid, an exhausted paid subscription does
@@ -252,29 +252,29 @@ def format_nous_portal_entitlement_message(
                 return None
             if account_info.tool_gateway_entitled:
                 return (
-                    f"{capability} isn't included with your current Nous Portal access. "
+                    f"{capability} isn't included with your current Thor Portal access. "
                     f"Add credits or a subscription to enable it at {billing_url}."
                 )
         elif account_info.tool_gateway_entitled:
             return None
     if account_info is None:
         return (
-            f"Thor could not verify your Nous Portal entitlement, so {capability} is unavailable. "
+            f"Thor could not verify your Thor Portal entitlement, so {capability} is unavailable. "
             f"Run `thor model` to refresh your login, or check billing at {billing_url}."
         )
     if not account_info.logged_in:
         if account_info.inference_credential_present:
             return (
-                f"Nous inference credentials are configured, but Thor cannot verify your Nous Portal "
+                f"Thor inference credentials are configured, but Thor cannot verify your Thor Portal "
                 f"paid access for {capability}. Log in with `thor model` to enable Portal-managed "
                 f"features. Billing and credits are managed at {billing_url}."
             )
         return (
-            f"Log in to Nous Portal to use {capability}: run `thor model`. "
+            f"Log in to Thor Portal to use {capability}: run `thor model`. "
             f"Billing and credits are managed at {billing_url}."
         )
     if account_info.paid_service_access is None:
-        detail = f"Thor could not verify your Nous Portal paid access, so {capability} is unavailable."
+        detail = f"Thor could not verify your Thor Portal paid access, so {capability} is unavailable."
         if account_info.error:
             detail += f" Account lookup failed: {account_info.error}."
         if include_refresh_hint:
@@ -284,8 +284,8 @@ def format_nous_portal_entitlement_message(
     reason = access.reason if access else None
     if reason == "account_missing":
         return (
-            f"Thor could not find a Nous Portal account or organisation for this login, so {capability} "
-            f"is unavailable. Run `thor model` to authenticate again; if the problem persists, contact Nous support."
+            f"Thor could not find a Thor Portal account or organisation for this login, so {capability} "
+            f"is unavailable. Run `thor model` to authenticate again; if the problem persists, contact Thor support."
         )
     if reason == "no_usable_credits" or account_info.paid_service_access is False:
         message = _no_paid_access_message(account_info, capability, billing_url, in_chat=in_chat)
@@ -293,7 +293,7 @@ def format_nous_portal_entitlement_message(
             message += " If you recently bought credits, run `thor model` to refresh Thor."
         return message
     return (
-        f"Your Nous Portal account does not currently have paid service access, "
+        f"Your Thor Portal account does not currently have paid service access, "
         f"so {capability} is unavailable. Add credits or update billing at {billing_url}."
     )
 
@@ -320,27 +320,27 @@ def _no_paid_access_message(
         elif cap is not None:
             cap_detail = f" Your organisation's per-member spend cap is ${cap:.2f}."
         return (
-            f"Your Nous Portal access is paused because you've exceeded the per-member spend cap set by "
+            f"Your Thor Portal access is paused because you've exceeded the per-member spend cap set by "
             f"your organisation.{cap_detail}{credit_detail} Ask your organisation admin to raise the "
             f"member spend cap at {billing_url}, then run `thor model` to refresh."
         )
     if active and paid:
         return (
-            f"Your Nous Portal credits are exhausted{credit_detail}, so {capability} is unavailable. "
+            f"Your Thor Portal credits are exhausted{credit_detail}, so {capability} is unavailable. "
             f"Top up or renew credits at {billing_url}."
         )
     if active and paid is False:
         return (
-            f"Your current Nous Portal plan does not include paid service access, "
+            f"Your current Thor Portal plan does not include paid service access, "
             f"so {capability} is unavailable. Upgrade or add credits at {billing_url}."
         )
     if active is False:
         return (
-            f"Your Nous Portal account has no active subscription or usable credits{credit_detail}, "
+            f"Your Thor Portal account has no active subscription or usable credits{credit_detail}, "
             f"so {capability} is unavailable. Subscribe or add credits at {billing_url}."
         )
     return (
-        f"Your Nous Portal account has no usable paid credits{credit_detail}, so "
+        f"Your Thor Portal account has no usable paid credits{credit_detail}, so "
         f"{capability} is unavailable. Add credits or update billing at {billing_url}."
     )
 
@@ -353,7 +353,7 @@ def reset_nous_portal_account_info_cache() -> None:
 
 
 def get_nous_portal_account_info(*, force_fresh: bool = False, min_jwt_ttl_seconds: int = 60) -> NousPortalAccountInfo:
-    """Normalized Nous Portal account entitlement.
+    """Normalized Thor Portal account entitlement.
 
     A valid unexpired OAuth JWT serves as a local snapshot (UX gating only; the server stays
     authoritative). ``force_fresh=True`` always calls ``/api/oauth/account`` and bypasses the cache.
@@ -420,7 +420,7 @@ def cached_nous_portal_account_info(*, any_age: bool = False) -> Optional[NousPo
             return None
         return info
     except Exception:
-        logging.getLogger(__name__).debug("Cached Nous account info unreadable", exc_info=True)
+        logging.getLogger(__name__).debug("Cached Thor account info unreadable", exc_info=True)
         return None
 
 
@@ -438,7 +438,7 @@ def _account_identity(access_token: str, portal_base_url: Optional[str]) -> str:
 
 
 def _current_account_identity() -> Optional[str]:
-    """``_account_identity`` for the persisted Nous login, without a refresh or network call. None
+    """``_account_identity`` for the persisted Thor login, without a refresh or network call. None
     when logged out."""
     from thor_cli.auth import get_provider_auth_state
 
@@ -495,9 +495,9 @@ def _fresh_account_info(state: dict[str, Any], force_fresh: bool, portal_base_ur
 
 
 def stored_token_account_info() -> Optional[NousPortalAccountInfo]:
-    """The portal account read with the profile's stored Nous token as it is: None when signed out, a guest
+    """The portal account read with the profile's stored Thor token as it is: None when signed out, a guest
     without inference, or a token about to expire. Never refreshes: a refresh writes the auth store, and a
-    balance read for a session on another provider must not touch the Nous credential."""
+    balance read for a session on another provider must not touch the Thor credential."""
     from thor_cli.anon_auth import guest_without_free_tier, held_connectors_token
     from thor_cli.auth import get_provider_auth_state
     state = get_provider_auth_state("nous") or {}
@@ -507,7 +507,7 @@ def stored_token_account_info() -> Optional[NousPortalAccountInfo]:
 
 
 def _info_from_inference_key_pool(portal_base_url: Optional[str]) -> Optional[NousPortalAccountInfo]:
-    """Return an explicit unknown-entitlement snapshot for opaque Nous keys."""
+    """Return an explicit unknown-entitlement snapshot for opaque Thor keys."""
     try:
         entry = _select_nous_pool_entry()
         if entry is None:

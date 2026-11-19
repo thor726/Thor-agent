@@ -173,7 +173,7 @@ export function RelayLinkPanel({
         <Badge tone="secondary">Team Gateway</Badge>
         <span className="text-xs text-muted-foreground">
           {portalUrl
-            ? `${platform.name} reaches this agent through the shared Thor bot. This agent's accounts are linked from Nous Portal.`
+            ? `${platform.name} reaches this agent through the shared Thor bot. This agent's accounts are linked from Thor Portal.`
             : `${platform.name} reaches this agent through the shared Thor bot. Link your ${platform.name} account to it; no bot token needed.`}
         </span>
       </div>
@@ -200,7 +200,7 @@ export function RelayLinkPanel({
           onClick={() => window.open(portalUrl, "_blank", "noopener,noreferrer")}
           prefix={<ExternalLink className="h-4 w-4" />}
         >
-          Link accounts in Nous Portal
+          Link accounts in Thor Portal
         </Button>
       ) : link ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">

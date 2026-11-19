@@ -172,7 +172,7 @@ def _api_key_provider(
 # [, auth_type]])``; OAuth / bespoke rows are full ``ProviderConfig`` objects.
 _REGISTRY_ROWS: tuple[Any, ...] = (
     ProviderConfig(
-        "nous", "Nous Portal", "oauth_device_code", portal_base_url=DEFAULT_NOUS_PORTAL_URL,
+        "nous", "Thor Portal", "oauth_device_code", portal_base_url=DEFAULT_NOUS_PORTAL_URL,
         inference_base_url=DEFAULT_NOUS_INFERENCE_URL, client_id=DEFAULT_NOUS_CLIENT_ID,
         scope=DEFAULT_NOUS_SCOPE),
     ProviderConfig("openai-codex", "OpenAI Codex", "oauth_external", inference_base_url=DEFAULT_CODEX_BASE_URL),
@@ -651,7 +651,7 @@ def _file_lock(
 
     Falls back to a depth-only guard when neither ``fcntl`` nor ``msvcrt`` is available. Callers
     supply their own ``threading.local`` so independent locks (profile store vs global root vs the
-    shared Nous store) track reentrancy separately."""
+    shared Thor store) track reentrancy separately."""
     if getattr(holder, "depth", 0) > 0:
         holder.depth += 1
         try:
@@ -886,7 +886,7 @@ def _save_provider_state_to_source(
     """Persist provider state back to the auth store it was read from.
 
     A token refresh rewrites credentials, not the user's choice of provider: ``active_provider`` is
-    left as it is (a Nous free-tier identity refreshed for a connector call must not become the
+    left as it is (a Thor free-tier identity refreshed for a connector call must not become the
     inference provider of an install that has its own key)."""
     if source_path is None or _same_path(source_path, _auth_file_path()):
         _store_provider_state(auth_store, provider_id, state, set_active=False)
@@ -1192,7 +1192,7 @@ def get_provider_auth_state(provider_id: str) -> Optional[dict[str, Any]]:
 
 
 def nous_token_has_billing_scope() -> bool:
-    """Return True if the currently-held Nous token carries ``billing:manage``.
+    """Return True if the currently-held Thor token carries ``billing:manage``.
 
     Reads the persisted ``scope`` string saved at login (``_save_provider_state``
     stores ``token_data.get("scope") or scope``). A space-delimited match. Used by
@@ -1619,7 +1619,7 @@ def resolve_provider(
     "auto" priority (explicit intent beats a stale OAuth login): 1. CLI api_key/base_url ->
     "openrouter"; 2. config.yaml ``model.provider``; 3. OPENROUTER_API_KEY (or an sk-or- key in
     OPENAI_API_KEY) -> "openrouter"; 4. OpenRouter pool; 5. provider env keys; 6. auth.json ``active_provider``;
-    7. Nous free tier when a claimed guest exists on the desktop's local backend (never created here);
+    7. Thor free tier when a claimed guest exists on the desktop's local backend (never created here);
     8. AWS Bedrock chain; 9. AuthError(no_provider_configured).
 
     ``skip_free_tier`` hides rungs 6-for-a-free-tier-identity and 7: the boot bootstrap asks
@@ -1750,7 +1750,7 @@ _FLAT_OAUTH_TOKEN_KEYS = ("access_token", "refresh_token", "expires_at", "expire
 
 def _quarantine_flat_oauth_state(state: dict[str, Any], provider: str, exc: AuthError) -> None:
     """Strip dead tokens from a flat OAuth state after a terminal runtime refresh failure so
-    subsequent calls fail fast without a network retry (mirrors the Nous / xAI / Codex pattern)."""
+    subsequent calls fail fast without a network retry (mirrors the Thor / xAI / Codex pattern)."""
     for _k in _FLAT_OAUTH_TOKEN_KEYS:
         state.pop(_k, None)
     state["last_auth_error"] = _last_auth_error_marker(
@@ -1791,7 +1791,7 @@ def resolve_nous_access_token(
     insecure: Optional[bool] = None,
     ca_bundle: Optional[str] = None,
     refresh_skew_seconds: int = ACCESS_TOKEN_REFRESH_SKEW_SECONDS) -> str:
-    """Refresh-aware Nous Portal token for managed tool gateways, connectors and account reads, never
+    """Refresh-aware Thor Portal token for managed tool gateways, connectors and account reads, never
     the free model: a guest gets a live held token, else a connectors-only mint NAS never challenges.
     Only a NAS from before thor-portal#1516 challenges that mint; it is worked here as before."""
     from thor_cli.anon_challenge import run_with_challenge
@@ -1823,7 +1823,7 @@ def _resolve_nous_access_token(
 
     with _provider_state_transaction("nous") as (auth_store, state, state_source_path):
         if not state:
-            raise _nous_err("Thor is not logged into Nous Portal.", "nous_auth_missing", relogin=True)
+            raise _nous_err("Thor is not logged into Thor Portal.", "nous_auth_missing", relogin=True)
         portal_base_url = _nous_portal_base_url(state)
         client_id = str(state.get("client_id") or DEFAULT_NOUS_CLIENT_ID)
         verify = _resolve_verify(insecure=insecure, ca_bundle=ca_bundle, auth_state=state)
@@ -1849,7 +1849,7 @@ def _resolve_nous_access_token(
             refresh_token = state.get("refresh_token")
             if not isinstance(access_token, str) or not access_token:
                 raise _nous_err(
-                    "No access token found for Nous Portal login.", "nous_auth_missing_access_token", relogin=True)
+                    "No access token found for Thor Portal login.", "nous_auth_missing_access_token", relogin=True)
 
             if not _is_expiring(state.get("expires_at"), refresh_skew_seconds):
                 if merged_shared:
@@ -1902,14 +1902,14 @@ def _auth_file_cache_key() -> tuple[str, Optional[tuple[Any, ...]]]:
 
 
 def invalidate_nous_auth_status_cache() -> None:
-    """Clear the get_nous_auth_status() memo (for code paths that mutate Nous auth state without
+    """Clear the get_nous_auth_status() memo (for code paths that mutate Thor auth state without
     touching auth.json, e.g. tests; login/logout invalidate via the mtime check automatically)."""
     global _nous_auth_status_cache
     _nous_auth_status_cache = None
 
 
 def get_nous_auth_status() -> dict[str, Any]:
-    """Status snapshot for Nous auth, memoised ~15s keyed on the auth.json mtime.
+    """Status snapshot for Thor auth, memoised ~15s keyed on the auth.json mtime.
 
     Prefers the auth-store provider state (the live source of truth for refresh) and validates it by
     resolving runtime credentials so revoked refresh sessions do not show up as a healthy login."""

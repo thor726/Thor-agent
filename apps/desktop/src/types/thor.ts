@@ -395,7 +395,7 @@ export interface RelayLinkedAccount {
 }
 
 export interface RelayLinksResponse {
-  /** "portal" when the Nous Portal access setting governs this agent: links are made there. */
+  /** "portal" when the Thor Portal access setting governs this agent: links are made there. */
   managed_by?: 'connector' | 'portal'
   portal_url?: string
   platforms: { accounts: RelayLinkedAccount[]; bot_url: null | string; platform: string }[]
@@ -1302,7 +1302,7 @@ export interface ToolProvider {
   /** Web toolset only: capabilities this backend can serve. Search-only
    *  providers (ddgs, brave-free) report ['search']. */
   capabilities?: WebCapability[]
-  /** Set on the "Nous Subscription" rows (e.g. 'web'): served through the
+  /** Set on the "Thor Subscription" rows (e.g. 'web'): served through the
    *  Nous Tool Gateway rather than the user's own key. */
   managed_nous_feature?: null | string
 }

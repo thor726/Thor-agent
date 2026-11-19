@@ -292,7 +292,7 @@ def refresh_interval_seconds() -> float:
 
 def refresh_catalogs() -> bool:
     """Force-refresh every remote catalog the picker reads (manifest, OpenRouter live list, and the
-    Nous Portal recommendations for a Nous account, the only reader), writing each disk cache so the
+    Thor Portal recommendations for a Thor account, the only reader), writing each disk cache so the
     next ``/model`` open in ANY process sees them. Blocking; run it off the event loop."""
     if not _load_catalog_config()["enabled"]:
         return False
@@ -357,7 +357,7 @@ def get_curated_openrouter_models() -> list[tuple[str, str]] | None:
 
 
 def get_curated_nous_models() -> list[str] | None:
-    """Nous Portal's curated model ids from the manifest."""
+    """Thor Portal's curated model ids from the manifest."""
     return [mid for mid, _ in _block_ids(_get_provider_block("nous"))] or None
 
 

@@ -129,8 +129,8 @@ export const githubTheme: DesktopTheme = {
  */
 export const nousTheme: DesktopTheme = {
   name: 'nous',
-  label: 'Nous',
-  description: 'GitHub chrome, Nous blue accent',
+  label: 'Thor',
+  description: 'GitHub chrome, Thor blue accent',
   ...THEME_PRESET_PALETTES.nous,
   typography: {
     fontSans: SYSTEM_SANS,
@@ -329,7 +329,7 @@ export const solarizedTheme: DesktopTheme = {
  */
 export const nousAltTheme: DesktopTheme = {
   name: 'nous-alt',
-  label: 'Nous Alt',
+  label: 'Thor Alt',
   description: 'Glass neutrals, cream on mission-blue',
   ...THEME_PRESET_PALETTES['nous-alt'],
   typography: {

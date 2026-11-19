@@ -15,18 +15,18 @@ export const esSharedMetrics = {
     'Calidad del agente: ediciones fallidas, llamadas a herramientas rotas, bucles atascados, coste por tarea',
   collectedMachine: 'Equipo: sistema operativo, rango de RAM, tipo de GPU, versión de Thor, uso de modelos locales',
   sending:
-    'Si compartes, Thor envía las estadísticas a Nous una vez al día con un ID aleatorio para este perfil. Salvo un aviso único de que Thor se instaló, las estadísticas de antes de aceptar nunca se envían. Puedes cambiarlo cuando quieras en Configuración.',
+    'Si compartes, Thor envía las estadísticas a Thor una vez al día con un ID aleatorio para este perfil. Salvo un aviso único de que Thor se instaló, las estadísticas de antes de aceptar nunca se envían. Puedes cambiarlo cuando quieras en Configuración.',
   readDocs: 'Leer todos los detalles',
-  share: 'Compartir con Nous',
+  share: 'Compartir con Thor',
   off: 'No, gracias',
   saveFailed: 'No se pudo guardar tu elección',
-  sendLabel: 'Compartir estadísticas de uso con Nous',
+  sendLabel: 'Compartir estadísticas de uso con Thor',
   sendDesc:
     'Solo recuentos, enviados una vez al día con un ID aleatorio para este perfil. Nunca tus mensajes, archivos, rutas ni textos de error.',
   unavailable: 'Actualiza el backend de Thor para cambiar este ajuste.',
   stripBody: 'Solo recuentos. Nunca tus mensajes ni archivos.',
   stripReaskBody:
     'Te lo preguntamos de nuevo: una versión anterior podía guardar «No, gracias» antes de que vieras esta pregunta.',
-  stripChoices: { share: 'Compartir con Nous', off: 'No, gracias' },
+  stripChoices: { share: 'Compartir con Thor', off: 'No, gracias' },
   stripDetails: 'Detalles'
 }

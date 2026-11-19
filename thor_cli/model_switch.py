@@ -126,12 +126,12 @@ def format_model_for_display(model_name: str) -> str:
 
 
 def is_nous_thor_non_agentic(model_name: str) -> bool:
-    """True if *model_name* is a real Nous Thor 3/4 chat model (single owner; cli.py uses it too)."""
+    """True if *model_name* is a real Thor Thor 3/4 chat model (single owner; cli.py uses it too)."""
     return bool(model_name and _NOUS_THOR_NON_AGENTIC_RE.search(model_name))
 
 
 def _check_thor_model_warning(model_name: str) -> str:
-    """Warning string if *model_name* is a Nous Thor 3/4 chat model, else ""."""
+    """Warning string if *model_name* is a Thor Thor 3/4 chat model, else ""."""
     return _THOR_MODEL_WARNING if is_nous_thor_non_agentic(model_name) else ""
 
 
@@ -1440,7 +1440,7 @@ def _route_from_model_input(st: _Switch) -> Optional[ModelSwitchResult]:
         from thor_cli.anon_auth import GUEST_MODEL, route_is_welcome_host
         if route_is_welcome_host(st.current_base_url) and st.new_model != GUEST_MODEL:
             return st.fail(
-                f"{st.new_model} needs a Nous account or an API key. "
+                f"{st.new_model} needs a Thor account or an API key. "
                 "Use /login to sign in, or /model to pick another provider.")
     config_routed = _route_configured_provider(st)  # d.5 — deliberately NOT gated on ``not is_custom``
     if isinstance(config_routed, ModelSwitchResult):
@@ -1739,7 +1739,7 @@ _PROVIDER_API_MODE_OVERRIDES: dict[str, Any] = {
 
 def model_derived_api_mode(provider: str, model: str, api_key: str = "") -> Optional[str]:
     """api_mode re-derived from the FINAL model for providers that serve several wire formats behind one
-    endpoint (OpenCode Zen/Go and custom providers extending a family slug, Nous, and any provider profile
+    endpoint (OpenCode Zen/Go and custom providers extending a family slug, Thor, and any provider profile
     declaring ``api_mode_for_model``); None when the provider's wire is fixed by its endpoint. A persisted
     api_mode from an earlier model of such a provider is never authoritative — resume paths must call this
     instead of honoring the row (#96066)."""

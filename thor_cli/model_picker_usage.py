@@ -424,12 +424,12 @@ def nous_picker_usage(*, warm: bool = False, any_age: bool = False) -> Optional[
             get_nous_portal_account_info(force_fresh=on_window)
         return picker_usage_from_account(cached_nous_portal_account_info(any_age=any_age))
     except Exception:
-        logging.getLogger(__name__).debug("Nous plan usage unavailable", exc_info=True)
+        logging.getLogger(__name__).debug("Thor plan usage unavailable", exc_info=True)
         return None
 
 
 def _nous_catalog(*, fetch: bool = False) -> dict[str, dict[str, Any]]:
-    """This profile's Nous ``/v1/models`` rows: its resident cache, one fetch only when ``fetch``. Never a
+    """This profile's Thor ``/v1/models`` rows: its resident cache, one fetch only when ``fetch``. Never a
     catalog cached for another credential (another profile's plan marks different models Large)."""
     from thor_cli.models_pricing import get_pricing_for_provider
     rows = get_pricing_for_provider("nous", cached_only=True) or {}
@@ -527,7 +527,7 @@ def window_plan_default(model_ids: list[str], pricing: Optional[dict] = None) ->
 
 
 def annotate_window_plan_rows(provider_data: dict, model_ids: list) -> tuple[list, Optional[str]]:
-    """``(labels, limit_line)`` for the /model picker's model stage. On a Nous usage-window plan rows carry
+    """``(labels, limit_line)`` for the /model picker's model stage. On a Thor usage-window plan rows carry
     the TUI's ``Large`` / ``Free`` tags, and with a full allowance ``limit_line`` (above the hint) says it
     once, with what happens next. Every other account: the bare ids and None. Display only."""
     if str((provider_data or {}).get("slug") or "").lower() != "nous":

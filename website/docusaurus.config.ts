@@ -8,8 +8,8 @@ const config: Config = {
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://github.com/thor726/Thor-agent',
-  baseUrl: '/docs/',
+  url: 'https://thor726.github.io',
+  baseUrl: '/Thor-agent/docs/',
 
   organizationName: 'thor726',
   projectName: 'thor-agent',
@@ -44,6 +44,18 @@ const config: Config = {
   plugins: [
     // Static /plugins/<name> and /plugins/by/<author> pages generated from the catalog JSON.
     './plugins/plugin-catalog-pages',
+    // Client-side lunr search: self-contained (index built at deploy time from
+    // our own pages), no third-party search account or crawler involved.
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        indexDocs: true,
+        indexBlog: false,
+        indexPages: true,
+        docsRouteBasePath: '/',
+        language: ['en', 'zh'],
+      },
+    ],
     [
       '@docusaurus/plugin-client-redirects',
       {
@@ -147,20 +159,11 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/thor-agent-banner.png',
-    // Algolia DocSearch (replaces @easyops-cn/docusaurus-search-local).
-    // The local plugin shipped a ~16 MB client-side lunr index that every
-    // visitor downloaded and hydrated before their first result; DocSearch
-    // answers from Algolia's servers with no client index at all. These are
-    // public search-only credentials — safe to commit (the admin key is not
-    // in the repo). Index is populated by the Algolia Crawler configured at
-    // crawler.algolia.com; contextualSearch scopes results to the active
-    // locale via the docusaurus_tag/lang facets the crawler records carry.
-    algolia: {
-      appId: '2JLBVEYZN5',
-      apiKey: '9629ec26628d1a126535fd5ef408990d',
-      indexName: 'thor docs',
-      contextualSearch: true,
-    },
+    // Search is served by @easyops-cn/docusaurus-search-local (see plugins):
+    // a client-side lunr index built from our own pages at deploy time. The
+    // previous Algolia DocSearch config pointed at an index that does not
+    // exist under this fork's ownership and returned hits for a third-party
+    // site, so it was removed rather than repointed.
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,

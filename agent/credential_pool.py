@@ -1360,11 +1360,11 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
         return entry
 
     def _sync_nous_entry_from_auth_store(self, entry: PooledCredential) -> PooledCredential:
-        """Sync a Nous device_code entry from auth.json ``providers.nous`` if state differs.
+        """Sync a Thor device_code entry from auth.json ``providers.nous`` if state differs.
 
         Another process refreshing via ``resolve_nous_runtime_credentials``
         writes fresh tokens under ``_auth_store_lock``; adopting them avoids a
-        "refresh token reuse" revocation on the Nous Portal.
+        "refresh token reuse" revocation on the Thor Portal.
         """
         if self.provider != "nous" or entry.source != "device_code":
             return entry
@@ -1382,7 +1382,7 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
             }
             if not any(v not in (None, "") and getattr(entry, k, None) != v for k, v in comparable.items()):
                 return entry
-            logger.debug("Pool entry %s: syncing Nous state from auth.json", entry.id)
+            logger.debug("Pool entry %s: syncing Thor state from auth.json", entry.id)
             field_updates: dict[str, Any] = dict(_CLEAR_STATUS)
             field_updates.update({k: v for k, v in comparable.items() if v})
             extra_updates = dict(entry.extra)
@@ -1391,7 +1391,7 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
             )
             return self._adopt(entry, extra=extra_updates, **field_updates)
         except Exception as exc:
-            logger.debug("Failed to sync Nous entry from auth.json: %s", exc)
+            logger.debug("Failed to sync Thor entry from auth.json: %s", exc)
         return entry
 
     def _sync_device_code_entry_to_auth_store(self, entry: PooledCredential) -> None:
@@ -1399,7 +1399,7 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
 
         Otherwise the next ``load_pool()`` re-seeds the stale singleton state
         over the fresh entry — potentially a consumed single-use refresh
-        token. Applies to Nous, OpenAI Codex and xAI OAuth singletons.
+        token. Applies to Thor, OpenAI Codex and xAI OAuth singletons.
 
         ``set_active=False`` everywhere: a sync-back is a token-rotation side
         effect, not the user choosing a provider; ``_save_provider_state``
@@ -1676,7 +1676,7 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
                     entry = synced
                     # A peer persisted a DIFFERENT usable key: adopt it without re-spending the refresh token.
                     if force and entry.runtime_api_key and entry.runtime_api_key != stale_key:
-                        logger.debug("Nous entry %s: adopting peer-rotated token, skipping refresh", entry.id)
+                        logger.debug("Thor entry %s: adopting peer-rotated token, skipping refresh", entry.id)
                         return entry
                 auth_mod.resolve_nous_runtime_credentials(force_refresh=force, stale_access_token=stale_key or None)
                 updated = self._sync_nous_entry_from_auth_store(entry)
@@ -1777,7 +1777,7 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
         elif self.provider == "nous":
             synced = self._sync_nous_entry_from_auth_store(entry)
             if synced.refresh_token != entry.refresh_token:
-                logger.debug("Nous refresh failed but auth.json has newer tokens — adopting")
+                logger.debug("Thor refresh failed but auth.json has newer tokens — adopting")
                 updated = self._adopt(synced, **_MARK_OK)
                 self._sync_device_code_entry_to_auth_store(updated)
                 return updated
@@ -1786,11 +1786,11 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
                 # nothing about the credential — benching it here emptied the
                 # pool for ~120 sessions ("matched no nous entry ... pool size
                 # 0"). The caller's retry re-syncs once the winner persisted.
-                logger.debug("Nous refresh skipped: auth store lock busy; not benching entry")
+                logger.debug("Thor refresh skipped: auth store lock busy; not benching entry")
                 return entry
             if auth_mod._is_terminal_nous_refresh_error(exc):
                 logger.warning(
-                    "Nous refresh token is terminally invalid (%s); clearing local token state. "
+                    "Thor refresh token is terminally invalid (%s); clearing local token state. "
                     "Re-run 'thor auth add nous' to sign in again.", exc)
                 self._clear_terminal_nous_state(entry, exc)
                 self._quarantine_sources(
@@ -1873,7 +1873,7 @@ class CredentialPool(CredentialPoolSelectionMixin, CredentialPoolAdminMixin, Cre
                     _save_provider_state(auth_store, "nous", state)
                     _save_auth_store(auth_store)
         except Exception as clear_exc:
-            logger.debug("Failed to clear terminal Nous OAuth state: %s", clear_exc)
+            logger.debug("Failed to clear terminal Thor OAuth state: %s", clear_exc)
 
     def _codex_quota_restored_upstream(self, entry: PooledCredential) -> bool:
         """Live-check whether an exhausted Codex entry's quota reset early.

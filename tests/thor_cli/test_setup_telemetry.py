@@ -29,7 +29,7 @@ def test_setup_telemetry_one_answer_sets_both_keys(monkeypatch):
     setup_telemetry(config)
     assert config["telemetry"]["shared_metrics"]["enabled"] is False
     assert config["telemetry"]["shared_metrics"]["send"] is False
-    assert asked == ["Send shared metrics to Nous?"] * 2
+    assert asked == ["Send shared metrics to Thor?"] * 2
 
 
 def test_setup_telemetry_defaults_a_collect_only_profile_to_no(monkeypatch):
@@ -135,7 +135,7 @@ def test_chat_offer_asks_an_undecided_profile_once(monkeypatch):
     consent.offer_consent_before_chat(argparse.Namespace())
 
     assert len(asked) == 1
-    assert asked[0][1] == ["Share with Nous", "No thanks"]
+    assert asked[0][1] == ["Share with Thor", "No thanks"]
     assert consent.consent_state(read_raw_config()) == {"enabled": True, "send": True, "decided": True, "reask": False}
 
 

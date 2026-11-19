@@ -291,7 +291,7 @@ def managed_image_partner(config: dict[str, object]) -> Optional[str]:
     from tools.image_generation_managed import FAL, KREA, PORTAL, managed_route
 
     section = _section(config, "image_gen")
-    return {FAL: "FAL", KREA: "Krea", PORTAL: "Nous Portal"}.get(
+    return {FAL: "FAL", KREA: "Krea", PORTAL: "Thor Portal"}.get(
         managed_route(section.get("provider"), section.get("model")))
 
 

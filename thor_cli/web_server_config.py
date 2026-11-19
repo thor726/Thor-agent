@@ -542,8 +542,8 @@ def _resolve_assignment_credentials(model_cfg: dict, provider: str, provider_ent
 
 
 def _apply_nous_gateway_defaults(cfg: dict) -> list:
-    """Mirror the CLI's post-model-selection behaviour when switching main to Nous: route
-    *unconfigured* tools through the Nous Tool Gateway. Purely additive — tools with a direct
+    """Mirror the CLI's post-model-selection behaviour when switching main to Thor: route
+    *unconfigured* tools through the Thor Tool Gateway. Purely additive — tools with a direct
     key or explicit backend are skipped. Failures never block saving the assignment."""
     try:
         from thor_cli.nous_subscription import apply_nous_managed_defaults

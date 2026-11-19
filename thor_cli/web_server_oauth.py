@@ -135,7 +135,7 @@ def _external_process_cli_command(provider_id: str, default: str) -> str:
 # ``flow``: ``device_code`` = show code + URL + poll; ``external`` = delegated to a terminal/CLI.
 _OAUTH_PROVIDER_CATALOG: tuple[dict[str, Any], ...] = (
     # status_fn None → dispatched via auth.get_<provider>_auth_status.
-    {"id": "nous", "name": "Nous Portal", "flow": "device_code", "cli_command": "thor auth add nous",
+    {"id": "nous", "name": "Thor Portal", "flow": "device_code", "cli_command": "thor auth add nous",
      "docs_url": "https://portal.thor-agent.local", "status_fn": None},
     {"id": "openai-codex", "name": "ChatGPT or Codex Subscription", "flow": "device_code",
      "cli_command": "thor auth add openai-codex", "docs_url": "https://platform.openai.com/docs",
@@ -265,7 +265,7 @@ def _nous_sign_in_poller(session_id: str, sess: dict[str, Any]) -> None:
 
 @_oauth_poller("minimax")
 def _minimax_poller(session_id: str, sess: dict[str, Any]) -> None:
-    """MiniMax poller: PKCE-style ``code_verifier`` + ``user_code`` instead of Nous's
+    """MiniMax poller: PKCE-style ``code_verifier`` + ``user_code`` instead of Thor's
     ``device_code``. Builds the same auth_state as the CLI's ``_minimax_oauth_login`` and persists
     via ``_minimax_save_auth_state`` so the system ends up as after ``thor auth add minimax-oauth``.
     Region is fixed to "global" here; cn-region operators use the CLI's ``--region cn``."""

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # account access, so fidelity can vary by configured backend.
 _REF_CAPABLE = ("nous", "openai", "openai-codex", "openrouter", "krea")
 # Friendly display label per reference-capable provider (desktop pet-gen picker).
-_PROVIDER_LABELS = {"nous": "Nous Portal", "openrouter": "OpenRouter", "openai": "OpenAI", "openai-codex": "OpenAI (Codex)", "krea": "Krea"}
+_PROVIDER_LABELS = {"nous": "Thor Portal", "openrouter": "OpenRouter", "openai": "OpenAI", "openai-codex": "OpenAI (Codex)", "krea": "Krea"}
 
 
 class GenerationError(RuntimeError):
@@ -73,9 +73,9 @@ def _managed_krea_model() -> str | None:
 def _candidate(name: str) -> SpriteProvider | None:
     """The sprite backend for the logical choice *name*, or ``None`` when it cannot serve.
 
-    Nous Subscription is one choice spanning several gateways: a native Krea id under it goes to the
+    Thor Subscription is one choice spanning several gateways: a native Krea id under it goes to the
     Krea backend (the Portal 404s on it), pinned so ``KREA_IMAGE_MODEL`` cannot swap the model, as the
-    image tool's managed route does; with Krea unavailable, Nous cannot serve. Every other choice keeps
+    image tool's managed route does; with Krea unavailable, Thor cannot serve. Every other choice keeps
     its own model resolution (env override, ``image_gen.<provider>.model``): the top-level
     ``image_gen.model`` may be another backend's id.
     """
@@ -92,7 +92,7 @@ def resolve_provider(*, require_references: bool = True, prefer: str | None = No
 
     Preference: ``THOR_PET_IMAGE_PROVIDER`` (QA override, unknown values ignored),
     then *prefer* (desktop picker), then the active provider, then the first available
-    — each only if ref-capable and configured (Nous with a native Krea model only while the
+    — each only if ref-capable and configured (Thor with a native Krea model only while the
     Krea backend is available). With *require_references* off, any available active
     provider is accepted (prompt-only base drafts).
     """
@@ -118,14 +118,14 @@ def resolve_provider(*, require_references: bool = True, prefer: str | None = No
     # to another backend (FAL swaps in its default model; the Portal 404s on it).
     if _available(NOUS_MANAGED_PROVIDER) is not None:
         raise GenerationError(
-            "The selected Nous image model needs the Krea gateway, but that backend is "
-            "unavailable. Check Nous Subscription under `thor tools` → Image Generation."
+            "The selected Thor image model needs the Krea gateway, but that backend is "
+            "unavailable. Check Thor Subscription under `thor tools` → Image Generation."
         )
     if not require_references and active is not None and active.is_available():
         return SpriteProvider(name=getattr(active, "name", "unknown"), provider=active, supports_references=False)
     raise GenerationError(
         "Pet generation needs an image backend that supports reference images. "
-        "Open `thor tools` → Image Generation and configure Nous Portal, "
+        "Open `thor tools` → Image Generation and configure Thor Portal, "
         "OpenRouter, or OpenAI (gpt-image-2) with an API key."
     )
 

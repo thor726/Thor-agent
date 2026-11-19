@@ -83,7 +83,7 @@ class LimitHit:
 # ── catalog reads ────────────────────────────────────────────────────────────────────────────────
 
 def cached_pricing(base_url: str = "") -> dict:
-    """The calling profile's own cached Nous catalog (never fetches); ``base_url`` is not needed for it. Only
+    """The calling profile's own cached Thor catalog (never fetches); ``base_url`` is not needed for it. Only
     the profile-keyed read: a process serving several profiles holds their catalogs side by side, and a
     usage level (Large / Free) is per plan, so another profile's catalog must never answer."""
     try:

@@ -1,4 +1,4 @@
-"""The one Nous sign-in: the plain device-code login every surface renders, plus its states and copy."""
+"""The one Thor sign-in: the plain device-code login every surface renders, plus its states and copy."""
 
 from __future__ import annotations
 
@@ -11,16 +11,16 @@ from typing import Any, Callable, ClassVar, ContextManager, Iterator, Optional
 from thor_cli.auth_constants import httpx
 
 
-UPGRADE_START = "Sign in with a Nous account to unlock more models and tools."
+UPGRADE_START = "Sign in with a Thor account to unlock more models and tools."
 UPGRADE_ALREADY_SIGNED_IN = "Already signed in."
 UPGRADE_DO_NOT_SHARE = "Do not share this code."
 UPGRADE_TIMED_OUT = "That sign-in link has expired. Start again whenever you're ready."
 UPGRADE_NOT_COMPLETED = "Sign-in didn't finish. Try again whenever you're ready."
 # The account service was busy or unreachable mid sign-in (an ``anon_*`` code from
 # ``anon_auth.classify_mint_exception``): nothing was saved, so the copy reassures before the way forward.
-UPGRADE_SERVICE_BUSY = ("Signing in couldn't finish because the Nous service is busy. "
+UPGRADE_SERVICE_BUSY = ("Signing in couldn't finish because the Thor service is busy. "
                         "Try again in {wait}. Your session is still here in the meantime.")
-UPGRADE_SERVICE_UNREACHABLE = ("The Nous service couldn't be reached to finish signing you in. "
+UPGRADE_SERVICE_UNREACHABLE = ("The Thor service couldn't be reached to finish signing you in. "
                                "Check your internet connection and try again. Your session is still here.")
 
 UPGRADE_NO_DEFAULT_TERMINAL = "No default model is set yet; run `thor model` to pick one."
@@ -258,7 +258,7 @@ def run_sign_in(
     scope: Optional[Callable[[], ContextManager[Any]]] = None,
     client_factory: Optional[Callable[[float, Any], ContextManager[httpx.Client]]] = None,
 ) -> Iterator[SignInState]:
-    """Sign in with a Nous account: the plain device-code login. Yields :class:`SignInState`s.
+    """Sign in with a Thor account: the plain device-code login. Yields :class:`SignInState`s.
 
     One composition behind every surface: device code, then a cancel-aware token poll on one
     deadline, then the save. The save is where the guest handoff hooks in (``guest_handoff``): a free

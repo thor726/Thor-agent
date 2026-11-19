@@ -62,7 +62,7 @@ def build_mcp_parser(subparsers, *, cmd_mcp: Callable) -> None:
     # Catalog (Nous-approved MCPs shipped with the repo)
     mcp_sub.add_parser(
         "picker", help="Interactive catalog picker (also the default for `thor mcp`)")
-    mcp_sub.add_parser("catalog", help="List Nous-approved MCPs available for one-click install")
+    mcp_sub.add_parser("catalog", help="List Thor-approved MCPs available for one-click install")
     mcp_install_p = mcp_sub.add_parser(
         "install", help="Install a catalog MCP by name (e.g. `thor mcp install deepwiki`)")
     mcp_install_p.add_argument("identifier", help="Catalog entry name (or `official/<name>`)")

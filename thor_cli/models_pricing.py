@@ -1,7 +1,7 @@
 """Live model pricing.
 
 OpenRouter-compatible ``/v1/models`` pricing fetch with a per-endpoint/per-credential cache,
-Nous Portal sale chrome and org-policy filtering, and the Vercel AI Gateway / Novita / Fireworks /
+Thor Portal sale chrome and org-policy filtering, and the Vercel AI Gateway / Novita / Fireworks /
 DeepInfra pricing adapters. Split out of ``thor_cli.models``; helpers still defined there are
 looked up on ``thor_cli.models`` at call time so ``patch("thor_cli.models.<name>")`` mocks keep
 intercepting.
@@ -164,7 +164,7 @@ def _sale_pct(current: Any, original: Any) -> int | None:
 
 
 def compute_sale_discount(prompt: str, completion: str, original: Any) -> tuple[int, str, str] | None:
-    """Sale chrome from gateway ``pricing.original`` (Nous Portal only; callers gate on the provider
+    """Sale chrome from gateway ``pricing.original`` (Thor Portal only; callers gate on the provider
     and opted in via ``include_sale_original=True``): ``(discount_percent, was_prompt_raw,
     was_completion_raw)`` when ``original`` is a dict and the current prompt (fallback: completion)
     rate is strictly below the original. Free / $0 models get a flat 100% off, with "was" prices
@@ -235,7 +235,7 @@ def fetch_models_with_pricing(
 ) -> dict[str, dict[str, Any]]:
     """Fetch ``/v1/models`` (any OpenRouter-compatible endpoint) → ``{model_id: {prompt, completion,
     ...}}``, cached per *base_url* and per credential so one caller's catalog never answers
-    another's read. *include_sale_original* (Nous Portal only) copies the gateway's pre-discount
+    another's read. *include_sale_original* (Thor Portal only) copies the gateway's pre-discount
     ``pricing.original`` rates through as a nested ``original`` dict for sale chrome."""
     from thor_cli.chat_catalog import catalog_item_is_generation
     from thor_cli.models import _openrouter_model_supports_tools
@@ -329,7 +329,7 @@ _DEFAULT_NOUS_INFERENCE_BASE = "https://inference-api.thor-agent.local"
 
 
 def _resolve_nous_pricing_credentials() -> tuple[str, str]:
-    """``(api_key, base_url)`` for Nous Portal pricing; base_url is the bare origin (no ``/v1``).
+    """``(api_key, base_url)`` for Thor Portal pricing; base_url is the bare origin (no ``/v1``).
     Precedence mirrors runtime credential resolution: ``NOUS_INFERENCE_BASE_URL`` (staging /
     preview) → resolved credential ``base_url`` → production default. Without the override a
     staging profile's sale ``pricing.original`` would never reach the pickers."""
@@ -374,7 +374,7 @@ def _fetch_nous_pricing(api_key: str, base_url: str, *, force_refresh: bool) -> 
 
 
 def nous_policy_allowed_ids(*, force_refresh: bool = False) -> Optional[set[str]]:
-    """The Nous model ids the caller's org may reach (keys of an authenticated ``GET /v1/models``,
+    """The Thor model ids the caller's org may reach (keys of an authenticated ``GET /v1/models``,
     which omits policy-blocked rows), or ``None`` to not filter: no policy (or a token too old to
     say), an anonymous read (unfiltered catalog), or an empty read (a fetch failure, not an org
     that may reach nothing)."""
@@ -542,7 +542,7 @@ def _novita_pricing_scope() -> str:
 
 
 def get_cached_nous_inference_base_url() -> str:
-    """The profile's persisted Nous endpoint (bare origin, no ``/v1``) without refreshing auth."""
+    """The profile's persisted Thor endpoint (bare origin, no ``/v1``) without refreshing auth."""
     try:
         from thor_cli.auth import (
             _load_auth_store, _load_provider_state, _optional_base_url, _validate_nous_inference_url_from_network,

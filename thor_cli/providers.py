@@ -142,7 +142,7 @@ ALIASES: dict[str, str] = {alias: canon for canon, aliases in _ALIAS_GROUPS.item
 # -- Display labels for providers not in the models.dev catalog ---------------
 
 _LABEL_OVERRIDES: dict[str, str] = {
-    "moa": "Mixture of Agents", "nous": "Nous Portal", "openai-codex": "ChatGPT or Codex Subscription",
+    "moa": "Mixture of Agents", "nous": "Thor Portal", "openai-codex": "ChatGPT or Codex Subscription",
     "stepfun": "StepFun Step Plan", "xiaomi": "Xiaomi MiMo", "gmi": "GMI Cloud",
     "upstage": "Upstage Solar", "actual": "Actual Computer", "tencent-tokenhub": "Tencent TokenHub",
     "nebius-token-factory": "Nebius Token Factory", "tencent-tokenplan": "Tencent TokenPlan", "lmstudio": "LM Studio",
@@ -429,7 +429,7 @@ def host_mandated_api_mode(base_url: str = "") -> Optional[str]:
 
 
 def nous_api_mode(model: str = "") -> str:
-    """Wire protocol for a Nous Portal model. Portal serves its ``anthropic/*`` catalog on a native
+    """Wire protocol for a Thor Portal model. Portal serves its ``anthropic/*`` catalog on a native
     Messages route alongside OpenAI-compatible chat/completions for everything else.
 
     ``anthropic/*`` rides chat/completions by default for now (``nous.anthropic_wire``). Measured
@@ -440,7 +440,7 @@ def nous_api_mode(model: str = "") -> str:
     (thor726/api#227 carries the diagnostics); flip the default back to ``native`` when it is
     fixed. Cost of ``chat``: prior-turn thinking travels as OpenAI-style reasoning fields instead of
     signed native blocks, and cache_control scopes are translated by the portal's adapter.
-    Empty/unknown model defaults to ``chat_completions`` (the historical Nous transport)."""
+    Empty/unknown model defaults to ``chat_completions`` (the historical Thor transport)."""
     if str(model or "").strip().lower().startswith("anthropic/"):
         # ``auto`` starts on chat too: it is safe on every upstream, and ``agent/nous_wire.py``
         # promotes the session to native from the first response when the upstream allows it.
@@ -460,7 +460,7 @@ def _nous_anthropic_wire() -> str:
 
 
 def determine_api_mode(provider: str, base_url: str = "", model: str = "") -> str:
-    """API mode (wire protocol) for a provider/endpoint: host-mandated mode, then Nous dual-wire
+    """API mode (wire protocol) for a provider/endpoint: host-mandated mode, then Thor dual-wire
     (model-derived — the overlay alone says openai_chat and would pin Claude on the wrong wire),
     then the known provider's transport, then bedrock, else ``chat_completions``."""
     if is_actual_route(provider, base_url):

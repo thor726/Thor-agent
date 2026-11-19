@@ -2,7 +2,7 @@
 
 The gateway serves the Webapp (``gateway.webapp_listener``) from the ``webapp:`` block of its home's
 ``config.yaml``, read when it starts, so this writes that home's config and the caller restarts the
-gateway. Sign-in is the user's Nous account (a self-hosted portal client registered with the right
+gateway. Sign-in is the user's Thor account (a self-hosted portal client registered with the right
 callback); a gated bind without it would keep the Webapp off. Two shapes:
 
 - ``lan``: ``webapp.host: 0.0.0.0``, opened at ``http://<this machine's LAN address>:<port>``; the
@@ -11,7 +11,7 @@ callback); a gated bind without it would keep the Webapp off. Two shapes:
   ``webapp.public_url`` engages the gate on the loopback bind and fixes the callback.
 
 Of the config it writes only the ``webapp:`` block; ``dashboard.public_url`` belongs to the standalone
-dashboard, which may sit behind its own tunnel or proxy. Nous sign-in uses a portal client of Web
+dashboard, which may sit behind its own tunnel or proxy. Thor sign-in uses a portal client of Web
 Access's own, never the dashboard's ``THOR_DASHBOARD_OAUTH_CLIENT_ID``, so registering the Webapp's
 callback cannot change the redirect URI the dashboard's sign-in needs. Its id is kept in a user-only
 file under the gateway home, which the gateway reads when it serves the Webapp; ``.env`` is untouched.
@@ -73,7 +73,7 @@ def gateway_home() -> Path:
 
 
 def nous_signed_in() -> bool:
-    """Whether this home holds a Nous account to register sign-in under (a free-tier guest has none).
+    """Whether this home holds a Thor account to register sign-in under (a free-tier guest has none).
     Refresh-free: it reads the auth store and never spends a refresh token."""
     from thor_cli.auth_nous import get_nous_auth_status_local
 
@@ -100,7 +100,7 @@ def sign_in_client(home) -> Optional[tuple[str, str]]:
 
 
 def registered_lan_origin(home: Path, port: int) -> Optional[str]:
-    """``http://<LAN address>:<port>`` when Web Access last registered Nous sign-in for *home*'s
+    """``http://<LAN address>:<port>`` when Web Access last registered Thor sign-in for *home*'s
     Webapp on the LAN at that address and *port*, and the address is still this machine's; else None.
     Sign-in returns only to the callback the Portal has, so ``thor webapp`` opens this address."""
     try:
@@ -143,7 +143,7 @@ def _register_nous_sign_in(callback_url: str) -> None:
             name=None if existing else f"webapp_{_generate_dashboard_name()}",
             custom_redirect_uri=callback_url, existing_client_id=existing)
     except Exception as exc:
-        raise WebappAccessError(f"Couldn't register Nous sign-in: {exc}") from exc
+        raise WebappAccessError(f"Couldn't register Thor sign-in: {exc}") from exc
     path = home / _REGISTRATION_PATH
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     record = {"own_client": True, "portal": portal, "client_id": str(result["client_id"]), "callback": callback_url}
@@ -157,7 +157,7 @@ def plan(mode: str, public_url: Optional[str] = None) -> tuple[str, Optional[int
     claim of a standalone profile that has none (:func:`_port_to_serve`), so Start runs it, in the
     config write scope, before any slow or lasting step. A refusal before that claim writes nothing."""
     if not nous_signed_in():
-        raise WebappAccessError("Sign in to your Nous account under Providers first.")
+        raise WebappAccessError("Sign in to your Thor account under Providers first.")
     if mode == "lan":
         address = lan_address()
         if address is None:
@@ -172,7 +172,7 @@ def plan(mode: str, public_url: Optional[str] = None) -> tuple[str, Optional[int
     else:
         raise WebappAccessError(f"Unknown access mode {mode!r}.")
     if not nous_signed_in():
-        raise WebappAccessError("Sign in to your Nous account under Providers first.")
+        raise WebappAccessError("Sign in to your Thor account under Providers first.")
     return host, port, pinned, f"{url}/auth/callback"
 
 
@@ -305,7 +305,7 @@ def build_bundle() -> None:
 
 
 def register(callback_url: str) -> None:
-    """Register Nous sign-in for *callback_url* on Web Access's own portal client, unless it already
+    """Register Thor sign-in for *callback_url* on Web Access's own portal client, unless it already
     carries that callback on this Portal, so the callback follows a changed LAN address or URL.
     Writes no config: it waits on the portal, so callers do it before taking the config lock."""
     _register_nous_sign_in(callback_url)

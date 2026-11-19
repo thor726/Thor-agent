@@ -328,7 +328,7 @@ def _select_nous_invoke_jwt(
     if _nonempty_str(access_token):
         state["access_token"] = access_token
     _set_nous_agent_key_from_invoke_jwt(state)
-    logger.debug("Nous inference auth: using NAS invoke JWT")
+    logger.debug("Thor inference auth: using NAS invoke JWT")
     _oauth_trace(
         "nous_invoke_jwt_selected", sequence_id=sequence_id,
         access_token_fp=_token_fingerprint(state.get("access_token")))
@@ -376,7 +376,7 @@ def _nous_shared_store_path() -> Path:
             resolved = path
         if resolved == real_home_shared:
             raise RuntimeError(
-                f"Refusing to touch real user shared Nous auth store during test run: "
+                f"Refusing to touch real user shared Thor auth store during test run: "
                 f"{path}. Set THOR_SHARED_AUTH_DIR to a tmp_path in your test fixture.")
     return path
 
@@ -552,7 +552,7 @@ def _write_shared_nous_state(state: dict[str, Any], *, renewal: bool) -> None:
             "nous_shared_store_written", path=str(path),
             refresh_token_fp=_token_fingerprint(refresh_token))
     except Exception as exc:
-        logger.debug("Failed to write shared Nous auth store: %s", exc)
+        logger.debug("Failed to write shared Thor auth store: %s", exc)
 
 
 def _read_shared_nous_state() -> Optional[dict[str, Any]]:
@@ -586,7 +586,7 @@ def _clear_shared_nous_state(reason: str) -> None:
             _nous_shared_store_path().unlink(missing_ok=True)
         _oauth_trace("nous_shared_store_cleared", reason=reason)
     except Exception as exc:
-        logger.debug("Failed to clear shared Nous auth store: %s", exc)
+        logger.debug("Failed to clear shared Thor auth store: %s", exc)
 
 
 def _quarantine_forensics(state: dict[str, Any], error: AuthError, reason: str) -> dict[str, Any]:

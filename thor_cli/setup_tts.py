@@ -247,7 +247,7 @@ def _setup_tts_provider(config: dict):
     options = list(_TTS_PROVIDER_CHOICES)
     if tool_backend_helpers.managed_nous_tools_enabled() and nous_subscription.get_nous_subscription_features(config).nous_auth_present:
         options.insert(0, ("nous-openai",
-                           "Nous Subscription (managed OpenAI TTS, billed to your subscription)"))
+                           "Thor Subscription (managed OpenAI TTS, billed to your subscription)"))
     choices = [label for _, label in options] + [f"Keep current ({current_label})"]
     keep_current_idx = len(choices) - 1
     idx = _setup.prompt_choice("Select TTS provider:", choices, keep_current_idx)
@@ -256,7 +256,7 @@ def _setup_tts_provider(config: dict):
     selected = options[idx][0]
     if selected == "nous-openai":
         selected = "openai"
-        _setup.print_info("OpenAI TTS will use the managed Nous gateway and bill to your subscription.")
+        _setup.print_info("OpenAI TTS will use the managed Thor gateway and bill to your subscription.")
         if _setup.get_env_value("VOICE_TOOLS_OPENAI_KEY") or _setup.get_env_value("OPENAI_API_KEY"):
             _setup.print_warning("Direct OpenAI credentials are still configured and may take precedence "
                                  "until removed from ~/.thor/.env.")

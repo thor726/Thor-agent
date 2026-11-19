@@ -125,17 +125,17 @@ export const zhHantOverrides = {
     collectedUsage: '代理品質：未成功的編輯、損壞的工具呼叫、卡住的迴圈、每個任務的成本',
     collectedMachine: '機器：作業系統、記憶體範圍、GPU 類型、Thor 版本、本機模型使用情況',
     sending:
-      '如果你選擇分享，Thor 每天傳送一次統計資料給 Nous，並附帶此設定檔的隨機 ID。除了一則 Thor 已安裝的一次性記錄之外，你同意之前的統計資料永遠不會被傳送。你可以隨時在設定中變更。',
+      '如果你選擇分享，Thor 每天傳送一次統計資料給 Thor，並附帶此設定檔的隨機 ID。除了一則 Thor 已安裝的一次性記錄之外，你同意之前的統計資料永遠不會被傳送。你可以隨時在設定中變更。',
     readDocs: '查看完整說明',
-    share: '與 Nous 分享',
+    share: '與 Thor 分享',
     off: '不用了',
     saveFailed: '無法儲存你的選擇',
-    sendLabel: '與 Nous 分享使用統計',
+    sendLabel: '與 Thor 分享使用統計',
     sendDesc: '僅限計數，每天傳送一次，並附帶此設定檔的隨機 ID。絕不包含你的訊息、檔案、路徑或錯誤文字。',
     unavailable: '請更新 Thor 後端以變更此設定。',
     stripBody: '僅限計數，絕不包含你的訊息或檔案。',
     stripReaskBody: '再次詢問：舊版本可能在你看到此問題之前就已儲存了「不用了」。',
-    stripChoices: { share: '與 Nous 分享', off: '不用了' },
+    stripChoices: { share: '與 Thor 分享', off: '不用了' },
     stripDetails: '詳細資訊'
   },
   firstRun: zhHantFirstRun,
@@ -214,7 +214,7 @@ export const zhHantOverrides = {
   freeTier: {
     offer: {
       heading: '繼續使用 Thor',
-      body: '你正在使用免費額度。繼續使用 Thor 的話，你會開始遇到限制。登入免費的 Nous 帳戶，即可獲得更多額度。',
+      body: '你正在使用免費額度。繼續使用 Thor 的話，你會開始遇到限制。登入免費的 Thor 帳戶，即可獲得更多額度。',
       signIn: '登入',
       notNow: '暫不'
     }

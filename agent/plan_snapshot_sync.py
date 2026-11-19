@@ -1,11 +1,11 @@
 """Keep the cached plan snapshot in step with what the gateway says on each reply.
 
-The pickers read a cached account snapshot (``thor_cli.nous_account``) and a cached Nous catalog
+The pickers read a cached account snapshot (``thor_cli.nous_account``) and a cached Thor catalog
 (``thor_cli.models_pricing``), so a plan change made in the browser (upgrade, downgrade, cancel) or a
-limit filling / resetting would only show after the next session opened. Every Nous reply already
+limit filling / resetting would only show after the next session opened. Every Thor reply already
 carries the usage-window headers, so this compares them with the snapshot and, only when they
 disagree, refreshes both caches once in the background. No extra call on an ordinary turn, and
-nothing at all for a reply that is not from Nous.
+nothing at all for a reply that is not from Thor.
 """
 from __future__ import annotations
 

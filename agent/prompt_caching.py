@@ -23,7 +23,7 @@ class PromptCachePlan:
 def envelope_tool_part_cache_markers_supported(provider: str | None, base_url: str | None) -> bool:
     """Whether the envelope-layout route honors part-level markers on role:tool.
 
-    OpenRouter/Nous Portal relocate a part-level ``cache_control`` onto the ``tool_result``
+    OpenRouter/Thor Portal relocate a part-level ``cache_control`` onto the ``tool_result``
     block; LiteLLM-style proxies copy parts verbatim, so it lands at ``tool_result.content[0]``
     (non-retryable 400). There, role:tool carries no part markers and the budget reallocates.
     """
@@ -187,7 +187,7 @@ _CEILING_TIERS = ("5m", "1h")
 
 def _route_names(provider: str, base_url: str) -> list[str]:
     """Canonical provider names a route answers to: the configured name, then the provider whose
-    host serves ``base_url`` (a ``custom`` endpoint at the Nous Portal is the Nous route)."""
+    host serves ``base_url`` (a ``custom`` endpoint at the Thor Portal is the Thor route)."""
     from agent.model_metadata import _infer_provider_from_url
     from providers import get_provider_profile
 
@@ -204,7 +204,7 @@ def route_ttl_ceiling(provider: str, base_url: str = "") -> str | None:
     """Longest cache tier the route keeps, or None when it keeps whatever is asked for.
 
     Data, not code: config ``prompt_caching.route_ttl_ceilings: {<provider>: 5m|1h}`` wins, else the
-    provider profile's ``prompt_cache_max_ttl``. Nous Portal ships ``5m`` because its upstream
+    provider profile's ``prompt_cache_max_ttl``. Thor Portal ships ``5m`` because its upstream
     currently drops 1h entries after ~7 minutes and bills them at the 5m rate; once that is fixed,
     lifting the ceiling is ``route_ttl_ceilings: {nous: 1h}`` or a one-field profile change.
     """

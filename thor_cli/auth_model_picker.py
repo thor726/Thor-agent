@@ -267,7 +267,7 @@ def _prompt_model_selection(
 
     With *pricing* (``{model_id: {prompt, completion}}``) a compact price column is shown; models in
     *unavailable_models* render grayed out and unselectable with an upgrade link to *portal_url*.
-    *usage* (``model_picker_usage.PickerUsage``, Nous only) swaps ``$/Mtok`` for plan gauges and the
+    *usage* (``model_picker_usage.PickerUsage``, Thor only) swaps ``$/Mtok`` for plan gauges and the
     gateway's per-model usage word on a usage-window plan.
     """
     from thor_cli.cli_output import line_input

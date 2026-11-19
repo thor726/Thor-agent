@@ -206,7 +206,7 @@ def catalog_install_record(plugin_dir) -> Optional[dict]:
 LOGIN_BACKEND_TIERS = frozenset({"official", "verified"})
 LOGIN_BACKEND_RULE = ("password-manager login backends are accepted only from plugins bundled with Thor or "
                       "installed from the Thor plugin catalog at tier verified or official (published by the "
-                      "password-manager vendor itself or by Nous)")
+                      "password-manager vendor itself or by Thor)")
 _NON_CATALOG_SOURCES = {"project": "a project .thor/plugins directory", "entrypoint": "a pip entry point"}
 
 

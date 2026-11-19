@@ -15,7 +15,7 @@ def _chat_completion_capturing_headers(agent, client, api_kwargs: dict):
     observes ``x-nous-credits-*`` (usage-window ``spend_source`` / gauges go stale). The SDK's
     ``with_raw_response`` returns the same request with headers attached; a client without it keeps
     the plain call. Usage-window plans
-    only: every other provider, and a Nous session not yet known to be on a window plan (the
+    only: every other provider, and a Thor session not yet known to be on a window plan (the
     session-start seed or a stream header establishes it), keep the plain call; headers are
     captured only when the response itself is the usage-window kind. A capture failure never
     fails the turn.

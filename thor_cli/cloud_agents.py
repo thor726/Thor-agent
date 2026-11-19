@@ -1,8 +1,8 @@
-"""Thor Cloud agents for the account this install is signed in to Nous Portal with.
+"""Thor Cloud agents for the account this install is signed in to Thor Portal with.
 
 Native Desktop lists them through its own portal browser session (``electron/main.ts``
 ``discoverCloudAgents``). A browser tab on the Webapp has no such session, so the gateway serving
-it asks the portal with this install's Nous sign-in instead (``GET /api/cloud/agents``, the agent
+it asks the portal with this install's Thor sign-in instead (``GET /api/cloud/agents``, the agent
 picker of Settings ▸ Backup & Transfer): the same ``GET /api/agents`` call,
 the same trimmed shape (``id``, ``name``, ``status``, ``dashboardUrl``, ``dashboardGatewayState``),
 and the same 409 team picker.
@@ -54,7 +54,7 @@ def discover(org: Optional[str] = None) -> dict[str, Any]:
     try:
         token = resolve_nous_access_token()
     except AuthError as exc:
-        raise CloudAgentsError(f"Sign in to Nous Portal first ({exc}).",
+        raise CloudAgentsError(f"Sign in to Thor Portal first ({exc}).",
                                 PORTAL_SIGNIN_STATUS, "portal_signin_required") from None
     portal = _nous_portal_base_url(get_provider_auth_state("nous") or {})
     try:
@@ -62,7 +62,7 @@ def discover(org: Optional[str] = None) -> dict[str, Any]:
             response = client.get(f"{portal}/api/agents", params={"org": org} if org else None,
                                   headers={"Authorization": f"Bearer {token}"})
     except httpx.HTTPError as exc:
-        raise CloudAgentsError(f"Could not reach Nous Portal: {exc}", 502, "portal_unreachable") from None
+        raise CloudAgentsError(f"Could not reach Thor Portal: {exc}", 502, "portal_unreachable") from None
     try:
         body = response.json()
     except ValueError:
@@ -70,9 +70,9 @@ def discover(org: Optional[str] = None) -> dict[str, Any]:
     if response.status_code == 409 and isinstance(body, dict) and body.get("error") == "org_selection_required":
         return {"needsOrgSelection": True, "orgs": [o for o in map(_org, body.get("orgs") or []) if o]}
     if response.status_code == 401:
-        raise CloudAgentsError("Your Nous Portal sign-in has expired. Sign in again.",
+        raise CloudAgentsError("Your Thor Portal sign-in has expired. Sign in again.",
                                 PORTAL_SIGNIN_STATUS, "portal_signin_required")
     if response.status_code >= 400 or not isinstance(body, dict):
-        raise CloudAgentsError(f"Nous Portal answered {response.status_code}.", 502, "portal_error")
+        raise CloudAgentsError(f"Thor Portal answered {response.status_code}.", 502, "portal_error")
     agents = [a for a in body.get("agents") or [] if isinstance(a, dict) and isinstance(a.get("id"), str)]
     return {"agents": [_agent(a) for a in agents], "org": _org(body.get("org"))}

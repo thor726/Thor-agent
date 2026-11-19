@@ -13,7 +13,7 @@ def build_debug_parser(subparsers, *, cmd_debug: Callable) -> None:
         description="Debug utilities for Thor Agent. Use 'thor debug share' to "
         "upload an allowlisted debug summary (versions, config key names, error "
         "counts; no log text) to a public paste, or 'thor debug share --nous' "
-        "to send full redacted logs to private Nous storage.",
+        "to send full redacted logs to private Thor storage.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
@@ -22,8 +22,8 @@ Examples:
     thor debug share --lines 500  Scan/include more log lines
     thor debug share --expire 30  Keep dpaste.com fallback pastes for 30 days
     thor debug share --local      Print report locally (no upload)
-    thor debug share --nous --no-redact  Send unredacted logs to Nous storage
-    thor debug share --nous       Upload to Nous-internal storage (private)
+    thor debug share --nous --no-redact  Send unredacted logs to Thor storage
+    thor debug share --nous       Upload to Thor-internal storage (private)
     thor debug delete <url>       Delete a previously uploaded paste
 """)
     debug_sub = debug_parser.add_subparsers(dest="debug_command")
@@ -53,9 +53,9 @@ Examples:
             "text, so this flag cannot put logs there.")
     share_parser.add_argument(
         "--nous", action="store_true",
-        help="Upload the debug bundle to Nous-internal storage (AWS S3) instead "
+        help="Upload the debug bundle to Thor-internal storage (AWS S3) instead "
             "of a public paste service. The bundle is private — viewable only "
-            "by Nous staff (and allowlisted Discord mods) via a Google-login-"
+            "by Thor staff (and allowlisted Discord mods) via a Google-login-"
             "gated viewer — and auto-deletes after 14 days. Still force-redacts "
             "secrets unless --no-redact is also passed.")
     delete_parser = debug_sub.add_parser(

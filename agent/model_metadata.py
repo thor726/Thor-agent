@@ -246,7 +246,7 @@ def _get_endpoint_metadata_cache_path() -> Path:
 
 def _endpoint_disk_cache_get(normalized: str) -> Optional[dict[str, dict[str, Any]]]:
     """Fresh cross-process memo of a remote ``/models`` probe (same TTL as in-memory): one-shot
-    runs (``thor -q``, cron) start cold and Nous bypasses the persistent context cache, so
+    runs (``thor -q``, cron) start cold and Thor bypasses the persistent context cache, so
     without this every launch paid the live probe. Local endpoints are never memoized."""
     models = _ttl_memo_get(_get_endpoint_metadata_cache_path(), normalized, _ENDPOINT_MODEL_CACHE_TTL, ts_key="at", value_key="models")
     return models if isinstance(models, dict) else None
@@ -1623,7 +1623,7 @@ def _query_local_context_length_uncached(model: str, base_url: str, api_key: str
 
 
 def _normalize_model_version(model: str) -> str:
-    """Dots -> dashes so Nous ids (claude-opus-4-6) compare with OpenRouter's (claude-opus-4.6)."""
+    """Dots -> dashes so Thor ids (claude-opus-4-6) compare with OpenRouter's (claude-opus-4.6)."""
     return model.replace(".", "-")
 
 
@@ -1925,8 +1925,8 @@ def _resolve_codex_oauth_context_length_with_source(model: str, access_token: st
 
 
 def _resolve_nous_context_length(model: str, base_url: str = "", api_key: str = "") -> tuple[Optional[int], str]:
-    """``(context_length, source)`` for a Nous Portal model: portal /v1/models is authoritative
-    ("portal"). Fallback matches OR's prefixed ids against the bare Nous id with dot/dash
+    """``(context_length, source)`` for a Thor Portal model: portal /v1/models is authoritative
+    ("portal"). Fallback matches OR's prefixed ids against the bare Thor id with dot/dash
     normalisation ("openrouter" — callers must NOT persist it, or a portal blip freezes the wrong value)."""
     if base_url:
         portal_ctx = _resolve_endpoint_context_length(model, base_url, api_key=api_key)
@@ -1937,7 +1937,7 @@ def _resolve_nous_context_length(model: str, base_url: str = "", api_key: str = 
         """Context length minus the known stale 32K underreports (same guard as step 6)."""
         ctx = entry.get("context_length")
         if ctx is not None and ctx <= 32768 and _model_name_suggests_stale_32k_underreport(or_id):
-            logger.info("Rejecting OpenRouter metadata context=%s for %r (known 32K underreport, Nous path); falling through to hardcoded defaults", ctx, or_id)
+            logger.info("Rejecting OpenRouter metadata context=%s for %r (known 32K underreport, Thor path); falling through to hardcoded defaults", ctx, or_id)
             return None
         return ctx
     model_lower, normalized = model.lower(), _normalize_model_version(model).lower()
@@ -1980,7 +1980,7 @@ def _validate_cached_context_length(model: str, base_url: str, cached: int, *, a
     # Nous Portal: /v1/models is authoritative. Bypass (don't drop) the cache so step
     # 5b reconciles OR-seeded entries without touching disk when the portal is down.
     if _infer_provider_from_url(base_url) == "nous":
-        logger.debug("Bypassing persistent cache for %s@%s (Nous portal authoritative)", model, base_url)
+        logger.debug("Bypassing persistent cache for %s@%s (Thor portal authoritative)", model, base_url)
         return None
 
     # For local endpoints, run the probe that respects configured Modelfile context values first.
@@ -2210,10 +2210,10 @@ def get_model_context_length(
     provider: str = "", custom_providers: list | None = None,
 ) -> int:
     """Context length for a model. Resolution order: 0 config override / MoA aggregator /
-    model_overrides / custom_providers / endpoint-scoped; 1 persistent cache (Nous, LM
+    model_overrides / custom_providers / endpoint-scoped; 1 persistent cache (Thor, LM
     Studio, Codex OAuth bypass it) and Bedrock; 2-3 custom endpoints (/models, local
     probe, Ollama); 4 Anthropic /v1/models (API keys only); 5 provider-aware (profile live
-    catalog, Nous, Codex OAuth, GMI, Ollama, OpenRouter live, models.dev); 6 OpenRouter for
+    catalog, Thor, Codex OAuth, GMI, Ollama, OpenRouter live, models.dev); 6 OpenRouter for
     unknown providers; 7 local server; 8 hardcoded defaults; 9 256K fallback."""
     # 0. Explicit config override — user knows best
     if isinstance(config_context_length, int) and config_context_length > 0:

@@ -1,4 +1,4 @@
-"""Guest handoff: after a Nous account replaces the free tier, move the free tier's apps into it.
+"""Guest handoff: after a Thor account replaces the free tier, move the free tier's apps into it.
 
 The account service moves a free-tier identity's connected apps (and its preview cohort) into a
 signed-in account with one call, ``POST /api/anonymous/claim {"token": "<anon_...>"}``, authorized by
@@ -8,8 +8,8 @@ shown afterwards. Two halves:
 
 - :func:`note_replacement` runs at the lowest write seams (``auth._store_provider_state`` and
   ``auth_nous._write_shared_nous_state``), under the caller's auth-store locks, whenever a non-guest
-  Nous state replaces a guest. It writes a pending record and does no network. Records sit beside
-  the shared Nous store, keyed by a hash of the ``anon_`` credential.
+  Thor state replaces a guest. It writes a pending record and does no network. Records sit beside
+  the shared Thor store, keyed by a hash of the ``anon_`` credential.
 - :func:`drain` makes one attempt per due record, outside every lock: each sign-in surface calls it
   after its save, and the retry worker, ``thor auth status`` and ``thor auth upgrade`` call it
   for a move a transient error left retrying.
@@ -47,7 +47,7 @@ _CLAIMED, _GONE, _RETRY, _FAIL = "claimed", "gone", "retry", "fail"
 # A plain reason per final code; any other code shows only the generic sentence, never the code.
 _FAILURE_COPY = {
     "client_not_allowed": "This sign-in can't receive them. Sign in again with `thor auth add nous`.",
-    "account_locked": "This Nous account is locked.",
+    "account_locked": "This Thor account is locked.",
 }
 # The service's refusal codes; anything unlisted retries (``_classify``).
 _REFUSALS = {
@@ -112,7 +112,7 @@ def _update(path: Path, key: str, change) -> Optional[dict[str, Any]]:
 # --- The hook: no network, runs under the writer's locks ------------------------------------------
 
 def note_store_write(auth_store: dict[str, Any], provider_id: str, state: Any) -> None:
-    """``auth._store_provider_state``'s hook: the Nous state the store holds now is the one replaced
+    """``auth._store_provider_state``'s hook: the Thor state the store holds now is the one replaced
     (the profile's own, else the root store's it falls back to)."""
     if provider_id == "nous":
         from thor_cli.auth import _load_provider_state
@@ -120,7 +120,7 @@ def note_store_write(auth_store: dict[str, Any], provider_id: str, state: Any) -
 
 
 def note_replacement(previous: Any, new: Any) -> None:
-    """Record that a non-guest Nous state replaced the guest *previous*. Idempotent per ``anon_``
+    """Record that a non-guest Thor state replaced the guest *previous*. Idempotent per ``anon_``
     credential; a finished record is never reopened."""
     from thor_cli.anon_auth import is_guest_state
     if not is_guest_state(previous) or is_guest_state(new) or not isinstance(new, dict):
@@ -143,7 +143,7 @@ def note_replacement(previous: Any, new: Any) -> None:
         return record
 
     record = _update(path, _token_key(anon_token), change)
-    logger.info("Nous sign-in replaced the free tier; handoff %s (%s)", record["state"],
+    logger.info("Thor sign-in replaced the free tier; handoff %s (%s)", record["state"],
                 _token_key(anon_token)[:8])
 
 

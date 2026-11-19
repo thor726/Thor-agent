@@ -1,8 +1,8 @@
 """Shared auxiliary client router for side tasks (compression, search, vision, ...).
 
-Text auto chain: main provider+model → OpenRouter → Nous Portal → custom endpoint →
+Text auto chain: main provider+model → OpenRouter → Thor Portal → custom endpoint →
 native Anthropic → direct API-key providers → None. Vision auto chain: main
-provider (if a supported vision backend) → OpenRouter → Nous → Anthropic → custom.
+provider (if a supported vision backend) → OpenRouter → Thor → Anthropic → custom.
 ``auxiliary.free_only`` restricts the OpenRouter lane to ``:free`` SKUs. Codex OAuth is
 in neither chain (undocumented, shifting allow-list): main provider or explicit
 ``auxiliary.<task>.provider`` only. HTTP 402 in call_llm() falls through the chain.
@@ -754,7 +754,7 @@ def _fast_model_from_catalog(provider_id: str) -> str:
                 from thor_cli.models_pricing import _resolve_nous_pricing_credentials
                 api_key, base_url = _resolve_nous_pricing_credentials()
             except Exception:
-                logger.debug("No Nous credentials for catalog", exc_info=True)
+                logger.debug("No Thor credentials for catalog", exc_info=True)
         if not base_url:
             base_url = str(getattr(get_provider_profile(provider_id), "base_url", "") or "")
         base_url = base_url.rstrip("/")
@@ -779,7 +779,7 @@ def _fast_model_from_catalog(provider_id: str) -> str:
             from thor_cli.models_pricing import nous_policy_allowed_ids, restrict_to_nous_policy
             ids = restrict_to_nous_policy(ids, nous_policy_allowed_ids())
         except Exception:
-            logger.debug("Nous policy filter unavailable", exc_info=True)
+            logger.debug("Thor policy filter unavailable", exc_info=True)
     for family in _FAST_MODEL_FAMILIES:
         for model_id in ids:
             lowered = model_id.lower()
@@ -821,7 +821,7 @@ def _get_aux_model_for_provider(provider_id: str, *, prefer_fast: bool = False) 
             if allowed and not restrict_to_nous_policy([picked], allowed):
                 return ""
         except Exception:
-            logger.debug("Nous policy check unavailable", exc_info=True)
+            logger.debug("Thor policy check unavailable", exc_info=True)
     return picked
 
 
@@ -969,7 +969,7 @@ _AUTH_JSON_PATH_AT_IMPORT = _AUTH_JSON_PATH
 def _auth_json_path():
     """Active profile's ``auth.json`` at call time (a patched ``_AUTH_JSON_PATH`` still wins). The
     import-time constant is the LAUNCH profile's; under multiplexing a secondary's auxiliary calls
-    would otherwise authenticate to Nous with the default profile's token."""
+    would otherwise authenticate to Thor with the default profile's token."""
     from thor_cli.auth import _auth_file_path
     return _AUTH_JSON_PATH if _AUTH_JSON_PATH != _AUTH_JSON_PATH_AT_IMPORT else _auth_file_path()
 
@@ -1913,7 +1913,7 @@ def _maybe_wrap_anthropic(
 
 
 def _read_nous_auth() -> Optional[dict]:
-    """Nous provider state dict from the credential pool or ~/.thor/auth.json; None when not active with tokens."""
+    """Thor provider state dict from the credential pool or ~/.thor/auth.json; None when not active with tokens."""
     pool_present, entry = _select_pool_entry("nous")
     if pool_present:
         if entry is None:
@@ -1942,12 +1942,12 @@ def _read_nous_auth() -> Optional[dict]:
             return None
         return provider
     except Exception as exc:
-        logger.debug("Could not read Nous auth: %s", exc)
+        logger.debug("Could not read Thor auth: %s", exc)
         return None
 
 
 def _nous_api_key(provider: dict) -> str:
-    """Extract a usable Nous inference JWT from stored auth state."""
+    """Extract a usable Thor inference JWT from stored auth state."""
     from thor_cli.auth import _nous_invoke_jwt_is_usable
     for token_key, expiry_key in (("agent_key", "agent_key_expires_at"), ("access_token", "expires_at")):
         token = provider.get(token_key)
@@ -1959,19 +1959,19 @@ def _nous_api_key(provider: dict) -> str:
 
 
 def _resolve_nous_pool_runtime_api(*, force_refresh: bool = False) -> Optional[tuple[str, str]]:
-    """Resolve Nous auxiliary credentials from the selected pool entry."""
+    """Resolve Thor auxiliary credentials from the selected pool entry."""
     try:
         from thor_cli.auth import _agent_key_is_usable
         pool = load_pool("nous")
     except Exception as exc:
-        logger.debug("Auxiliary Nous pool credential resolution failed: %s", exc)
+        logger.debug("Auxiliary Thor pool credential resolution failed: %s", exc)
         return None
     if not pool or not pool.has_credentials():
         return None
     try:
         entry = pool.select()
     except Exception as exc:
-        logger.debug("Auxiliary Nous pool selection failed: %s", exc)
+        logger.debug("Auxiliary Thor pool selection failed: %s", exc)
         return None
     if entry is None:
         return None
@@ -1984,7 +1984,7 @@ def _resolve_nous_pool_runtime_api(*, force_refresh: bool = False) -> Optional[t
         try:
             refreshed = pool.try_refresh_current()
         except Exception as exc:
-            logger.debug("Auxiliary Nous pool refresh failed: %s", exc)
+            logger.debug("Auxiliary Thor pool refresh failed: %s", exc)
             refreshed = None
         if refreshed is None:
             return None
@@ -1999,7 +1999,7 @@ def _resolve_nous_pool_runtime_api(*, force_refresh: bool = False) -> Optional[t
 def _resolve_nous_runtime_api(
     *, force_refresh: bool = False, stale_access_token: Optional[str] = None
 ) -> Optional[tuple[str, str]]:
-    """Fresh Nous runtime credentials (pool first, then auth store + JWT refresh) — mirrors the main
+    """Fresh Thor runtime credentials (pool first, then auth store + JWT refresh) — mirrors the main
     agent's 401 recovery. ``stale_access_token`` is the bearer that just 401'd; with ``force_refresh``
     it lets the auth store adopt a sibling process's rotation instead of re-POSTing the shared grant."""
     pooled = _resolve_nous_pool_runtime_api(force_refresh=force_refresh)
@@ -2332,21 +2332,21 @@ def _try_nous(vision: bool = False) -> tuple[Optional[OpenAI], Optional[str]]:
     nous = _read_nous_auth()
     runtime = _resolve_nous_runtime_api(force_refresh=False)
     if runtime is None and not nous:
-        logger.warning("Auxiliary Nous client unavailable: no Nous authentication found (run: thor auth).")
-        _mark_provider_unhealthy("nous", ttl=60, reason="no Nous authentication found", level=logging.DEBUG)
+        logger.warning("Auxiliary Thor client unavailable: no Thor authentication found (run: thor auth).")
+        _mark_provider_unhealthy("nous", ttl=60, reason="no Thor authentication found", level=logging.DEBUG)
         return None, None
     if runtime is None and nous:
-        logger.debug("Auxiliary Nous: runtime JWT refresh failed; checking stored auth.json token.")
+        logger.debug("Auxiliary Thor: runtime JWT refresh failed; checking stored auth.json token.")
     if runtime is not None:
         api_key, base_url = runtime
     else:
         api_key = _nous_api_key(nous or {})
         if not api_key:
             logger.warning(
-                "Auxiliary Nous client unavailable: no usable inference JWT found "
+                "Auxiliary Thor client unavailable: no usable inference JWT found "
                 "(run: thor auth add nous)."
             )
-            _mark_provider_unhealthy("nous", ttl=60, reason="no usable Nous inference JWT", level=logging.DEBUG)
+            _mark_provider_unhealthy("nous", ttl=60, reason="no usable Thor inference JWT", level=logging.DEBUG)
             return None, None
         base_url = str(
             (nous or {}).get("inference_base_url") or _scoped_key_env("NOUS_INFERENCE_BASE_URL") or _NOUS_DEFAULT_BASE_URL
@@ -2357,13 +2357,13 @@ def _try_nous(vision: bool = False) -> tuple[Optional[OpenAI], Optional[str]]:
         anonymous = is_anonymous_request("nous", api_key)
         remaining = nous_rate_limit_remaining(anonymous=anonymous)
         if remaining is not None and remaining > 0:
-            logger.debug("Auxiliary: skipping Nous Portal (rate-limited, resets in %.0fs)", remaining)
+            logger.debug("Auxiliary: skipping Thor Portal (rate-limited, resets in %.0fs)", remaining)
             # The health marker is provider-wide, so a full-length anonymous cooldown would
             # outlive signing in mid-cooldown; bound it instead of re-resolving credentials
             # (auth store lock, pool read) on every auxiliary call for the cooldown's duration.
             _mark_provider_unhealthy(
                 "nous", ttl=min(remaining, 60.0) if anonymous else remaining,
-                reason="Nous Portal rate-limited", level=logging.INFO)
+                reason="Thor Portal rate-limited", level=logging.INFO)
             return None, None
     lane = "vision" if vision else "text"
     # The free tier's host serves exactly one model, for every lane: asking it for the Portal's
@@ -2372,9 +2372,9 @@ def _try_nous(vision: bool = False) -> tuple[Optional[OpenAI], Optional[str]]:
     # the request with the upstream's own error, which the ladder handles like any other).
     from thor_cli.anon_auth import GUEST_MODEL, route_is_welcome_host
     if route_is_welcome_host(base_url):
-        logger.debug("Auxiliary/%s: Nous free tier; using %s", lane, GUEST_MODEL)
+        logger.debug("Auxiliary/%s: Thor free tier; using %s", lane, GUEST_MODEL)
         return _create_openai_client(api_key=api_key, base_url=base_url), GUEST_MODEL
-    logger.debug("Auxiliary client: Nous Portal")
+    logger.debug("Auxiliary client: Thor Portal")
     # Portal recommended-models is authoritative (tier-aware); _NOUS_MODEL when unreachable/null.
     # Probes skip the lookup: exact model is irrelevant and it hits the network.
     model = _NOUS_MODEL
@@ -2407,7 +2407,7 @@ def _refresh_nous_recommended_model(*, vision: bool, stale_model: Optional[str])
         from thor_cli.models import get_nous_recommended_aux_model
         fresh = get_nous_recommended_aux_model(vision=vision, force_refresh=True)
     except Exception as exc:
-        logger.debug("Nous recommended-model refresh failed (%s); using default %s", exc, _NOUS_MODEL)
+        logger.debug("Thor recommended-model refresh failed (%s); using default %s", exc, _NOUS_MODEL)
     if fresh and fresh.strip().lower() != stale:
         return fresh
     return _NOUS_MODEL if _NOUS_MODEL.strip().lower() != stale else None
@@ -3196,12 +3196,12 @@ def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
 
 
 def _nous_portal_account_has_fresh_paid_access() -> bool:
-    """Return True only when the fresh Nous account API says paid access is allowed."""
+    """Return True only when the fresh Thor account API says paid access is allowed."""
     try:
         from thor_cli.nous_account import get_nous_portal_account_info
         return get_nous_portal_account_info(force_fresh=True).paid_service_access is True
     except Exception as exc:
-        logger.debug("Auxiliary Nous paid-entitlement refresh check failed: %s", exc)
+        logger.debug("Auxiliary Thor paid-entitlement refresh check failed: %s", exc)
         return False
 
 
@@ -4422,7 +4422,7 @@ def _discovery_chain_allowed(main_provider: str, task: Optional[str] = None) -> 
     Once the user picked one, every auxiliary route must be a provider they configured (main,
     ``auxiliary.<task>``, ``fallback_providers``); guessing "whatever else is logged in" bills an
     account they never pointed this session at (xAI OAuth session with a dead token → every
-    compression silently charged to a Nous Portal balance)."""
+    compression silently charged to a Thor Portal balance)."""
     if (main_provider or "").strip().lower() in {"", "auto"}:
         return True
     logger.warning(
@@ -4462,7 +4462,7 @@ def _resolve_auto_route(
     """Full auto-detection chain, including the selected provider identity. Priority: (1) main provider +
     main model, regardless of provider type ("auto" means "my main model for side tasks too"; explicit
     per-task overrides still win); (2) configured fallback policy — task chain, then the main agent's
-    top-level chain; (3) OpenRouter → Nous → custom → Codex → API-key providers, only with no policy
+    top-level chain; (3) OpenRouter → Thor → custom → Codex → API-key providers, only with no policy
     and no working main client."""
     runtime = _normalize_main_runtime(main_runtime)
     _warn_stale_openai_base_url(runtime.get("provider", ""))
@@ -4817,13 +4817,13 @@ def _resolve_openrouter_branch(req: _ResolveRequest) -> _ResolveResult:
 
 
 def _resolve_nous_branch(req: _ResolveRequest) -> _ResolveResult:
-    """Nous Portal (OAuth)."""
+    """Thor Portal (OAuth)."""
     model = req.model
     # Vision: caller flag, _PROVIDER_VISION_MODELS override, or a known vision id.
     client, default = _try_nous(vision=(req.is_vision or model in _PROVIDER_VISION_MODELS.values()
                                         or (model or "").strip().lower() == "mimo-v2-omni"))
     if client is None:
-        logger.warning("resolve_provider_client: nous requested but Nous Portal not configured (run: thor auth)")
+        logger.warning("resolve_provider_client: nous requested but Thor Portal not configured (run: thor auth)")
         return None, None
     final_model = _normalize_resolved_model(model or default, req.provider)
     # Dual-wire: anthropic/* → /v1/messages, else /chat/completions. Derive from the catalog id
@@ -5366,7 +5366,7 @@ def _resolve_strict_vision_backend(provider: str, model: Optional[str] = None) -
 
 
 def get_available_vision_backends() -> list[str]:
-    """Available vision backends in auto-selection order (active provider → OpenRouter → Nous → DeepInfra).
+    """Available vision backends in auto-selection order (active provider → OpenRouter → Thor → DeepInfra).
 
     Single source of truth for setup, tool gating, and runtime auto-routing.
     """
@@ -5451,7 +5451,7 @@ def _vision_auto_route(
     runtime: dict[str, Any], resolved_model: Optional[str], resolved_api_mode: Optional[str],
     async_mode: bool,
 ) -> tuple[Optional[str], Optional[Any], Optional[str]]:
-    """Auto-detect order: 1. main provider + model, 2. OpenRouter, 3. Nous Portal, 4. DeepInfra, 5. stop."""
+    """Auto-detect order: 1. main provider + model, 2. OpenRouter, 3. Thor Portal, 4. DeepInfra, 5. stop."""
     main_provider = str(runtime.get("provider") or _read_main_provider())
     main_model = str(runtime.get("model") or _read_main_model())
     if main_provider.strip().lower() == "moa":
@@ -5645,7 +5645,7 @@ def _refresh_nous_auxiliary_client(
     main_runtime: Optional[dict[str, Any]] = None, is_vision: bool = False,
     lookup_model: Optional[str] = None, lookup_task: Optional[str] = None,
 ) -> tuple[Optional[Any], Optional[str]]:
-    """Refresh Nous runtime creds, rebuild the client, and replace the cache entry.
+    """Refresh Thor runtime creds, rebuild the client, and replace the cache entry.
 
     ``model`` is the resolved wire model stored as the entry's usable model and returned. The
     cache KEY MUST be built from ``lookup_model``/``lookup_task`` — the model and task as passed
@@ -6339,7 +6339,7 @@ _NOUS_PROVIDER_NAMES = frozenset({"nous", "nous-portal", "nousresearch"})
 
 
 def _nous_on_messages_wire(provider_norm: str, model: str) -> bool:
-    """True when a Nous Portal route serves ``model`` over /v1/messages (dual-wire catalog)."""
+    """True when a Thor Portal route serves ``model`` over /v1/messages (dual-wire catalog)."""
     if provider_norm not in _NOUS_PROVIDER_NAMES:
         return False
     from thor_cli.providers import nous_api_mode
@@ -6467,7 +6467,7 @@ def _project_provider_profile(
 def _merge_aux_extra_body(
     extra_body: Optional[dict], projection: _ProfileProjection, reasoning_config: Optional[dict], provider_norm: str,
 ) -> dict[str, Any]:
-    """Caller extra_body + profile body/reasoning + generic reasoning fallback + Nous tags."""
+    """Caller extra_body + profile body/reasoning + generic reasoning fallback + Thor tags."""
     merged_extra = dict(extra_body or {})
     caller_reasoning_fields = {
         key: value for key, value in merged_extra.items()
@@ -7516,7 +7516,7 @@ def _ladder_parameter_rungs(
 
 
 def _refreshed_nous_step(route: _LadderRoute, kwargs: dict[str, Any], message: str) -> Optional[_LadderStep]:
-    """Rebuild the Nous client after a credential event; None when nothing refreshed."""
+    """Rebuild the Thor client after a credential event; None when nothing refreshed."""
     refreshed_client, refreshed_model = _refresh_nous_auxiliary_client(
         cache_provider=route.resolved_provider or "nous", model=route.final_model,
         lookup_model=route.resolved_model, lookup_task=route.task, async_mode=route.async_mode,
@@ -7536,7 +7536,7 @@ def _ladder_nous_rungs(
     first_err: aux_errors.Failure, route: _LadderRoute, kwargs: dict[str, Any], client_is_nous: bool,
     repairs: tuple = (),
 ):
-    """Nous-only rungs: stale-model self-heal, paid-account refresh, 401 refresh. ``kwargs`` already omit what the
+    """Thor-only rungs: stale-model self-heal, paid-account refresh, 401 refresh. ``kwargs`` already omit what the
     parameter rungs stripped (``repairs``); a refreshed request failing after them is judged as after a spent rung.
     Returns ``(response, None)`` or ``(None, first_err)`` to fall through."""
     client, task, tag = route.client, route.task, route.tag
@@ -7547,7 +7547,7 @@ def _ladder_nous_rungs(
         healed_model = _refresh_nous_recommended_model(
             vision=(task == "vision"), stale_model=kwargs.get("model"))
         if healed_model and healed_model != kwargs.get("model"):
-            logger.warning("Auxiliary %s%s: model %r no longer in Nous catalog; "
+            logger.warning("Auxiliary %s%s: model %r no longer in Thor catalog; "
                            "retrying with refreshed recommendation %r",
                            task or "call", tag, kwargs.get("model"), healed_model)
             kwargs["model"] = healed_model
@@ -7559,14 +7559,14 @@ def _ladder_nous_rungs(
             and _nous_portal_account_has_fresh_paid_access()):
         step = _refreshed_nous_step(
             route, kwargs,
-            "Auxiliary %s%s: refreshed Nous runtime credentials after paid account check, retrying")
+            "Auxiliary %s%s: refreshed Thor runtime credentials after paid account check, retrying")
         if step is not None:
             resp, first_err = yield from _rung(step, accept, route)
             if first_err is None:
                 return resp, None
     if aux_errors.auth_refresh(first_err.verdict) and client_is_nous:
         step = _refreshed_nous_step(
-            route, kwargs, "Auxiliary %s%s: refreshed Nous runtime credentials after 401, retrying")
+            route, kwargs, "Auxiliary %s%s: refreshed Thor runtime credentials after 401, retrying")
         if step is not None:
             resp, first_err = yield from _rung(step, accept, route)
             if first_err is None:
@@ -7774,7 +7774,7 @@ def _aux_recovery_ladder(
     main_runtime: Optional[dict[str, Any]], route_info: Optional[dict[str, str]],
 ):
     """Ordered recovery rungs after the primary request failed (generator): parameter
-    strips → Nous heal/refresh → credential refresh/pool rotation → provider fallback.
+    strips → Thor heal/refresh → credential refresh/pool rotation → provider fallback.
     Each rung returns a response, narrows ``first_err`` and falls through, or re-raises.
     Raises the narrowed ``first_err`` when exhausted (after evicting a connection-poisoned client)."""
     tag = " (async)" if async_mode else ""

@@ -1,4 +1,4 @@
-"""Telegram Managed Bot onboarding client: creates a user-owned child bot via the Nous onboarding
+"""Telegram Managed Bot onboarding client: creates a user-owned child bot via the Thor onboarding
 service (no BotFather copy-paste); the raw Telegram token is saved locally after one retrieval."""
 
 from __future__ import annotations

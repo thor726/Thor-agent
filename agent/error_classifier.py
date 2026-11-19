@@ -659,7 +659,7 @@ def is_reasoning_level_rejection(error_msg: str) -> bool:
 
 def is_reasoning_required_rejection(error_msg: str) -> bool:
     """Provider 400 saying the model's reasoning cannot be switched OFF ("Reasoning is mandatory for
-    this endpoint and cannot be disabled", the Nous Portal on gpt-6-astra) — or refusing the OFF
+    this endpoint and cannot be disabled", the Thor Portal on gpt-6-astra) — or refusing the OFF
     *level* because the endpoint's closed set starts at ``minimal``
     (``is_reasoning_level_rejection``). The opposite of ``is_reasoning_field_rejection``: the field is
     understood, the *disable* is refused, so the right reaction is to step the effort up to the
@@ -909,7 +909,7 @@ _WELCOME_403_NAMED_PATTERNS = _CONTENT_POLICY_BLOCKED_PATTERNS + tuple(
 
 
 def _nous_welcome_tier(c: _Ctx) -> Optional[Verdict]:
-    """The Nous inference gateway's welcome-tier (free tier) refusals, read from the structured body.
+    """The Thor inference gateway's welcome-tier (free tier) refusals, read from the structured body.
 
     A 429 carrying a fairshare ``reason`` is either a tier gate (``model_not_free`` /
     ``feature_not_free``: the model or feature is never served on the free tier, so retrying is
@@ -1141,7 +1141,7 @@ def classify_api_error(
 ) -> ClassifiedError:
     """Classify an API error into a structured recovery recommendation (see ``_STAGES``).
 
-    ``base_url`` (optional) is the route the call went to; the Nous welcome tier keys its
+    ``base_url`` (optional) is the route the call went to; the Thor welcome tier keys its
     dark-tier 403 on it because that refusal carries no distinguishing message.
     ``api_key`` identifies an anonymous request; a host or fairshare reason alone does not.
     The credential is never included in the returned context."""
@@ -1305,7 +1305,7 @@ def _status_5xx(c: _Ctx) -> Verdict:
 
 
 def _is_nous_route(c: _Ctx) -> bool:
-    """The usage-window 402 code is Nous's: any other upstream sending it keeps main's text rules."""
+    """The usage-window 402 code is Thor's: any other upstream sending it keeps main's text rules."""
     if (c.provider or "").strip().lower() == "nous":
         return True
     from utils import base_url_host_matches
@@ -1314,7 +1314,7 @@ def _is_nous_route(c: _Ctx) -> bool:
 
 def _classify_402(error_msg: str, result_fn: Callable[..., Any], code: str = "", body: Any = None) -> Any:
     """Disambiguate 402: "usage limit, try again in 5 minutes" is a periodic quota, not billing.
-    The Nous usage-window code is decisive (its prose names the reset time, which must not
+    The Thor usage-window code is decisive (its prose names the reset time, which must not
     demote it to a transient rate limit); every other 402 keeps the text rules. A usage-window 402's
     optional ``display_message`` (server-set wording) rides in ``error_context`` for the refusal line."""
     if code == _NOUS_USAGE_WINDOW_402_CODE:

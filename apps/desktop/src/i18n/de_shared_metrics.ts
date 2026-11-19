@@ -15,18 +15,18 @@ export const deSharedMetrics = {
     'Agentenqualität: verfehlte Bearbeitungen, fehlerhafte Tool-Aufrufe, festgefahrene Schleifen, Kosten pro Aufgabe',
   collectedMachine: 'Gerät: Betriebssystem, RAM-Bereich, GPU-Typ, Thor-Version, Nutzung lokaler Modelle',
   sending:
-    'Wenn Sie teilen, sendet Thor Statistiken einmal täglich mit einer zufälligen ID für dieses Profil an Nous. Abgesehen von einem einmaligen Hinweis, dass Thor installiert wurde, werden Statistiken von vor Ihrer Zustimmung nie gesendet. Sie können das jederzeit in den Einstellungen ändern.',
+    'Wenn Sie teilen, sendet Thor Statistiken einmal täglich mit einer zufälligen ID für dieses Profil an Thor. Abgesehen von einem einmaligen Hinweis, dass Thor installiert wurde, werden Statistiken von vor Ihrer Zustimmung nie gesendet. Sie können das jederzeit in den Einstellungen ändern.',
   readDocs: 'Alle Details lesen',
-  share: 'Mit Nous teilen',
+  share: 'Mit Thor teilen',
   off: 'Nein, danke',
   saveFailed: 'Ihre Auswahl konnte nicht gespeichert werden',
-  sendLabel: 'Nutzungsstatistiken mit Nous teilen',
+  sendLabel: 'Nutzungsstatistiken mit Thor teilen',
   sendDesc:
     'Nur Zählwerte, einmal täglich mit einer zufälligen ID für dieses Profil gesendet. Niemals Ihre Nachrichten, Dateien, Pfade oder Fehlertexte.',
   unavailable: 'Aktualisieren Sie das Thor-Backend, um diese Einstellung zu ändern.',
   stripBody: 'Nur Zählwerte. Niemals Ihre Nachrichten oder Dateien.',
   stripReaskBody:
     'Wir fragen noch einmal: Eine frühere Version konnte „Nein danke“ speichern, bevor Sie diese Frage gesehen haben.',
-  stripChoices: { share: 'Mit Nous teilen', off: 'Nein danke' },
+  stripChoices: { share: 'Mit Thor teilen', off: 'Nein danke' },
   stripDetails: 'Details'
 }

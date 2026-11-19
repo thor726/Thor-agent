@@ -1,7 +1,7 @@
-"""Cross-session rate limit guard for Nous Portal.
+"""Cross-session rate limit guard for Thor Portal.
 
 Writes rate limit state to a shared file so all sessions (CLI, gateway, cron,
-auxiliary) can check whether Nous Portal is currently rate-limited before making
+auxiliary) can check whether Thor Portal is currently rate-limited before making
 requests. Without it each 429 fans out into up to 9 calls per turn (3 SDK
 retries x 3 Thor retries), all counted against RPH.
 """
@@ -35,7 +35,7 @@ format_remaining = _fmt_seconds
 
 
 def _state_path(*, anonymous: bool = False) -> str:
-    """Path to the Nous rate limit state file."""
+    """Path to the Thor rate limit state file."""
     try:
         from thor_constants import get_thor_home
         base = get_thor_home()
@@ -62,7 +62,7 @@ def record_nous_rate_limit(
     default_cooldown: float = 300.0,
     anonymous: bool = False,
 ) -> None:
-    """Record that Nous Portal is rate-limited in the shared state file.
+    """Record that Thor Portal is rate-limited in the shared state file.
 
     Reset time comes from ``error_context["reset_at"]`` (the 429 body's own wait), then headers, then
     ``default_cooldown``. The body wins: a welcome-tier refusal says when to retry (410 s), while the
@@ -82,9 +82,9 @@ def record_nous_rate_limit(
     state = {"reset_at": reset_at, "recorded_at": now, "reset_seconds": reset_at - now}
     try:
         atomic_write_text(_state_path(anonymous=anonymous), json.dumps(state))
-        logger.info("Nous rate limit recorded: resets in %.0fs (at %.0f)", reset_at - now, reset_at)
+        logger.info("Thor rate limit recorded: resets in %.0fs (at %.0f)", reset_at - now, reset_at)
     except Exception as exc:
-        logger.debug("Failed to write Nous rate limit state: %s", exc)
+        logger.debug("Failed to write Thor rate limit state: %s", exc)
 
 
 def nous_rate_limit_remaining(*, anonymous: bool = False) -> Optional[float]:
@@ -104,13 +104,13 @@ def nous_rate_limit_remaining(*, anonymous: bool = False) -> Optional[float]:
 
 
 def clear_nous_rate_limit(*, anonymous: bool = False) -> None:
-    """Clear the rate limit state (e.g., after a successful Nous request)."""
+    """Clear the rate limit state (e.g., after a successful Thor request)."""
     try:
         os.unlink(_state_path(anonymous=anonymous))
     except FileNotFoundError:
         pass
     except OSError as exc:
-        logger.debug("Failed to clear Nous rate limit state: %s", exc)
+        logger.debug("Failed to clear Thor rate limit state: %s", exc)
 
 
 def _is_exhausted(remaining: Optional[int], reset: Optional[float]) -> bool:
@@ -126,11 +126,11 @@ def _is_exhausted(remaining: Optional[int], reset: Optional[float]) -> bool:
 def is_genuine_nous_rate_limit(
     *, headers: Optional[Mapping[str, str]] = None, last_known_state: Optional[Any] = None,
 ) -> bool:
-    """Decide whether a 429 from Nous Portal is a real account rate limit.
+    """Decide whether a 429 from Thor Portal is a real account rate limit.
 
-    Nous multiplexes upstream providers behind one key, so a 429 may be one
+    Thor multiplexes upstream providers behind one key, so a 429 may be one
     upstream model out of capacity (clears in seconds) rather than our quota;
-    tripping the breaker on that would block every Nous model for minutes.
+    tripping the breaker on that would block every Thor model for minutes.
     Only an exhausted bucket (remaining == 0 with reset >= 60s) in the 429's
     own headers, or in the last-known-good ``RateLimitState``, is genuine.
     """
@@ -140,7 +140,7 @@ def is_genuine_nous_rate_limit(
 
 
 def is_long_welcome_rate_limit(error_context: Any) -> bool:
-    """True for a Nous welcome-tier ``rate_limited`` refusal whose reset is long enough to be an
+    """True for a Thor welcome-tier ``rate_limited`` refusal whose reset is long enough to be an
     exhausted allowance (``WELCOME_LONG_WAIT_SECONDS``), as parsed into ``error_context``
     (``welcome_refusal`` from ``thor_cli.anon_auth.parse_welcome_refusal``). Capacity refusals
     (``at_capacity`` / ``admission_closed``) are never this: they are retried in place."""

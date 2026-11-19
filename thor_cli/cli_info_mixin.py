@@ -629,8 +629,8 @@ class CLIInfoMixin:
         self._show_usage()
 
     def _account_usage_view(self) -> tuple[list[str], list[str], bool, Any]:
-        """``(plan-limit lines, Nous section lines, nous_route, Nous dollar model or None)`` for `/usage`, from
-        one Nous account read. On a gateway session the owner answers for the route the session runs
+        """``(plan-limit lines, Thor section lines, nous_route, Thor dollar model or None)`` for `/usage`, from
+        one Thor account read. On a gateway session the owner answers for the route the session runs
         (``session.account_usage``): this process's provider/base_url pair is not that route once /model or a
         fallback moved the provider (the launch base_url stays). Off the gateway, the CLI's own route."""
         from agent.billing_links import is_nous_inference_route
@@ -652,8 +652,8 @@ class CLIInfoMixin:
         return self._local_account_limit_lines(), nous_lines, nous_route, usage
 
     def _print_usage_account_blocks(self) -> bool:
-        """`/usage`'s account blocks: the active provider's limits, then the Nous section whenever Nous is
-        signed in (its own heading off a Nous route), then the `/topup` CTA on a Nous route only. True if
+        """`/usage`'s account blocks: the active provider's limits, then the Thor section whenever Thor is
+        signed in (its own heading off a Thor route), then the `/topup` CTA on a Thor route only. True if
         anything printed."""
         lines, nous_lines, nous_route, usage = self._account_usage_view()
         shown = self._print_account_limits(lines)
@@ -755,9 +755,9 @@ class CLIInfoMixin:
         print()
 
     def _show_usage(self):
-        """Rate limits + session token usage (when a live agent exists) + Nous credits.
+        """Rate limits + session token usage (when a live agent exists) + Thor credits.
 
-        The Nous credits block is agent-independent (portal fetch), so it runs even with no live
+        The Thor credits block is agent-independent (portal fetch), so it runs even with no live
         agent — the TUI's /usage slash-worker resumes the session WITHOUT building an agent.
         """
         from cli import datetime, format_duration_compact

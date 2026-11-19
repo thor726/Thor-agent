@@ -1,4 +1,4 @@
-"""Nous credits: parse ``x-nous-credits-*`` / ``x-nous-tool-pool-*`` response
+"""Thor credits: parse ``x-nous-credits-*`` / ``x-nous-tool-pool-*`` response
 headers into a validated CreditsState (depletion = paid_access, subscription-cap
 used_fraction, warn-once schema-version gating) and drive the notice policy.
 Header contract: see ``_HEADER_FIELDS``. Money is micros ints only; ``*_usd``
@@ -392,7 +392,7 @@ def _sticky_notice(text: str, level: str, key: str) -> AgentNotice:
 
 
 def _is_nous_welcome_route(base_url: str) -> bool:
-    """True when *base_url* is the Nous welcome host, which serves only the free tier. Local data only;
+    """True when *base_url* is the Thor welcome host, which serves only the free tier. Local data only;
     False wherever the free tier is not built in. The host is the evidence, not the model name: the paid
     inference host can serve ``nous/welcome`` to a named account, and that account's depletion is real."""
     try:
@@ -403,8 +403,8 @@ def _is_nous_welcome_route(base_url: str) -> bool:
 
 
 def is_free_tier_model(model: str, base_url: str = "") -> bool:
-    """True when *model* is a Nous free-tier model, using ONLY local data: (1) ``:free`` suffix — canonical
-    Nous free SKU marker; (2) ``stealth/`` prefix — stealth-preview SKUs are free without the suffix
+    """True when *model* is a Thor free-tier model, using ONLY local data: (1) ``:free`` suffix — canonical
+    Thor free SKU marker; (2) ``stealth/`` prefix — stealth-preview SKUs are free without the suffix
     (naming-convention trust: a PAID ``stealth/`` model would wrongly suppress the banner); (3) a PEEK into
     ``thor_cli.models``' pricing cache (filled by the model picker; a miss never fetches). Fail-open to
     False (depleted notice still shows): a wrong warning is recoverable noise; hiding it masks a real block."""
@@ -855,7 +855,7 @@ def _rerun_notice_policy(agent) -> None:
 
 
 def _warm_nous_pricing_cache() -> None:
-    """Fill the in-process Nous pricing catalog so :func:`is_free_tier_model`'s peek can answer.
+    """Fill the in-process Thor pricing catalog so :func:`is_free_tier_model`'s peek can answer.
     The peek never fetches and nothing else warms it during session start, so a cold process reads
     an EMPTY catalog and a subscription-billed model — which spends no credits — still draws the
     depleted banner. Fail-open: a miss leaves the peek exactly as it was."""
@@ -868,11 +868,11 @@ def _warm_nous_pricing_cache() -> None:
 
 
 def rewarm_pricing_before_depleted_notice(agent) -> bool:
-    """Depleted account, model the peek cannot vouch for, Nous catalog cold: start a background warm
+    """Depleted account, model the peek cannot vouch for, Thor catalog cold: start a background warm
     whose completion re-runs the policy and return True so the caller defers the depleted decision
     to it — the session-start warm is one-shot but the catalog expires after
     ``_NOUS_CATALOG_TTL_SECONDS``, and a cold peek would bring the banner back for a
-    subscription-billed model. False = decide now: peek warm, not on Nous, a warm in flight (the
+    subscription-billed model. False = decide now: peek warm, not on Thor, a warm in flight (the
     warm's own re-run included — fail-open, a failed fetch leaves the peek cold and the banner
     shows), or a fetch already failed and the cache is still refusing to dial. May raise; the notice
     path that calls it catches."""

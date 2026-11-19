@@ -202,7 +202,7 @@ export const roseTheme: DashboardTheme = {
 /** Light mode — vivid Nous-blue accents on a cream canvas. */
 export const nousBlueTheme: DashboardTheme = {
   name: "nous-blue",
-  label: "Nous Blue",
+  label: "Thor Blue",
   description: "Light mode — vivid Nous-blue accents on cream canvas",
   palette: {
     background: { hex: "#E8F2FD", alpha: 1 },

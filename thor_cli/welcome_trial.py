@@ -1,7 +1,7 @@
 """The desktop's welcome trial: free inference on ``nous/welcome`` for a first install, once per OS user.
 
 Only the backend the desktop spawned on this machine can claim it, only when this OS user has never
-used Thor here (``install_state``), and only with no provider and no Nous identity yet. The claim
+used Thor here (``install_state``), and only with no provider and no Thor identity yet. The claim
 mints a guest stamped with ``WELCOME_CLAIM_FLAG`` in the mint's own write and writes the OS user's
 marker, so the trial is never claimed twice for that user. Another OS account on the same computer is
 a separate first install. A claim that is lost later (the guest is reaped, ``auth.json`` is
@@ -67,7 +67,7 @@ class _Ask:
 _CLAIM_BLOCKERS: tuple[tuple[str, Callable[[_Ask], bool]], ...] = (
     ("not the desktop's local backend", lambda _ask: not anon_auth.on_local_desktop_backend()),
     ("guests are switched off", lambda _ask: not anon_auth.guest_allowed()),
-    ("a Nous identity exists", lambda _ask: _has_nous_identity()),
+    ("a Thor identity exists", lambda _ask: _has_nous_identity()),
     ("a provider is configured",
      lambda ask: provider_configured() if ask.configured is None else ask.configured),
     ("Thor was used on this machine", lambda ask: _machine_is_used(ask.assume_fresh)),
@@ -104,7 +104,7 @@ def claim_desktop_free_tier(*, assume_fresh: bool = False, force: bool = False) 
                 str(failure.get("error_code") or anon_auth.ANON_SERVER_ERROR),
                 retry_after=failure.get("retry_after"))
         install_state.mark_machine_used()
-    logger.info("Nous free tier: welcome trial claimed on this machine")
+    logger.info("Thor free tier: welcome trial claimed on this machine")
     return state
 
 
@@ -121,7 +121,7 @@ def settle_interrupted_claim() -> bool:
     if not any(anon_auth.is_guest_state(s) and s.get(anon_auth.WELCOME_CLAIM_FLAG) is True for s in stores):
         return False
     mark_machine_used()
-    logger.info("Nous free tier: an interrupted welcome-trial claim was settled")
+    logger.info("Thor free tier: an interrupted welcome-trial claim was settled")
     return True
 
 

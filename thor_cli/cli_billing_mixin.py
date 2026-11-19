@@ -251,7 +251,7 @@ class CLIBillingMixin:
     # ── /usage — Nous balance block ──
 
     def _print_nous_balance(self, usage, lines: list[str]) -> bool:
-        """Nous dollar balance block (two bars) from *usage* (``UsageModel`` or None), else *lines* (the
+        """Thor dollar balance block (two bars) from *usage* (``UsageModel`` or None), else *lines* (the
         usage-window layout, or an owner that sent no model); True if anything printed. Reads nothing."""
         from cli import _cprint, _b, _d
         if usage is not None and usage.available:
@@ -286,7 +286,7 @@ class CLIBillingMixin:
         return True
 
     def _print_usage_cta(self) -> None:
-        """The `/usage` call-to-action; mirrors the TUI's ``USAGE_CTA``. Nous-account only."""
+        """The `/usage` call-to-action; mirrors the TUI's ``USAGE_CTA``. Thor-account only."""
         self._dim(t("cli.billing.usage_cta"))
 
     # ── /subscription — view plan + change it (CLI surface) ──

@@ -1,7 +1,7 @@
 """Per-model reasoning capabilities from OpenRouter-schema ``/v1/models`` catalogs.
 
 Split out of ``thor_cli.models``. OpenRouter and
-Nous Portal share one implementation parametrized by :class:`_CapsSource`; the per-source module
+Thor Portal share one implementation parametrized by :class:`_CapsSource`; the per-source module
 globals (``_openrouter_reasoning_caps_cache``, ``_nous_caps_disk_checked``, ...) stay defined on
 ``thor_cli.models`` — tests reset them there — and are read/written by attribute name.
 
@@ -292,7 +292,7 @@ def openrouter_model_reasoning_capabilities(
 def nous_model_reasoning_capabilities(
     model_id: Optional[str], *, timeout: float = 6.0, allow_fetch: bool = False,
 ) -> Optional[dict[str, Any]]:
-    """Nous Portal counterpart of :func:`openrouter_model_reasoning_capabilities`; warm the cache
+    """Thor Portal counterpart of :func:`openrouter_model_reasoning_capabilities`; warm the cache
     with :func:`warm_nous_reasoning_caps_async` from hot paths."""
     return _model_caps(_NOUS_CAPS, model_id, timeout=timeout, allow_fetch=allow_fetch)
 
@@ -303,5 +303,5 @@ def warm_openrouter_reasoning_caps_async() -> None:
 
 
 def warm_nous_reasoning_caps_async() -> None:
-    """Nous Portal counterpart of :func:`warm_openrouter_reasoning_caps_async`."""
+    """Thor Portal counterpart of :func:`warm_openrouter_reasoning_caps_async`."""
     _warm_caps_async(_NOUS_CAPS)

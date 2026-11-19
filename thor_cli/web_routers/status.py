@@ -428,7 +428,7 @@ def _auth_gate_status() -> dict[str, Any]:
 
 
 def _nous_session_validity() -> str:
-    """Nous bootstrap-session validity for the NAS health sweep: a hosted agent whose Nous
+    """Thor bootstrap-session validity for the NAS health sweep: a hosted agent whose Thor
     auth dies terminally looks HEALTHY to every liveness probe yet every inference turn
     fails, and this is the ONLY signal that surfaces it (local auth-store state, no token
     needed). Best-effort: never let auth classification break the probe."""
@@ -842,7 +842,7 @@ async def get_portal_status(profile: Optional[str] = None):
 
 @router.get("/api/cloud/agents")
 async def list_cloud_agents(org: Optional[str] = None, profile: Optional[str] = None):
-    """The signed-in Nous account's Thor Cloud agents, for a client with no portal session of its
+    """The signed-in Thor account's Thor Cloud agents, for a client with no portal session of its
     own (the Webapp's browser tab): ``thor_cli.cloud_agents``."""
     from thor_cli.cloud_agents import CloudAgentsError, discover
     try:
@@ -853,7 +853,7 @@ async def list_cloud_agents(org: Optional[str] = None, profile: Optional[str] = 
 
 def _feature_state(feat) -> str:
     if getattr(feat, "managed_by_nous", False):
-        return "via Nous Portal"
+        return "via Thor Portal"
     if getattr(feat, "active", False):
         return getattr(feat, "current_provider", None) or "active"
     return "not configured"
