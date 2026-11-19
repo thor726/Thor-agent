@@ -28,7 +28,10 @@ const QUERIES = ['telegram', 'install', 'skills'];
 // so a slow-drip server fails the check with time left to retry and alert
 // instead of running into the job's timeout.
 const REQUEST_TIMEOUT_MS = 20_000;
-const PROBE_DEADLINE_MS = 240_000;
+// The browser check alone can take ~2 min: the lunr index is ~37 MB and the
+// worker parses every block before the first hit renders. The deadline has to
+// cover index download + parse + query, with headroom for the job's retry.
+const PROBE_DEADLINE_MS = 420_000;
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36 thor-docs-search-monitor';
 
 const failures = [];
@@ -104,11 +107,20 @@ async function checkBrowser() {
       fail('search input never appeared in the navbar within 20s (search plugin not hydrated?)');
       return [];
     }
+    // search-local only downloads the lunr index (docs/search-index.json —
+    // ~37 MB on this site) when the modal first opens, and the worker then
+    // parses all blocks before the first hit renders. On a CI runner that
+    // easily outlives a short fixed wait, so: wait for the worker's index
+    // request to finish, then give the query a generous deadline.
+    await input.click({ timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForResponse((r) => r.url().includes('search-index') && r.status() === 200, { timeout: 60_000 })
+      .catch(() => {});
     await input.fill(QUERIES[1], { timeout: 10_000 });
     // Results render below the input as the worker finishes each query.
     const hit = page.locator('[class*="hit"] a, [class*="dropdown-item"], [role="option"]').first();
     try {
-      await hit.waitFor({ state: 'visible', timeout: 20_000 });
+      await hit.waitFor({ state: 'visible', timeout: 60_000 });
     } catch {
       const shown = (await page.locator('.navbar__search').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 200);
       fail(`search showed no results for "${QUERIES[1]}" (${failedRequests.slice(0, 2).join('; ') || 'no failed request seen'}; navbar: "${shown}")`);
