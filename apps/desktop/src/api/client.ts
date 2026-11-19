@@ -144,6 +144,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (!kind || !p || !sid || typeof p.prompt_id !== 'string') {
       return
     }
+
     const id = p.prompt_id
     const profile = canonicalProfile(event.profile)
     const generation = this.connectionGeneration
@@ -151,6 +152,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (this.deliveredPrompts.has(id)) {
       return
     }
+
     this.deliveredPrompts.set(id, { sessionId: sid, profile })
     const params = canonicalPromptParams(kind, sid, p)
 
@@ -165,6 +167,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
         if (settled || generation !== this.connectionGeneration) {
           return
         }
+
         settled = true
 
         // A clarify reply without an answer (skip, Stop, cancel) is the empty answer the
@@ -184,6 +187,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
         if (settled) {
           return
         }
+
         settled = true
 
         if (generation === this.connectionGeneration) {
@@ -210,6 +214,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (generation !== this.connectionGeneration || !this.deliveredPrompts.has(id)) {
       return
     }
+
     this.deliveredPrompts.delete(id)
 
     // A lost reply may have committed. Reopen a card only if the authority's
@@ -294,6 +299,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (typeof sid !== 'string') {
       return params
     }
+
     const previous = canonicalProfile(params.profile)
     const replayOwner = this.replayProfiles.get(snapshot.replay_epoch)
     const named = snapshot.info?.profile_name
@@ -320,6 +326,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (!event.session_id) {
       return true
     }
+
     const owner = event.replay_epoch ? this.replayProfiles.get(event.replay_epoch) : undefined
     const profiles = this.sessionProfiles.get(event.session_id)
 
@@ -351,6 +358,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (this.reconciledEpochs.has(key)) {
       return
     }
+
     this.reconciledEpochs.add(key)
     this.parkedFrames.set(key, [])
     const generation = this.connectionGeneration
@@ -365,6 +373,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
       if (generation !== this.connectionGeneration) {
         return
       }
+
       const parked = this.parkedFrames.get(key) ?? []
       this.parkedFrames.delete(key)
 
@@ -411,6 +420,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (this.connectionState === 'open' || this.connectionState === 'connecting') {
       return this.readiness.promise
     }
+
     const generation = ++this.connectionGeneration
     this.nativeDial = new URL(wsUrl).searchParams.has('native_dial')
     this.canonical = this.nativeDial
@@ -436,6 +446,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
       if (generation === this.connectionGeneration) {
         this.invalidate('Thor gateway protocol negotiation failed')
       }
+
       throw error
     }
   }
@@ -454,6 +465,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
       if (!owner || owner.sessionId !== params.session_id) {
         throw new Error('Replay owner unavailable; reopen the session')
       }
+
       params = { ...params, profile: owner.profile }
     }
 
@@ -471,6 +483,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
       if (profiles.size !== 1) {
         throw new Error('Session ID belongs to several profiles; select its owner profile before continuing')
       }
+
       const profile = profiles.values().next().value!
 
       if (profile !== 'default') {
@@ -507,11 +520,13 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (!this.canonical) {
       return super.request<T>(method, legacyParams(method, params), remainingRequestBudget(deadline, signal), signal)
     }
+
     const redirected = this.canonicalRedirect<T>(method, params, timeoutMs, deadline, signal)
 
     if (redirected) {
       return redirected
     }
+
     params = this.routeCanonicalParams(method, params)
 
     await this.attachForRequest(method, params, deadline, signal)
@@ -547,6 +562,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
         if (!this.protocol.retryableFence(prepared, error)) {
           throw error
         }
+
         // The refusal carried the owner's current fences: one retry at them, never a loop.
         this.protocol.failure(prepared, error)
         this.requireConnectionGeneration(generation)
@@ -573,6 +589,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
         this.protocol.result(method, prepared, result),
         followUp
       )) as T
+
       this.requireConnectionGeneration(generation)
 
       if (method === 'session.resume' || method === 'session.create' || method === 'session.activate') {
@@ -618,6 +635,7 @@ export class ThorGateway extends JsonRpcGatewayClient {
     if (!promptOwner) {
       return null
     }
+
     const answer = typeof params.answer === 'string' ? params.answer : ''
 
     return this.request<T>(

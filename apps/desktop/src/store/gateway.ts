@@ -983,6 +983,7 @@ function createSecondary(profile: string, connectionId: null | string = null): S
     if (event.type === 'gateway.ready') {
       recordSecondaryWire(connectionId, entry.connection, gateway.sessionWire)
     }
+
     const scopedEvent = stampSecondaryProfileOwner(
       { ...event, ...(connectionId ? { connectionId } : {}) },
       canonicalOwnerProfile(event) ?? profile

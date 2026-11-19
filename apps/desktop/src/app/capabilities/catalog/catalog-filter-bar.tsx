@@ -63,6 +63,7 @@ export function CatalogFilterBar(props: CatalogFilterBarProps) {
 
   const visible = rows.filter((row, index) => index < VISIBLE_CHIPS || selected.includes(row.value))
   const overflow = rows.filter(row => !visible.includes(row))
+
   const activeCount =
     props.facets.categories.length +
     props.facets.sources.length +

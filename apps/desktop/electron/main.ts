@@ -15354,9 +15354,11 @@ registerPreviewSignins({
   log: rememberLog,
   resolveRoute: async (sender, profile, connectionId) => {
     const source = windowConnectionRoutes.get(sender.id) ?? null
+
     const route = connectionId
       ? { connectionId, profile: profile || 'default' }
       : resolveDesktopConnectionRequest(profile, source, primaryProfileKey())
+
     const connection = await connectDesktopProfileRoute(
       route,
       sender,

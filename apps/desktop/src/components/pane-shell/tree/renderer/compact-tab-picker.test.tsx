@@ -101,6 +101,7 @@ it('reserves a separate touch row for phone tabs even when the titlebar reports 
   $layoutTree.set({ ...group([ids[0]]), active: ids[0], tabStrip: 'always' })
   const newTab = vi.fn()
   $newSessionTabAction.set(newTab)
+
   const { container } = render(
     <>
       <div data-titlebar-cluster="left" />
@@ -108,6 +109,7 @@ it('reserves a separate touch row for phone tabs even when the titlebar reports 
       <Host topEdge />
     </>
   )
+
   const header = container.querySelector<HTMLElement>('[data-panel-header]')!
   const height = () => parseFloat(header.style.height)
 

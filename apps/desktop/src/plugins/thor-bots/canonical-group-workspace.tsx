@@ -148,6 +148,7 @@ function holdDraft(held: HeldDraft | null, next: HeldDraft): HeldDraft {
   if (!held) {
     return next
   }
+
   const ids = new Set(held.attachments.map(attachment => attachment.attachment_id))
 
   return {
@@ -339,11 +340,13 @@ function CanonicalRoomView({
     // Published before its first request goes out, so an event that request causes (its own dial's
     // gateway.ready) already sees it in flight; `current` settles as the read does.
     let settle!: (outcome: Promise<void>) => void
+
     const read: RoomRead = {
       current: new Promise<void>(resolve => {
         settle = resolve
       })
     }
+
     reading.current = read
     pollTimer.current?.started()
     settle(
@@ -386,6 +389,7 @@ function CanonicalRoomView({
         since_seq: cursor,
         limit: 100
       })
+
       const fresh = roomLogPageAfter(cursor, page.events)
 
       // A hole, or a page that says there is more but brings nothing: the cursor cannot move.
@@ -448,6 +452,7 @@ function CanonicalRoomView({
     if (!visible) {
       return
     }
+
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
     let release: (() => void) | null = null
@@ -482,6 +487,7 @@ function CanonicalRoomView({
       if (release || leasing) {
         return
       }
+
       leasing = true
       void retainRouteSocket(canonicalGroupProfileRoute(binding)).then(granted => {
         leasing = false
@@ -539,6 +545,7 @@ function CanonicalRoomView({
             if (cancelled || !fromThisRoute(event)) {
               return
             }
+
             lease()
 
             if (!reading.current || (reading.current.answered && release)) {
@@ -567,6 +574,7 @@ function CanonicalRoomView({
     if (busyRef.current) {
       return
     }
+
     busyRef.current = true
     setBusy(true)
     setError('')
@@ -639,6 +647,7 @@ function CanonicalRoomView({
   // by the hint beside the restored draft; its raw reason code (`invalid_params`) is not shown.
   const settleFailedSend = async (exact: PreparedCanonicalGroupSend, words: Words, run: SendRun, error: unknown) => {
     run.posted = !admittedNothing(error)
+
     const left = run.posted
       ? undefined
       : await withdrawCanonicalGroupSend(exact.binding, exact.params.event_id).catch(() => undefined)
@@ -663,11 +672,13 @@ function CanonicalRoomView({
     await retireDeliveredIntent()
     const typed = { text: draft, attachments, thread_id: reply?.thread ?? draftThread.current }
     const replacing = editing.current
+
     const exact =
       pending ??
       (replacing
         ? await replaceCanonicalGroupSend(binding, replacing, typed)
         : await prepareCanonicalGroupSend(binding, typed))
+
     editing.current = null
 
     if (!alive.current) {
@@ -690,6 +701,7 @@ function CanonicalRoomView({
       text: String(exact.params.payload.text ?? ''),
       attachments: (exact.params.payload.attachments as Attachment[] | undefined) ?? []
     }
+
     setPending(exact)
     setDraft(words.text)
     setAttachments(words.attachments)
@@ -754,10 +766,12 @@ function CanonicalRoomView({
     ) {
       return
     }
+
     stopIntent.current = null
     setSendHint('')
     setNotice('')
     let settle!: (mayHavePosted: boolean) => void
+
     const run: SendRun = {
       stopped: false,
       posted: false,
@@ -765,12 +779,14 @@ function CanonicalRoomView({
         settle = resolve
       })
     }
+
     sending.current = run
     void mutate(() =>
       sendIntent(run).finally(() => {
         if (sending.current === run) {
           sending.current = null
         }
+
         settle(run.posted)
       })
     )
@@ -780,11 +796,14 @@ function CanonicalRoomView({
     if (fresh) {
       stopIntent.current = null
     }
+
     const cancelId = (stopIntent.current ??= randomUuid())
+
     const result = await canonicalGroupRequest<{ cancelled?: unknown } | undefined>(binding, 'groups.stop', {
       room_id: binding.roomId,
       cancel_id: cancelId
     })
+
     const cancelled = result?.cancelled
 
     if (typeof cancelled !== 'number' || !Number.isSafeInteger(cancelled) || cancelled < 0) {
@@ -805,12 +824,14 @@ function CanonicalRoomView({
     if (stopPending.current) {
       return
     }
+
     stopPending.current = true
     const covered = sending.current
 
     if (covered) {
       covered.stopped = true
     }
+
     setStopping(true)
     setNotice('')
     setError('')
@@ -820,6 +841,7 @@ function CanonicalRoomView({
       const replay = stopIntent.current !== null
       const first = requestStop()
       first.catch(() => undefined)
+
       const cancelled =
         covered && (await covered.settled) ? (await first.catch(() => 0)) + (await requestStop(true)) : await first
 
@@ -894,6 +916,7 @@ function CanonicalRoomView({
         event_id: randomUuid(),
         name
       })
+
       registerCanonicalGroup(binding, room)
     })
 
@@ -906,6 +929,7 @@ function CanonicalRoomView({
     if (alive.current) {
       onBack?.()
     }
+
     forgetCanonicalGroup(binding)
     host.notify({ kind: 'success', message: labels.disbanded(state?.room.name || binding.roomName || '') })
   }
@@ -916,11 +940,13 @@ function CanonicalRoomView({
   const driver = state?.driver_status
   const members = useSameValue(state?.room.members ?? NO_MEMBERS)
   const { cycle, statuses, working } = useCanonicalRoomLive(events, driver, members, reply?.thread)
+
   const mentionMembers = members.map(member => ({
     name: member.handle,
     handle: member.handle,
     display_name: member.display_name
   }))
+
   const memberById = new Map(members.map(member => [member.member_id, member]))
   const avatarFor = (name: string, size: number) => <RoomBotAvatar name={name} size={size} />
 
@@ -968,6 +994,7 @@ function CanonicalRoomView({
     if (!files.length) {
       return
     }
+
     event.preventDefault()
 
     if (!composerLocked && offersGroupMethod(methods, 'groups.attachment.upload')) {

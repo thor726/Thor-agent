@@ -26,6 +26,7 @@ const { request, notify, openWorkspace, activation } = vi.hoisted(() => ({
   openWorkspace: vi.fn(),
   activation: { epoch: 1, listeners: new Set<() => void>() }
 }))
+
 vi.mock('@thor/plugin-sdk', async importOriginal => {
   const sdk = await importOriginal<typeof ThorSdk>()
   const { captureGroupRequests } = await import('./canonical-group-contract-test-utils')
@@ -176,6 +177,7 @@ function answer(capabilities: unknown) {
     if (method === 'profiles.configure') {
       return {}
     }
+
     throw new Error(`Unexpected RPC: ${method}`)
   })
 }
@@ -194,6 +196,7 @@ async function submitDialog() {
   for (const checkbox of screen.getAllByRole('checkbox').slice(0, 3)) {
     fireEvent.click(checkbox)
   }
+
   await waitFor(() => expect(request.mock.calls.map(call => call[1])).toContain('groups.capabilities'))
   await act(async () => {})
   const submit = screen.getByRole('button', { name: 'Create group (2)' }) as HTMLButtonElement
@@ -309,6 +312,7 @@ it('canonical creation offers this connection and reachable other-connection bot
   for (const checkbox of screen.getAllByRole('checkbox').slice(0, 2)) {
     fireEvent.click(checkbox)
   }
+
   const submit = screen.getByRole('button', { name: 'Create group (2)' }) as HTMLButtonElement
   await waitFor(() => expect(submit.disabled).toBe(false))
   expect(baseElement.querySelector('[data-bot-face="remote"]')).not.toBeNull()
@@ -349,6 +353,7 @@ it('never offers Create for a mixed selection on a legacy gateway, and finds a g
   for (const checkbox of screen.getAllByRole('checkbox').slice(0, 3)) {
     fireEvent.click(checkbox)
   }
+
   const submit = screen.getByRole('button', { name: 'Create group (3)' }) as HTMLButtonElement
   expect(submit.disabled).toBe(true)
   expect(screen.getByRole('note').textContent).toBe(CROSS_GATEWAY_GROUP_LOCALES.en.ownerUpdateRequired('This device'))
@@ -395,6 +400,7 @@ it.each(['profile', 'gateway', 'same-route-activation'] as const)(
     for (const checkbox of screen.getAllByRole('checkbox').slice(0, 2)) {
       fireEvent.click(checkbox)
     }
+
     const submit = screen.getByRole('button', { name: 'Create group (2)' })
     await waitFor(() => expect((submit as HTMLButtonElement).disabled).toBe(false))
 
@@ -628,6 +634,7 @@ it('reads the group driver again on Retry after a failed capability read', async
 it("explains a refused gateway group creation in the reader's language with the member the gateway named, from the dialog and the gate", async () => {
   const words =
     "The gateway couldn’t create this group chat. member 1 profile 'beta': only a host-scoped connection seats a served profile without an entry"
+
   request.mockImplementation(async (_route, method) => {
     if (method === 'groups.capabilities') {
       return { driver: true, persistent_process: true }
