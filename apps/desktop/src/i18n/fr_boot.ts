@@ -102,8 +102,7 @@ export const frBoot = {
         'Le processus de mise à jour restant modifie peut-être encore les fichiers de Thor. Démarrer maintenant peut charger une installation à moitié mise à jour, qui risque de ne pas fonctionner avant une nouvelle mise à jour. Thor consigne ce choix dans son journal et laisse le marqueur de mise à jour en place.',
       confirmKeepWaiting: 'Continuer à attendre',
       confirmStart: 'Démarrer quand même',
-      startAnywayRefused:
-        "Ce qui bloque l'installation a changé avant que Thor puisse démarrer. Vérifiez et réessayez."
+      startAnywayRefused: "Ce qui bloque l'installation a changé avant que Thor puisse démarrer. Vérifiez et réessayez."
     }
   }
 } satisfies Pick<TranslationOverrides, 'boot'>

@@ -2,7 +2,6 @@ import { LOCAL_CONNECTION_ID, registryBackendScopeKey } from '@thor/shared'
 import { atom, batch, computed } from 'nanostores'
 
 import type { ThorConnection } from '@/global'
-import { getProfiles, thorApi, setApiRequestProfile, STARTUP_REQUEST_TIMEOUT_MS } from '@/thor'
 import { hostHas } from '@/lib/host-capabilities'
 import { persistStore } from '@/lib/persist-store'
 import { initialGatewayProfile } from '@/lib/platform'
@@ -34,6 +33,7 @@ import { exitProjectScope } from '@/store/project-scope'
 import { $connection, clearComposerSelectionOwner, setComposerSelectionOwner, setConnection } from '@/store/session'
 import type { SessionOwnerRoute } from '@/store/session-request-router'
 import { reloadOpenStarmapGraph, resetStarmapGraph } from '@/store/starmap'
+import { getProfiles, setApiRequestProfile, STARTUP_REQUEST_TIMEOUT_MS, thorApi } from '@/thor'
 import type { ProfileInfo } from '@/types/thor'
 
 // Canonical key for a profile: trimmed, empty → "default". Used everywhere we

@@ -12,7 +12,6 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import type { ThorConnection } from '@/global'
-import { saveThorConfigRecord } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Check, Globe } from '@/lib/icons'
 import { claimPreviewSigninsSync, syncPreviewSignins } from '@/lib/preview-signins'
@@ -25,6 +24,7 @@ import {
   releaseRealProfilePrompt
 } from '@/store/real-profile-consent'
 import { $connection } from '@/store/session'
+import { saveThorConfigRecord } from '@/thor'
 
 import { thorConfigCacheWriter, useThorConfigRecord } from '../../hooks/use-config-record'
 

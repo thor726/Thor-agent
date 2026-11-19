@@ -1,12 +1,11 @@
-import { type GatewayEvent, JsonRpcGatewayClient } from '@thor/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, renderHook } from '@testing-library/react'
+import { type GatewayEvent, JsonRpcGatewayClient } from '@thor/shared'
 import { useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
 import type { ThorGateway } from '@/api/client'
 import { reconcileActiveTranscript } from '@/app/contrib/hooks/use-background-sync'
-import { getLatestSessionMessages } from '@/thor'
 import { chatMessageText, toChatMessages } from '@/lib/chat-messages'
 import { resetInFlightTurnJournalStateForTests } from '@/lib/inflight-turn-journal'
 import { setPrimaryGateway } from '@/store/gateway'
@@ -23,6 +22,7 @@ import {
   setSessions
 } from '@/store/session'
 import { clearAllSessionStates } from '@/store/session-states'
+import { getLatestSessionMessages } from '@/thor'
 import type { SessionMessage, SessionResumeResult } from '@/types/thor'
 
 import { useMessageStream } from './use-message-stream'

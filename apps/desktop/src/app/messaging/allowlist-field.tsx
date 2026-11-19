@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tip } from '@/components/ui/tooltip'
-import type { MessagingEnvVarInfo } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Plus, X } from '@/lib/icons'
+import type { MessagingEnvVarInfo } from '@/thor'
 
 import { CREDENTIAL_CONTROL_CLASS } from '../settings/credential-key-ui'
 

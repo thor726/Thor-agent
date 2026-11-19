@@ -1,12 +1,12 @@
 import { atom } from 'nanostores'
 
-import { getActionStatus, getStatus, thorApi, restartGateway } from '@/thor'
 import { translateNow } from '@/i18n'
 import { sharedGatewayProfiles } from '@/lib/shared-gateway-restart'
 import { isSignedOutStatus } from '@/lib/signed-out-status'
 import { confirm } from '@/store/confirm'
 import { reconnectGateway } from '@/store/gateway-reconnect'
 import { notify, notifyError } from '@/store/notifications'
+import { getActionStatus, getStatus, restartGateway, thorApi } from '@/thor'
 import type { ActionResponse } from '@/types/thor'
 
 const POLL_ATTEMPTS = 18

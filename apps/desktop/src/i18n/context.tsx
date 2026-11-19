@@ -1,8 +1,8 @@
-import { applyDocumentLocale, isRecord } from '@thor/shared/i18n'
 import { useStore } from '@nanostores/react'
+import { applyDocumentLocale, isRecord } from '@thor/shared/i18n'
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getThorConfigRecord, type ThorConfigRecord, retainConfigReadOrigin, saveThorConfig } from '@/thor'
+import { getThorConfigRecord, retainConfigReadOrigin, saveThorConfig, type ThorConfigRecord } from '@/thor'
 
 import { TRANSLATIONS } from './catalog'
 import {

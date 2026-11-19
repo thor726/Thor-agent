@@ -18,9 +18,7 @@ function ContextMenuPortal({ ...props }: React.ComponentProps<typeof ContextMenu
 export const THOR_CONTEXT_MENU_TRIGGER_ATTR = 'data-thor-context-menu-trigger'
 
 function ContextMenuTrigger({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
-  return (
-    <ContextMenuPrimitive.Trigger data-slot="context-menu-trigger" {...props} data-thor-context-menu-trigger="" />
-  )
+  return <ContextMenuPrimitive.Trigger data-slot="context-menu-trigger" {...props} data-thor-context-menu-trigger="" />
 }
 
 function ContextMenuGroup({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Group>) {

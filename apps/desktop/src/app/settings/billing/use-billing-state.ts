@@ -1,6 +1,6 @@
-import { gaugeScope, gaugeTitle, PAYMENT_PAUSE_REASON } from '@thor/shared'
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
+import { gaugeScope, gaugeTitle, PAYMENT_PAUSE_REASON } from '@thor/shared'
 
 import type { Translations } from '@/i18n'
 import { en } from '@/i18n/en'
@@ -876,10 +876,7 @@ function deriveUsageRows(
  * server says they pay (`credits_pay`: Keep going on credits is on AND a top-up balance is left; with
  * the setting on and $0 the next request is refused too); otherwise the other included models still work.
  */
-function deriveWindowRows(
-  planUsage: PlanUsage,
-  b: Translations['settings']['billing']
-): BillingUsageRowView[] {
+function deriveWindowRows(planUsage: PlanUsage, b: Translations['settings']['billing']): BillingUsageRowView[] {
   const copy = b.state.usage.window
   const words = { day: copy.today, month: copy.month, top_tier: copy.topTier, week: copy.week }
 

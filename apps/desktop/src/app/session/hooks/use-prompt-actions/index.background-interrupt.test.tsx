@@ -1,13 +1,13 @@
 import { act, cleanup } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages } from '@/thor'
 import { textPart } from '@/lib/chat-messages'
 import { $backgroundStatusBySession, reconcileBackgroundProcesses } from '@/store/composer-status'
 import { $gateway } from '@/store/gateway'
 import { clearNotifications } from '@/store/notifications'
 import { $busy, setMessages } from '@/store/session'
 import { $subagentsBySession, upsertSubagent } from '@/store/subagents'
+import { getLatestSessionMessages } from '@/thor'
 
 import { actRender, Harness, type HarnessHandle, RUNTIME_SESSION_ID } from './index-test-utils'
 import { clearSingleFlightSessionResumeState } from './single-flight-resume'

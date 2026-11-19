@@ -5,9 +5,9 @@
  * them instead of the bot-list error, with no Refresh button.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { atom } from 'nanostores'
 import { afterEach, expect, it, vi } from 'vitest'
 
@@ -22,10 +22,17 @@ vi.mock('@thor/plugin-sdk', async importOriginal => {
     ...sdk,
     host: {
       ...sdk.host,
-      agents: vi.fn(async () => { throw new Error('profiles.list exploded') }),
+      agents: vi.fn(async () => {
+        throw new Error('profiles.list exploded')
+      }),
       request,
       requestProfile,
-      state: { ...sdk.host.state, connectionId: atom<null | string>('local'), gateway: atom('open'), profile: atom('default') }
+      state: {
+        ...sdk.host.state,
+        connectionId: atom<null | string>('local'),
+        gateway: atom('open'),
+        profile: atom('default')
+      }
     },
     usePluginI18n: () => translateBotsIn('en')
   }
@@ -42,7 +49,10 @@ it('shows gateway Group Chats when the bot list fails', async () => {
   request.mockRejectedValue(new Error('profiles.list exploded'))
   requestProfile.mockImplementation(async (_route: unknown, method: string) => {
     if (method === 'groups.list') {
-      return { rooms: [{ room_id: 'room-1', name: 'Launch crew', members: [], updated_at: Date.now() / 1000 }], next_offset: null }
+      return {
+        rooms: [{ room_id: 'room-1', name: 'Launch crew', members: [], updated_at: Date.now() / 1000 }],
+        next_offset: null
+      }
     }
 
     throw new Error(`unexpected ${method}`)

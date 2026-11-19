@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { useI18n } from '@/i18n'
+import { notifyError } from '@/store/notifications'
 import {
   getElevenLabsVoices,
   getThorConfigSchema,
@@ -8,8 +10,6 @@ import {
   profileScopeKey,
   saveThorConfigRecord
 } from '@/thor'
-import { useI18n } from '@/i18n'
-import { notifyError } from '@/store/notifications'
 import type { ThorConfigRecord } from '@/types/thor'
 
 import { thorConfigCacheWriter, useThorConfigRecord } from '../hooks/use-config-record'

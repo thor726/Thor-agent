@@ -2,11 +2,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
-  THOR_HUB_FALLBACK_ORIGIN,
-  THOR_HUB_ORIGIN,
   isThorHubClipboardWrite,
   isThorHubExternalUrl,
-  isThorHubOrigin
+  isThorHubOrigin,
+  THOR_HUB_FALLBACK_ORIGIN,
+  THOR_HUB_ORIGIN
 } from './hub-iframe-policy'
 import { createWindowOpenHandler, describeDeniedUrl } from './window-open-policy'
 

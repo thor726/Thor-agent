@@ -661,15 +661,7 @@ async function remoteProcessCreationTime(ssh, pid) {
 
 // A pid is "provably ours" only if its remote cmdline carries our dashboard
 // args — never kill a pid we can't positively identify as our dashboard.
-async function pidIsOurDashboard(
-  ssh,
-  pid,
-  spawnNonce,
-  thorPath = '',
-  thorHome = '',
-  ownershipId = '',
-  profile = ''
-) {
+async function pidIsOurDashboard(ssh, pid, spawnNonce, thorPath = '', thorHome = '', ownershipId = '', profile = '') {
   if (!pid || !/^[0-9a-f]{16}$/.test(String(spawnNonce || '')) || !thorPath) {
     return false
   }
@@ -746,15 +738,7 @@ async function cleanupStale(ssh, ownershipId, lock, pidAlive = true) {
   if (
     pidAlive &&
     lock &&
-    (await pidIsOurDashboard(
-      ssh,
-      lock.pid,
-      lock.spawnNonce,
-      lock.thorPath,
-      lock.thorHome,
-      ownershipId,
-      lock.profile
-    ))
+    (await pidIsOurDashboard(ssh, lock.pid, lock.spawnNonce, lock.thorPath, lock.thorHome, ownershipId, lock.profile))
   ) {
     try {
       const result = (
@@ -1040,15 +1024,7 @@ async function terminateOwnedDashboardForUpdate(ssh, expected) {
   }
 
   if (
-    !(await pidIsOurDashboard(
-      ssh,
-      lock.pid,
-      lock.spawnNonce,
-      lock.thorPath,
-      lock.thorHome,
-      ownershipId,
-      lock.profile
-    ))
+    !(await pidIsOurDashboard(ssh, lock.pid, lock.spawnNonce, lock.thorPath, lock.thorHome, ownershipId, lock.profile))
   ) {
     const error: any = new Error('Refusing to terminate a remote process whose Desktop ownership is unproven.')
     error.kind = 'foreign-backend'
@@ -1067,15 +1043,7 @@ async function terminateOwnedDashboardForUpdate(ssh, expected) {
 
   if (
     (await remoteProcessCreationTime(ssh, lock.pid)) !== lock.creationTime ||
-    !(await pidIsOurDashboard(
-      ssh,
-      lock.pid,
-      lock.spawnNonce,
-      lock.thorPath,
-      lock.thorHome,
-      ownershipId,
-      lock.profile
-    ))
+    !(await pidIsOurDashboard(ssh, lock.pid, lock.spawnNonce, lock.thorPath, lock.thorHome, ownershipId, lock.profile))
   ) {
     const error: any = new Error('The remote POSIX process identity changed during managed update drain.')
     error.kind = 'ownership-changed'
@@ -1300,15 +1268,7 @@ async function scrapeReadyPort(ssh, logPath, { timeoutMs = resolveReadyTimeoutMs
 
 async function spawnRemoteDashboard(
   ssh,
-  {
-    thorPath,
-    profile,
-    token,
-    ownershipId,
-    thorHome = '~/.thor',
-    devServer = '',
-    assertInstallClear = async () => {}
-  }
+  { thorPath, profile, token, ownershipId, thorHome = '~/.thor', devServer = '', assertInstallClear = async () => {} }
 ) {
   if (!(await remoteSupportsSshOwnership(ssh, thorPath))) {
     const err: any = new Error(
@@ -1599,15 +1559,7 @@ async function connect(deps) {
 
     const owned =
       pidAlive &&
-      (await pidIsOurDashboard(
-        ssh,
-        lock.pid,
-        lock.spawnNonce,
-        lock.thorPath,
-        lock.thorHome,
-        ownershipId,
-        lock.profile
-      ))
+      (await pidIsOurDashboard(ssh, lock.pid, lock.spawnNonce, lock.thorPath, lock.thorHome, ownershipId, lock.profile))
 
     const reusable =
       pidAlive && owned && lockServesConnect(lock, { profile, reuseToken, thorPath, thorHome, devServer })
@@ -1848,9 +1800,9 @@ export {
   openForward,
   ownershipDirectory,
   pidIsOurDashboard,
-  probeThorVersion,
-  probeRemoteThorHome,
   probeRemotePlatform,
+  probeRemoteThorHome,
+  probeThorVersion,
   PROTOCOL_VERSION,
   readLockfile,
   readRemoteInstallId,

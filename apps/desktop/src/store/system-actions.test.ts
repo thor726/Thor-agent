@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorApi from '@/thor'
 import { registerGatewayReconnect } from '@/store/gateway-reconnect'
+import type * as ThorApi from '@/thor'
 
 // The REST layer is the only seam these flows own; the confirm dialog and
 // notifications stay real. getStatus answers a standalone gateway so

@@ -21,7 +21,6 @@ import {
   dropReceiptTurnsThePageHolds
 } from '@/app/chat/transcript-receipt-turns'
 import { transcriptRowIds } from '@/app/session/hooks/use-session-actions/pending-turn-identity'
-import { getOlderSessionMessages, getSessionMessages, type ProfileScope } from '@/thor'
 import { type ChatMessage, chatMessageText, toChatMessages } from '@/lib/chat-messages'
 import {
   recordTranscriptBackfillPage,
@@ -30,6 +29,7 @@ import {
   type TranscriptTailState,
   transcriptTailState
 } from '@/store/transcript-tail'
+import { getOlderSessionMessages, getSessionMessages, type ProfileScope } from '@/thor'
 import type { SessionMessage, SessionMessagesResponse } from '@/types/thor'
 
 /**

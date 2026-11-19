@@ -1,4 +1,4 @@
-import { thorApi, sessionFileOwnerScope } from '@/api/client'
+import { sessionFileOwnerScope, thorApi } from '@/api/client'
 import type {
   ThorConnection,
   ThorReadDirResult,

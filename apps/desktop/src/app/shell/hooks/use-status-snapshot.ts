@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { getStatus } from '@/thor'
 import { type I18nContextValue, useI18n } from '@/i18n'
 import { evaluateRuntimeReadiness, type RuntimeReadinessResult } from '@/lib/runtime-readiness'
 import { isSignedOutStatus } from '@/lib/signed-out-status'
@@ -9,6 +8,7 @@ import { $setupReadyTick } from '@/store/live-sync'
 import { dismissNotification, notify } from '@/store/notifications'
 import { $desktopOnboarding, isLocalRuntimeUnavailable, settleLocalRuntimeNotice } from '@/store/onboarding'
 import { $currentModel } from '@/store/session'
+import { getStatus } from '@/thor'
 import type { StatusResponse } from '@/types/thor'
 
 // Statusbar health is ambient chrome, not live data — nothing the user acts on

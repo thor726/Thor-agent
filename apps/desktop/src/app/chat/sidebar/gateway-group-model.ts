@@ -1,10 +1,9 @@
-import { LOCAL_CONNECTION_ID } from '@thor/shared'
 import { useStore } from '@nanostores/react'
+import { LOCAL_CONNECTION_ID } from '@thor/shared'
 import { useMemo } from 'react'
 
 import { $apiRequestScope } from '@/api/client'
 import type { DesktopConnectionsRegistry } from '@/global'
-import type { SessionInfo } from '@/thor'
 import { isBrowserHostedDesktop } from '@/lib/platform'
 import { resolveProfileColor } from '@/lib/profile-color'
 import { $connectionsRegistry } from '@/store/connection-registry-state'
@@ -12,6 +11,7 @@ import { $primaryGatewayRoute } from '@/store/gateway-primary-route'
 import { $sidebarShowArchived } from '@/store/layout'
 import { $profileColors, $profiles, normalizeProfileKey } from '@/store/profile'
 import { $sessionProfilesFailed, $sessionsLoadError, isSessionProfileUnread } from '@/store/session'
+import type { SessionInfo } from '@/thor'
 
 import type { SidebarSessionGroup } from './projects/workspace-groups'
 

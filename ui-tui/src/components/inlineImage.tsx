@@ -1,6 +1,6 @@
+import { useStore } from '@nanostores/react'
 import { Box, useStdout } from '@thor/ink'
 import type { ImageRenderResult } from '@thor/shared/gateway-events'
-import { useStore } from '@nanostores/react'
 import { memo, useEffect, useState } from 'react'
 
 import { useGateway } from '../app/gatewayContext.js'

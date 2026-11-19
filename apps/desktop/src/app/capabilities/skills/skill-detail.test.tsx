@@ -3,8 +3,8 @@ import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorApi from '@/thor'
 import { queryClient } from '@/lib/query-client'
+import type * as ThorApi from '@/thor'
 import type { SkillInfo } from '@/types/thor'
 
 import { SkillDetail } from './skill-detail'

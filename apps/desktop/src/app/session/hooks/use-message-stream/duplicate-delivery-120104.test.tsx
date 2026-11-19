@@ -1,5 +1,5 @@
-import type { GatewayEventName } from '@thor/shared'
 import { act, cleanup } from '@testing-library/react'
+import type { GatewayEventName } from '@thor/shared'
 import { afterEach, expect, it } from 'vitest'
 
 import { chatMessageText } from '@/lib/chat-messages'

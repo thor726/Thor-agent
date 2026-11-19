@@ -1,11 +1,11 @@
-import { JsonRpcGatewayError } from '@thor/shared'
 import { cleanup, render, waitFor } from '@testing-library/react'
+import { JsonRpcGatewayError } from '@thor/shared'
 import type { MutableRefObject } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getLatestSessionMessages, getSession } from '@/thor'
 import { textPart } from '@/lib/chat-messages'
 import { $busy, $messages, $turnStartedAt, setMessages, setSessions } from '@/store/session'
+import { getLatestSessionMessages, getSession } from '@/thor'
 
 import { actRender, Harness, type HarnessHandle, RUNTIME_SESSION_ID, sessionInfo } from './index-test-utils'
 import { clearStoredJournal } from './prepared-submissions-test-utils'

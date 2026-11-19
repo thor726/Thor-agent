@@ -1,8 +1,8 @@
 import { useAuiState } from '@assistant-ui/react'
-import type { GatewayEvent } from '@thor/shared'
 import { useStore } from '@nanostores/react'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, render, screen } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { useCallback, useRef } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
@@ -12,7 +12,6 @@ import { mergeOlderTranscriptPage } from '@/app/chat/transcript-backfill'
 import { useMessageStream } from '@/app/session/hooks/use-message-stream'
 import { useSessionStateCache } from '@/app/session/hooks/use-session-state-cache'
 import { stubThreadEnvironment } from '@/components/assistant-ui/test-utils'
-import { getLatestSessionMessages } from '@/thor'
 import { chatMessageText, toChatMessages } from '@/lib/chat-messages'
 import { resetLiveSync } from '@/store/live-sync'
 import {
@@ -31,6 +30,7 @@ import {
   restoreSessionTodosFromSnapshot,
   setSessionTodos
 } from '@/store/todos'
+import { getLatestSessionMessages } from '@/thor'
 import type { SessionMessage } from '@/types/thor'
 
 import {

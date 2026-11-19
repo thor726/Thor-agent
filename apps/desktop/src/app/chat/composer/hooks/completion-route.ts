@@ -1,8 +1,8 @@
-import type { ThorGateway } from '@/thor'
 import { ambientRequestFor } from '@/store/session-gone-latch'
 import { sessionOwnerIsKnown } from '@/store/session-owner-resolution'
 import { isSessionOwnerRoute, requestForSessionProfile, type SessionOwnerScope } from '@/store/session-request-router'
 import { knownOwnerForSession } from '@/store/session-states'
+import type { ThorGateway } from '@/thor'
 
 /**
  * Where a composer completion RPC (`commands.catalog`, `complete.slash`,

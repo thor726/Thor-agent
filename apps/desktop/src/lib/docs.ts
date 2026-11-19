@@ -4,4 +4,5 @@
  * (bundled installs with a damaged payload) and any future doc links point
  * at the same place.
  */
-export const DESKTOP_DOCS_URL = 'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/desktop'
+export const DESKTOP_DOCS_URL =
+  'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/desktop'

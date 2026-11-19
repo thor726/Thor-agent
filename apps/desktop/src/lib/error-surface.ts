@@ -368,7 +368,8 @@ export interface ErrorCardActions {
 
 export const ERROR_SETUP_GUIDE_URLS = {
   tls: 'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/security#tls-certificate-trust',
-  local: 'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/local-models#using-your-own-llama-server'
+  local:
+    'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/local-models#using-your-own-llama-server'
 } as const
 
 /** Provider pages where the user fixes an account-level routing/privacy block. */
