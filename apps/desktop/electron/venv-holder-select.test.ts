@@ -78,10 +78,7 @@ test('matches the dashboard scheduled task (python -m thor_cli / -m thor)', () =
     ),
     true
   )
-  assert.equal(
-    isExternalVenvHolder('C:\\Thor\\venv\\Scripts\\pythonw.exe', 'pythonw.exe -m thor serve', SCRIPTS),
-    true
-  )
+  assert.equal(isExternalVenvHolder('C:\\Thor\\venv\\Scripts\\pythonw.exe', 'pythonw.exe -m thor serve', SCRIPTS), true)
 })
 
 test('never matches an unrelated process that merely borrows the venv interpreter', () => {

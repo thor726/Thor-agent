@@ -6,7 +6,6 @@ import { type NewSessionSplitHandler, startNewSessionDrag } from '@/app/chat/new
 import { Codicon } from '@/components/ui/codicon'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { ThorGitWorktree } from '@/global'
-import type { SessionInfo } from '@/thor'
 import { useI18n } from '@/i18n'
 import { displayPath } from '@/lib/display-path'
 import {
@@ -19,6 +18,7 @@ import {
 import { notifyError } from '@/store/notifications'
 import type { AgentProfileRoute } from '@/store/profile'
 import { removeWorktreePath } from '@/store/projects'
+import type { SessionInfo } from '@/thor'
 
 import { SidebarRowStack } from '../chrome'
 

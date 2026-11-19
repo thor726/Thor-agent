@@ -632,11 +632,10 @@ describe('BrowseSection', () => {
       await act(async () => {
         await vi.runOnlyPendingTimersAsync()
       })
-      expect(thor.downloadBrowsedModel).toHaveBeenCalledWith(
-        'unsloth/Qwen3.8-27B-GGUF',
-        ['Qwen3.8-27B-Q4_K_M.gguf'],
-        { connectionId: null, profile: 'default' }
-      )
+      expect(thor.downloadBrowsedModel).toHaveBeenCalledWith('unsloth/Qwen3.8-27B-GGUF', ['Qwen3.8-27B-Q4_K_M.gguf'], {
+        connectionId: null,
+        profile: 'default'
+      })
     } finally {
       vi.useRealTimers()
     }

@@ -5,10 +5,8 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 import { codiconIcon } from '@/components/ui/codicon'
 import { KbdCombo } from '@/components/ui/kbd'
 import { Tip } from '@/components/ui/tooltip'
-import { getThorConfigDefaults, getThorConfigRecord, saveThorConfig } from '@/thor'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
-import { servedByThorCloud } from '@/lib/thor-cloud-host'
 import {
   Archive,
   BarChart3,
@@ -31,6 +29,7 @@ import {
 } from '@/lib/icons'
 import { isEditableTarget } from '@/lib/keybinds/combo'
 import { typeToFocusChar } from '@/lib/keybinds/composer-focus-keys'
+import { servedByThorCloud } from '@/lib/thor-cloud-host'
 import { cn } from '@/lib/utils'
 import { $commandPaletteOpen, openCommandPalettePage } from '@/store/command-palette'
 import { confirm } from '@/store/confirm'
@@ -40,6 +39,7 @@ import { bindingsFor } from '@/store/keybinds'
 import { $localModelsEnabled } from '@/store/local-models-flag'
 import { notifyError } from '@/store/notifications'
 import { $settingsScopeProfile } from '@/store/settings-scope'
+import { getThorConfigDefaults, getThorConfigRecord, saveThorConfig } from '@/thor'
 
 import { useRouteEnumParam } from '../hooks/use-route-enum-param'
 import { OverlayIconButton } from '../overlays/overlay-chrome'

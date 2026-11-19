@@ -16,6 +16,11 @@ import { useEffect, useMemo } from 'react'
 
 import { $apiRequestScope, getApiRequestConnection, getApiRequestProfile } from '@/api/client'
 import type { LocalModelsScope } from '@/api/local-models'
+import { translateNow } from '@/i18n'
+import { queryClient } from '@/lib/query-client'
+import { useStoresSelector } from '@/lib/use-session-slice'
+import { notify, notifyError } from '@/store/notifications'
+import { $connection } from '@/store/session'
 import {
   getLocalCatalog,
   getLocalHardware,
@@ -23,11 +28,6 @@ import {
   getLocalModelsStatus,
   installLocalRuntime
 } from '@/thor'
-import { translateNow } from '@/i18n'
-import { queryClient } from '@/lib/query-client'
-import { useStoresSelector } from '@/lib/use-session-slice'
-import { notify, notifyError } from '@/store/notifications'
-import { $connection } from '@/store/session'
 import type { LocalCatalogModel, LocalHardware, LocalModelsStatus, LocalRuntimeJob } from '@/types/thor'
 
 export interface LocalModelsOwner extends LocalModelsScope {

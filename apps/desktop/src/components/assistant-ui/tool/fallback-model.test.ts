@@ -115,7 +115,10 @@ describe('buildToolView error confidence', () => {
         },
         'notice'
       ],
-      [{ toolName: 'skill_manage', result: { success: false, error: "batch aborted, ROLLBACK FAILED for 'demo'" } }, 'error'],
+      [
+        { toolName: 'skill_manage', result: { success: false, error: "batch aborted, ROLLBACK FAILED for 'demo'" } },
+        'error'
+      ],
       [{ result: { success: false, result: { output: { error: { message: 'Connection refused' } } } } }, 'error']
     ]
 
@@ -228,9 +231,7 @@ describe('buildToolView web-search query', () => {
     )
 
     expect(view.searchQuery).toBe('Thor Agent Desktop tool calls')
-    expect(view.searchHits).toEqual([
-      { snippet: 'Desktop docs', title: 'Thor docs', url: 'https://example.com/docs' }
-    ])
+    expect(view.searchHits).toEqual([{ snippet: 'Desktop docs', title: 'Thor docs', url: 'https://example.com/docs' }])
   })
 })
 
@@ -254,7 +255,11 @@ describe('buildToolView browser_navigate title', () => {
       part({
         toolName: 'browser_navigate',
         args: { url: 'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs' },
-        result: { success: true, url: 'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs', title: 'Docs' }
+        result: {
+          success: true,
+          url: 'https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs',
+          title: 'Docs'
+        }
       }),
       ''
     )

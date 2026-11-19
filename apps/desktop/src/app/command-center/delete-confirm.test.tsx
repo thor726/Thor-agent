@@ -2,9 +2,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { $sessions } from '@/store/session'
 import type * as ThorApi from '@/thor'
 import type { SessionInfo } from '@/thor'
-import { $sessions } from '@/store/session'
 
 import { CommandCenterView } from './index'
 

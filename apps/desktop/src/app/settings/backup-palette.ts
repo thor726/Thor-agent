@@ -1,6 +1,6 @@
 import type { Translations } from '@/i18n'
-import { servedByThorCloud } from '@/lib/thor-cloud-host'
 import { Archive, CloudUpload, type IconComponent } from '@/lib/icons'
+import { servedByThorCloud } from '@/lib/thor-cloud-host'
 
 export const BACKUP_SETTINGS_HREF = '/settings?tab=backup'
 

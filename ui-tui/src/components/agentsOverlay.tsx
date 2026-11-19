@@ -1,6 +1,10 @@
-import { Box, NoSelect, ScrollBox, type ScrollBoxHandle, Text, useInput, useStdout } from '@thor/ink'
-import type { DelegationPauseResponse, DelegationStatusResponse, SubagentInterruptResponse } from '@thor/shared/gateway-types'
 import { useStore } from '@nanostores/react'
+import { Box, NoSelect, ScrollBox, type ScrollBoxHandle, Text, useInput, useStdout } from '@thor/ink'
+import type {
+  DelegationPauseResponse,
+  DelegationStatusResponse,
+  SubagentInterruptResponse
+} from '@thor/shared/gateway-types'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAgentRoster } from '../app/agentRoster.js'

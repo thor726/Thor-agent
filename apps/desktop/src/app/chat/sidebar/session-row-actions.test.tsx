@@ -2,10 +2,10 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { atom } from 'nanostores'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type * as ThorModule from '@/thor'
-import type { SessionInfo } from '@/thor'
 import type * as SessionStore from '@/store/session'
 import type * as SessionStatesStore from '@/store/session-states'
+import type * as ThorModule from '@/thor'
+import type { SessionInfo } from '@/thor'
 
 import { SidebarSessionRow } from './session-row'
 

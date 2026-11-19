@@ -1,8 +1,8 @@
 import { map } from 'nanostores'
 
-import type { ThorGateway } from '@/thor'
 import { gatewayRouteState, requestGatewayForAgent } from '@/store/gateway'
 import type { AgentProfileRoute } from '@/store/profile'
+import type { ThorGateway } from '@/thor'
 import type { ProjectInfo, ProjectsPayload } from '@/types/thor'
 
 // A project another gateway owns is drawn from that gateway's session rows; its

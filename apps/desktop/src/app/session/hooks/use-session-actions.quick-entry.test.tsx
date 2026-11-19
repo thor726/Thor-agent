@@ -1,5 +1,5 @@
-import { JsonRpcGatewayError } from '@thor/shared'
 import { act, cleanup, render } from '@testing-library/react'
+import { JsonRpcGatewayError } from '@thor/shared'
 import type { MutableRefObject } from 'react'
 import { useEffect } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'

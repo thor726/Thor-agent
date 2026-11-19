@@ -1,12 +1,11 @@
-import { type GatewayEvent, registryBackendScopeKey } from '@thor/shared'
 import { useStore } from '@nanostores/react'
 import { act, cleanup, render, waitFor } from '@testing-library/react'
+import { type GatewayEvent, registryBackendScopeKey } from '@thor/shared'
 import { useEffect, useMemo, useRef } from 'react'
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 
 import { createSessionRpcDispatcher } from '@/app/contrib/session-rpc-dispatcher'
 import { prepareDefaultNewSession } from '@/app/session/new-session-route'
-import { getSession } from '@/thor'
 import { $defaultProfileRoute } from '@/store/default-profile'
 import {
   activeGateway,
@@ -47,6 +46,7 @@ import {
 } from '@/store/session'
 import { foregroundSessionScopes } from '@/store/session-states'
 import { deferred } from '@/test/deferred'
+import { getSession } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 import type { ClientSessionState } from '../../types'

@@ -7,12 +7,12 @@ import type { MutableRefObject } from 'react'
 import { useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { type SessionInfo } from '@/thor'
 import { $approvalModes, approvalModeForProfile, reconcileApprovalModeForProfile } from '@/store/approval-mode'
 import { requestGatewayForAgent } from '@/store/gateway'
 import { $activeGatewayProfile } from '@/store/profile'
 import { setMessages, setSelectedStoredSessionId, setSessions } from '@/store/session'
 import { $sessionTiles } from '@/store/session-states'
+import { type SessionInfo } from '@/thor'
 
 import type { ClientSessionState } from '../../../types'
 

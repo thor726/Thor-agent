@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import type { SubmitTextOptions } from '@/app/session/hooks/use-prompt-actions/utils'
-import type { ThorGateway, ResolvedOwner } from '@/thor'
+import type { ResolvedOwner, ThorGateway } from '@/thor'
 
 import type { DroppedFile } from '../hooks/use-composer-actions'
 

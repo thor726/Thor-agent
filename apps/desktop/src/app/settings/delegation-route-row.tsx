@@ -1,5 +1,5 @@
-import type { ProfileScope } from '@/thor'
 import { useI18n } from '@/i18n'
+import type { ProfileScope } from '@/thor'
 import type { ThorConfigRecord } from '@/types/thor'
 
 import { FIELD_DESCRIPTIONS } from './constants'

@@ -1,5 +1,5 @@
-import { JsonRpcGatewayError } from '@thor/shared'
 import { cleanup } from '@testing-library/react'
+import { JsonRpcGatewayError } from '@thor/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { errorCardOffers, type ErrorSurface } from '@/lib/error-surface'

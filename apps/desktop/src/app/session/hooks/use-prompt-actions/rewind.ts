@@ -13,7 +13,6 @@ import type { AppendMessage, ThreadMessage } from '@assistant-ui/react'
 import { JsonRpcGatewayError } from '@thor/shared'
 
 import type { ClientSessionState } from '@/app/types'
-import { PROMPT_SUBMIT_REQUEST_TIMEOUT_MS } from '@/thor'
 import {
   branchGroupForUser,
   type ChatMessage,
@@ -24,6 +23,7 @@ import {
   textPart
 } from '@/lib/chat-messages'
 import type { ConfirmRequest } from '@/store/confirm'
+import { PROMPT_SUBMIT_REQUEST_TIMEOUT_MS } from '@/thor'
 
 import {
   appendText,

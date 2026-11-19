@@ -88,8 +88,7 @@ export const deBoot = {
         `Das Update (Prozess ${pid}) wurde beendet, aber ein von ihm gestarteter Prozess hält die Thor-Installation noch fest.`,
       heldUnknown:
         'Ein Update wurde beendet, aber ein von ihm gestarteter Prozess hält die Thor-Installation noch fest.',
-      unverified:
-        'Der Update-Helfer konnte gerade nicht prüfen, wem die Thor-Installation gehört. Thor prüft weiter.',
+      unverified: 'Der Update-Helfer konnte gerade nicht prüfen, wem die Thor-Installation gehört. Thor prüft weiter.',
       since: time => `Wartet seit ${time}`,
       lastChecked: time => `Zuletzt geprüft ${time}`,
       recoveryHint:

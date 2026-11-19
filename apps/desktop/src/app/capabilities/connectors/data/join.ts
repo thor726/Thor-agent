@@ -9,9 +9,9 @@ import type {
   McpServerSummary
 } from '@thor/shared'
 
-import type { McpCatalogEntry } from '@/thor'
 import { connectorTitle } from '@/lib/connector-tools'
 import { type McpServers, serverEnabled } from '@/lib/mcp-servers'
+import type { McpCatalogEntry } from '@/thor'
 
 import { canAuthenticate } from '../../mcp/mcp-status'
 import { toolRows } from '../derive-tools'

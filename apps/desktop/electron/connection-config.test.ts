@@ -121,10 +121,7 @@ test('normalizeRemoteHeaders sanitizes plaintext values at ingest', () => {
 
 test('remoteRequestMatchesBaseUrl treats HTTPS and WSS as the same gateway origin', () => {
   assert.equal(
-    remoteRequestMatchesBaseUrl(
-      'wss://thor.example.com/gateway/api/ws?ticket=abc',
-      'https://thor.example.com/gateway'
-    ),
+    remoteRequestMatchesBaseUrl('wss://thor.example.com/gateway/api/ws?ticket=abc', 'https://thor.example.com/gateway'),
     true
   )
   assert.equal(remoteRequestMatchesBaseUrl('ws://thor.example.com/api/ws', 'http://thor.example.com'), true)
@@ -652,8 +649,13 @@ test('pathForRegistryBackendRequest uses the resolved registry backend scope', (
 test('a /api/profiles/<name>/… path already names its profile: no ambient scope is appended (#140791)', () => {
   for (const backend of [{ mode: 'local' }, { sharedPrimary: true }, { sharedRemote: true }]) {
     for (const ambient of ['default', '__all__', 'beta']) {
-      for (const path of ['/api/profiles/p2/soul', '/api/profiles/p2', '/api/profiles/p2/model',
-        '/api/profiles/projects/soul', '/api/profiles/sessions/soul']) {
+      for (const path of [
+        '/api/profiles/p2/soul',
+        '/api/profiles/p2',
+        '/api/profiles/p2/model',
+        '/api/profiles/projects/soul',
+        '/api/profiles/sessions/soul'
+      ]) {
         assert.equal(pathForRegistryBackendRequest(path, ambient, backend), path)
       }
 
@@ -665,14 +667,20 @@ test('a /api/profiles/<name>/… path already names its profile: no ambient scop
   }
 
   assert.equal(pathWithProfileScope('/api/profiles/p2/soul', 'default'), '/api/profiles/p2/soul')
+
   // Method-aware: PATCH/DELETE of a profile NAMED active/import/sessions names that profile.
-  for (const [path, method] of [['/api/profiles/active', 'PATCH'], ['/api/profiles/import', 'DELETE'],
-    ['/api/profiles/sessions', 'DELETE']]) {
+  for (const [path, method] of [
+    ['/api/profiles/active', 'PATCH'],
+    ['/api/profiles/import', 'DELETE'],
+    ['/api/profiles/sessions', 'DELETE']
+  ]) {
     assert.equal(pathForRegistryBackendRequest(path, 'beta', { mode: 'local' }, method), path)
   }
 
-  assert.equal(pathForRegistryBackendRequest('/api/profiles/active', 'beta', { mode: 'local' }, 'GET'),
-    '/api/profiles/active?profile=beta')
+  assert.equal(
+    pathForRegistryBackendRequest('/api/profiles/active', 'beta', { mode: 'local' }, 'GET'),
+    '/api/profiles/active?profile=beta'
+  )
 })
 
 test('registry model reads and writes retain each profile on a shared local backend', () => {

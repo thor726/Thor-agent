@@ -1,6 +1,6 @@
 import type { LocalCatalogModel, LocalHardware, LocalModelsStatus, LocalRuntimeJob } from '@/types/thor'
 
-import { thorApi, profileScoped } from './client'
+import { profileScoped, thorApi } from './client'
 
 export interface LocalModelsScope {
   connectionId: string | null

@@ -14,7 +14,6 @@ import {
   DialogTitle,
   preventCloseButtonAutoFocus
 } from '@/components/ui/dialog'
-import { getGlobalModelOptions } from '@/thor'
 import { type Translations, useI18n } from '@/i18n'
 import { CheckCircle2, Loader2 } from '@/lib/icons'
 import {
@@ -45,6 +44,7 @@ import { $localModelOfferPending } from '@/store/local-model-offer'
 import { refreshOnboardingProviders } from '@/store/onboarding'
 import { $onboardingSurfaceClear } from '@/store/onboarding-presence'
 import { $currentModel, setModelPickerOpen } from '@/store/session'
+import { getGlobalModelOptions } from '@/thor'
 import type { AppHandoffStatus } from '@/types/thor'
 
 interface FreeTierSignInDialogProps {

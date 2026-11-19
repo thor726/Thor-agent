@@ -3,11 +3,11 @@ import { act, cleanup, render } from '@testing-library/react'
 import type { MutableRefObject } from 'react'
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 
-import { deleteSession, type SessionInfo, setSessionArchived, setSessionPinnedRemote } from '@/thor'
 import { $pinnedSessionIds } from '@/store/layout'
 import { $sessions, setSessions } from '@/store/session'
 import { resetSessionPinMirror, watchSessionPins } from '@/store/session-pin-sync'
 import { $removedSessionIds, $sessionMutationsInFlight } from '@/store/session-removal'
+import { deleteSession, type SessionInfo, setSessionArchived, setSessionPinnedRemote } from '@/thor'
 
 import type { ClientSessionState } from '../../../types'
 

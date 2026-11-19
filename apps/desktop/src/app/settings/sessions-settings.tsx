@@ -5,14 +5,6 @@ import { restoreListedSession } from '@/app/session/hooks/use-session-actions/ut
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tip } from '@/components/ui/tooltip'
-import {
-  deleteSession,
-  getThorConfigRecord,
-  peekConfigReadOrigin,
-  retainConfigReadOrigin,
-  saveThorConfig,
-  setSessionArchived
-} from '@/thor'
 import { useI18n } from '@/i18n'
 import { sessionTitle } from '@/lib/chat-runtime'
 import { selectDesktopPaths } from '@/lib/desktop-fs'
@@ -29,7 +21,15 @@ import { $connection, applyConfiguredDefaultProjectDir, ensureDefaultWorkspaceCw
 import { untombstoneSessions } from '@/store/session-removal'
 import { forgetSessionUnread } from '@/store/session-unread'
 import { listEveryArchivedSession } from '@/store/sidebar-archive'
-import type { ThorConfigRecord, SessionInfo } from '@/types/thor'
+import {
+  deleteSession,
+  getThorConfigRecord,
+  peekConfigReadOrigin,
+  retainConfigReadOrigin,
+  saveThorConfig,
+  setSessionArchived
+} from '@/thor'
+import type { SessionInfo, ThorConfigRecord } from '@/types/thor'
 
 import { EmptyState, ListRow, SectionHeading, SettingsContent, SettingsSkeleton, ToggleRow } from './primitives'
 import { SETTING_IDS, settingElementId } from './settings-manifest'
