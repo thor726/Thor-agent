@@ -152,7 +152,7 @@ jobs:
 
           echo "Downloading currently live skills index"
           if curl -fsSL --retry 3 --retry-delay 5 \
-            "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/api/skills-index.json" \
+            "https://thor726.github.io/Thor-agent/docs/api/skills-index.json" \
             -o "$INDEX_PATH" && validate_index; then
             exit 0
           fi

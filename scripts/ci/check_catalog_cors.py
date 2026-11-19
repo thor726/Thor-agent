@@ -23,7 +23,7 @@ import urllib.request
 from email.message import Message
 from urllib.parse import urljoin
 
-DEFAULT_URL = "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/api/plugins.json"
+DEFAULT_URL = "https://thor726.github.io/Thor-agent/docs/api/plugins.json"
 ORIGIN = "null"
 MAX_HOPS = 5
 TIMEOUT_SECONDS = 20
