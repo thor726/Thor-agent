@@ -17,7 +17,7 @@ Usage::
 Output: ``website/static/api/model-catalog.json``
 
 Live URL (after ``deploy-site.yml`` runs on merge to main):
-``https://raw.githubusercontent.com/thor726/Thor-agent/main/website/static/api/model-catalog.json``
+``https://thor726.github.io/Thor-agent/docs/api/model-catalog.json``
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ def build_catalog() -> dict:
         "updated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "metadata": {
             "source": "thor-agent repo",
-            "docs": "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/model-catalog",
+            "docs": "https://thor726.github.io/Thor-agent/docs/reference/model-catalog",
         },
         "providers": {
             "openrouter": {

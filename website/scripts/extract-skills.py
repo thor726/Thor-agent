@@ -41,7 +41,7 @@ LEGACY_INDEX_CACHE_DIR = os.path.join(REPO_ROOT, "skills", "index-cache")
 OUTPUT = os.path.join(REPO_ROOT, "website", "static", "api", "skills.json")
 # Curated artwork ships in website/static/img/catalog/, which the docs site serves
 # from its own host (docusaurus `url` + `baseUrl`); one place to change if it moves.
-CATALOG_ART_URL = "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/img/catalog/"
+CATALOG_ART_URL = "https://thor726.github.io/Thor-agent/docs/img/catalog/"
 META_OUTPUT = os.path.join(REPO_ROOT, "website", "static", "api", "skills-meta.json")
 
 CATEGORY_LABELS = {
