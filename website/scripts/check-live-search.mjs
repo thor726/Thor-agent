@@ -88,14 +88,17 @@ async function checkBrowser() {
     });
     await page.goto(`${DOCS_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     // search-local renders the input inline in the navbar on wide screens; on
-    // narrow ones (or before hydration) it is a button ('ctrl K') that opens it.
+    // narrow ones it is a button ('ctrl K') that opens it, and the input only
+    // exists after hydration — give that a moment before probing.
     const input = page.locator('.navbar__search input, input[type=search]').first();
     try {
       await input.waitFor({ state: 'visible', timeout: 10_000 });
     } catch {
-      // Click the collapsed search button, then wait for the input.
-      await page.locator('.navbar__search button, button[class*=search i]').first().click({ timeout: 10_000 }).catch(() => {});
-      await input.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
+      await page.waitForTimeout(2_500);
+      if (!(await input.isVisible().catch(() => false))) {
+        await page.locator('.navbar__search button, button[class*=search i]').first().click({ timeout: 10_000 }).catch(() => {});
+        await input.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
+      }
     }
     if (!(await input.isVisible().catch(() => false))) {
       fail('search input never appeared in the navbar within 20s (search plugin not hydrated?)');
