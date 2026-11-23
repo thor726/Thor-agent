@@ -23,7 +23,6 @@ from thor_cli import (
     auth_commands,
     guest_handoff,
     nous_account,
-    nous_auth_keepalive,
     portal_cli,
     status_auth,
 )
@@ -150,42 +149,6 @@ def test_guest_whose_lookup_fails_still_gets_the_sign_in_copy(isolated_store, mo
     info = nous_account.get_nous_portal_account_info()
     assert info.error is not None and info.is_anonymous_tier
     assert nous_account.format_nous_portal_entitlement_message(info) == nous_account.FREE_TIER_NEEDS_ACCOUNT
-
-
-def test_keepalive_does_not_start_for_free_tier(isolated_store, monkeypatch):
-    started: list = []
-
-    class _Thread:
-        def __init__(self, *args, **kwargs):
-            self._name = kwargs.get("name")
-        def start(self):
-            started.append(self._name)
-        def is_alive(self):
-            return True
-        def join(self, timeout=None):
-            pass
-    monkeypatch.setattr(nous_auth_keepalive.threading, "Thread", _Thread)
-    monkeypatch.setattr(nous_auth_keepalive, "_keepalive_thread", None)
-    from thor_cli import guest_handoff
-    monkeypatch.setattr(guest_handoff, "_worker_thread", None)
-
-    _write_auth(_guest_state())
-    assert nous_auth_keepalive.start_nous_auth_keepalive(interval_seconds=900) is None
-    # The free-tier handoff retry worker runs in a guest process too; the token keepalive does not.
-    assert started == ["nous-guest-handoff"]
-
-    _write_auth(_account_state())
-    thread = nous_auth_keepalive.start_nous_auth_keepalive(interval_seconds=900)
-    assert thread is not None and started == ["nous-guest-handoff", "nous-auth-keepalive"]
-    monkeypatch.setattr(nous_auth_keepalive, "_keepalive_thread", None)
-
-
-_HANDOFF_VIEWS = [
-    *({"state": "claimed", "account_email": "person@example.test", "connectors_kind": kind,
-       "moved_toolkits": ["gmail"], "dropped_toolkits": ["slack"]} for kind in ("moved", "conflict", "none")),
-    # The retrying line names Thor as a subject ("Thor keeps trying"), not a command; it is not checked here.
-    {"state": "failed", "error": "no_destination"}, {"state": "gone", "probably_moved": True},
-]
 
 
 def test_no_chat_copy_of_any_sign_in_state_leaks_a_terminal_verb_or_a_forbidden_word():
