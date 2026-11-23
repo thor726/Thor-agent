@@ -673,9 +673,36 @@ class CLIBillingMixin:
 
     # ── /topup — Remote Spending (CLI surface, all 5 screens) ──
 
+
+    def _show_thorhub_billing(self) -> bool:
+        """ThorHub ``/topup`` (CLI): bila THORHUB_API_KEY terpasang, tampilkan saldo
+        token ThorHub + link top-up, lalu True. Gagal/tidak ada key -> False dan
+        pemanggil jatuh ke alur Nous lama."""
+        try:
+            from thor_cli.thorhub_account import (
+                fetch_thorhub_balance,
+                format_thorhub_balance_lines,
+            )
+        except Exception:
+            return False
+        data = fetch_thorhub_balance()
+        if not data:
+            return False
+        print()
+        user_name = data.get("user_name")
+        if user_name:
+            print(f"  ThorHub · {user_name}")
+        for line in format_thorhub_balance_lines(data):
+            print(f"  {line.lstrip()}")
+        return True
+
     def _show_billing(self, command: str = "/topup"):
         """`/topup` — ZERO sub-commands (argument ignored; Overview is the only route). Non-interactive never
         prompts. Money is Decimal end-to-end; the terminal never collects card details."""
+        # ThorHub dulu: bila key ThorHub terpasang, /topup menampilkan saldo token
+        # ThorHub. Gagal -> alur Nous lama di bawah.
+        if self._show_thorhub_billing():
+            return
         from agent.billing_view import build_billing_state
         state = build_billing_state()
         if not state.logged_in:
