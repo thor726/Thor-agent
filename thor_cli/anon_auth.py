@@ -1058,7 +1058,7 @@ def settle_after_upgrade(account_state: dict[str, Any]) -> dict[str, Any]:
     = welcome host. An account cannot keep either: the welcome host refuses account tokens, and the
     portal host serves ``nous/welcome`` as a paid model. When the config is on the free tier's route,
     ``model.base_url`` becomes the account's inference host and ``model.default`` the recommended
-    default for the account's tier (:func:`thor_cli.models.recommended_nous_default_model`, the
+    default for the account's tier (:func:`thor_cli.models.recommended_thorhub_default_model`, the
     same pick as ``GET /api/model/recommended-default``), through the same config write a plain Thor
     login uses. A config on the user's own model and host is left alone.
 
@@ -1082,9 +1082,9 @@ def settle_after_upgrade(account_state: dict[str, Any]) -> dict[str, Any]:
         return {"model": current, "changed": False}
     model = current
     if on_welcome_model:
-        from thor_cli.models import recommended_nous_default_model
+        from thor_cli.models import recommended_thorhub_default_model
         try:
-            model = str(recommended_nous_default_model().get("model") or "")
+            model = str(recommended_thorhub_default_model().get("model") or "")
         except Exception as exc:
             logger.debug("sign-in completion: recommended default unavailable: %s", exc)
             model = ""

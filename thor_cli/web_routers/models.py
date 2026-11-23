@@ -170,8 +170,8 @@ async def get_model_options(
 
 
 def _nous_recommended_default() -> dict:
-    from thor_cli.models import recommended_nous_default_model
-    return recommended_nous_default_model()
+    from thor_cli.models import recommended_thorhub_default_model
+    return recommended_thorhub_default_model()
 
 
 @router.get("/api/model/recommended-default")

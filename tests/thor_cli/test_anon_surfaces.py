@@ -1,4 +1,8 @@
-"""Nous free tier on the read-only display surfaces and the keepalive.
+"""Guest free tier on the read-only display surfaces and the keepalive.
+
+NOTE (Fase 4 Commit C): the guest free tier dies with Commit D, which deletes the
+guest identity flows. The JWT-dependent tests below are skipped until then; the
+remaining tests cover the ThorHub entitlement copy, which is what survives.
 
 Contract (R-USR-1): wherever a free-tier identity renders (``thor auth status nous``,
 ``thor auth list``, ``thor status``, ``thor portal info``) the user sees the free-tier label
@@ -22,7 +26,7 @@ from thor_cli import (
     anon_auth,
     auth_commands,
     guest_handoff,
-    nous_account,
+    thorhub_account,
     portal_cli,
     status_auth,
 )
@@ -31,6 +35,13 @@ from thor_constants import get_thor_home
 from tests.thor_cli.anon_portal import as_local_desktop_backend, off_local_desktop
 
 WELCOME = "https://welcome-api.thor-agent.local/v1"
+# Handoff status dicts for the sign-in copy leak check (was never defined;
+# the test failed with NameError on main). FAILED/GONE lines carry no
+# forbidden words and no terminal verbs.
+_HANDOFF_VIEWS = (
+    {"state": guest_handoff.FAILED, "error": "unknown"},
+    {"state": guest_handoff.GONE, "probably_moved": True},
+)
 # Words that must never appear on a user-facing free-tier surface.
 _FORBIDDEN = re.compile(r"guest|anonymous|user id|org id|nas_user|nas_organisation", re.IGNORECASE)
 
@@ -75,13 +86,13 @@ def isolated_store(monkeypatch, tmp_path):
     for var in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "NOUS_API_KEY"):
         monkeypatch.delenv(var, raising=False)
     # No network: the account lookup is derived from the JWT the store already holds.
-    monkeypatch.setattr(nous_account, "_fetch_nous_account_info",
-                        lambda *a, **k: pytest.fail("portal fetch must not happen on a read-only surface"))
-    nous_account.reset_nous_portal_account_info_cache()
+    monkeypatch.setattr(thorhub_account, "fetch_thorhub_balance",
+                        lambda *a, **k: pytest.fail("balance fetch must not happen on a read-only surface"))
+    thorhub_account.reset_thorhub_account_info_cache()
     import thor_cli.auth as auth_mod
     auth_mod.invalidate_nous_auth_status_cache()
     yield
-    nous_account.reset_nous_portal_account_info_cache()
+    thorhub_account.reset_thorhub_account_info_cache()
     auth_mod.invalidate_nous_auth_status_cache()
 
 
@@ -91,7 +102,7 @@ def _render_all(capsys) -> dict[str, str]:
     out["auth status"] = capsys.readouterr().out
     auth_commands.auth_list_command(SimpleNamespace(provider="nous"))
     out["auth list"] = capsys.readouterr().out
-    ctx = SimpleNamespace(config={}, nous_logged_in=False, nous_inference_present=False, nous_account_info=None)
+    ctx = SimpleNamespace(config={}, thorhub_logged_in=False, thorhub_inference_present=False, thorhub_account_info=None)
     status_auth._render_auth_providers(ctx)
     out["thor status"] = capsys.readouterr().out
     portal_cli._cmd_status(SimpleNamespace())
@@ -99,6 +110,8 @@ def _render_all(capsys) -> dict[str, str]:
     return out
 
 
+@pytest.mark.skip(reason="Guest free tier is removed with Commit D (Fase 4); "
+    "ThorHub account info is balance-based and no longer derives an anonymous tier from a JWT.")
 def test_free_tier_renders_free_tier_copy_on_every_surface(isolated_store, capsys):
     _write_auth(_guest_state())
     rendered = _render_all(capsys)
@@ -109,13 +122,15 @@ def test_free_tier_renders_free_tier_copy_on_every_surface(isolated_store, capsy
         leaked = _FORBIDDEN.search(text)
         assert leaked is None, f"{surface} leaked {leaked.group(0)!r}:\n{text}"
     # Billing / entitlement copy for the free tier points at the upgrade path, never at billing.
-    info = nous_account.get_nous_portal_account_info()
+    info = thorhub_account.get_thorhub_account_info()
     assert info.is_anonymous_tier
-    message = nous_account.format_nous_portal_entitlement_message(info, capability="managed web tools")
-    assert message == nous_account.FREE_TIER_NEEDS_ACCOUNT
+    message = thorhub_account.format_thorhub_entitlement_message(info, capability="managed web tools")
+    assert message == thorhub_account.FREE_TIER_NEEDS_ACCOUNT
     assert "billing" not in message.lower() and _FORBIDDEN.search(message) is None
 
 
+@pytest.mark.skip(reason="Guest free tier is removed with Commit D (Fase 4); "
+    "ThorHub account info is balance-based and no longer derives an anonymous tier from a JWT.")
 def test_real_account_keeps_account_rendering(isolated_store, capsys):
     _write_auth(_account_state())
     rendered = _render_all(capsys)
@@ -124,31 +139,35 @@ def test_real_account_keeps_account_rendering(isolated_store, capsys):
         assert anon_auth.UPGRADE_HINT not in text, surface
     assert "logged in" in rendered["auth status"]
     assert "credentials" in rendered["auth list"]
-    info = nous_account.get_nous_portal_account_info()
+    info = thorhub_account.get_thorhub_account_info()
     assert not info.is_anonymous_tier
-    assert nous_account.format_nous_portal_entitlement_message(info) is None  # paid_access claim entitles
+    assert thorhub_account.format_thorhub_entitlement_message(info) is None  # paid_access claim entitles
 
 
 @pytest.mark.parametrize("tier", ["Anonymous", "ANONYMOUS", " anonymous "])
+@pytest.mark.skip(reason="Guest free tier is removed with Commit D (Fase 4); "
+    "ThorHub account info is balance-based and no longer derives an anonymous tier from a JWT.")
 def test_anonymous_tier_matches_case_and_whitespace_insensitively(isolated_store, tier):
     """The tier claim is wire data; casing must not hand a guest billing copy instead of the sign-in copy."""
     _write_auth({**_guest_state(), "account_tier": tier, "access_token": _jwt(account_tier=tier)})
-    info = nous_account.get_nous_portal_account_info()
+    info = thorhub_account.get_thorhub_account_info()
     assert info.is_anonymous_tier
-    assert nous_account.format_nous_portal_entitlement_message(info) == nous_account.FREE_TIER_NEEDS_ACCOUNT
+    assert thorhub_account.format_thorhub_entitlement_message(info) == thorhub_account.FREE_TIER_NEEDS_ACCOUNT
 
 
+@pytest.mark.skip(reason="Guest free tier is removed with Commit D (Fase 4); "
+    "ThorHub account info is balance-based and no longer derives an anonymous tier from a JWT.")
 def test_guest_whose_lookup_fails_still_gets_the_sign_in_copy(isolated_store, monkeypatch):
     """A token inside its refresh window falls through to the account API; when that fails the
     stored tier must survive on the error snapshot."""
     state = {**_guest_state(), "access_token": _jwt(exp=int(time.time()) + 30),
              "portal_base_url": "http://127.0.0.1:9"}
     _write_auth(state)
-    monkeypatch.setattr(nous_account, "_fetch_nous_account_info",
-                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("portal down")))
-    info = nous_account.get_nous_portal_account_info()
+    monkeypatch.setattr(thorhub_account, "fetch_thorhub_balance",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("thorhub down")))
+    info = thorhub_account.get_thorhub_account_info()
     assert info.error is not None and info.is_anonymous_tier
-    assert nous_account.format_nous_portal_entitlement_message(info) == nous_account.FREE_TIER_NEEDS_ACCOUNT
+    assert thorhub_account.format_thorhub_entitlement_message(info) == thorhub_account.FREE_TIER_NEEDS_ACCOUNT
 
 
 def test_no_chat_copy_of_any_sign_in_state_leaks_a_terminal_verb_or_a_forbidden_word():
@@ -179,17 +198,19 @@ def test_no_chat_copy_of_any_sign_in_state_leaks_a_terminal_verb_or_a_forbidden_
 
 
 def test_the_paid_tool_notice_switches_wording_inside_a_chat():
-    info = nous_account.NousPortalAccountInfo(
+    info = thorhub_account.ThorHubAccountInfo(
         logged_in=True, source="token", fresh=True, account_tier="anonymous"
     )
-    assert nous_account.format_nous_portal_entitlement_message(
+    assert thorhub_account.format_thorhub_entitlement_message(
         info, in_chat=True
-    ) == nous_account.FREE_TIER_NEEDS_ACCOUNT_CHAT
-    assert nous_account.format_nous_portal_entitlement_message(
+    ) == thorhub_account.FREE_TIER_NEEDS_ACCOUNT_CHAT
+    assert thorhub_account.format_thorhub_entitlement_message(
         info, in_chat=False
-    ) == nous_account.FREE_TIER_NEEDS_ACCOUNT
+    ) == thorhub_account.FREE_TIER_NEEDS_ACCOUNT
 
 
+@pytest.mark.skip(reason="Guest free tier is removed with Commit D (Fase 4); "
+    "ThorHub account info is balance-based and no longer derives an anonymous tier from a JWT.")
 def test_a_claimed_guest_reads_as_the_free_tier_on_the_cli_too(isolated_store, monkeypatch, capsys):
     """Once the Desktop claimed the trial, the CLI runs on it as well."""
     off_local_desktop(monkeypatch)

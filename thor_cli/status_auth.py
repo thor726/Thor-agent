@@ -5,9 +5,9 @@ module object so tests that monkeypatch that module keep working."""
 from datetime import datetime, timezone, UTC
 
 from thor_cli.auth import AuthError
-from thor_cli.nous_account import (
-    format_nous_portal_entitlement_message, get_nous_portal_account_info)
-from thor_cli.nous_subscription import get_nous_subscription_features
+from thor_cli.thorhub_account import (
+    format_thorhub_entitlement_message, get_thorhub_account_info)
+from thor_cli.thorhub_subscription import get_thorhub_subscription_features
 from tools.tool_backend_helpers import managed_thorhub_tools_enabled
 from thor_cli import config
 from thor_time import safe_strftime
@@ -80,9 +80,9 @@ _APIKEY_PROVIDERS = {
     "StepFun Step Plan": ("STEPFUN_API_KEY",), "MiniMax": ("MINIMAX_API_KEY",),
     "MiniMax (China)": ("MINIMAX_CN_API_KEY",), "DeepInfra": ("DEEPINFRA_API_KEY",)}
 
-# Nous Tool Gateway per-feature state: first matching (predicate(feature, nous_auth), text(feature)).
+# ThorHub Tool Gateway per-feature state: first matching (predicate(feature, thor_auth), text(feature)).
 _FEATURE_STATES = (
-    (lambda f, _: f.managed_by_nous, lambda f: "active via Thor subscription"),
+    (lambda f, _: f.managed_by_thorhub, lambda f: "active via Thor subscription"),
     (lambda f, _: f.active, lambda f: f"active via {f.current_provider or 'configured provider'}"),
     (lambda f, auth: f.included_by_default and auth, lambda f: "included by subscription, not currently selected"),
     (lambda f, auth: f.key == "modal" and auth, lambda f: "available via subscription (optional)"))
@@ -117,18 +117,18 @@ def _render_auth_providers(ctx):
     if any(nous_status.get(k) for k in ("logged_in", "access_token", "portal_base_url",
                                         "inference_credential_present", "error_code")):
         try:
-            info = get_nous_portal_account_info()
+            info = get_thorhub_account_info()
         except Exception:
             pass
-    ctx.nous_account_info = info
-    ctx.nous_logged_in = logged_in = bool(nous_status.get("logged_in") or (info and info.logged_in))
-    ctx.nous_inference_present = inference = bool(
+    ctx.thorhub_account_info = info
+    ctx.thorhub_logged_in = logged_in = bool(nous_status.get("logged_in") or (info and info.logged_in))
+    ctx.thorhub_inference_present = inference = bool(
         nous_status.get("inference_credential_present") or (info and info.inference_credential_present)
     )
     if nous_status.get("free_tier"):
         # Free tier: never rendered as an account login (no account ids, no refresh row).
         from thor_cli.anon_auth import FREE_TIER_LABEL, GUEST_MODEL, UPGRADE_HINT
-        _status._row("Thor Portal", True, f"{FREE_TIER_LABEL} · {GUEST_MODEL}")
+        _status._row("ThorHub", True, f"{FREE_TIER_LABEL} · {GUEST_MODEL}")
         _status._detail("", UPGRADE_HINT)
         inference_url = nous_status.get("inference_base_url")
         if inference_url:
@@ -137,13 +137,13 @@ def _render_auth_providers(ctx):
             _oauth_block(name, statuses.get(getter, {}), hint, rows)
         return
     nous_error = nous_status.get("error")
-    _status._row("Thor Portal", logged_in,
+    _status._row("ThorHub", logged_in,
          "logged in" if logged_in else "not logged in (Thor inference key configured)" if inference
          else "not logged in (run: thor portal)")
     portal_url = nous_status.get("portal_base_url") or "(unknown)"
     inference_url = nous_status.get("inference_base_url") or (info.inference_base_url if info else None)
     for label, value, show in (
-        ("Portal URL:", portal_url, logged_in or portal_url != "(unknown)" or nous_error),
+        ("ThorHub URL:", portal_url, logged_in or portal_url != "(unknown)" or nous_error),
         ("Inference:", inference_url, inference and inference_url),
         ("Access exp:", _format_iso_timestamp(nous_status.get("access_expires_at")),
          logged_in or nous_status.get("access_expires_at")),
@@ -158,22 +158,22 @@ def _render_auth_providers(ctx):
         _oauth_block(name, statuses.get(getter, {}), hint, rows)
 
 
-def _render_nous_gateway(ctx):
+def _render_thorhub_gateway(ctx):
     if managed_thorhub_tools_enabled():
-        features = get_nous_subscription_features(ctx.config)
+        features = get_thorhub_subscription_features(ctx.config)
         _status._section("Thor Tool Gateway")
-        print("  Thor Portal   ✓ managed tools available" if features.nous_auth_present
-              else "  Thor Portal   ✗ not logged in")
+        print("  ThorHub   ✓ managed tools available" if features.thor_auth_present
+              else "  ThorHub   ✗ not logged in")
         for f in features.items():
-            state = next((text(f) for match, text in _FEATURE_STATES if match(f, features.nous_auth_present)),
+            state = next((text(f) for match, text in _FEATURE_STATES if match(f, features.thor_auth_present)),
                          "not configured")
-            _status._row(f.label, f.available or f.active or f.managed_by_nous, state, 15, " ")
-    elif ctx.nous_logged_in or ctx.nous_inference_present:
+            _status._row(f.label, f.available or f.active or f.managed_by_thorhub, state, 15, " ")
+    elif ctx.thorhub_logged_in or ctx.thorhub_inference_present:
         # Nous OAuth without entitlement, or an opaque inference key without Portal account
         # information, cannot enable the Tool Gateway.
         _status._section("Thor Tool Gateway")
-        message = format_nous_portal_entitlement_message(
-            ctx.nous_account_info, capability="managed web, image, TTS, STT, browser, and Modal tools"
+        message = format_thorhub_entitlement_message(
+            ctx.thorhub_account_info, capability="managed web, image, TTS, STT, browser, and Modal tools"
         )
         for line in (message or "").splitlines():
             print(f"  {line}")

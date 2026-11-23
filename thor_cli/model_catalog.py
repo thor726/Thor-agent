@@ -2,7 +2,7 @@
 
 ``get_catalog()`` returns the parsed manifest: in-process cache (TTL) → disk cache at
 ``~/.thor/cache/model_catalog.json`` → master URL fetch; any fetch failure keeps the stale copy
-(or ``{}``, and the URL is not retried for ``FETCH_RETRY_DELAY_SECONDS``). ``get_curated_openrouter_models()`` / ``get_curated_nous_models()`` are thin accessors
+(or ``{}``, and the URL is not retried for ``FETCH_RETRY_DELAY_SECONDS``). ``get_curated_openrouter_models()`` / ``get_curated_thorhub_models()`` are thin accessors
 whose callers fall back to the in-repo lists on ``None``.
 """
 
@@ -292,22 +292,17 @@ def refresh_interval_seconds() -> float:
 
 def refresh_catalogs() -> bool:
     """Force-refresh every remote catalog the picker reads (manifest, OpenRouter live list, and the
-    Thor Portal recommendations for a Thor account, the only reader), writing each disk cache so the
-    next ``/model`` open in ANY process sees them. Blocking; run it off the event loop."""
+    OpenRouter models (the only live reader besides the manifest), writing each disk cache so the
+    next ``/model`` open in ANY process sees them. ThorHub has no recommended-models endpoint,
+    so there is no Portal refresh. Blocking; run it off the event loop."""
     if not _load_catalog_config()["enabled"]:
         return False
     clear_fetch_backoff()  # provider overrides are re-asked too, not only the forced manifest
     catalog = get_catalog(force_refresh=True)
     try:
-        from agent.secret_scope import get_secret
-        from thor_cli.anon_auth import current_nous_state, is_guest_state
-        from thor_cli.auth import read_credential_pool
-        from thor_cli.models import _resolve_nous_portal_url, fetch_nous_recommended_models, fetch_openrouter_models
+        from thor_cli.models import fetch_openrouter_models
 
         fetch_openrouter_models(force_refresh=True)
-        logins = [current_nous_state(), *read_credential_pool("nous")]
-        if any(e and not is_guest_state(e) for e in logins) or get_secret("NOUS_API_KEY"):
-            fetch_nous_recommended_models(_resolve_nous_portal_url(), force_refresh=True)
     except Exception:
         logger.debug("provider catalog refresh failed", exc_info=True)
     return bool(catalog)
@@ -335,7 +330,10 @@ def _fetch_provider_override(provider: str) -> dict[str, Any] | None:
 
 
 def _block_of(manifest: dict[str, Any] | None, provider: str) -> dict[str, Any] | None:
-    block = (manifest or {}).get("providers", {}).get(provider)
+    providers = (manifest or {}).get("providers", {})
+    block = providers.get(provider)
+    if block is None and provider in {"thor", "thorhub"}:
+        block = providers.get("nous")  # legacy block in older cached manifests
     return block if isinstance(block, dict) else None
 
 
@@ -356,9 +354,16 @@ def get_curated_openrouter_models() -> list[tuple[str, str]] | None:
     return [(mid, str(m.get("description") or "")) for mid, m in rows] or None
 
 
+def get_curated_thorhub_models() -> list[str] | None:
+    """ThorHub's curated model ids from the manifest (``"thor"`` block, falling back to the legacy
+    ``"nous"`` block in older cached manifests)."""
+    block = _get_provider_block("thor") or _get_provider_block("nous")
+    return [mid for mid, _ in _block_ids(block)] or None
+
+
 def get_curated_nous_models() -> list[str] | None:
-    """Thor Portal's curated model ids from the manifest."""
-    return [mid for mid, _ in _block_ids(_get_provider_block("nous"))] or None
+    """Deprecated alias for :func:`get_curated_thorhub_models` (old manifest block name)."""
+    return get_curated_thorhub_models()
 
 
 def _default_model_from_block(block: dict[str, Any] | None) -> str | None:
@@ -369,6 +374,9 @@ def _default_model_from_block(block: dict[str, Any] | None) -> str | None:
 def get_default_model_from_cache(provider: str) -> str | None:
     """The manifest's labeled default for ``provider`` (the model Thor silently lands on when the
     user never picked one) — in-process then disk cache only, never a fetch."""
+    from thor_cli.models import normalize_provider  # lazy: models imports this module
+
+    provider = normalize_provider(provider)  # legacy "nous" resolves to "thor"
     cached = _in_process_catalog()
     found = _default_model_from_block(_block_of(cached, provider)) if cached is not None else None
     if found:

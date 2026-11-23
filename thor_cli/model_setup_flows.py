@@ -172,13 +172,13 @@ def _nous_login_args(args) -> argparse.Namespace:
         ca_bundle=getattr(args, "ca_bundle", None), insecure=bool(getattr(args, "insecure", False)))
 
 
-def _nous_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pricing: dict):
+def _thorhub_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pricing: dict):
     """Free/paid-tier catalog for the Thor picker: ``(model_ids, pricing, unavailable_models,
     unavailable_message, policy_narrowed)`` or None (message already printed) when nothing is selectable."""
-    from thor_cli.models_pricing import nous_policy_allowed_ids, restrict_to_nous_policy
+    from thor_cli.models_pricing import thorhub_policy_allowed_ids, restrict_to_thorhub_policy
     from thor_cli.models import (
-        partition_nous_models_by_tier,
-        union_with_nous_on_sale_models,
+        partition_thorhub_models_by_tier,
+        union_with_thorhub_on_sale_models,
         union_with_portal_free_recommendations,
         union_with_portal_paid_recommendations,
     )
@@ -189,23 +189,23 @@ def _nous_model_catalog(free_tier: bool, portal_url: str, model_ids: list, prici
     # narrows BEFORE the tier split so a rescued id still has to pass the free/paid predicate.
     unavailable_models: list[str] = []
     unavailable_message = ""
-    _policy_allowed = nous_policy_allowed_ids()
+    _policy_allowed = thorhub_policy_allowed_ids()
     if free_tier:
         try:
-            from thor_cli.nous_account import format_nous_portal_entitlement_message, get_nous_portal_account_info
-            _account_info = get_nous_portal_account_info(force_fresh=True)
-            unavailable_message = format_nous_portal_entitlement_message(_account_info, capability="paid Thor models") or ""
+            from thor_cli.thorhub_account import format_thorhub_entitlement_message, get_thorhub_account_info
+            _account_info = get_thorhub_account_info(force_fresh=True)
+            unavailable_message = format_thorhub_entitlement_message(_account_info, capability="paid Thor models") or ""
         except Exception:
             unavailable_message = ""
         model_ids, pricing = union_with_portal_free_recommendations(model_ids, pricing, portal_url)
     else:
         model_ids, pricing = union_with_portal_paid_recommendations(model_ids, pricing, portal_url)
-        model_ids = union_with_nous_on_sale_models(model_ids, pricing)
+        model_ids = union_with_thorhub_on_sale_models(model_ids, pricing)
     _before_policy = model_ids
-    model_ids = restrict_to_nous_policy(model_ids, _policy_allowed, rescue_empty=True)
+    model_ids = restrict_to_thorhub_policy(model_ids, _policy_allowed, rescue_empty=True)
     _policy_narrowed = model_ids != _before_policy
     if free_tier:
-        model_ids, unavailable_models = partition_nous_models_by_tier(model_ids, pricing, free_tier=True)
+        model_ids, unavailable_models = partition_thorhub_models_by_tier(model_ids, pricing, free_tier=True)
 
     if not model_ids and not unavailable_models:
         print("No models available for Thor Portal after filtering.")
@@ -281,7 +281,7 @@ def _model_flow_nous(config, current_model="", args=None):
     """Thor Portal provider: ensure logged in, then pick model."""
     from thor_cli.auth import get_provider_auth_state, _prompt_model_selection, _login_nous, PROVIDER_REGISTRY
     from thor_cli.config import load_config
-    from thor_cli.nous_subscription import prompt_enable_tool_gateway
+    from thor_cli.thorhub_subscription import prompt_enable_tool_gateway
     state = get_provider_auth_state("nous")
     from thor_cli import anon_auth
     # A free tier with no inference here signs in like no account; its apps move to the account after.
@@ -300,9 +300,9 @@ def _model_flow_nous(config, current_model="", args=None):
 
     # Already logged in — the curated list (agentic models users know from OpenRouter)
     # instead of the hundreds returned by the live /models endpoint.
-    from thor_cli.models import check_nous_free_tier, get_curated_nous_model_ids
+    from thor_cli.models import check_thorhub_free_tier, get_curated_thorhub_model_ids
     from thor_cli.models_pricing import get_pricing_for_provider
-    model_ids = get_curated_nous_model_ids()
+    model_ids = get_curated_thorhub_model_ids()
     if not model_ids:
         print("No curated models available for Thor Portal.")
         return
@@ -312,9 +312,9 @@ def _model_flow_nous(config, current_model="", args=None):
     if creds is None:
         return
 
-    pricing = get_pricing_for_provider("nous")
+    pricing = get_pricing_for_provider("thor")
     # Force fresh account data so recent credit purchases are reflected immediately.
-    free_tier = check_nous_free_tier(force_fresh=True)
+    free_tier = check_thorhub_free_tier(force_fresh=True)
     if not free_tier:
         from thor_cli.auth import resolve_nous_runtime_credentials
         try:
@@ -324,21 +324,21 @@ def _model_flow_nous(config, current_model="", args=None):
             pass
 
     # Portal URL is needed for upgrade links and the recommendations endpoints.
-    _nous_portal_url = ""
+    _thorhub_portal_url = ""
     with contextlib.suppress(Exception):
-        _nous_portal_url = (get_provider_auth_state("nous") or {}).get("portal_base_url", "")
+        _thorhub_portal_url = (get_provider_auth_state("nous") or {}).get("portal_base_url", "")
 
-    catalog = _nous_model_catalog(free_tier, _nous_portal_url, model_ids, pricing)
+    catalog = _thorhub_model_catalog(free_tier, _thorhub_portal_url, model_ids, pricing)
     if catalog is None:
         return
     model_ids, pricing, unavailable_models, unavailable_message, _policy_narrowed = catalog
 
-    from thor_cli.nous_account import nous_policy_notice
-    _policy_notice = nous_policy_notice(removed=_policy_narrowed)
+    from thor_cli.thorhub_account import thorhub_policy_notice
+    _policy_notice = thorhub_policy_notice(removed=_policy_narrowed)
     if _policy_notice:
         print(_policy_notice)
-    from thor_cli.model_picker_usage import featured_first, nous_picker_usage
-    _usage = nous_picker_usage(warm=True)
+    from thor_cli.model_picker_usage import featured_first, thorhub_picker_usage
+    _usage = thorhub_picker_usage(warm=True)
     # Window plans: every model is usable; the plan's featured picks lead the list.
     if _usage is not None:
         model_ids = featured_first(model_ids, _usage.featured_model_ids)
@@ -346,7 +346,7 @@ def _model_flow_nous(config, current_model="", args=None):
 
     selected = _prompt_model_selection(
         model_ids, current_model=current_model, pricing=pricing, unavailable_models=unavailable_models,
-        portal_url=_nous_portal_url, unavailable_message=unavailable_message, confirm_provider="nous",
+        portal_url=_thorhub_portal_url, unavailable_message=unavailable_message, confirm_provider="nous",
         confirm_base_url=creds.get("base_url", ""), confirm_api_key=creds.get("api_key", ""),
         usage=_usage)
     if not selected:

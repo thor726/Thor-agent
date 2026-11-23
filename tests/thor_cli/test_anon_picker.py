@@ -1,5 +1,8 @@
 """Model pickers under a Nous free-tier identity.
 
+NOTE (Fase 4 Commit C): the guest free-tier row (nous/welcome) dies with Commit D,
+which deletes the guest identity flows. This file is skipped until then.
+
 A guest carrying the welcome trial shows one row, "Nous · free tier", with the single model
 ``nous/welcome``; the same guest with ``nous.guest: false`` shows no Nous row at all. The rule lives
 in one helper (``_free_tier_nous_row``) and this file exercises it through the real row builders
@@ -14,6 +17,9 @@ from pathlib import Path
 import pytest
 
 from thor_cli.anon_auth import WELCOME_CLAIM_FLAG
+
+pytestmark = pytest.mark.skip(reason="Guest free-tier row is removed with Commit D (Fase 4); "
+    "the nous/welcome row has no ThorHub equivalent.")
 from thor_cli.auth import _save_auth_store
 from tests.thor_cli.anon_portal import as_local_desktop_backend
 
@@ -43,9 +49,9 @@ def guest_home(monkeypatch, tmp_path):
     from thor_cli import models as models_mod
     from thor_cli import model_switch_providers as msp
     monkeypatch.setattr(models_dev, "fetch_models_dev", lambda *a, **k: {})
-    monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda *a, **k: ["anthropic/claude-x", "openai/gpt-y"])
+    monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda *a, **k: ["anthropic/claude-x", "openai/gpt-y"])
     monkeypatch.setattr(models_mod, "fetch_ollama_cloud_models", lambda *a, **k: [])
-    monkeypatch.setattr(msp, "_nous_picker_model_ids", lambda *a, **k: pytest.fail("guest must not fetch the Portal catalog"))
+    monkeypatch.setattr(msp, "_thorhub_picker_model_ids", lambda *a, **k: pytest.fail("guest must not fetch the Portal catalog"))
     return Path(os.environ["THOR_HOME"])
 
 

@@ -29,7 +29,7 @@ class TestAuxiliaryOnWelcomeHost:
         import agent.auxiliary_client as ac
         with patch.object(ac, "_resolve_nous_runtime_api", return_value=("jwt", WELCOME)), \
              patch.object(ac, "_create_openai_client", return_value="client") as create, \
-             patch("thor_cli.models.get_nous_recommended_aux_model") as recommended:
+             patch("thor_cli.models.get_thorhub_recommended_aux_model") as recommended:
             client, model = ac._try_nous()
         assert (client, model) == ("client", anon_auth.GUEST_MODEL)
         assert create.call_args.kwargs["base_url"] == WELCOME
@@ -39,7 +39,7 @@ class TestAuxiliaryOnWelcomeHost:
         import agent.auxiliary_client as ac
         with patch.object(ac, "_resolve_nous_runtime_api", return_value=("jwt", WELCOME)), \
              patch.object(ac, "_create_openai_client", return_value="client"), \
-             patch("thor_cli.models.get_nous_recommended_aux_model") as recommended:
+             patch("thor_cli.models.get_thorhub_recommended_aux_model") as recommended:
             assert ac._try_nous(vision=True) == ("client", anon_auth.GUEST_MODEL)
         recommended.assert_not_called()
 
@@ -47,7 +47,7 @@ class TestAuxiliaryOnWelcomeHost:
         import agent.auxiliary_client as ac
         with patch.object(ac, "_resolve_nous_runtime_api", return_value=("jwt", PAID)), \
              patch.object(ac, "_create_openai_client", return_value="client"), \
-             patch("thor_cli.models.get_nous_recommended_aux_model", return_value="some/free-model"):
+             patch("thor_cli.models.get_thorhub_recommended_aux_model", return_value="some/free-model"):
             client, model = ac._try_nous()
         assert (client, model) == ("client", "some/free-model")
 

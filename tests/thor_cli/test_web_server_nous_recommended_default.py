@@ -3,12 +3,12 @@
 import pytest
 
 
-class TestNousRecommendedDefaultCostSafePolicy:
+class TestThorhubRecommendedDefaultCostSafePolicy:
     """Paid-tier Nous recommended default must never land on an Anthropic frontier
     tier (Opus / Fable) — the user gets no opt-out before it pins their main model
     (#51491). Regression tests from PR #51493."""
 
-    def test_recommended_default_nous_paid_uses_curated_default(self, monkeypatch):
+    def test_recommended_default_thorhub_paid_uses_curated_default(self, monkeypatch):
         """A paid Nous user gets the cost-safe silent default from the list.
 
         With no preferred catalog label present in the curated list and no
@@ -17,10 +17,10 @@ class TestNousRecommendedDefaultCostSafePolicy:
         import thor_cli.models as models_mod
         from thor_cli.web_routers.models import get_recommended_default_model
 
-        monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: ["top/model", "other/model"])
+        monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda: ["top/model", "other/model"])
         import thor_cli.models_pricing as mp
         monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda *, force_fresh=False: False)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda *, force_fresh=False: False)
         monkeypatch.setattr(
             models_mod, "union_with_portal_paid_recommendations",
             lambda ids, pricing, url: (ids, pricing),
@@ -33,7 +33,7 @@ class TestNousRecommendedDefaultCostSafePolicy:
         )
 
         result = get_recommended_default_model(provider="nous")
-        assert result["provider"] == "nous"
+        assert result["provider"] == "thor"
         assert result["model"] == "top/model"
         assert result["free_tier"] is False
 
@@ -73,7 +73,7 @@ class TestNousRecommendedDefaultCostSafePolicy:
         ],
         ids=["opus_first", "fable_first_main", "override_beats_ordering"],
     )
-    def test_recommended_default_nous_paid_cost_safe_policy(
+    def test_recommended_default_thorhub_paid_cost_safe_policy(
         self, monkeypatch, model_ordering, expected_model,
     ):
         """Regression for PR #51493 maintainer feedback (Teknium + DavidMetcalfe).
@@ -87,11 +87,11 @@ class TestNousRecommendedDefaultCostSafePolicy:
         from thor_cli.web_routers.models import get_recommended_default_model
 
         monkeypatch.setattr(
-            models_mod, "get_curated_nous_model_ids", lambda: list(model_ordering),
+            models_mod, "get_curated_thorhub_model_ids", lambda: list(model_ordering),
         )
         import thor_cli.models_pricing as mp
         monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda *, force_fresh=False: False)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda *, force_fresh=False: False)
         monkeypatch.setattr(
             models_mod, "union_with_portal_paid_recommendations",
             lambda ids, pricing, url: (ids, pricing),
@@ -102,23 +102,23 @@ class TestNousRecommendedDefaultCostSafePolicy:
         )
 
         result = get_recommended_default_model(provider="nous")
-        assert result["provider"] == "nous"
+        assert result["provider"] == "thor"
         assert result["model"] == expected_model
         assert result["free_tier"] is False
 
-    def test_recommended_default_nous_paid_falls_back_when_all_frontier(self, monkeypatch):
+    def test_recommended_default_thorhub_paid_falls_back_when_all_frontier(self, monkeypatch):
         """If every curated entry is a frontier tier (Opus / Fable), fall
         back to the head of the list so the picker is never empty."""
         import thor_cli.models as models_mod
         from thor_cli.web_routers.models import get_recommended_default_model
 
         monkeypatch.setattr(
-            models_mod, "get_curated_nous_model_ids",
+            models_mod, "get_curated_thorhub_model_ids",
             lambda: ["anthropic/claude-fable-5", "anthropic/claude-opus-4.8"],
         )
         import thor_cli.models_pricing as mp
         monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda *, force_fresh=False: False)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda *, force_fresh=False: False)
         monkeypatch.setattr(
             models_mod, "union_with_portal_paid_recommendations",
             lambda ids, pricing, url: (ids, pricing),

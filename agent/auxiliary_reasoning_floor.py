@@ -94,7 +94,7 @@ def _catalog_marks_mandatory(provider: Optional[str], base_url: Optional[str], m
     if provider_norm == "openrouter" or host == "openrouter.ai" or host.endswith(".openrouter.ai"):
         lookup, warm = caps_mod.openrouter_model_reasoning_capabilities, caps_mod.warm_openrouter_reasoning_caps_async
     elif provider_norm in _THOR_PROVIDERS:
-        lookup, warm = caps_mod.nous_model_reasoning_capabilities, caps_mod.warm_nous_reasoning_caps_async
+        lookup, warm = caps_mod.thorhub_model_reasoning_capabilities, caps_mod.warm_thorhub_reasoning_caps_async
     else:
         return False
     try:

@@ -151,8 +151,8 @@ def test_modal_setup_persists_direct_mode_when_user_chooses_their_own_account(tm
     monkeypatch.setattr("thor_cli.setup.prompt_choice", fake_prompt_choice)
     monkeypatch.setattr("thor_cli.setup.prompt", lambda *args, **kwargs: next(prompt_values))
     monkeypatch.setattr(
-        "thor_cli.nous_subscription.get_nous_subscription_features",
-        lambda config: type("Features", (), {"nous_auth_present": True})(),
+        "thor_cli.thorhub_subscription.get_thorhub_subscription_features",
+        lambda config: type("Features", (), {"thor_auth_present": True})(),
     )
     monkeypatch.setitem(
         sys.modules,

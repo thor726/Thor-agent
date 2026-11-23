@@ -19596,21 +19596,27 @@ class _BillingHeaders:
 def test_billing_error_serialization_preserves_server_code(
     status, error, retry_after
 ):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
-    headers = _BillingHeaders({"Retry-After": str(retry_after)}) if retry_after else None
-    with pytest.raises(nb.BillingTransient) as ei:
-        nb._raise_for_error(status, {"error": error}, headers)
+    # ThorHub has no billing HTTP layer (no _raise_for_error to map a status
+    # into an exception); the typed exceptions carry the same server code and
+    # retry_after the serializer reads.
+    exc_cls = {
+        "stripe_unavailable": nb.BillingStripeUnavailable,
+        "upgrade_cap_exceeded": nb.BillingUpgradeCapExceeded,
+        "rate_limited": nb.BillingRateLimited,
+    }[error]
+    exc = exc_cls(error, status=status, error=error, retry_after=retry_after)
 
-    result = server._serialize_billing_error(ei.value)
+    result = server._serialize_billing_error(exc)
 
     assert result["error"] == error
-    assert ei.value.error == error
+    assert exc.error == error
     assert result["retry_after"] == retry_after
 
 
 def test_billing_rate_limit_without_error_defaults_wire_code():
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     exc = nb.BillingRateLimited("slow down", status=429, retry_after=10)
 
@@ -19629,7 +19635,7 @@ def _sub_rpc(method, params):
 
 
 def test_subscription_preview_serializes_quote(monkeypatch):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     monkeypatch.setattr(
         nb,
@@ -19661,7 +19667,7 @@ def test_subscription_preview_requires_tier():
 
 
 def test_subscription_preview_scope_error_maps_to_step_up(monkeypatch):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     def _raise(subscription_type_id):
         raise nb.BillingScopeRequired("billing:manage required")
@@ -19673,7 +19679,7 @@ def test_subscription_preview_scope_error_maps_to_step_up(monkeypatch):
 
 
 def test_subscription_change_cancellation(monkeypatch):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     seen = {}
 
@@ -19690,7 +19696,7 @@ def test_subscription_change_cancellation(monkeypatch):
 
 
 def test_subscription_change_tier_downgrade(monkeypatch):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     seen = {}
 
@@ -19712,7 +19718,7 @@ def test_subscription_change_requires_tier_or_cancel():
 
 
 def test_subscription_upgrade_echoes_status_and_idempotency(monkeypatch):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     seen = {}
 
@@ -19730,7 +19736,7 @@ def test_subscription_upgrade_echoes_status_and_idempotency(monkeypatch):
 
 
 def test_subscription_upgrade_requires_action_surfaces_recovery(monkeypatch):
-    import thor_cli.nous_billing as nb
+    import thor_cli.thorhub_billing as nb
 
     monkeypatch.setattr(
         nb,

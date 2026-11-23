@@ -1,7 +1,7 @@
 """Live model pricing.
 
 OpenRouter-compatible ``/v1/models`` pricing fetch with a per-endpoint/per-credential cache,
-Thor Portal sale chrome and org-policy filtering, and the Vercel AI Gateway / Novita / Fireworks /
+ThorHub sale chrome and org-policy filtering, and the Vercel AI Gateway / Novita / Fireworks /
 DeepInfra pricing adapters. Split out of ``thor_cli.models``; helpers still defined there are
 looked up on ``thor_cli.models`` at call time so ``patch("thor_cli.models.<name>")`` mocks keep
 intercepting.
@@ -325,79 +325,50 @@ def _resolve_openrouter_api_key() -> str:
     return os.getenv("OPENROUTER_API_KEY", "").strip()
 
 
-_DEFAULT_NOUS_INFERENCE_BASE = "https://inference-api.thor-agent.local"
+_DEFAULT_THORHUB_BASE_URL = "https://llm.thormarket.site"
 
 
-def _resolve_nous_pricing_credentials() -> tuple[str, str]:
-    """``(api_key, base_url)`` for Thor Portal pricing; base_url is the bare origin (no ``/v1``).
-    Precedence mirrors runtime credential resolution: ``NOUS_INFERENCE_BASE_URL`` (staging /
-    preview) → resolved credential ``base_url`` → production default. Without the override a
-    staging profile's sale ``pricing.original`` would never reach the pickers."""
-    try:
-        from thor_cli.auth import _nous_inference_env_override
+def _resolve_thorhub_pricing_credentials() -> tuple[str, str]:
+    """``(api_key, base_url)`` for ThorHub pricing; base_url is the bare origin (no ``/v1``).
 
-        env_base = _nous_inference_env_override()
-    except Exception:
-        env_base = None
-    api_key = creds_base = ""
-    try:
-        from thor_cli.anon_challenge import background_caller
-        from thor_cli.auth import resolve_nous_runtime_credentials
+    Precedence: ``THORHUB_BASE_URL`` env override → configured ThorHub key + base URL →
+    production default. ThorHub auth is a static key (no OAuth, no JWT).
+    """
+    from thor_cli.thorhub_account import resolve_thorhub_base_url, thorhub_api_key
 
-        with background_caller():  # a pricing read never opens a free-tier challenge
-            creds = resolve_nous_runtime_credentials()
-        if creds:
-            api_key = creds.get("api_key", "") or ""
-            creds_base = (creds.get("base_url", "") or "").strip()
-    except Exception:
-        pass
-    base_url = (env_base or creds_base or _DEFAULT_NOUS_INFERENCE_BASE).rstrip("/")
+    api_key = thorhub_api_key()
+    base_url = (resolve_thorhub_base_url() or _DEFAULT_THORHUB_BASE_URL).rstrip("/")
     base_url = base_url.removesuffix("/v1")
     return (api_key, base_url)
 
 
-# How long a Nous catalog stays trusted. Its contents depend on the org's policy, which an admin
-# can change at any time and the client cannot observe, so a long-lived process must re-ask.
-# Other providers' catalogs carry no such state and keep the default no-expiry caching.
-_NOUS_CATALOG_TTL_SECONDS = 300.0
+# How long a ThorHub catalog stays trusted: 300s (a key rotation or model change should surface soon).
+_THORHUB_CATALOG_TTL_SECONDS = 300.0
 
 
-def _fetch_nous_pricing(api_key: str, base_url: str, *, force_refresh: bool) -> dict[str, dict[str, Any]]:
+def _fetch_thorhub_pricing(api_key: str, base_url: str, *, force_refresh: bool) -> dict[str, dict[str, Any]]:
     """Shared by pricing and policy lookups so both read one cache entry."""
     return fetch_models_with_pricing(
         api_key=api_key,
         base_url=base_url,
         force_refresh=force_refresh,
-        include_sale_original=True,  # Sale chrome (pricing.original) is Nous Portal-only.
-        cache_ttl_seconds=_NOUS_CATALOG_TTL_SECONDS,
+        include_sale_original=True,  # Sale chrome (pricing.original) when the gateway sends it.
+        cache_ttl_seconds=_THORHUB_CATALOG_TTL_SECONDS,
     )
 
 
-def nous_policy_allowed_ids(*, force_refresh: bool = False) -> Optional[set[str]]:
-    """The Thor model ids the caller's org may reach (keys of an authenticated ``GET /v1/models``,
-    which omits policy-blocked rows), or ``None`` to not filter: no policy (or a token too old to
-    say), an anonymous read (unfiltered catalog), or an empty read (a fetch failure, not an org
-    that may reach nothing)."""
-    try:
-        from thor_cli.nous_account import nous_policy_present
-
-        if nous_policy_present() is not True:
-            return None
-    except Exception:
-        return None
-
-    api_key, base_url = _resolve_nous_pricing_credentials()
-    if not api_key or not base_url:
-        return None
-    return set(_fetch_nous_pricing(api_key, base_url, force_refresh=force_refresh)) or None
+def thorhub_policy_allowed_ids(*, force_refresh: bool = False) -> Optional[set[str]]:
+    """ThorHub has no org policy: always ``None`` (do not filter). Kept so picker call sites
+    keep their shape."""
+    return None
 
 
 # Past this size an allowed set reads as a whole catalog rather than an allowlist, and is not
 # worth showing in place of an empty picker.
-_NOUS_POLICY_APPEND_MAX = 64
+_THORHUB_POLICY_APPEND_MAX = 64
 
 
-def restrict_to_nous_policy(
+def restrict_to_thorhub_policy(
     model_ids: list[str],
     allowed: Optional[set[str]],
     *,
@@ -408,11 +379,13 @@ def restrict_to_nous_policy(
     costs a 403 from the authoritative gate, hiding a servable row is unrecoverable client-side.
     *rescue_empty*: an allowlist naming only models the curated manifest lacks would leave an empty
     picker — worse than no filter — so return the allowlist itself. Opt-in per list: an already-
-    empty list (a paid tier's gated models) means "nothing to gate", not "nothing survived"."""
+    empty list (a paid tier's gated models) means "nothing to gate", not "nothing survived".
+    ThorHub never supplies an allowlist (see :func:`thorhub_policy_allowed_ids`), so in practice
+    this returns *model_ids* unchanged."""
     if not allowed:
         return list(model_ids)
     kept = [mid for mid in model_ids if mid in allowed or mid.split(":", 1)[0] in allowed]
-    if rescue_empty and not kept and len(allowed) <= _NOUS_POLICY_APPEND_MAX:
+    if rescue_empty and not kept and len(allowed) <= _THORHUB_POLICY_APPEND_MAX:
         return sorted(allowed)
     return kept
 
@@ -513,8 +486,8 @@ def _fetch_kilocode_pricing_for_provider(*, force_refresh: bool = False) -> dict
     return _fetch_kilocode_pricing(force_refresh=force_refresh)
 
 
-def _fetch_nous_pricing_for_provider(*, force_refresh: bool = False) -> dict[str, dict[str, Any]]:
-    api_key, base_url = _resolve_nous_pricing_credentials()
+def _fetch_thorhub_pricing_for_provider(*, force_refresh: bool = False) -> dict[str, dict[str, Any]]:
+    api_key, base_url = _resolve_thorhub_pricing_credentials()
     if not base_url:
         return {}
     # Register the SAME key fetch_models_with_pricing writes (base + credential fingerprint):
@@ -524,12 +497,8 @@ def _fetch_nous_pricing_for_provider(*, force_refresh: bool = False) -> dict[str
     # pricing_cache_scope's last-resort fallback reads this value too; there it serves only as
     # an identity token for the prewarm single-flight, where including the credential is
     # equally correct (a key rotation means a new catalog and deserves a fresh worker).
-    _remember_provider_cache_key("nous", base_url.rstrip("/") + _pricing_auth_fingerprint(api_key))
-    return _fetch_nous_pricing(api_key, base_url, force_refresh=force_refresh)
-
-
-_OPENROUTER_PRICING_BASE = "https://openrouter.ai/api"
-_FIREWORKS_PRICING_KEY = "models.dev/fireworks"
+    _remember_provider_cache_key("thor", base_url.rstrip("/") + _pricing_auth_fingerprint(api_key))
+    return _fetch_thorhub_pricing(api_key, base_url, force_refresh=force_refresh)
 
 
 def _ai_gateway_pricing_scope() -> str:
@@ -541,21 +510,7 @@ def _novita_pricing_scope() -> str:
     return (os.getenv("NOVITA_BASE_URL", "").strip() or "https://api.novita.ai/openai/v1").rstrip("/")
 
 
-def get_cached_nous_inference_base_url() -> str:
-    """The profile's persisted Thor endpoint (bare origin, no ``/v1``) without refreshing auth."""
-    try:
-        from thor_cli.auth import (
-            _load_auth_store, _load_provider_state, _optional_base_url, _validate_nous_inference_url_from_network,
-        )
-
-        state = _load_provider_state(_load_auth_store(), "nous") or {}
-        url = _validate_nous_inference_url_from_network(_optional_base_url(state.get("inference_base_url"))) or ""
-        return url.rstrip("/").removesuffix("/v1")
-    except Exception:
-        return ""
-
-
-# Static endpoint identity per provider; dynamic ones (deepinfra, nous) are resolved in pricing_cache_scope.
+# Static endpoint identity per provider; dynamic ones (deepinfra, thor) are resolved in pricing_cache_scope.
 _STATIC_PRICING_SCOPES = {
     "openrouter": lambda: _OPENROUTER_PRICING_BASE,
     "ai-gateway": _ai_gateway_pricing_scope,
@@ -563,6 +518,19 @@ _STATIC_PRICING_SCOPES = {
     "kilocode": _kilo_pricing_scope,
     "fireworks": lambda: _FIREWORKS_PRICING_KEY,
 }
+
+_OPENROUTER_PRICING_BASE = "https://openrouter.ai/api"
+_FIREWORKS_PRICING_KEY = "models.dev/fireworks"
+
+
+def get_cached_thorhub_inference_base_url() -> str:
+    """The profile's configured ThorHub endpoint (bare origin, no ``/v1``). No auth refresh."""
+    try:
+        from thor_cli.thorhub_account import resolve_thorhub_base_url
+
+        return resolve_thorhub_base_url().rstrip("/").removesuffix("/v1")
+    except Exception:
+        return ""
 
 
 def resolve_pricing_provider(provider: str, *, base_url: str = "") -> str:
@@ -612,21 +580,18 @@ def pricing_cache_scope(
         return static()
     if normalized == "deepinfra":
         return _deepinfra_catalog_url()[0]
-    if normalized == "nous":
-        try:
-            from thor_cli.auth import _nous_inference_env_override
+    if normalized in {"thor", "thorhub"}:
+        from thor_cli.thorhub_account import thorhub_base_url_env_override
 
-            env_base = _nous_inference_env_override()
-        except Exception:
-            env_base = None
+        env_base = thorhub_base_url_env_override()
         if env_base:
             return env_base.rstrip("/").removesuffix("/v1")
-        if normalize_provider(current_provider) == "nous" and current_base_url:
+        if normalize_provider(current_provider) in {"thor", "thorhub"} and current_base_url:
             return current_base_url.rstrip("/").removesuffix("/v1")
-        persisted_base = get_cached_nous_inference_base_url()
+        persisted_base = get_cached_thorhub_inference_base_url()
         if persisted_base:
             return persisted_base
-        return _pricing_provider_cache_keys.get((_pricing_profile_key(), normalized), _DEFAULT_NOUS_INFERENCE_BASE)
+        return _pricing_provider_cache_keys.get((_pricing_profile_key(), normalized), _DEFAULT_THORHUB_BASE_URL)
     return ""
 
 
@@ -645,7 +610,7 @@ def _cached_only_pricing(normalized: str) -> dict[str, dict[str, str]]:
 def get_pricing_for_provider(
     provider: str, *, base_url: str = "", force_refresh: bool = False, cached_only: bool = False
 ) -> dict[str, dict[str, str]]:
-    """Return live pricing for providers that support it (openrouter, nous, ai-gateway, novita,
+    """Return live pricing for providers that support it (openrouter, thor, ai-gateway, novita,
     deepinfra, fireworks, kilocode); ``{}`` for everything else. ``cached_only`` never starts
     provider I/O: normal picker opens use it so cold endpoints cannot hold the response path,
     while a background prewarm fills the same caches for later opens."""
@@ -748,5 +713,6 @@ _PRICING_FETCHERS = {
     "deepinfra": _fetch_deepinfra_pricing,
     "fireworks": _fetch_fireworks_pricing_for_provider,
     "kilocode": _fetch_kilocode_pricing_for_provider,
-    "nous": _fetch_nous_pricing_for_provider,
+    "thor": _fetch_thorhub_pricing_for_provider,
+    "thorhub": _fetch_thorhub_pricing_for_provider,
 }

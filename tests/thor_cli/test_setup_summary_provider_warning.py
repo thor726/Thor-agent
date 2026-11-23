@@ -9,7 +9,7 @@ working model configured (consumer-onboarding audit finding #7, Aug 2026).
 from unittest.mock import patch
 
 from thor_cli.auth import AuthError
-from thor_cli import nous_subscription
+from thor_cli import thorhub_subscription
 
 
 def _summary_output(capsys, provider_ready: bool):
@@ -26,7 +26,7 @@ def _summary_output(capsys, provider_ready: bool):
 
     # Keep the summary fast/hermetic: stub the heavier feature probes.
     with patch("thor_cli.auth.resolve_provider", resolver), \
-         patch.object(nous_subscription, "get_nous_subscription_features") as feats:
+         patch.object(thorhub_subscription, "get_thorhub_subscription_features") as feats:
         feats.side_effect = Exception("stubbed")
         try:
             setup_mod._print_setup_summary({}, "/tmp/nowhere")

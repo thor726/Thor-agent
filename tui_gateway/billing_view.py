@@ -2,7 +2,7 @@
 
 STRUCTURED envelopes (result.ok / result.error) rather than JSON-RPC errors, so
 rpc() always resolves and the client branches on the typed billing code.
-Data-building lives in agent/billing_view.py + thor_cli/nous_billing.py.
+Data-building lives in agent/billing_view.py + thor_cli/thorhub_billing.py.
 Bodies are rebound onto server.py's globals at install time (method_ctx.bind_module),
 so tests may still monkeypatch e.g. ``server._usage_payload``.
 """
@@ -27,7 +27,7 @@ def _billing_pick(result: dict, **fields) -> dict:
 
 def _serialize_billing_error(exc) -> dict:
     """Map a BillingError into the result.error envelope the TUI branches on."""
-    from thor_cli.nous_billing import (
+    from thor_cli.thorhub_billing import (
         BillingRemoteSpendingRevoked, BillingScopeRequired, BillingSessionRevoked, BillingTransient)
     typed = {BillingRemoteSpendingRevoked: "remote_spending_revoked",
              BillingSessionRevoked: "session_revoked", BillingScopeRequired: "insufficient_scope"}
@@ -128,12 +128,12 @@ def _plan_usage_payload(state) -> Optional[dict]:
         return None
     try:
         from agent.credits_tracker import _window_seed_fields
-        from thor_cli.nous_account import cached_nous_portal_account_info
-        snapshot = cached_nous_portal_account_info(any_age=True)
+        from thor_cli.thorhub_account import cached_thorhub_account_info
+        snapshot = cached_thorhub_account_info(any_age=True)
         if snapshot is None or _window_seed_fields(getattr(snapshot, "usage_window", None)) is None:
             return None
-        from thor_cli.model_picker_usage import nous_picker_usage
-        usage = nous_picker_usage(warm=True)
+        from thor_cli.model_picker_usage import thorhub_picker_usage
+        usage = thorhub_picker_usage(warm=True)
         return usage.to_payload() if usage is not None else None
     except Exception:
         logging.getLogger(__name__).debug("Plan usage payload unavailable", exc_info=True)

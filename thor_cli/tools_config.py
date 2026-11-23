@@ -9,8 +9,8 @@ from typing import Dict, List, NoReturn, Optional, Set
 from thor_cli.cli_output import print_info as _print_info
 from thor_cli.colors import Colors, color
 from thor_cli.config import cfg_get, load_config, save_config, get_env_value
-from thor_cli.nous_subscription import (
-    NousSubscriptionFeatures, apply_nous_managed_defaults, get_nous_subscription_features)
+from thor_cli.thorhub_subscription import (
+    ThorHubSubscriptionFeatures, apply_thorhub_managed_defaults, get_thorhub_subscription_features)
 from thor_cli.platforms import PLATFORMS as _PLATFORMS_REGISTRY
 from thor_cli.toolset_scope import (
     _TOOLSET_PLATFORM_RESTRICTIONS, toolset_allowed_for_platform as _toolset_allowed_for_platform)
@@ -233,7 +233,7 @@ def _row(name: str, badge: str = "", tag: str = "", env_vars: list = (), **marke
     return row
 
 
-_NOUS = {"requires_nous_auth": True}
+_THORHUB = {"requires_thorhub_auth": True}
 _OPENAI_VOICE_KEY = _key("VOICE_TOOLS_OPENAI_KEY", "OpenAI API key", "https://platform.openai.com/api-keys")
 _ELEVENLABS_KEY = _key("ELEVENLABS_API_KEY", "ElevenLabs API key", "https://elevenlabs.io/app/settings/api-keys")
 _DEEPINFRA_KEY = _key("DEEPINFRA_API_KEY", "DeepInfra API key", "https://deepinfra.com/dash/api_keys")
@@ -244,7 +244,7 @@ TOOL_CATEGORIES = {
         "providers": [
             _row("Microsoft Edge TTS", "★ recommended · free", "Good quality, no API key needed", tts_provider="edge"),
             _row("Thor Subscription", "subscription", "Managed OpenAI TTS billed to your subscription", tts_provider="openai",
-                 **_NOUS, managed_nous_feature="tts", override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
+                 **_THORHUB, managed_thorhub_feature="tts", override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
             _row("OpenAI TTS", "paid", "High quality voices", [_OPENAI_VOICE_KEY], tts_provider="openai"),
             _row("xAI TTS", tag="Grok voices — uses xAI Grok OAuth or XAI_API_KEY", tts_provider="xai", post_setup="xai_grok"),
             _row("ElevenLabs", "paid", "Most natural voices", [_ELEVENLABS_KEY], tts_provider="elevenlabs"),
@@ -267,7 +267,7 @@ TOOL_CATEGORIES = {
             _row("Local Whisper", "★ recommended · free", "faster-whisper on-device, no API key", stt_provider="local",
                  post_setup="faster_whisper"),
             _row("Thor Subscription", "subscription", "Managed OpenAI transcription billed to your subscription",
-                 stt_provider="openai", **_NOUS, managed_nous_feature="stt",
+                 stt_provider="openai", **_THORHUB, managed_thorhub_feature="stt",
                  override_env_vars=["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"]),
             _row("OpenAI", "paid", "whisper-1, gpt-4o-transcribe, gpt-transcribe", [_OPENAI_VOICE_KEY], stt_provider="openai"),
             _row("Groq", "free tier", "whisper-large-v3-turbo, whisper-large-v3 — very fast",
@@ -288,7 +288,7 @@ TOOL_CATEGORIES = {
         # non-provider firecrawl setup-flow rows live here: managed via Nous subscription, and self-hosted.
         "providers": [
             {"name": "Thor Subscription", "badge": "subscription", "tag": "Managed web search and extract billed to your subscription",
-             "web_backend": "firecrawl", "env_vars": [], **_NOUS, "managed_nous_feature": "web",
+             "web_backend": "firecrawl", "env_vars": [], **_THORHUB, "managed_thorhub_feature": "web",
              "override_env_vars": ["FIRECRAWL_API_KEY", "FIRECRAWL_API_URL", "PERPLEXITY_API_KEY"]},
             {"name": "Firecrawl Self-Hosted", "badge": "free · self-hosted", "tag": "Run your own Firecrawl instance (Docker)",
              "web_backend": "firecrawl",
@@ -303,8 +303,8 @@ TOOL_CATEGORIES = {
         # picks the gateway at run time (tools/image_generation_managed.py).
         "providers": [
             _row("Thor Subscription", "subscription",
-                 "Managed image generation (FAL, Krea 3 and Krea 2, Thor Portal models) billed to your subscription", **_NOUS,
-                 managed_nous_feature="image_gen", override_env_vars=["FAL_KEY"], imagegen_backend="nous"),
+                 "Managed image generation (FAL, Krea 3 and Krea 2, Thor Portal models) billed to your subscription", **_THORHUB,
+                 managed_thorhub_feature="image_gen", override_env_vars=["FAL_KEY"], imagegen_backend="nous"),
         ],
     },
     "video_gen": {
@@ -313,8 +313,8 @@ TOOL_CATEGORIES = {
         # are injected at runtime by ``_plugin_video_gen_providers()`` in ``_visible_providers``. Picking this row
         # sets video_gen.provider = "fal" + use_gateway so the FAL plugin routes through the managed queue gateway.
         "providers": [
-            _row("Thor Subscription", "subscription", "Managed FAL video generation billed to your subscription", **_NOUS,
-                 managed_nous_feature="video_gen", override_env_vars=["FAL_KEY"], video_gen_plugin_name="fal"),
+            _row("Thor Subscription", "subscription", "Managed FAL video generation billed to your subscription", **_THORHUB,
+                 managed_thorhub_feature="video_gen", override_env_vars=["FAL_KEY"], video_gen_plugin_name="fal"),
         ],
     },
     "x_search": {
@@ -348,7 +348,7 @@ TOOL_CATEGORIES = {
             # Browser Use hosts its own Chromium, so the local-Chromium install and readiness gate must not
             # apply (with "chromium" this row read "needs setup" forever on machines without a local build).
             _row("Thor Subscription (Browser Use cloud)", "subscription", "Managed Browser Use billed to your subscription",
-                 browser_provider="browser-use", **_NOUS, managed_nous_feature="browser",
+                 browser_provider="browser-use", **_THORHUB, managed_thorhub_feature="browser",
                  override_env_vars=["BROWSER_USE_API_KEY"], post_setup="browserbase"),
         ],
     },
@@ -843,7 +843,7 @@ def _provider_env_ready(provider: dict) -> bool:
 
 
 def _toolset_has_keys(
-    ts_key: str, config: dict | None = None, *, force_fresh: bool = False, features: Optional[NousSubscriptionFeatures] = None,
+    ts_key: str, config: dict | None = None, *, force_fresh: bool = False, features: Optional[ThorHubSubscriptionFeatures] = None,
 ) -> bool:
     """Check if a toolset's required API keys are configured."""
     if config is None:
@@ -856,9 +856,9 @@ def _toolset_has_keys(
             return False
     if ts_key in {"web", "image_gen", "video_gen", "tts", "stt", "browser"}:
         if features is None:
-            features = get_nous_subscription_features(config, force_fresh=force_fresh)
+            features = get_thorhub_subscription_features(config, force_fresh=force_fresh)
         feature = features.features.get(ts_key)
-        if feature and (feature.available or feature.managed_by_nous):
+        if feature and (feature.available or feature.managed_by_thorhub):
             return True
     # Provider-aware categories first: a no-key provider (Local Browser, Edge TTS) counts as configured.
     cat = TOOL_CATEGORIES.get(ts_key)
@@ -1081,7 +1081,7 @@ def _first_install_flow(config: dict, enabled_platforms: list[str]) -> None:
         current_enabled = _current_platform_tools(config, pkey)
         new_enabled = _prompt_toolset_checklist(pinfo["label"], current_enabled - _DEFAULT_OFF_TOOLSETS, pkey)
         _print_toolset_diff(*_checklist_diff(new_enabled, current_enabled, pkey))
-        auto_configured = apply_nous_managed_defaults(config, enabled_toolsets=new_enabled, force_fresh=True)
+        auto_configured = apply_thorhub_managed_defaults(config, enabled_toolsets=new_enabled, force_fresh=True)
         for ts_key in sorted(auto_configured):
             label = next((l for k, l, _ in CONFIGURABLE_TOOLSETS if k == ts_key), ts_key)
             print(color(f"  ✓ {label}: using your Thor subscription defaults", Colors.GREEN))

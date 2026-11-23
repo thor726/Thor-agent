@@ -14,7 +14,7 @@ import thor_cli.models as models_mod
 import thor_cli.models_pricing as mp
 from thor_cli import model_setup_flows
 from thor_cli import model_switch_providers as msp
-from thor_cli.models import union_with_nous_on_sale_models
+from thor_cli.models import union_with_thorhub_on_sale_models
 from thor_cli.models_pricing import fetch_models_with_pricing
 
 _LIST = {"prompt": "0.000002", "completion": "0.00001"}
@@ -28,7 +28,7 @@ def _sale(pct_off: int) -> dict:
 def test_appends_discounted_models_missing_from_list_deepest_first():
     pricing = {"curated/a": _sale(40), "sale/small": _sale(20), "sale/deep": _sale(80), "full/price": dict(_LIST)}
 
-    ids = union_with_nous_on_sale_models(["curated/a"], pricing)
+    ids = union_with_thorhub_on_sale_models(["curated/a"], pricing)
 
     assert ids[0] == "curated/a"  # curated order preserved, not duplicated
     assert ids.count("curated/a") == 1
@@ -43,11 +43,11 @@ def test_skips_tool_less_and_free_rows():
         "free/with-original": {"prompt": "0", "completion": "0", "original": dict(_LIST)},
         "free/native": {"prompt": "0", "completion": "0"},
     }
-    assert union_with_nous_on_sale_models(["c"], pricing) == ["c"]
+    assert union_with_thorhub_on_sale_models(["c"], pricing) == ["c"]
 
 
 def test_no_pricing_leaves_list_unchanged():
-    assert union_with_nous_on_sale_models(["a", "b"], {}) == ["a", "b"]
+    assert union_with_thorhub_on_sale_models(["a", "b"], {}) == ["a", "b"]
 
 
 def _serve(monkeypatch, payload: dict) -> None:
@@ -69,43 +69,42 @@ def test_nous_fetch_flags_tool_less_rows_so_the_union_can_skip_them(monkeypatch)
                                                    force_refresh=True, **kw)
     nous = fetch(include_sale_original=True)
     # Equal discounts tie-break by id, so the order is deterministic.
-    assert union_with_nous_on_sale_models([], nous) == ["t/unknown", "t/yes"]
+    assert union_with_thorhub_on_sale_models([], nous) == ["t/unknown", "t/yes"]
     # Other catalogs never carry the Nous-only flag.
     assert all("tools" not in row for row in fetch().values())
 
 
 def _stub_portal(monkeypatch, *, free_tier: bool, pricing: dict, allowed=None) -> None:
     monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider, **kw: pricing)
-    monkeypatch.setattr("thor_cli.models.check_nous_free_tier", lambda **kw: free_tier)
-    monkeypatch.setattr("thor_cli.models.fetch_nous_recommended_models", lambda *a, **kw: None)
-    monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: allowed)
+    monkeypatch.setattr("thor_cli.models.check_thorhub_free_tier", lambda **kw: free_tier)
+    monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: allowed)
 
 
 def test_gui_picker_paid_tier_shows_on_sale_model(monkeypatch):
     _stub_portal(monkeypatch, free_tier=False, pricing={"nous/a": dict(_LIST), "sale/x": _sale(80)})
-    assert msp._nous_picker_model_ids({"nous": ["nous/a"]}, False) == ["nous/a", "sale/x"]
+    assert msp._thorhub_picker_model_ids({"thor": ["nous/a"]}, False) == ["nous/a", "sale/x"]
 
 
 def test_gui_picker_free_tier_does_not_list_paid_sales(monkeypatch):
     _stub_portal(monkeypatch, free_tier=True, pricing={"nous/a": dict(_LIST), "sale/x": _sale(80)})
-    assert "sale/x" not in msp._nous_picker_model_ids({"nous": ["nous/a"]}, False)
+    assert "sale/x" not in msp._thorhub_picker_model_ids({"thor": ["nous/a"]}, False)
 
 
 def test_gui_picker_org_policy_still_narrows_on_sale_models(monkeypatch):
     _stub_portal(monkeypatch, free_tier=False, pricing={"nous/a": dict(_LIST), "sale/x": _sale(80)},
                  allowed={"nous/a"})
-    assert "sale/x" not in msp._nous_picker_model_ids({"nous": ["nous/a"]}, False)
+    assert "sale/x" not in msp._thorhub_picker_model_ids({"thor": ["nous/a"]}, False)
 
 
 def test_cli_setup_flow_and_gui_picker_agree(monkeypatch):
     """``thor model`` and the GUI/in-chat picker list the same Nous models for a paid account."""
     pricing = {"nous/a": dict(_LIST), "sale/x": _sale(80), "sale/y": _sale(30)}
     _stub_portal(monkeypatch, free_tier=False, pricing=pricing)
-    monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: None)
+    monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: None)
 
-    cli = model_setup_flows._nous_model_catalog(False, "", ["nous/a"], pricing)
+    cli = model_setup_flows._thorhub_model_catalog(False, "", ["nous/a"], pricing)
     assert cli is not None
-    assert cli[0] == msp._nous_picker_model_ids({"nous": ["nous/a"]}, False)
+    assert cli[0] == msp._thorhub_picker_model_ids({"nous": ["nous/a"]}, False)
 
 
 def _login_picker_ids(monkeypatch, *, free_tier: bool, pricing: dict, allowed=None) -> list:
@@ -113,7 +112,7 @@ def _login_picker_ids(monkeypatch, *, free_tier: bool, pricing: dict, allowed=No
     from thor_cli import auth_nous
 
     _stub_portal(monkeypatch, free_tier=free_tier, pricing=pricing, allowed=allowed)
-    monkeypatch.setattr("thor_cli.models.get_curated_nous_model_ids", lambda *a, **kw: ["curated/only"])
+    monkeypatch.setattr("thor_cli.models.get_curated_thorhub_model_ids", lambda *a, **kw: ["curated/only"])
     monkeypatch.setattr(auth_nous, "_portal_entitlement_message", lambda *a, **kw: "")
     offered: dict = {}
 
@@ -149,8 +148,8 @@ def test_all_three_paid_pickers_agree(monkeypatch):
     """Sign-in picker, ``thor model`` and the GUI/in-chat picker list the same paid Nous models."""
     pricing = {"curated/only": dict(_LIST), "sale/x": _sale(80), "sale/y": _sale(30)}
     login = _login_picker_ids(monkeypatch, free_tier=False, pricing=pricing)
-    cli = model_setup_flows._nous_model_catalog(False, "", ["curated/only"], pricing)
-    gui = msp._nous_picker_model_ids({"nous": ["curated/only"]}, False)
+    cli = model_setup_flows._thorhub_model_catalog(False, "", ["curated/only"], pricing)
+    gui = msp._thorhub_picker_model_ids({"thor": ["curated/only"]}, False)
     assert cli is not None
     assert login == cli[0] == gui == ["curated/only", "sale/x", "sale/y"]
 
@@ -165,7 +164,7 @@ def test_skips_generation_models_on_sale(monkeypatch):
     ]})
     nous = fetch_models_with_pricing(api_key="sk-test", base_url="https://example.test",
                                      force_refresh=True, include_sale_original=True)
-    assert union_with_nous_on_sale_models([], nous) == ["chat/ok"]
+    assert union_with_thorhub_on_sale_models([], nous) == ["chat/ok"]
 
 
 def test_nonzero_sale_rounding_to_full_discount_is_still_paid():
@@ -174,7 +173,7 @@ def test_nonzero_sale_rounding_to_full_discount_is_still_paid():
         "sale/almost-free": {"prompt": "0.000000001", "completion": "0.000000001", "original": dict(_LIST)},
         "free/zero": {"prompt": "0", "completion": "0", "original": dict(_LIST)},
     }
-    assert union_with_nous_on_sale_models([], pricing) == ["sale/almost-free"]
+    assert union_with_thorhub_on_sale_models([], pricing) == ["sale/almost-free"]
 
 
 def test_zero_prompt_with_missing_or_invalid_completion_is_not_a_paid_sale(monkeypatch):
@@ -189,4 +188,4 @@ def test_zero_prompt_with_missing_or_invalid_completion_is_not_a_paid_sale(monke
     _serve(monkeypatch, {"data": rows})
     pricing = fetch_models_with_pricing(api_key="synthetic", base_url="https://example.test",
                                         force_refresh=True, include_sale_original=True)
-    assert union_with_nous_on_sale_models([], pricing) == []
+    assert union_with_thorhub_on_sale_models([], pricing) == []

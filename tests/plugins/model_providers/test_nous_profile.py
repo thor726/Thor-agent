@@ -37,8 +37,8 @@ def portal_catalog(monkeypatch):
     """Prime the Portal reasoning-capability cache with known entries."""
     import thor_cli.models as models_mod
 
-    monkeypatch.setattr(models_mod, "_nous_reasoning_caps_failed_at", None)
-    monkeypatch.setattr(models_mod, "_nous_reasoning_caps_cache", {
+    monkeypatch.setattr(models_mod, "_thorhub_reasoning_caps_failed_at", None)
+    monkeypatch.setattr(models_mod, "_thorhub_reasoning_caps_cache", {
         "deepseek/deepseek-v4-pro": {
             "supports_reasoning": True,
             "supported_efforts": ["xhigh", "high"],

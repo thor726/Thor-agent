@@ -20,10 +20,10 @@ _CATALOG = [
 ]
 
 
-def _feature_state(feat, *, via_nous: str) -> str:
+def _feature_state(feat, *, via_thorhub: str) -> str:
     """Routing column shared by `portal info` and `portal tools`."""
-    if feat.managed_by_nous:
-        return color(via_nous, Colors.GREEN)
+    if feat.managed_by_thorhub:
+        return color(via_thorhub, Colors.GREEN)
     if feat.active:
         return feat.current_provider or "active"
     return color("not configured", Colors.DIM)
@@ -38,7 +38,7 @@ def _heading(title: str) -> None:
 def _cmd_status(args) -> int:
     """Show Portal auth + Tool Gateway routing summary."""
     from thor_cli.auth import get_nous_auth_status_local
-    from thor_cli.nous_subscription import get_nous_subscription_features
+    from thor_cli.thorhub_subscription import get_thorhub_subscription_features
 
     config = load_config() or {}
     try:
@@ -47,7 +47,7 @@ def _cmd_status(args) -> int:
         auth = {}
     logged_in = bool(auth.get("logged_in"))
     free_tier = bool(auth.get("free_tier"))
-    _heading("Thor Portal")
+    _heading("ThorHub")
     if free_tier:
         from thor_cli.anon_auth import FREE_TIER_LABEL, GUEST_MODEL, UPGRADE_HINT
         print(f"  Auth:    {color(f'{FREE_TIER_LABEL} · {GUEST_MODEL}', Colors.GREEN)}")
@@ -56,7 +56,7 @@ def _cmd_status(args) -> int:
             print(f"  API:     {auth['inference_base_url']}")
     elif logged_in:
         print(f"  Auth:    {color('✓ logged in', Colors.GREEN)}")
-        print(f"  Portal:  {auth.get('portal_base_url') or DEFAULT_PORTAL_URL}")
+        print(f"  ThorHub: {auth.get('portal_base_url') or DEFAULT_PORTAL_URL}")
         if auth.get("inference_base_url"):
             print(f"  API:     {auth['inference_base_url']}")
     else:
@@ -67,18 +67,18 @@ def _cmd_status(args) -> int:
     # Provider selection (independent of auth)
     model_cfg = config.get("model") if isinstance(config.get("model"), dict) else {}
     provider = str(model_cfg.get("provider") or "").strip().lower()
-    if provider == "nous":
+    if provider in {"thor", "thorhub"}:
         print(f"  Model:   {color('✓ using Thor as inference provider', Colors.GREEN)}")
     elif provider:
         print(f"  Model:   currently {provider} (switch with `thor model`)")
 
     _heading("Tool Gateway")
     try:
-        features = get_nous_subscription_features(config)
+        features = get_thorhub_subscription_features(config)
     except Exception:
         print("  (could not resolve subscription state)")
         return 0
-    rows = [(feat.label, _feature_state(feat, via_nous="via Thor Portal")) for feat in features.items()]
+    rows = [(feat.label, _feature_state(feat, via_thorhub="via ThorHub")) for feat in features.items()]
     width = max((len(r[0]) for r in rows), default=0)
     for label, state in rows:
         print(f"  {label:<{width}}   {state}")
@@ -104,17 +104,17 @@ def _cmd_open(args) -> int:
 
 def _cmd_tools(args) -> int:
     """List the Tool Gateway catalog + current routing."""
-    from thor_cli.nous_subscription import get_nous_subscription_features, managed_image_partner
+    from thor_cli.thorhub_subscription import get_thorhub_subscription_features, managed_image_partner
 
     config = load_config() or {}
     try:
-        features = get_nous_subscription_features(config)
+        features = get_thorhub_subscription_features(config)
     except Exception:
         print("Could not resolve Tool Gateway state.", file=sys.stderr)
         return 1
 
     _heading("Tool Gateway catalog")
-    if not features.nous_auth_present:
+    if not features.thor_auth_present:
         print(color("  Not logged into Thor Portal — sign in with `thor portal`.", Colors.YELLOW))
         print()
 
@@ -123,7 +123,7 @@ def _cmd_tools(args) -> int:
         if key == "image_gen":
             partner = managed_image_partner(config) or partner
         feat = features.features.get(key)
-        state = color("unknown", Colors.DIM) if feat is None else _feature_state(feat, via_nous="✓ via Thor Portal")
+        state = color("unknown", Colors.DIM) if feat is None else _feature_state(feat, via_thorhub="✓ via Thor Portal")
         print(f"  {label:<{label_width}}  partner: {partner:<14} {state}")
 
     print()

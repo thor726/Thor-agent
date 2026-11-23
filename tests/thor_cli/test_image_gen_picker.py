@@ -132,16 +132,16 @@ class TestConfigWriting:
 
         monkeypatch.setattr(
             tools_config,
-            "get_nous_subscription_features",
+            "get_thorhub_subscription_features",
             lambda config, **kwargs: SimpleNamespace(
-                features={"image_gen": SimpleNamespace(managed_by_nous=True)}
+                features={"image_gen": SimpleNamespace(managed_by_thorhub=True)}
             ),
         )
 
         config = {"image_gen": {"provider": "openai", "use_gateway": False}}
         nous_row = {
             "name": "Nous Subscription",
-            "managed_nous_feature": "image_gen",
+            "managed_thorhub_feature": "image_gen",
         }
         openai_row = {
             "name": "OpenAI",

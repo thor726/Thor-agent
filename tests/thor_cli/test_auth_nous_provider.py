@@ -468,7 +468,7 @@ class TestLoginNousSkipKeepsCurrent:
         from thor_cli import auth_nous
         import thor_cli.models as models_mod
         from thor_cli import models_pricing
-        import thor_cli.nous_subscription as ns
+        import thor_cli.thorhub_subscription as ns
 
         fake_auth_state = {
             "access_token": "fake-nous-token",
@@ -493,18 +493,18 @@ class TestLoginNousSkipKeepsCurrent:
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda p: {})
         free_tier_calls = []
 
-        def _check_nous_free_tier(**kwargs):
+        def _check_thorhub_free_tier(**kwargs):
             free_tier_calls.append(kwargs)
 
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", _check_nous_free_tier)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", _check_thorhub_free_tier)
         monkeypatch.setattr(
-            models_mod, "partition_nous_models_by_tier",
+            models_mod, "partition_thorhub_models_by_tier",
             lambda ids, p, free_tier=False: (ids, []),
         )
         monkeypatch.setattr(ns, "prompt_enable_tool_gateway", lambda cfg: None)
         # Not a usage-window account, and no live portal read of the fake token.
         import thor_cli.model_picker_usage as mpu
-        monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+        monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
         return free_tier_calls
 
     def test_skip_keep_current_preserves_provider_and_model(self, tmp_path, monkeypatch):
@@ -906,7 +906,7 @@ def test_shared_store_seat_belt_refuses_real_home_under_pytest(monkeypatch):
 
     monkeypatch.delenv("THOR_SHARED_AUTH_DIR", raising=False)
 
-    with pytest.raises(RuntimeError, match="shared Nous auth store"):
+    with pytest.raises(RuntimeError, match="shared Thor auth store"):
         _nous_shared_store_path()
 
 @pytest.mark.platforms("linux")
@@ -1009,7 +1009,7 @@ def test_try_import_shared_rehydrates_on_success(shared_store_env, monkeypatch):
     assert result["client_id"] == "thor-cli"
 
 class TestStalePortalBaseUrlMigration:
-    """_migrate_stale_nous_portal_url auto-corrects stale portal_base_url on load."""
+    """_migrate_stale_thorhub_portal_url auto-corrects stale portal_base_url on load."""
 
     def test_migrates_stale_portal_url_on_load(self, tmp_path, monkeypatch):
         from thor_cli.auth import _load_auth_store, DEFAULT_NOUS_PORTAL_URL

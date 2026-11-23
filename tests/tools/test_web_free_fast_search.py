@@ -75,7 +75,7 @@ def gateway_server(monkeypatch):
 
 def _write_home(home, monkeypatch, *, nous_state=None, config=None):
     from thor_cli.config import atomic_config_write
-    from thor_cli.nous_account import reset_nous_portal_account_info_cache
+    from thor_cli.thorhub_account import reset_thorhub_account_info_cache
 
     home.mkdir(parents=True)
     monkeypatch.setenv("THOR_HOME", str(home))
@@ -85,7 +85,7 @@ def _write_home(home, monkeypatch, *, nous_state=None, config=None):
     atomic_config_write(home / "config.yaml", {"web": {"keyless_rescue": False}, **(config or {})})
     if nous_state is not None:
         (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"nous": nous_state}}))
-    reset_nous_portal_account_info_cache()
+    reset_thorhub_account_info_cache()
 
 
 def _search():
@@ -104,15 +104,16 @@ def _calls(log):
 def test_unentitled_nous_identity_autodetects_free_fast_search(monkeypatch, tmp_path, gateway_server, state):
     """Guests are the users this route exists for: an anonymous identity and a zero-credit account
     both reach the gateway, while the paid gate stays closed for extract and every other vendor."""
-    from thor_cli.nous_account import get_nous_portal_account_info
+    from thor_cli.thorhub_account import get_thorhub_account_info
     from tools import web_tools
     from tools.tool_backend_helpers import managed_thorhub_tools_enabled
 
     _write_home(tmp_path / "home", monkeypatch, nous_state=state)
-    # Premise: the guest case really reads as the anonymous tier, and there is no
-    # default managed gate anymore; the fixture's explicit FIRECRAWL_GATEWAY_URL
-    # makes the firecrawl route available, while extract stays off Perplexity.
-    assert get_nous_portal_account_info().is_anonymous_tier is (state["auth_method"] == "anonymous")
+    # Premise: ThorHub has no anonymous tier (guest or exhausted identity alike),
+    # and there is no default managed gate anymore; the fixture's explicit
+    # FIRECRAWL_GATEWAY_URL makes the firecrawl route available, while extract
+    # stays off Perplexity.
+    assert get_thorhub_account_info().is_anonymous_tier is False
     assert managed_thorhub_tools_enabled() is False
     assert web_tools.check_firecrawl_api_key() is True
     assert web_tools._get_extract_backend() != "perplexity"
@@ -162,7 +163,7 @@ def test_direct_perplexity_key_beats_free_fast_search(monkeypatch, tmp_path, gat
 
 def test_free_fast_search_eligibility_follows_the_served_profile(monkeypatch, tmp_path, gateway_server):
     """Multiplex A→B→A: profile A holds a zero-credit Portal identity, B none; each answers from its own store."""
-    from thor_cli.nous_account import reset_nous_portal_account_info_cache
+    from thor_cli.thorhub_account import reset_thorhub_account_info_cache
     from agent.secret_scope import set_multiplex_active
     from gateway.run import _profile_runtime_scope
     from tools import web_tools
@@ -177,7 +178,7 @@ def test_free_fast_search_eligibility_follows_the_served_profile(monkeypatch, tm
     try:
         seen = []
         for home in (profile_a, profile_b, profile_a):
-            reset_nous_portal_account_info_cache()
+            reset_thorhub_account_info_cache()
             with _profile_runtime_scope(home):
                 seen.append(web_tools._get_search_backend())
     finally:

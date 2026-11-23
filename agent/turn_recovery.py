@@ -106,9 +106,9 @@ def _image_error_max_dimension(error: Exception) -> Optional[int]:
 def _try_refresh_nous_paid_entitlement_credentials(agent) -> bool:
     """Refresh Thor runtime credentials after a fresh paid-entitlement check."""
     try:
-        from thor_cli.nous_account import get_nous_portal_account_info
+        from thor_cli.thorhub_account import get_thorhub_account_info
 
-        if get_nous_portal_account_info(force_fresh=True).paid_service_access is not True:
+        if get_thorhub_account_info(force_fresh=True).paid_service_access is not True:
             return False
         return agent._try_refresh_nous_client_credentials(force=True)
     except Exception:
@@ -332,7 +332,7 @@ def recover_before_classification(
 def _print_nous_401_diagnostics(agent: Any, api_error: Exception) -> None:
     """Thor 401 that survived a credential refresh: likely Portal OAuth expired/revoked,
     no credits, or agent key blocked."""
-    from agent.conversation_loop import _print_nous_entitlement_guidance
+    from agent.conversation_loop import _print_thorhub_entitlement_guidance
     from thor_constants import display_thor_home
     _body_text = ""
     try:
@@ -354,7 +354,7 @@ def _print_nous_401_diagnostics(agent: Any, api_error: Exception) -> None:
             return
     except Exception:
         pass
-    if not _print_nous_entitlement_guidance(agent, "Thor model access"):
+    if not _print_thorhub_entitlement_guidance(agent, "Thor model access"):
         _plines(agent, "   Most likely: Portal OAuth expired, account out of credits, or agent key revoked.")
     _plines(
         agent,
@@ -663,7 +663,7 @@ def recover_after_classification(
     strip → Anthropic OAuth 1M-beta disable → per-provider 401 credential refresh →
     format-recovery strips.
     Returns ``(retry_now, recovered_with_pool)``; the latter feeds the Thor rate-limit guard."""
-    from agent.conversation_loop import _is_nous_inference_route
+    from agent.conversation_loop import _is_thorhub_inference_route
 
     # The credit-limited 402 clamp runs before pool rotation, which would bench a credential
     # that still has credit. A ``reasoning.context`` 400 is classified reasoning_mandatory, whose rung
@@ -686,7 +686,7 @@ def recover_after_classification(
         classified.reason == FailoverReason.billing
         # A usage-window 402 is the plan's own limit: refreshing credentials cannot lift it.
         and not (getattr(classified, "error_context", None) or {}).get("usage_window")
-        and _is_nous_inference_route(
+        and _is_thorhub_inference_route(
             getattr(agent, "provider", "") or "", getattr(agent, "base_url", "") or ""
         )
         and not _retry.nous_paid_entitlement_refresh_attempted
@@ -887,14 +887,14 @@ def _print_nonretryable_auth_guidance(
     """Actionable guidance for a terminal auth / billing error."""
     if (getattr(classified, "error_context", None) or {}).get("usage_window"):
         return  # a plan limit's refusal line and limit panel are its guidance: no second copy, no portal fetch
-    from agent.conversation_loop import _print_billing_or_entitlement_guidance, _print_nous_entitlement_guidance
+    from agent.conversation_loop import _print_billing_or_entitlement_guidance, _print_thorhub_entitlement_guidance
 
     if classified.reason == FailoverReason.billing and _print_billing_or_entitlement_guidance(
         agent, capability="model access", provider=provider, base_url=str(base_url),
         model=model, unverified=classified.billing_unverified,
     ):
         return
-    if provider == "nous" and _print_nous_entitlement_guidance(agent, "Thor model access"):
+    if provider == "nous" and _print_thorhub_entitlement_guidance(agent, "Thor model access"):
         return
     if provider in {"openai-codex", "xai-oauth", "nous"} and status_code == 401:
         if provider == "openai-codex":

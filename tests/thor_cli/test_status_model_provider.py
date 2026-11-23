@@ -2,8 +2,8 @@
 
 from types import SimpleNamespace
 
-from thor_cli.nous_account import NousPaidServiceAccessInfo, NousPortalAccountInfo
-from thor_cli.nous_subscription import NousFeatureState, NousSubscriptionFeatures
+from thor_cli.thorhub_account import ThorHubPaidServiceAccessInfo, ThorHubAccountInfo
+from thor_cli.thorhub_subscription import ThorHubFeatureState, ThorHubSubscriptionFeatures
 import subprocess
 
 

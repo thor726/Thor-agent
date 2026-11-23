@@ -22,10 +22,10 @@ def client(_isolate_thor_home, monkeypatch):
     (freebie / "config.yaml").write_text("model: {}\n", encoding="utf-8")
 
     from thor_constants import get_thor_home
-    from thor_cli import nous_account
+    from thor_cli import thorhub_account
 
     # The launch profile's account is paid, the "freebie" profile's is free tier.
-    monkeypatch.setattr(nous_account, "get_nous_portal_account_info", lambda **_k: SimpleNamespace(
+    monkeypatch.setattr(nous_account, "get_thorhub_account_info", lambda **_k: SimpleNamespace(
         is_free_tier=get_thor_home().name == "freebie"))
 
     from thor_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN

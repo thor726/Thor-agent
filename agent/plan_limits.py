@@ -171,28 +171,16 @@ def _plan_usage() -> Any:
     # Plan shape only (featured models), so the last account snapshot at any age answers: the 60s
     # cache has long lapsed by the time a window runs out mid-session.
     try:
-        from thor_cli.model_picker_usage import nous_picker_usage
-        return nous_picker_usage(any_age=True)
+        from thor_cli.model_picker_usage import thorhub_picker_usage
+        return thorhub_picker_usage(any_age=True)
     except Exception:
         logger.debug("Plan usage unavailable", exc_info=True)
         return None
 
 
-def _portal_free_models() -> list[str]:
-    """The Portal's free picks, from what this profile already holds for its own Portal (in-process,
-    else its last copy on disk). Never fetches: this runs mid-turn."""
-    try:
-        from thor_cli import models as m
-        base = m._resolve_nous_portal_url()
-        payload = (m._nous_recommended_cache.get((m._pricing_profile_key(), base)) or (None,))[0]
-        if not payload:
-            disk = m._read_nous_recommended_disk(base)
-            payload = disk[0] if disk else None
-        entries = payload.get("freeRecommendedModels") if isinstance(payload, dict) else None
-        return [n for e in (entries or []) if (n := m._extract_model_name(e))]
-    except Exception:
-        logger.debug("Portal free models unavailable", exc_info=True)
-        return []
+def _thorhub_free_models() -> list[str]:
+    """ThorHub has no free picks (no free tier, no recommendation endpoint): always []."""
+    return []
 
 
 def _fits_context(model: str, needed_tokens: Optional[int], base_url: str) -> bool:
@@ -215,7 +203,7 @@ def suggest_models(
     Never the current model, only a model whose context window holds the conversation."""
     gauges = tuple(gauges)
     pool = [m for m in featured if isinstance(m, str) and m]
-    pool += [m for m in _portal_free_models() if m not in pool]
+    pool += [m for m in _thorhub_free_models() if m not in pool]
     out: list[ModelSuggestion] = []
     for model in pool:
         if model == current_model or _billed_elsewhere(model, pricing):

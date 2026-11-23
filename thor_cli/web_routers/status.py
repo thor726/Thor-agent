@@ -852,7 +852,7 @@ async def list_cloud_agents(org: Optional[str] = None, profile: Optional[str] = 
 
 
 def _feature_state(feat) -> str:
-    if getattr(feat, "managed_by_nous", False):
+    if getattr(feat, "managed_by_thorhub", False):
         return "via Thor Portal"
     if getattr(feat, "active", False):
         return getattr(feat, "current_provider", None) or "active"
@@ -871,8 +871,8 @@ def _get_portal_status_sync():
 
     features = []
     try:
-        from thor_cli.nous_subscription import get_nous_subscription_features
-        feats = get_nous_subscription_features(cfg)
+        from thor_cli.thorhub_subscription import get_thorhub_subscription_features
+        feats = get_thorhub_subscription_features(cfg)
         if feats is not None:
             features = [{"label": getattr(feat, "label", ""), "state": _feature_state(feat)}
                         for feat in feats.items()]

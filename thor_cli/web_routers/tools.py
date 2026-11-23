@@ -225,7 +225,7 @@ def _no_models(name: str) -> dict:
 async def get_toolsets(profile: Optional[str] = None):
     from thor_cli.tools_config import (
         _CONFIG_ONLY_TOOLSETS, _get_effective_configurable_toolsets, _get_platform_tools,
-        _toolset_configuration_platform, _toolset_has_keys, get_nous_subscription_features,
+        _toolset_configuration_platform, _toolset_has_keys, get_thorhub_subscription_features,
         gui_toolset_label)
     from thor_cli.platforms import platform_label
     from toolsets import resolve_toolset
@@ -240,7 +240,7 @@ async def get_toolsets(profile: Optional[str] = None):
             enabled_by_platform = {
                 platform: _get_platform_tools(config, platform, include_default_mcp_servers=False)
                 for platform in target_platforms}
-            features = get_nous_subscription_features(config)
+            features = get_thorhub_subscription_features(config)
             # Credential presence resolves through the profile's secret scope: outside this block
             # it read the dashboard process env (another profile's keys) or fails closed.
             configured = {name: _toolset_has_keys(name, config, features=features) for name, _, _ in toolset_rows}
@@ -344,7 +344,7 @@ async def get_toolset_config(name: str, profile: Optional[str] = None):
         TOOL_CATEGORIES, _is_provider_active, _visible_providers, provider_readiness_status,
         web_provider_capabilities)
     from thor_cli.config import get_env_value
-    from thor_cli.nous_subscription import get_nous_subscription_features
+    from thor_cli.thorhub_subscription import get_thorhub_subscription_features
 
     def _read():
         with _profile_scope(profile):
@@ -355,7 +355,7 @@ async def get_toolset_config(name: str, profile: Optional[str] = None):
             active_provider = None
             if cat:
                 # Entitlement state fetched once for the whole matrix.
-                features = get_nous_subscription_features(config, force_fresh=True)
+                features = get_thorhub_subscription_features(config, force_fresh=True)
                 for prov in _visible_providers(cat, config, force_fresh=True):
                     env_vars = [
                         {
@@ -374,10 +374,10 @@ async def get_toolset_config(name: str, profile: Optional[str] = None):
                         "tag": prov.get("tag", ""),
                         "env_vars": env_vars,
                         "post_setup": prov.get("post_setup"),
-                        "requires_nous_auth": bool(prov.get("requires_nous_auth")),
+                        "requires_thorhub_auth": bool(prov.get("requires_thorhub_auth")),
                         # Set on the "Nous Subscription" rows: the GUI tells the gateway row apart
                         # from a BYOK row of the same vendor (both carry web_backend "firecrawl").
-                        "managed_nous_feature": prov.get("managed_nous_feature"),
+                        "managed_thorhub_feature": prov.get("managed_thorhub_feature"),
                         "is_active": is_active,
                         # Server-side readiness: zero-env-var rows are NOT
                         # automatically ready (logged-out Nous rows, never-run
@@ -415,8 +415,8 @@ async def get_toolset_config(name: str, profile: Optional[str] = None):
                     search_managed = extract_managed = False
                 payload["active_search_backend"] = search_backend
                 payload["active_extract_backend"] = extract_backend
-                payload["search_via_nous"] = bool(search_managed)
-                payload["extract_via_nous"] = bool(extract_managed)
+                payload["search_via_thorhub"] = bool(search_managed)
+                payload["extract_via_thorhub"] = bool(extract_managed)
         return payload
 
     return await asyncio.to_thread(_read)
@@ -507,8 +507,8 @@ async def select_toolset_provider(
     login, so an unentitled selection would write config and never activate.
     """
     from thor_cli.tools_config import apply_provider_selection, web_provider_capabilities
-    from thor_cli.nous_subscription import (
-        MANAGED_FEATURE_COVERAGE_CATEGORY, get_nous_subscription_features)
+    from thor_cli.thorhub_subscription import (
+        MANAGED_FEATURE_COVERAGE_CATEGORY, get_thorhub_subscription_features)
 
     if body.capability is not None:
         if name != "web":
@@ -544,7 +544,7 @@ async def select_toolset_provider(
                     from tools.tool_backend_helpers import MANAGED_PROVIDER
 
                     _dict_section(config, "web")[f"{body.capability}_backend"] = (
-                        MANAGED_PROVIDER if prov.get("managed_nous_feature") else backend)
+                        MANAGED_PROVIDER if prov.get("managed_thorhub_feature") else backend)
                 else:
                     try:
                         apply_provider_selection(name, body.provider, config)
@@ -556,12 +556,12 @@ async def select_toolset_provider(
                     response["capability"] = body.capability
 
             # Entitlement check for managed Nous rows (mirrors the CLI's
-            # ensure_nous_portal_access gate).  Hits the Portal, so it runs AFTER
+            # ensure_thorhub_access gate).  Hits the Portal, so it runs AFTER
             # releasing the mutation lock — still in the worker thread + scope.
             row = _provider_row(config)
-            managed_feature = (row or {}).get("managed_nous_feature")
+            managed_feature = (row or {}).get("managed_thorhub_feature")
             if managed_feature:
-                features = get_nous_subscription_features(config, force_fresh=True)
+                features = get_thorhub_subscription_features(config, force_fresh=True)
                 acct = features.account_info
                 category = MANAGED_FEATURE_COVERAGE_CATEGORY.get(managed_feature)
                 entitled = bool(

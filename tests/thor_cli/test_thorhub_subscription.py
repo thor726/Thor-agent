@@ -1,9 +1,14 @@
-"""Tests for Nous subscription feature detection."""
+"""Tests for ThorHub subscription feature detection.
+
+ThorHub has no managed tool gateway, free pool, or subscriptions: every
+``managed_by_thorhub`` is False, the gateway offer never fires, and the
+managed-defaults pass writes nothing. Direct vendor keys still work.
+"""
 
 import pytest
 
-from thor_cli.nous_account import NousPortalAccountInfo, NousToolAccessInfo
-from thor_cli import nous_subscription as ns
+from thor_cli.thorhub_account import ThorHubAccountInfo, ThorHubToolAccessInfo
+from thor_cli import thorhub_subscription as ns
 from tools import tool_backend_helpers
 from tools.image_generation_catalog import DEFAULT_MODEL as FAL_DEFAULT_MODEL
 
@@ -18,48 +23,48 @@ _POOL_COVERAGE = {
 }
 
 
-def _account(*, logged_in: bool, paid: bool | None = None) -> NousPortalAccountInfo:
-    return NousPortalAccountInfo(
+def _account(*, logged_in: bool, paid: bool | None = None) -> ThorHubAccountInfo:
+    return ThorHubAccountInfo(
         logged_in=logged_in,
-        source="jwt" if logged_in else "none",
+        source="api_key" if logged_in else "none",
         fresh=False,
         paid_service_access=paid,
     )
 
 
-def _pool_account() -> NousPortalAccountInfo:
+def _pool_account() -> ThorHubAccountInfo:
     """A $0 subscriber with a live free tool pool (no paid access)."""
-    return NousPortalAccountInfo(
+    return ThorHubAccountInfo(
         logged_in=True,
-        source="jwt",
+        source="api_key",
         fresh=False,
         paid_service_access=False,
-        tool_access=NousToolAccessInfo(enabled=True, coverage=_POOL_COVERAGE),
+        tool_access=ThorHubToolAccessInfo(enabled=True, coverage=_POOL_COVERAGE),
     )
 
 
-def test_get_nous_subscription_features_recognizes_direct_exa_backend(monkeypatch):
+def test_get_thorhub_subscription_features_recognizes_direct_exa_backend(monkeypatch):
     env = {"EXA_API_KEY": "exa-test"}
 
     monkeypatch.setattr(ns, "get_env_value", lambda name: env.get(name, ""))
     monkeypatch.setattr(
-        ns, "get_nous_portal_account_info", lambda: _account(logged_in=False)
+        ns, "get_thorhub_account_info", lambda: _account(logged_in=False)
     )
     monkeypatch.setattr(ns, "_toolset_enabled", lambda config, key: key == "web")
     monkeypatch.setattr(ns, "_has_browser_harness", lambda: False)
     monkeypatch.setattr(ns, "resolve_openai_audio_api_key", lambda: "")
     monkeypatch.setattr(ns, "has_direct_modal_credentials", lambda: False)
 
-    features = ns.get_nous_subscription_features({"web": {"backend": "exa"}})
+    features = ns.get_thorhub_subscription_features({"web": {"backend": "exa"}})
 
     assert features.web.available is True
     assert features.web.active is True
-    assert features.web.managed_by_nous is False
+    assert features.web.managed_by_thorhub is False
     assert features.web.direct_override is True
     assert features.web.current_provider == "exa"
 
 
-def test_get_nous_subscription_features_recognizes_keyless_tavily_backend(monkeypatch):
+def test_get_thorhub_subscription_features_recognizes_keyless_tavily_backend(monkeypatch):
     """Selecting Tavily in setup/tools counts as available with no API key.
 
     Mirrors tools.web_tools._is_backend_available('tavily'): keyless is
@@ -69,18 +74,18 @@ def test_get_nous_subscription_features_recognizes_keyless_tavily_backend(monkey
     """
     monkeypatch.setattr(ns, "get_env_value", lambda name: "")
     monkeypatch.setattr(
-        ns, "get_nous_portal_account_info", lambda: _account(logged_in=False)
+        ns, "get_thorhub_account_info", lambda: _account(logged_in=False)
     )
     monkeypatch.setattr(ns, "_toolset_enabled", lambda config, key: key == "web")
     monkeypatch.setattr(ns, "_has_browser_harness", lambda: False)
     monkeypatch.setattr(ns, "resolve_openai_audio_api_key", lambda: "")
     monkeypatch.setattr(ns, "has_direct_modal_credentials", lambda: False)
 
-    features = ns.get_nous_subscription_features({"web": {"backend": "tavily"}})
+    features = ns.get_thorhub_subscription_features({"web": {"backend": "tavily"}})
 
     assert features.web.available is True
     assert features.web.active is True
-    assert features.web.managed_by_nous is False
+    assert features.web.managed_by_thorhub is False
     assert features.web.direct_override is True
     assert features.web.current_provider == "tavily"
     assert features.web.explicit_configured is True
@@ -89,14 +94,14 @@ def test_get_nous_subscription_features_recognizes_keyless_tavily_backend(monkey
 def test_keyless_tavily_search_backend_without_shared_backend(monkeypatch):
     monkeypatch.setattr(ns, "get_env_value", lambda name: "")
     monkeypatch.setattr(
-        ns, "get_nous_portal_account_info", lambda: _account(logged_in=False)
+        ns, "get_thorhub_account_info", lambda: _account(logged_in=False)
     )
     monkeypatch.setattr(ns, "_toolset_enabled", lambda config, key: key == "web")
     monkeypatch.setattr(ns, "_has_browser_harness", lambda: False)
     monkeypatch.setattr(ns, "resolve_openai_audio_api_key", lambda: "")
     monkeypatch.setattr(ns, "has_direct_modal_credentials", lambda: False)
 
-    features = ns.get_nous_subscription_features(
+    features = ns.get_thorhub_subscription_features(
         {"web": {"search_backend": "tavily"}}
     )
 
@@ -108,14 +113,14 @@ def test_keyless_tavily_search_backend_without_shared_backend(monkeypatch):
 def test_unconfigured_web_without_keys_is_unavailable(monkeypatch):
     monkeypatch.setattr(ns, "get_env_value", lambda name: "")
     monkeypatch.setattr(
-        ns, "get_nous_portal_account_info", lambda: _account(logged_in=False)
+        ns, "get_thorhub_account_info", lambda: _account(logged_in=False)
     )
     monkeypatch.setattr(ns, "_toolset_enabled", lambda config, key: key == "web")
     monkeypatch.setattr(ns, "_has_browser_harness", lambda: False)
     monkeypatch.setattr(ns, "resolve_openai_audio_api_key", lambda: "")
     monkeypatch.setattr(ns, "has_direct_modal_credentials", lambda: False)
 
-    features = ns.get_nous_subscription_features({})
+    features = ns.get_thorhub_subscription_features({})
 
     assert features.web.available is False
     assert features.web.active is False
@@ -126,7 +131,7 @@ def _stub_browser_probes(monkeypatch, *, harness, chromium):
     module attributes is enough)."""
     monkeypatch.setattr(ns, "get_env_value", lambda name: "")
     monkeypatch.setattr(
-        ns, "get_nous_portal_account_info", lambda: _account(logged_in=False)
+        ns, "get_thorhub_account_info", lambda: _account(logged_in=False)
     )
     monkeypatch.setattr(ns, "_toolset_enabled", lambda config, key: key == "browser")
     monkeypatch.setattr("tools.browser_use_cli._find_cli", lambda: ["harness"] if harness else None)
@@ -147,13 +152,13 @@ def test_local_browser_unavailable_without_chromium(monkeypatch):
     """
     _stub_browser_probes(monkeypatch, harness=True, chromium=False)
 
-    features = ns.get_nous_subscription_features(
+    features = ns.get_thorhub_subscription_features(
         {"browser": {"cloud_provider": "local"}}
     )
 
     assert features.browser.available is False
     assert features.browser.active is False
-    assert features.browser.managed_by_nous is False
+    assert features.browser.managed_by_thorhub is False
     assert features.browser.current_provider == "Local browser"
 
 
@@ -165,7 +170,7 @@ def test_local_browser_unavailable_without_chromium(monkeypatch):
 def test_local_browser_availability_follows_engine_and_chromium(monkeypatch, harness, chromium, engine, available):
     _stub_browser_probes(monkeypatch, harness=harness, chromium=chromium)
 
-    features = ns.get_nous_subscription_features(
+    features = ns.get_thorhub_subscription_features(
         {"browser": {"cloud_provider": "local", "engine": engine}}
     )
 
@@ -197,14 +202,14 @@ def test_logged_in_entitled_account_yields_a_state_for_every_feature(monkeypatch
     those with no config selection field (modal). Regression: the managed-availability
     table indexed the selection map by every feature key and raised KeyError('modal'),
     crashing `thor status`, `thor tools`, and the dashboard toolsets API."""
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _pool_account())
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _pool_account())
     monkeypatch.setattr(ns, "is_managed_tool_gateway_ready", lambda gateway: True)
     monkeypatch.setattr(ns, "get_env_value", lambda name: "")
     monkeypatch.setattr(ns, "_has_browser_harness", lambda: False)
     monkeypatch.setattr(ns, "resolve_openai_audio_api_key", lambda: "")
     monkeypatch.setattr(ns, "has_direct_modal_credentials", lambda: False)
 
-    result = ns.get_nous_subscription_features({"model": {"provider": "nous"}})
+    result = ns.get_thorhub_subscription_features({"model": {"provider": "nous"}})
 
     assert set(result.features) == set(ns._FEATURES)
     assert result.modal.available is True  # entitled + gateway ready → managed modal is offered
@@ -215,7 +220,7 @@ def test_logged_in_entitled_account_yields_a_state_for_every_feature(monkeypatch
     [
         ({"provider": "nous", "model": "krea-2-medium"}, "Krea"),
         ({"model": FAL_DEFAULT_MODEL}, "FAL"),
-        ({"provider": "nous", "model": "openai/gpt-image-2"}, "Nous Portal"),
+        ({"provider": "nous", "model": "openai/gpt-image-2"}, "ThorHub"),
         ({"model": "openai/gpt-image-2"}, "FAL"),
         ({"use_gateway": True, "model": "openai/gpt-image-2"}, "FAL"),  # managed-model routing ignores legacy use_gateway
         ({"provider": "openai", "model": "gpt-image-2"}, None),
@@ -223,14 +228,14 @@ def test_logged_in_entitled_account_yields_a_state_for_every_feature(monkeypatch
 )
 def test_managed_image_partner_follows_the_stored_model(image_cfg, partner):
     """The partner is the gateway the runtime dispatcher routes to (tools.image_generation_managed.
-    managed_route): the stored model decides under the managed pick, Portal ids only with an
+    managed_route): the stored model decides under the managed pick, ThorHub ids only with an
     explicit ``nous``; a direct vendor owns its model id."""
     assert ns.managed_image_partner({"image_gen": image_cfg}) == partner
 
 
-def test_prompt_enable_tool_gateway_pool_offers_covered_tools_only(monkeypatch):
-    """Pool user's checklist lists web/image/tts/browser and never video."""
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _pool_account())
+def test_prompt_enable_tool_gateway_pool_offers_nothing_on_thorhub(monkeypatch):
+    """ThorHub has no tool gateway: no checklist is ever offered, even to a pool account."""
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _pool_account())
     monkeypatch.setattr(
         ns,
         "_get_gateway_direct_credentials",
@@ -238,77 +243,50 @@ def test_prompt_enable_tool_gateway_pool_offers_covered_tools_only(monkeypatch):
     )
     captured = _capture_checklist(monkeypatch, selected_idx=[])
 
-    config = {"model": {"provider": "nous"}}
-    ns.prompt_enable_tool_gateway(config)
-
-    blob = " ".join(captured["items"]).lower()
-    assert "web search & extract" in blob  # web offered
-    assert "video" not in blob  # video NOT offered to a pool user
+    config = {"model": {"provider": "thor"}}
+    assert ns.prompt_enable_tool_gateway(config) == set()
+    assert captured == {}, "the checklist must never be shown"
 
 
-def test_get_gateway_eligible_tools_treats_explicit_backend_as_configured(monkeypatch):
-    """A keyless local backend (e.g. searxng) has no credentials to detect,
-    but an explicit non-nous selection must still keep it out of
-    'unconfigured' — regression for #92647, where it was pre-checked and a
-    single Enter during `thor model` overwrote it to `web.backend: nous`.
-    """
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _account(logged_in=True, paid=True))
+def test_get_gateway_eligible_tools_is_always_empty_on_thorhub(monkeypatch):
+    """ThorHub has no tool gateway: no tool is ever eligible, even with an explicit backend."""
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=True))
     monkeypatch.setattr(
         ns,
         "_get_gateway_direct_credentials",
         lambda: {"web": False, "image_gen": False, "video_gen": False, "tts": False, "browser": False},
     )
 
-    config = {"model": {"provider": "nous"}, "web": {"backend": "searxng"}}
-    unconfigured, has_direct, explicit_configured, already_managed = ns.get_gateway_eligible_tools(config)
-
-    assert "web" not in unconfigured
-    assert "web" not in has_direct
-    assert "web" in explicit_configured
-    assert "web" not in already_managed
+    config = {"model": {"provider": "thor"}, "web": {"backend": "searxng"}}
+    assert ns.get_gateway_eligible_tools(config) == ([], [], [], [])
 
 
-def test_get_gateway_eligible_tools_treats_browser_use_selection_as_explicit(monkeypatch):
-    """An explicit BYOK `browser.cloud_provider: browser-use` selection must
-    land in explicit_configured, not unconfigured/has_direct — the same
-    protection as searxng above. This is distinct from the gateway's own
-    managed selection, which is always stored as `cloud_provider: nous`
-    (see apply_gateway_defaults); "browser-use" only appears here when the
-    user picked it directly, so it must never be treated as up for grabs.
-    """
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _account(logged_in=True, paid=True))
+def test_get_gateway_eligible_tools_is_empty_for_a_browser_use_selection(monkeypatch):
+    """An explicit BYOK browser selection is not gateway-eligible either: there is no gateway."""
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=True))
     monkeypatch.setattr(
         ns,
         "_get_gateway_direct_credentials",
         lambda: {"web": False, "image_gen": False, "video_gen": False, "tts": False, "browser": True},
     )
 
-    config = {"model": {"provider": "nous"}, "browser": {"cloud_provider": "browser-use"}}
-    unconfigured, has_direct, explicit_configured, already_managed = ns.get_gateway_eligible_tools(config)
-
-    assert "browser" not in unconfigured
-    assert "browser" not in has_direct
-    assert "browser" in explicit_configured
-    assert "browser" not in already_managed
-
-
+    config = {"model": {"provider": "thor"}, "browser": {"cloud_provider": "browser-use"}}
+    assert ns.get_gateway_eligible_tools(config) == ([], [], [], [])
 
 
 def test_prompt_enable_tool_gateway_not_entitled_does_not_crash(monkeypatch):
     """The unconditional call site in model_setup_flows (no try/except) must
     not raise when a Nous account is logged in but not entitled to the Tool
     Gateway (i.e. an ordinary non-paid, non-pool account)."""
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _account(logged_in=True, paid=False))
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=False))
 
     config = {"model": {"provider": "nous"}}
     assert ns.prompt_enable_tool_gateway(config) == set()
 
 
-def test_prompt_enable_tool_gateway_never_offers_explicit_backend(monkeypatch):
-    """The checklist itself must not list (let alone pre-check) a tool with
-    an explicit non-nous selection, so it can never be silently overwritten
-    by an accidental Enter."""
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _account(logged_in=True, paid=True))
+def test_prompt_enable_tool_gateway_never_prompts_on_thorhub(monkeypatch):
+    """The checklist must never be shown, so an explicit backend can never be overwritten."""
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=True))
     monkeypatch.setattr(
         ns,
         "_get_gateway_direct_credentials",
@@ -316,12 +294,10 @@ def test_prompt_enable_tool_gateway_never_offers_explicit_backend(monkeypatch):
     )
     captured = _capture_checklist(monkeypatch, selected_idx=[])
 
-    config = {"model": {"provider": "nous"}, "web": {"backend": "searxng"}}
-    ns.prompt_enable_tool_gateway(config)
-
-    blob = " ".join(captured["items"]).lower()
-    assert "firecrawl" not in blob  # web (searxng-configured) NOT offered
-    assert "image" in blob  # other unconfigured tools still offered
+    config = {"model": {"provider": "thor"}, "web": {"backend": "searxng"}}
+    assert ns.prompt_enable_tool_gateway(config) == set()
+    assert captured == {}
+    assert config["web"] == {"backend": "searxng"}
 
 
 def test_gateway_direct_credentials_honor_env_configured_local_backends(monkeypatch):
@@ -343,129 +319,89 @@ def test_gateway_direct_credentials_honor_env_configured_local_backends(monkeypa
     assert direct["image_gen"] is False
 
 
-def test_prompt_enable_tool_gateway_persists_decline(monkeypatch):
-    """Submitting the checklist with a tool left unchecked records it in
-    tool_gateway_declined_tools and never pre-checks it again (#92647:
-    acceptance was sticky, refusal was not)."""
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _account(logged_in=True, paid=True))
+def test_prompt_enable_tool_gateway_leaves_declines_alone_on_thorhub(monkeypatch):
+    """With no offer, a recorded decline list is never rewritten."""
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=True))
     monkeypatch.setattr(
         ns,
         "_get_gateway_direct_credentials",
-        lambda: {"web": False, "image_gen": False, "video_gen": False, "tts": False, "stt": False, "browser": False},
+        lambda: {"web": False, "image_gen": False, "video_gen": False, "tts": False, "browser": False},
     )
-    saved = []
     captured = _capture_checklist(monkeypatch, selected_idx=[])
-    monkeypatch.setattr(
-        "thor_cli.config.save_config", lambda cfg: saved.append(dict(cfg)), raising=False
-    )
 
-    config = {"model": {"provider": "nous"}}
+    config = {"model": {"provider": "thor"}, "tool_gateway_declined_tools": ["browser", "web"]}
     assert ns.prompt_enable_tool_gateway(config) == set()
-
-    # First offer: everything pre-checked, decline recorded and saved.
-    assert captured["pre_selected"] == list(range(len(captured["items"])))
-    declined = config.get("tool_gateway_declined_tools")
-    assert isinstance(declined, list) and "web" in declined and "browser" in declined
-    assert saved, "decline must be persisted via save_config"
-
-    # Second offer with the recorded declines: nothing is pre-checked.
-    captured2 = _capture_checklist(monkeypatch, selected_idx=[])
-    monkeypatch.setattr(
-        "thor_cli.config.save_config", lambda cfg: saved.append(dict(cfg)), raising=False
-    )
-    ns.prompt_enable_tool_gateway(config)
-    assert captured2["pre_selected"] == []
+    assert captured == {}
+    assert config["tool_gateway_declined_tools"] == ["browser", "web"]
 
 
-def test_prompt_enable_tool_gateway_choosing_declined_tool_clears_decline(monkeypatch):
-    """Opting in to a previously-declined tool removes it from the decline
-    list, so state tracks the user's latest explicit choice."""
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: _account(logged_in=True, paid=True))
+def test_prompt_enable_tool_gateway_does_not_clear_declines_on_thorhub(monkeypatch):
+    """With no offer, a previously-declined tool stays declined."""
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=True))
     monkeypatch.setattr(
         ns,
         "_get_gateway_direct_credentials",
-        lambda: {"web": False, "image_gen": False, "video_gen": False, "tts": False, "stt": False, "browser": False},
+        lambda: {"web": False, "image_gen": False, "video_gen": False, "tts": False, "browser": False},
     )
-    captured = _capture_checklist(monkeypatch, selected_idx=[0])
+    captured = _capture_checklist(monkeypatch, selected_idx=[])
 
-    config = {
-        "model": {"provider": "nous"},
-        "tool_gateway_declined_tools": ["browser", "web"],
-    }
-    ns.prompt_enable_tool_gateway(config)
-
-    # The first offered key was chosen; it must leave the decline list.
-    chosen_key = None
-    for key, label in ns._GATEWAY_TOOL_LABELS.items():
-        if captured["items"][0].startswith(label):
-            chosen_key = key
-            break
-    assert chosen_key is not None
-    assert chosen_key not in config["tool_gateway_declined_tools"]
+    config = {"model": {"provider": "thor"}, "tool_gateway_declined_tools": ["browser", "web"]}
+    assert ns.prompt_enable_tool_gateway(config) == set()
+    assert captured == {}
+    assert config["tool_gateway_declined_tools"] == ["browser", "web"]
 
 
-def test_apply_nous_managed_defaults_writes_video_gen_config(monkeypatch):
-    """apply_nous_managed_defaults must store the managed 'nous' selection
-    when a Nous subscriber selects video_gen without a direct FAL_KEY."""
+def test_apply_thorhub_managed_defaults_writes_nothing(monkeypatch):
+    """ThorHub has no managed tool gateway: the defaults pass writes nothing."""
     monkeypatch.setattr(tool_backend_helpers, "managed_thorhub_tools_enabled", lambda **kw: True)
     monkeypatch.delenv("FAL_KEY", raising=False)
     monkeypatch.setattr(ns, "fal_key_is_configured", lambda: False)
-    monkeypatch.setattr(
-        ns, "get_nous_portal_account_info",
-        lambda **kw: _account(logged_in=True, paid=True),
-    )
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: _account(logged_in=True, paid=True))
 
-    config = {"model": {"provider": "nous"}}
-    changed = ns.apply_nous_managed_defaults(
-        config, enabled_toolsets=["video_gen"],
-    )
+    config = {"model": {"provider": "thor"}}
+    changed = ns.apply_thorhub_managed_defaults(config, enabled_toolsets=["video_gen"])
 
-    assert "video_gen" in changed
-    assert config["video_gen"]["provider"] == "nous"
-    assert "use_gateway" not in config["video_gen"]
+    assert changed == set()
+    assert "video_gen" not in config
 
 
 def _defaults_for(monkeypatch, account, config):
     monkeypatch.setattr(tool_backend_helpers, "managed_thorhub_tools_enabled", lambda **kw: True)
     monkeypatch.delenv("FAL_KEY", raising=False)
     monkeypatch.setattr(ns, "fal_key_is_configured", lambda: False)
-    monkeypatch.setattr(ns, "get_nous_portal_account_info", lambda **kw: account)
-    ns.apply_nous_managed_defaults(config, enabled_toolsets=["image_gen"])
-    return config["image_gen"]
+    monkeypatch.setattr(ns, "get_thorhub_account_info", lambda **kw: account)
+    ns.apply_thorhub_managed_defaults(config, enabled_toolsets=["image_gen"])
+    return config.get("image_gen", {})
 
 
-def test_paid_account_defaults_to_the_krea_image_model(monkeypatch):
-    section = _defaults_for(monkeypatch, _account(logged_in=True, paid=True), {"model": {"provider": "nous"}})
-    assert section == {"provider": "nous", "model": ns.MANAGED_IMAGE_DEFAULT_KREA_MODEL}
+def test_paid_account_gets_no_managed_image_default(monkeypatch):
+    """A paid ThorHub account gets no Krea default: image gen is a vendor key, not a gateway."""
+    section = _defaults_for(monkeypatch, _account(logged_in=True, paid=True), {"model": {"provider": "thor"}})
+    assert section == {}
 
 
-def test_pool_account_keeps_the_fal_image_default(monkeypatch):
-    section = _defaults_for(monkeypatch, _pool_account(), {"model": {"provider": "nous"}})
-    assert section["provider"] == "nous"
-    assert "model" not in section
+def test_pool_account_gets_no_managed_image_default(monkeypatch):
+    """A pool account gets no managed image default either (no gateway on ThorHub)."""
+    section = _defaults_for(monkeypatch, _pool_account(), {"model": {"provider": "thor"}})
+    assert section == {}
 
 
-def test_first_run_gateway_acceptance_writes_the_krea_image_model():
-    """`thor setup --portal` stores selections through apply_gateway_defaults, not the managed-defaults
-    pass, so the Krea default must apply there too; an existing model and the free pool are left on FAL."""
+def test_first_run_gateway_acceptance_writes_the_managed_selection_without_a_model():
+    """`apply_gateway_defaults` still stores the managed selection for a chosen tool, but no
+    Krea model: ThorHub entitles no image model (there is no gateway)."""
     paid, pool = _account(logged_in=True, paid=True), _pool_account()
     fresh = {}
     ns.apply_gateway_defaults(fresh, ["image_gen"], paid)
-    assert fresh["image_gen"] == {"provider": "nous", "model": ns.MANAGED_IMAGE_DEFAULT_KREA_MODEL}
+    assert fresh["image_gen"] == {"provider": "nous"}
     pooled = {}
     ns.apply_gateway_defaults(pooled, ["image_gen"], pool)
-    assert "model" not in pooled["image_gen"]
+    assert pooled["image_gen"] == {"provider": "nous"}
     kept = {"image_gen": {"model": FAL_DEFAULT_MODEL}}
     ns.apply_gateway_defaults(kept, ["image_gen"], paid)
     assert kept["image_gen"]["model"] == FAL_DEFAULT_MODEL
 
 
 def test_configured_image_section_is_left_alone(monkeypatch):
-    config = {"model": {"provider": "nous"}, "image_gen": {"provider": "nous", "model": FAL_DEFAULT_MODEL}}
+    config = {"model": {"provider": "thor"}, "image_gen": {"provider": "nous", "model": FAL_DEFAULT_MODEL}}
     section = _defaults_for(monkeypatch, _account(logged_in=True, paid=True), config)
     assert section["model"] == FAL_DEFAULT_MODEL
-
-
-# ---------------------------------------------------------------------------
-# ensure_nous_portal_access — inline login gate for `thor tools`
-# ---------------------------------------------------------------------------

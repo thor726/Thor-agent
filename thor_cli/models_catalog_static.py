@@ -640,6 +640,9 @@ _PROVIDER_ALIASES = _CatalogAliases((
     ("lm_studio", "lmstudio"), ("chatgpt", "openai-codex"), ("chatgpt-codex", "openai-codex"),
     ("ollama", "custom"),  # bare "ollama" = local; use "ollama-cloud" for cloud
     ("ollama_cloud", "ollama-cloud"),
+    # Legacy Nous Portal id: the ThorHub provider id is "thor" (Fase 4 debrand); old configs
+    # and stored provider strings still resolve to ThorHub through these aliases.
+    ("nous", "thor"), ("nous-portal", "thor"), ("nousresearch", "thor"),
     # Local OpenAI-compatible servers route through the generic "custom" provider
     # (parity with thor_cli.auth and thor_cli.providers). Issue #62213. The llamacpp
     # aliases stay unmapped: they are the managed local runtime's picker id, and the model

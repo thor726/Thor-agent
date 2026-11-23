@@ -206,15 +206,13 @@ FREE_PICK = "upstage/solar-pro4:free"
 
 @pytest.fixture
 def free_account(monkeypatch):
-    """The signed-in account is a $0 (free-plan) account: the Portal's tier read and its recommended
-    free list are the only network egress the default pick has, stubbed at their seams."""
+    """The signed-in account is a $0 (free-plan) account: the tier read is the only network
+    egress the default pick has, stubbed at its seam. (ThorHub has no recommended-models feed.)"""
     from thor_cli import models as m
     from thor_cli import models_pricing as mp
-    monkeypatch.setattr(m, "check_nous_free_tier", lambda **kw: True)
-    monkeypatch.setattr(m, "fetch_nous_recommended_models", lambda *a, **kw: {
-        "freeRecommendedModels": [{"modelName": FREE_PICK}]})
+    monkeypatch.setattr(m, "check_thorhub_free_tier", lambda **kw: True)
     monkeypatch.setattr(mp, "get_pricing_for_provider", lambda *a, **kw: {})
-    monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: None)
+    monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: None)
 
 
 def _write_model_config(model_cfg: dict) -> None:
@@ -230,6 +228,8 @@ def _model_config() -> dict:
 
 
 class TestSignInCompletionSettlesTheModel:
+    @pytest.mark.skip(reason="Guest upgrade picked the Portal-recommended free model; "
+        "ThorHub has no recommendations feed, so there is no free pick to assert (Commit D removes the guest upgrade flow).")
     def test_config_on_the_free_tier_route_moves_to_the_account_host_and_the_recommended_free_model(
             self, portal, free_account, capsys):
         anon_auth.ensure_portal_identity(explicit=True)
@@ -257,7 +257,7 @@ class TestSignInCompletionSettlesTheModel:
         _write_model_config({"provider": "nous", "default": anon_auth.GUEST_MODEL, "base_url": WELCOME})
         def _portal_down():
             raise RuntimeError("recommended models unavailable")
-        monkeypatch.setattr(m, "recommended_nous_default_model", _portal_down)
+        monkeypatch.setattr(m, "recommended_thorhub_default_model", _portal_down)
         assert anon_auth.upgrade_guest(_args()) == 0
         model_cfg = _model_config()
         assert "default" not in model_cfg

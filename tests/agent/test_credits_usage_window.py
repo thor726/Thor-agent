@@ -453,7 +453,7 @@ class TestHardStops:
 
     def test_a_pause_for_another_reason_never_claims_a_payment_failed(self):
         """The server may send any reason (\"unknown\" for a malformed one): still a pause, neutral copy."""
-        from thor_cli import nous_account
+        from thor_cli import thorhub_account
         show, _ = _run(_state(paid_access=False, paused_reason="unknown", spend_source=None), new_credits_latch())
         assert [k for k, _l, _t in show] == [CREDITS_DEPLETED_KEY]
         assert "payment" not in show[0][2] and "top up ThorHub" in show[0][2]
@@ -461,7 +461,7 @@ class TestHardStops:
                                  paused_reason="unknown", keep_going_on_credits=None)
         info = SimpleNamespace(logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
                                paid_service_access_info=SimpleNamespace(purchased_credits_remaining=0.0), subscription=None)
-        assert nous_account.format_usage_window_block_guidance(info).startswith("Included usage is paused, or add credits")
+        assert thorhub_account.format_usage_window_block_guidance(info).startswith("Included usage is paused, or add credits")
 
     def test_payment_paused_wins_over_exhausted_and_survives_a_free_model(self):
         s = _state(paid_access=False, paused_reason="payment_past_due", window_day_used_bp=10_000, spend_source=None)
@@ -960,22 +960,19 @@ class TestPicker:
         picker._prompt_model_selection(["a/m1", "b/m2"])
         assert picker._CUSTOM_LABEL in captured["choices"]
 
-    def test_account_payload_usage_window_is_parsed(self):
-        from thor_cli import nous_account as na
-        payload = {
-            "user": {"email": "x@y.z"}, "organisation": {"id": "o1"},
-            "paid_service_access": {"allowed": True},
-            "usage_window": {"gauges": _gauges(1200, 900), "auto_top_up_enabled": False,
-                             "paused_reason": "payment_past_due",
-                             # The fixed per-window fields older clients read: Thor ignores them.
-                             "day_used_bp": 9999, "week_used_bp": 9999},
-        }
-        info = na._info_from_account_payload(payload, state={}, portal_base_url=None)
-        assert info.usage_window is not None and info.usage_window.paused_reason == "payment_past_due"
-        assert [(g.id, g.used_bp) for g in info.usage_window.gauges] == [("day", 1200), ("week", 900), ("top_tier", 0)]
-        assert info.usage_window.gauges[1].resets_at_ms == WEEK_RESET
-        legacy = na._info_from_account_payload({"user": {}, "paid_service_access": {"allowed": True}}, state={}, portal_base_url=None)
-        assert legacy.usage_window is None
+    def test_thorhub_balance_account_has_no_usage_window(self, monkeypatch):
+        """ThorHub account info is balance-based: there is no Portal payload and no
+        usage window to parse — the balance is the only signal."""
+        from thor_cli import thorhub_account as na
+
+        monkeypatch.setattr(na, "thorhub_api_key", lambda: "sk-thor-test")
+        monkeypatch.setattr(na, "fetch_thorhub_balance",
+                            lambda key=None, base_url=None: {"ok": True, "tokens_remaining": 5000})
+        info = na.get_thorhub_account_info(force_fresh=True)
+        assert info.logged_in is True
+        assert info.paid_service_access is True
+        assert info.paid_service_access_info is not None and info.paid_service_access_info.allowed is True
+        assert info.usage_window is None
 
 
 class TestRefusalReadsAsTheStopLine:
@@ -986,7 +983,7 @@ class TestRefusalReadsAsTheStopLine:
     def _no_plan_caches(self, monkeypatch):
         from agent import plan_limits as pl
         monkeypatch.setattr(pl, "_plan_usage", lambda: None)
-        monkeypatch.setattr(pl, "_portal_free_models", list)
+        monkeypatch.setattr(pl, "_thorhub_free_models", list)
         monkeypatch.setattr(pl, "cached_pricing", lambda base_url: {})
 
     def _agent(self, **state_kw):
@@ -1054,7 +1051,7 @@ class TestRefusalReadsAsTheStopLine:
         """A new subscriber's first limit (setting off by default, no top-up): the stop line names the
         ThorHub top-up step, and the 402 guidance names both steps, since either one alone is still refused."""
         from agent.conversation_loop import _usage_window_refusal
-        from thor_cli import nous_account
+        from thor_cli import thorhub_account
         agent = self._agent(purchased_micros=0, keep_going_on_credits=False)
         text, _resets_at, limit = _usage_window_refusal(agent, SimpleNamespace(error_context={"usage_window": True}))
         # Debrand Fase 2: the refusal's action suffix is the ThorHub top-up, not "add credits and turn on Keep going".
@@ -1065,7 +1062,7 @@ class TestRefusalReadsAsTheStopLine:
         for purchased in (0.0, None):
             info = SimpleNamespace(logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
                                    paid_service_access_info=SimpleNamespace(purchased_credits_remaining=purchased))
-            guidance = nous_account.format_usage_window_block_guidance(info)
+            guidance = thorhub_account.format_usage_window_block_guidance(info)
             assert guidance.startswith("Add credits and turn on Keep going in /topup")
         # Any other billing failure keeps its own copy and carries no limit.
         assert _usage_window_refusal(agent, SimpleNamespace(error_context={})) == ("", None, None)

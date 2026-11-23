@@ -209,7 +209,7 @@ def _active_pet():
 
 def _billing_call(rid, fn, extra: dict | None = None) -> dict:
     """Portal call → ok; BillingError → serialized envelope, else generic; ``extra`` rides both ERROR envelopes."""
-    from thor_cli.nous_billing import BillingError
+    from thor_cli.thorhub_billing import BillingError
     try:
         return _ok(rid, fn())
     except BillingError as exc:
@@ -1848,7 +1848,7 @@ _billing_view("subscription.state", "agent.subscription_view", "build_subscripti
 def _(rid, params: dict) -> dict:
     """POST /api/billing/subscription/preview → chargeless effect quote. billing:manage."""
     from agent.subscription_view import subscription_change_preview_from_payload
-    from thor_cli.nous_billing import post_subscription_preview
+    from thor_cli.thorhub_billing import post_subscription_preview
     if not (tier_id := params.get("subscription_type_id")):
         return _billing_invalid(rid, "subscription_type_id is required")
     return _billing_call(rid, lambda: _serialize_subscription_preview(
@@ -1857,13 +1857,13 @@ def _(rid, params: dict) -> dict:
 
 def _billing_route(name: str, call, *, invalid=None, message: str = "", error: str = "invalid_request",
                    idempotent: bool = False):
-    """Portal write route on ``thor_cli.nous_billing`` (lazy; tests patch its functions): ``invalid(params)``
+    """Portal write route on ``thor_cli.thorhub_billing`` (lazy; tests patch its functions): ``invalid(params)``
     → ``_billing_invalid(message, error)``; ``call(nb, params, key)`` performs the request. ``idempotent``
     mints ``idempotency_key`` if absent and echoes it (also on error) so the TUI retries the SAME operation."""
     @method(name)
     @_profile_scoped
     def _(rid, params: dict) -> dict:
-        import thor_cli.nous_billing as nb
+        import thor_cli.thorhub_billing as nb
         if invalid is not None and invalid(params):
             return _billing_invalid(rid, message, error=error)
         key = extra = None

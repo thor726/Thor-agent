@@ -97,7 +97,7 @@ def _vision_row(config, feats):
 
 def _managed_or_provider_row(feature, name: str, managed_label: str, missing_hint: str):
     """Row for a Thor-manageable feature: managed > available (with provider) > missing hint."""
-    if feature.managed_by_nous:
+    if feature.managed_by_thorhub:
         return (f"{name} ({managed_label})", True, None)
     if feature.available:
         return (f"{name} ({feature.current_provider})" if feature.current_provider else name, True, None)
@@ -117,7 +117,7 @@ def _browser_row(config, feats):
 
 def _image_gen_row(config, feats):
     # FAL (direct or via Nous), or any plugin-registered provider (OpenAI, etc.)
-    if feats.image_gen.managed_by_nous:
+    if feats.image_gen.managed_by_thorhub:
         return ("Image Generation (Thor subscription)", True, None)
     if feats.image_gen.available:
         return ("Image Generation", True, None)
@@ -131,7 +131,7 @@ def _image_gen_row(config, feats):
 def _video_gen_row(config, feats):
     # Opt-in via `thor tools` → Video Generation. Only show the row when a plugin reports
     # available so we don't badger users who don't care about video gen with a "missing" line.
-    if feats.video_gen.managed_by_nous:
+    if feats.video_gen.managed_by_thorhub:
         return ("Video Generation (FAL via Thor subscription)", True, None)
     backend = _first_available_plugin_provider("video_gen_registry")
     return (f"Video Generation ({backend})", True, None) if backend else None
@@ -139,7 +139,7 @@ def _video_gen_row(config, feats):
 
 def _tts_row(config, feats):
     # Configured provider, gated on its key (or local install)
-    if feats.tts.managed_by_nous:
+    if feats.tts.managed_by_thorhub:
         return ("Text-to-Speech (OpenAI via Thor subscription)", True, None)
     provider = _setup.cfg_get(config, "tts", "provider", default="edge")
     return _voice_provider_status("Text-to-Speech", provider, _TTS_SUMMARY_ROWS, _TTS_SUMMARY_DEFAULT)
@@ -147,20 +147,20 @@ def _tts_row(config, feats):
 
 def _stt_row(config, feats):
     stt_feature = feats.features.get("stt")
-    if stt_feature is not None and stt_feature.managed_by_nous:
+    if stt_feature is not None and stt_feature.managed_by_thorhub:
         return ("Speech-to-Text (OpenAI via Thor subscription)", True, None)
     provider = _setup.cfg_get(config, "stt", "provider", default="local") or "local"
     return _voice_provider_status("Speech-to-Text", provider, _STT_SUMMARY_ROWS, _STT_SUMMARY_DEFAULT)
 
 
 def _modal_row(config, feats):
-    if feats.modal.managed_by_nous:
+    if feats.modal.managed_by_thorhub:
         return ("Modal Execution (Thor subscription)", True, None)
     if _setup.cfg_get(config, "terminal", "backend") == "modal":
         if feats.modal.direct_override:
             return ("Modal Execution (direct Modal)", True, None)
         return ("Modal Execution", False, "run 'thor setup terminal'")
-    if tool_backend_helpers.managed_thorhub_tools_enabled() and feats.nous_auth_present:
+    if tool_backend_helpers.managed_thorhub_tools_enabled() and feats.thor_auth_present:
         return ("Modal Execution (optional via Thor subscription)", True, None)
     return None
 
@@ -195,7 +195,7 @@ def _print_section_header(title):
 def _print_setup_summary(config: dict, thor_home):
     """Print the setup completion summary."""
     from thor_constants import display_thor_home as _dhh
-    from thor_cli import nous_subscription
+    from thor_cli import thorhub_subscription
     # Provider readiness — the one thing setup must produce. A user who cancelled the API-key
     # prompt mid-wizard used to exit "successfully" with NO working model; say so loudly.
     try:
@@ -212,7 +212,7 @@ def _print_setup_summary(config: dict, thor_home):
     _setup.print_header("Tool Availability Summary")
 
     tool_status = []
-    subscription_features = nous_subscription.get_nous_subscription_features(config)
+    subscription_features = thorhub_subscription.get_thorhub_subscription_features(config)
     for build in _TOOL_ROW_BUILDERS:
         row = build(config, subscription_features)
         tool_status.extend(row if isinstance(row, list) else [] if row is None else [row])

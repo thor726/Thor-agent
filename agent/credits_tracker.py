@@ -695,7 +695,7 @@ def dev_fixture_credits_state() -> Optional[CreditsState]:
 
 
 def _credits_state_from_account(info) -> Optional[CreditsState]:
-    """Map a NousPortalAccountInfo into a header-shaped CreditsState for the seed. Float account dollars →
+    """Map a ThorHubAccountInfo into a header-shaped CreditsState for the seed. Float account dollars →
     micros plus a DISPLAY *_usd (formatting account floats is allowed; parsing a server *_usd is not). Fail-open → None."""
     try:
         acc = getattr(info, "paid_service_access_info", None)
@@ -727,7 +727,7 @@ def _credits_state_from_account(info) -> Optional[CreditsState]:
 
 
 def _window_seed_fields(uw) -> Optional[dict[str, Any]]:
-    """Portal ``usage_window`` (NousUsageWindowInfo or dict) → CreditsState window fields; None unless it
+    """Portal ``usage_window`` (ThorHubUsageWindowInfo or dict) → CreditsState window fields; None unless it
     carries a readable gauge list with an all-scope allowance (same requirement as the header parser)."""
     if uw is None:
         return None
@@ -805,8 +805,8 @@ def apply_keep_going_change(agent, enabled: bool) -> None:
         agent._credits_state = replace(state, keep_going_on_credits=enabled)
         _rerun_notice_policy(agent)
         from agent.memory_provider import spawn_context_thread
-        from thor_cli.nous_account import get_nous_portal_account_info
-        spawn_context_thread(lambda: get_nous_portal_account_info(force_fresh=True), name="keep-going-refresh").start()
+        from thor_cli.thorhub_account import get_thorhub_account_info
+        spawn_context_thread(lambda: get_thorhub_account_info(force_fresh=True), name="keep-going-refresh").start()
     except Exception:
         logger.debug("keep going ▸ local refresh failed", exc_info=True)
 
@@ -855,7 +855,7 @@ def _rerun_notice_policy(agent) -> None:
         emit()
 
 
-def _warm_nous_pricing_cache() -> None:
+def _warm_thorhub_pricing_cache() -> None:
     """Fill the in-process Thor pricing catalog so :func:`is_free_tier_model`'s peek can answer.
     The peek never fetches and nothing else warms it during session start, so a cold process reads
     an EMPTY catalog and a subscription-billed model — which spends no credits — still draws the
@@ -863,7 +863,7 @@ def _warm_nous_pricing_cache() -> None:
     try:
         from thor_cli.models_pricing import get_pricing_for_provider
 
-        get_pricing_for_provider("nous")
+        get_pricing_for_provider("thor")
     except Exception:
         logger.debug("credits ▸ nous pricing warm failed", exc_info=True)
 
@@ -872,13 +872,14 @@ def rewarm_pricing_before_depleted_notice(agent) -> bool:
     """Depleted account, model the peek cannot vouch for, Thor catalog cold: start a background warm
     whose completion re-runs the policy and return True so the caller defers the depleted decision
     to it — the session-start warm is one-shot but the catalog expires after
-    ``_NOUS_CATALOG_TTL_SECONDS``, and a cold peek would bring the banner back for a
+    ``_THORHUB_CATALOG_TTL_SECONDS``, and a cold peek would bring the banner back for a
     subscription-billed model. False = decide now: peek warm, not on Thor, a warm in flight (the
     warm's own re-run included — fail-open, a failed fetch leaves the peek cold and the banner
     shows), or a fetch already failed and the cache is still refusing to dial. May raise; the notice
     path that calls it catches."""
     base_url = getattr(agent, "base_url", "") or ""
-    if getattr(agent, "provider", "") != "nous" or not base_url:
+    # Legacy "nous" provider id still routes to ThorHub (migration bridge).
+    if getattr(agent, "provider", "") not in {"thor", "thorhub", "nous"} or not base_url:
         return False
     from thor_cli.models_pricing import peek_cached_pricing, pricing_fetch_suppressed
 
@@ -889,7 +890,7 @@ def rewarm_pricing_before_depleted_notice(agent) -> bool:
         return False
 
     def _warm_then_rerun() -> None:
-        _warm_nous_pricing_cache()
+        _warm_thorhub_pricing_cache()
         _rerun_notice_policy(agent)
 
     from agent.memory_provider import spawn_context_thread
@@ -904,7 +905,7 @@ def seed_credits_at_session_start(agent) -> bool:
     warnings show at session OPEN (TUI/desktop "ready" and plain-CLI first-turn setup). Idempotent once a seed
     or real header populated _credits_state. Returns True iff it seeded this call. Never raises."""
     try:
-        if getattr(agent, "provider", "") != "nous" or getattr(agent, "_credits_state", None) is not None:
+        if getattr(agent, "provider", "") not in {"thor", "thorhub", "nous"} or getattr(agent, "_credits_state", None) is not None:
             return False
         try:
             fixture = dev_fixture_credits_state()
@@ -916,12 +917,12 @@ def seed_credits_at_session_start(agent) -> bool:
 
         def _bg_seed() -> None:  # FIRE-AND-FORGET: a slow portal must never delay "ready"
             try:
-                from thor_cli.nous_account import get_nous_portal_account_info
+                from thor_cli.thorhub_account import get_thorhub_account_info
                 # BEFORE the policy runs (either branch below): the free-model gate only PEEKS the
                 # pricing cache, and this thread is the first thing a chat session runs that can
                 # afford to fill it.
-                _warm_nous_pricing_cache()
-                info = get_nous_portal_account_info(force_fresh=True)
+                _warm_thorhub_pricing_cache()
+                info = get_thorhub_account_info(force_fresh=True)
                 if getattr(agent, "_credits_state", None) is not None:
                     # A live inference header beat us — don't clobber it, but DO re-run the policy:
                     # it evaluated against the cold cache and may be showing a banner the warm

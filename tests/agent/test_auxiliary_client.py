@@ -1261,7 +1261,7 @@ class TestAuxiliaryPoolAwareness:
         with (
             patch("agent.auxiliary_client.load_pool", return_value=pool),
             patch("agent.auxiliary_client.OpenAI") as mock_openai,
-            patch("thor_cli.models.get_nous_recommended_aux_model", return_value=None),
+            patch("thor_cli.models.get_thorhub_recommended_aux_model", return_value=None),
         ):
             from agent.auxiliary_client import _try_nous
 
@@ -1360,7 +1360,7 @@ class TestRefreshNousRecommendedModel:
         def _boom(**kw):
             raise RuntimeError("portal down")
         monkeypatch.setattr(
-            "thor_cli.models.get_nous_recommended_aux_model", _boom)
+            "thor_cli.models.get_thorhub_recommended_aux_model", _boom)
         out = _refresh_nous_recommended_model(
             vision=False, stale_model="some/dead-model")
         assert out == _NOUS_MODEL
@@ -1369,7 +1369,7 @@ class TestRefreshNousRecommendedModel:
         """When the failed model IS the default and the Portal has nothing
         else, there's no usable alternative."""
         monkeypatch.setattr(
-            "thor_cli.models.get_nous_recommended_aux_model",
+            "thor_cli.models.get_thorhub_recommended_aux_model",
             lambda **kw: _NOUS_MODEL,
         )
         out = _refresh_nous_recommended_model(

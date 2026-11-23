@@ -19,20 +19,20 @@ ALLOWED = {"vendor/allowed"}
 @pytest.fixture
 def policy(monkeypatch):
     """An org whose policy admits only ``vendor/allowed``."""
-    monkeypatch.setattr(models_pricing, "nous_policy_allowed_ids", lambda **_k: ALLOWED)
+    monkeypatch.setattr(models_pricing, "thorhub_policy_allowed_ids", lambda **_k: ALLOWED)
     return ALLOWED
 
 @pytest.fixture
 def no_policy(monkeypatch):
     """An unrestricted org — lists must come through untouched."""
-    monkeypatch.setattr(models_pricing, "nous_policy_allowed_ids", lambda **_k: None)
+    monkeypatch.setattr(models_pricing, "thorhub_policy_allowed_ids", lambda **_k: None)
 
 class TestLoginNous:
 
     def _run(self, monkeypatch, tmp_path):
         import thor_cli.auth as auth_mod
         from thor_cli import auth_nous
-        import thor_cli.nous_subscription as ns
+        import thor_cli.thorhub_subscription as ns
 
         seen: dict = {}
         monkeypatch.setenv("THOR_HOME", str(tmp_path))
@@ -60,9 +60,9 @@ class TestLoginNous:
                 "token_expires_at": 9999999999,
             },
         )
-        monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: list(CURATED))
+        monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda: list(CURATED))
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda **_k: None)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
             models_mod,
             "union_with_portal_paid_recommendations",
@@ -100,18 +100,18 @@ class TestModelSwitchPicker:
         monkeypatch.setattr(
             auth_mod,
             "_load_auth_store",
-            lambda *a, **k: {"providers": {"nous": {"access_token": "tok"}}},
+            lambda *a, **k: {"providers": {"thor": {"api_key": "sk-thor-x"}}},
         )
-        monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: list(CURATED))
+        monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda: list(CURATED))
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda **_k: None)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
             models_mod,
             "union_with_portal_paid_recommendations",
             lambda ids, pricing, _portal: (list(ids), pricing),
         )
         rows = ms.list_authenticated_providers(max_models=10)
-        return next((r for r in rows if r["slug"] == "nous"), None)
+        return next((r for r in rows if r["slug"] == "thor"), None)
 
     def test_hidden_model_is_filtered(self, monkeypatch, policy):
         row = self._rows(monkeypatch)
@@ -145,11 +145,11 @@ class TestRecommendedDefaultEndpoint:
         # Blocked first, so an unfiltered list would make it the silent
         # default — otherwise this passes whether or not the filter runs.
         monkeypatch.setattr(
-            models_mod, "get_curated_nous_model_ids",
+            models_mod, "get_curated_thorhub_model_ids",
             lambda: ["vendor/blocked", "vendor/allowed"],
         )
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda **_k: None)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
             models_mod,
             "union_with_portal_paid_recommendations",
@@ -177,7 +177,7 @@ class TestAuxiliaryFastModel:
             return {mid: {} for mid in catalog}
 
         monkeypatch.setattr(
-            models_pricing, "_resolve_nous_pricing_credentials",
+            models_pricing, "_resolve_thorhub_pricing_credentials",
             lambda: ("sk-nous", "https://inference.example.com"),
         )
         monkeypatch.setattr(models_pricing, "fetch_models_with_pricing", _fake_fetch)
@@ -188,7 +188,7 @@ class TestAuxiliaryFastModel:
         import agent.auxiliary_client as aux
 
         monkeypatch.setattr(
-            models_pricing, "nous_policy_allowed_ids", lambda **_k: {"vendor/allowed"}
+            models_pricing, "thorhub_policy_allowed_ids", lambda **_k: {"vendor/allowed"}
         )
         monkeypatch.setattr(aux, "_FAST_MODEL_FAMILIES", ("vendor/",))
         monkeypatch.setattr(aux, "_FAST_MODEL_EXCLUDE", ())
@@ -204,11 +204,11 @@ class TestNousPrefetch:
 class TestPolicyNoticeIsShown:
 
     def test_login_prints_it(self, monkeypatch, tmp_path, policy, capsys):
-        import thor_cli.nous_account as account_mod
+        import thor_cli.thorhub_account as account_mod
 
-        monkeypatch.setattr(account_mod, "nous_policy_present", lambda: True)
+        monkeypatch.setattr(account_mod, "thorhub_policy_present", lambda: True)
         TestLoginNous()._run(monkeypatch, tmp_path)
-        assert account_mod.nous_policy_notice(removed=True) in capsys.readouterr().out
+        assert account_mod.thorhub_policy_notice(removed=True) in capsys.readouterr().out
 
 class TestAuxFallbackRespectsPolicy:
     """Steps 2-4 of the aux ladder are policy-blind: `resolve_aux_model` queries
@@ -218,9 +218,9 @@ class TestAuxFallbackRespectsPolicy:
         import agent.auxiliary_client as aux
         import providers
 
-        monkeypatch.setattr(models_pricing, "nous_policy_allowed_ids", lambda **_k: allowed)
+        monkeypatch.setattr(models_pricing, "thorhub_policy_allowed_ids", lambda **_k: allowed)
         monkeypatch.setattr(
-            models_pricing, "_resolve_nous_pricing_credentials",
+            models_pricing, "_resolve_thorhub_pricing_credentials",
             lambda: ("sk", "https://inference.example.com"),
         )
         # No fast-family match, so the catalog step yields nothing.

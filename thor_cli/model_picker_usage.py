@@ -369,7 +369,7 @@ def _get(obj: Any, name: str, default: Any = None) -> Any:
 
 
 def picker_usage_from_account(info: Any) -> Optional[PickerUsage]:
-    """``NousPortalAccountInfo`` (or a dict shaped like one) → PickerUsage, or None when there is nothing to
+    """``ThorHubAccountInfo`` (or a dict shaped like one) → PickerUsage, or None when there is nothing to
     gauge: only a usage-window plan has plan chrome (credit-grant, pay-as-you-go and free tier get
     None, as does an unreadable snapshot). Never raises."""
     try:
@@ -410,31 +410,31 @@ def _credits_pay(info: Any, window: Any) -> Optional[bool]:
     return purchased > 0
 
 
-def nous_picker_usage(*, warm: bool = False, any_age: bool = False) -> Optional[PickerUsage]:
+def thorhub_picker_usage(*, warm: bool = False, any_age: bool = False) -> Optional[PickerUsage]:
     """PickerUsage from the portal account snapshot. Cache-only by default so a picker never adds a
     round trip; ``warm=True`` fetches once (fills the 60s cache) so a window plan is known
     on a cold start. ``any_age`` reads the last snapshot past the 60s TTL (plan-shape callers only:
     its percents may be stale). Never raises."""
     try:
-        from thor_cli.nous_account import cached_nous_portal_account_info, get_nous_portal_account_info
-        if warm and cached_nous_portal_account_info() is None:
+        from thor_cli.thorhub_account import cached_thorhub_account_info, get_thorhub_account_info
+        if warm and cached_thorhub_account_info() is None:
             # A known window plan needs a real fetch: the JWT snapshot carries no gauges and never fills the cache.
             from agent.credits_tracker import _window_seed_fields
-            on_window = _window_seed_fields(_get(cached_nous_portal_account_info(any_age=True), "usage_window")) is not None
-            get_nous_portal_account_info(force_fresh=on_window)
-        return picker_usage_from_account(cached_nous_portal_account_info(any_age=any_age))
+            on_window = _window_seed_fields(_get(cached_thorhub_account_info(any_age=True), "usage_window")) is not None
+            get_thorhub_account_info(force_fresh=on_window)
+        return picker_usage_from_account(cached_thorhub_account_info(any_age=any_age))
     except Exception:
         logging.getLogger(__name__).debug("Thor plan usage unavailable", exc_info=True)
         return None
 
 
-def _nous_catalog(*, fetch: bool = False) -> dict[str, dict[str, Any]]:
+def _thorhub_catalog(*, fetch: bool = False) -> dict[str, dict[str, Any]]:
     """This profile's Thor ``/v1/models`` rows: its resident cache, one fetch only when ``fetch``. Never a
     catalog cached for another credential (another profile's plan marks different models Large)."""
     from thor_cli.models_pricing import get_pricing_for_provider
-    rows = get_pricing_for_provider("nous", cached_only=True) or {}
+    rows = get_pricing_for_provider("thor", cached_only=True) or {}
     if not rows and fetch:
-        rows = get_pricing_for_provider("nous") or {}
+        rows = get_pricing_for_provider("thor") or {}
     return rows
 
 
@@ -447,11 +447,12 @@ def large_model_notice(
     be fetched once (``fetch``); without one only the resident cache is read, so any other account adds no
     network call. Never raises."""
     try:
-        if str(provider or "").strip().lower() != "nous" or not model_id:
+        # "nous" is the legacy ThorHub provider id (stored configs); "thor"/"thorhub" are canonical.
+        if str(provider or "").strip().lower() not in {"thor", "thorhub", "nous"} or not model_id:
             return None
-        fresh = nous_picker_usage()
-        usage = fresh or nous_picker_usage(any_age=True)
-        rows = _nous_catalog(fetch=fetch and usage is not None)
+        fresh = thorhub_picker_usage()
+        usage = fresh or thorhub_picker_usage(any_age=True)
+        rows = _thorhub_catalog(fetch=fetch and usage is not None)
         row = rows.get(model_id)
         if not row:
             return None
@@ -512,7 +513,7 @@ def window_plan_default(model_ids: list[str], pricing: Optional[dict] = None) ->
     """A usage-window plan's first featured pick that is listed (the picker's top Recommended row), or
     "" for every other account. Cache-only: the caller's fresh tier read just filled the snapshot. Never raises."""
     try:
-        usage = nous_picker_usage(any_age=True)
+        usage = thorhub_picker_usage(any_age=True)
         if usage is None:
             return ""
         recommended, _other = split_recommended(model_ids, usage.featured_model_ids)
@@ -530,10 +531,11 @@ def annotate_window_plan_rows(provider_data: dict, model_ids: list) -> tuple[lis
     """``(labels, limit_line)`` for the /model picker's model stage. On a Thor usage-window plan rows carry
     the TUI's ``Large`` / ``Free`` tags, and with a full allowance ``limit_line`` (above the hint) says it
     once, with what happens next. Every other account: the bare ids and None. Display only."""
-    if str((provider_data or {}).get("slug") or "").lower() != "nous":
+    # "nous" is the legacy ThorHub row slug (stored configs); "thor"/"thorhub" are canonical.
+    if str((provider_data or {}).get("slug") or "").lower() not in {"thor", "thorhub", "nous"}:
         return list(model_ids), None
     try:
-        usage = nous_picker_usage()  # fresh snapshot only: a stale percent would mislabel the line
+        usage = thorhub_picker_usage()  # fresh snapshot only: a stale percent would mislabel the line
         return window_row_labels(provider_data, model_ids), (usage.limit_line() if usage is not None else None)
     except Exception:
         logging.getLogger(__name__).debug("Window plan row labels unavailable", exc_info=True)

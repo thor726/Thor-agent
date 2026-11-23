@@ -5,7 +5,7 @@ import thor_cli.models_pricing as mp
 from thor_cli import model_switch_providers as msp
 
 
-def test_nous_picker_model_ids_reads_pricing_cache_only(monkeypatch):
+def test_thorhub_picker_model_ids_reads_pricing_cache_only(monkeypatch):
     seen: list[bool] = []
 
     def fake_pricing(provider, *, force_refresh=False, cached_only=False):
@@ -14,9 +14,8 @@ def test_nous_picker_model_ids_reads_pricing_cache_only(monkeypatch):
 
     monkeypatch.setattr(mp, "get_pricing_for_provider", fake_pricing)
     # Keep the sibling Portal calls off the network; only the pricing call shape is under test.
-    monkeypatch.setattr("thor_cli.models.check_nous_free_tier", lambda **kw: False)
-    monkeypatch.setattr("thor_cli.models.fetch_nous_recommended_models", lambda *a, **kw: None)
-    monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: None)
+    monkeypatch.setattr("thor_cli.models.check_thorhub_free_tier", lambda **kw: False)
+    monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: None)
 
-    assert msp._nous_picker_model_ids({"nous": ["nous/a"]}, False) == ["nous/a"]
+    assert msp._thorhub_picker_model_ids({"nous": ["nous/a"]}, False) == ["nous/a"]
     assert seen == [True]

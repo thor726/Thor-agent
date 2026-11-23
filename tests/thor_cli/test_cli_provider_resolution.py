@@ -482,11 +482,11 @@ def test_model_flow_nous_does_not_restore_stale_custom_api_key(tmp_path, monkeyp
         },
     )
     monkeypatch.setattr(
-        "thor_cli.models.get_curated_nous_model_ids",
+        "thor_cli.models.get_curated_thorhub_model_ids",
         lambda: [selected_model],
     )
     monkeypatch.setattr("thor_cli.models_pricing.get_pricing_for_provider", lambda provider: {})
-    monkeypatch.setattr("thor_cli.models.check_nous_free_tier", lambda **kwargs: False)
+    monkeypatch.setattr("thor_cli.models.check_thorhub_free_tier", lambda **kwargs: False)
     monkeypatch.setattr(
         "thor_cli.models.union_with_portal_paid_recommendations",
         lambda model_ids, pricing, portal_url: (model_ids, pricing),
@@ -496,7 +496,7 @@ def test_model_flow_nous_does_not_restore_stale_custom_api_key(tmp_path, monkeyp
         lambda *args, **kwargs: selected_model,
     )
     monkeypatch.setattr(
-        "thor_cli.nous_subscription.prompt_enable_tool_gateway",
+        "thor_cli.thorhub_subscription.prompt_enable_tool_gateway",
         lambda config: None,
     )
 
@@ -749,16 +749,18 @@ def test_model_flow_custom_persists_selected_api_mode(monkeypatch):
     assert saved_env[key_env] == "test-key"
 
 
-def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
+def test_cmd_model_asks_for_a_thorhub_key_instead_of_the_nous_login(monkeypatch):
+    """``thor model`` for ThorHub asks for an API key; the Nous device-code login (and its
+    TLS options) is never reached — ThorHub auth is a static key."""
     monkeypatch.setattr(thor_main, "_require_tty", lambda *a: None)
     monkeypatch.setattr(
         "thor_cli.config.load_config",
-        lambda: {"model": {"default": "gpt-5", "provider": "nous"}},
+        lambda: {"model": {"default": "gpt-5", "provider": "thor"}},
     )
     monkeypatch.setattr("thor_cli.config.save_config", lambda cfg: None)
     monkeypatch.setattr("thor_cli.config.get_env_value", lambda key: "")
     monkeypatch.setattr("thor_cli.config.save_env_value", lambda key, value: None)
-    monkeypatch.setattr("thor_cli.auth.resolve_provider", lambda requested, **kwargs: "nous")
+    monkeypatch.setattr("thor_cli.auth.resolve_provider", lambda requested, **kwargs: "thor")
     monkeypatch.setattr("thor_cli.auth.get_provider_auth_state", lambda provider_id: None)
     monkeypatch.setattr(thor_main, "_prompt_provider_choice", lambda choices, **kwargs: 0)
     monkeypatch.setattr(thor_cli_main_provider_setup, "_prompt_provider_choice", lambda choices, **kwargs: 0)
@@ -766,40 +768,32 @@ def test_cmd_model_forwards_nous_login_tls_options(monkeypatch):
     captured = {}
 
     def _fake_login(login_args, provider_config):
-        captured["portal_url"] = login_args.portal_url
-        captured["inference_url"] = login_args.inference_url
-        captured["client_id"] = login_args.client_id
-        captured["scope"] = login_args.scope
-        captured["no_browser"] = login_args.no_browser
-        captured["timeout"] = login_args.timeout
-        captured["ca_bundle"] = login_args.ca_bundle
-        captured["insecure"] = login_args.insecure
+        captured["called"] = True
 
     monkeypatch.setattr("thor_cli.auth._login_nous", _fake_login)
 
-    thor_main.cmd_model(
-        SimpleNamespace(
-            portal_url="https://portal.thor-agent.local",
-            inference_url="https://inference.thor-agent.local/v1",
-            client_id="thor-local",
-            scope="openid profile",
-            no_browser=True,
-            timeout=7.5,
-            ca_bundle="/tmp/local-ca.pem",
-            insecure=True,
-        )
-    )
+    class _KeyPromptReached(Exception):
+        pass
 
-    assert captured == {
-        "portal_url": "https://portal.thor-agent.local",
-        "inference_url": "https://inference.thor-agent.local/v1",
-        "client_id": "thor-local",
-        "scope": "openid profile",
-        "no_browser": True,
-        "timeout": 7.5,
-        "ca_bundle": "/tmp/local-ca.pem",
-        "insecure": True,
-    }
+    def _fake_prompt_api_key(*a, **k):
+        raise _KeyPromptReached()
+
+    monkeypatch.setattr(thor_cli_main_provider_setup, "_prompt_api_key", _fake_prompt_api_key)
+
+    with pytest.raises(_KeyPromptReached):
+        thor_main.cmd_model(
+            SimpleNamespace(
+                portal_url="https://portal.thor-agent.local",
+                inference_url="https://inference.thor-agent.local/v1",
+                client_id="thor-local",
+                scope="openid profile",
+                no_browser=True,
+                timeout=7.5,
+                ca_bundle="/tmp/local-ca.pem",
+                insecure=True,
+            )
+        )
+    assert captured == {}  # the Nous device-code login was never invoked
 
 
 # ---------------------------------------------------------------------------

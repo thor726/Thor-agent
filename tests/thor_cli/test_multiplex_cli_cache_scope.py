@@ -56,7 +56,7 @@ def homes(tmp_path, monkeypatch):
     for home in (a, b):
         (home / "cache").mkdir(parents=True)
     monkeypatch.setenv("THOR_HOME", str(a))
-    for var in ("DEEPINFRA_API_KEY", "DEEPINFRA_BASE_URL", "NOUS_INFERENCE_BASE_URL"):
+    for var in ("DEEPINFRA_API_KEY", "DEEPINFRA_BASE_URL", "THORHUB_BASE_URL", "NOUS_INFERENCE_BASE_URL"):
         monkeypatch.delenv(var, raising=False)
     return a, b
 
@@ -81,15 +81,15 @@ def test_deepinfra_catalog_is_fetched_with_each_profiles_key(homes, monkeypatch)
         assert models._fetch_deepinfra_models() == ["di/model-B"]
 
 
-def test_nous_reasoning_caps_follow_each_profiles_portal(homes, monkeypatch):
+def test_thorhub_reasoning_caps_follow_each_profiles_endpoint(homes, monkeypatch):
     a, b = homes
-    (a / ".env").write_text("NOUS_INFERENCE_BASE_URL=https://portal-a.example/v1\n", encoding="utf-8")
-    (b / ".env").write_text("NOUS_INFERENCE_BASE_URL=https://portal-b.example/v1\n", encoding="utf-8")
+    (a / ".env").write_text("THORHUB_BASE_URL=https://portal-a.example/v1\n", encoding="utf-8")
+    (b / ".env").write_text("THORHUB_BASE_URL=https://portal-b.example/v1\n", encoding="utf-8")
     from thor_cli import models
     import thor_cli.models_reasoning_caps as caps
 
-    for attr, value in (("_nous_reasoning_caps_cache", None), ("_nous_reasoning_caps_failed_at", None),
-                        ("_nous_caps_disk_checked", False), ("_nous_caps_warm_started", False)):
+    for attr, value in (("_thorhub_reasoning_caps_cache", None), ("_thorhub_reasoning_caps_failed_at", None),
+                        ("_thorhub_caps_disk_checked", False), ("_thorhub_caps_warm_started", False)):
         monkeypatch.setattr(models, attr, value)
 
     def transport(req, *, timeout, **kw):
@@ -99,9 +99,9 @@ def test_nous_reasoning_caps_follow_each_profiles_portal(homes, monkeypatch):
 
     monkeypatch.setattr(models, "_urlopen_model_catalog_request", transport)
     with _Scoped(a):
-        assert caps.nous_model_reasoning_capabilities("nous/m", allow_fetch=True)["supported_efforts"] == ["low"]
+        assert caps.thorhub_model_reasoning_capabilities("nous/m", allow_fetch=True)["supported_efforts"] == ["low"]
     with _Scoped(b):
-        assert caps.nous_model_reasoning_capabilities("nous/m", allow_fetch=True)["supported_efforts"] == ["high"]
+        assert caps.thorhub_model_reasoning_capabilities("nous/m", allow_fetch=True)["supported_efforts"] == ["high"]
 
 
 def test_swr_refresh_runs_as_the_profile_that_spawned_it(homes):

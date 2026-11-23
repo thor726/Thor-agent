@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from thor_cli.nous_account import NousPortalAccountInfo
+from thor_cli.thorhub_account import ThorHubAccountInfo
 
 
 TOOLS_DIR = Path(__file__).resolve().parents[2] / "tools"
@@ -51,8 +51,8 @@ def _enable_managed_nous_tools(monkeypatch):
     """Patch the source modules so managed_thorhub_tools_enabled() returns True
     even after tool modules are dynamically reloaded."""
     monkeypatch.setattr(
-        "thor_cli.nous_account.get_nous_portal_account_info",
-        lambda: NousPortalAccountInfo(
+        "thor_cli.thorhub_account.get_thorhub_account_info",
+        lambda: ThorHubAccountInfo(
             logged_in=True,
             source="jwt",
             fresh=False,

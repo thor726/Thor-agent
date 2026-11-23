@@ -751,8 +751,8 @@ def _fast_model_from_catalog(provider_id: str) -> str:
         if not api_key and is_nous:
             # Nous is OAuth (resolver raises); anonymous reads return the full catalog.
             try:
-                from thor_cli.models_pricing import _resolve_nous_pricing_credentials
-                api_key, base_url = _resolve_nous_pricing_credentials()
+                from thor_cli.models_pricing import _resolve_thorhub_pricing_credentials
+                api_key, base_url = _resolve_thorhub_pricing_credentials()
             except Exception:
                 logger.debug("No Thor credentials for catalog", exc_info=True)
         if not base_url:
@@ -765,8 +765,8 @@ def _fast_model_from_catalog(provider_id: str) -> str:
         # policy-catalog expiry.
         _nous_kwargs = {}
         if is_nous:
-            from thor_cli.models_pricing import _NOUS_CATALOG_TTL_SECONDS
-            _nous_kwargs = {"include_sale_original": True, "cache_ttl_seconds": _NOUS_CATALOG_TTL_SECONDS}
+            from thor_cli.models_pricing import _THORHUB_CATALOG_TTL_SECONDS
+            _nous_kwargs = {"include_sale_original": True, "cache_ttl_seconds": _THORHUB_CATALOG_TTL_SECONDS}
         catalog = fetch_models_with_pricing(
             api_key=api_key or None, base_url=base_url, timeout=3.0, **_nous_kwargs) or {}
     except Exception:
@@ -776,8 +776,8 @@ def _fast_model_from_catalog(provider_id: str) -> str:
     if is_nous:
         # Narrow catalog ids by org policy, as the pickers do.
         try:
-            from thor_cli.models_pricing import nous_policy_allowed_ids, restrict_to_nous_policy
-            ids = restrict_to_nous_policy(ids, nous_policy_allowed_ids())
+            from thor_cli.models_pricing import thorhub_policy_allowed_ids, restrict_to_thorhub_policy
+            ids = restrict_to_thorhub_policy(ids, thorhub_policy_allowed_ids())
         except Exception:
             logger.debug("Thor policy filter unavailable", exc_info=True)
     for family in _FAST_MODEL_FAMILIES:
@@ -816,9 +816,9 @@ def _get_aux_model_for_provider(provider_id: str, *, prefer_fast: bool = False) 
     # let the caller keep the main model.
     if picked and provider_id.strip().lower() == "nous":
         try:
-            from thor_cli.models_pricing import nous_policy_allowed_ids, restrict_to_nous_policy
-            allowed = nous_policy_allowed_ids()
-            if allowed and not restrict_to_nous_policy([picked], allowed):
+            from thor_cli.models_pricing import thorhub_policy_allowed_ids, restrict_to_thorhub_policy
+            allowed = thorhub_policy_allowed_ids()
+            if allowed and not restrict_to_thorhub_policy([picked], allowed):
                 return ""
         except Exception:
             logger.debug("Thor policy check unavailable", exc_info=True)
@@ -2375,8 +2375,8 @@ def _try_nous(vision: bool = False) -> tuple[Optional[OpenAI], Optional[str]]:
     model = _NOUS_MODEL
     if not _aux_probe_active():
         try:
-            from thor_cli.models import get_nous_recommended_aux_model
-            recommended = get_nous_recommended_aux_model(vision=vision)
+            from thor_cli.models import get_thorhub_recommended_aux_model
+            recommended = get_thorhub_recommended_aux_model(vision=vision)
             if recommended:
                 model = recommended
                 logger.debug("Auxiliary/%s: using Portal-recommended model %s", lane, model)
@@ -2399,8 +2399,8 @@ def _refresh_nous_recommended_model(*, vision: bool, stale_model: Optional[str])
     stale = (stale_model or "").strip().lower()
     fresh: Optional[str] = None
     try:
-        from thor_cli.models import get_nous_recommended_aux_model
-        fresh = get_nous_recommended_aux_model(vision=vision, force_refresh=True)
+        from thor_cli.models import get_thorhub_recommended_aux_model
+        fresh = get_thorhub_recommended_aux_model(vision=vision, force_refresh=True)
     except Exception as exc:
         logger.debug("Thor recommended-model refresh failed (%s); using default %s", exc, _NOUS_MODEL)
     if fresh and fresh.strip().lower() != stale:
@@ -3193,8 +3193,8 @@ def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
 def _nous_portal_account_has_fresh_paid_access() -> bool:
     """Return True only when the fresh Thor account API says paid access is allowed."""
     try:
-        from thor_cli.nous_account import get_nous_portal_account_info
-        return get_nous_portal_account_info(force_fresh=True).paid_service_access is True
+        from thor_cli.thorhub_account import get_thorhub_account_info
+        return get_thorhub_account_info(force_fresh=True).paid_service_access is True
     except Exception as exc:
         logger.debug("Auxiliary Thor paid-entitlement refresh check failed: %s", exc)
         return False
@@ -6330,7 +6330,7 @@ def _convert_openai_images_to_anthropic(messages: list) -> list:
     return converted
 
 
-_THOR_PROVIDER_NAMES = frozenset({"thor", "thorhub"})
+_THOR_PROVIDER_NAMES = frozenset({"thor", "thorhub", "nous"})  # "nous" is the legacy ThorHub id
 
 
 def _thor_on_messages_wire(provider_norm: str, model: str) -> bool:
@@ -6371,7 +6371,7 @@ def _forwards_max_tokens(provider: str, provider_norm: str, model: str, effectiv
     """
     return (
         _is_anthropic_compat_endpoint(provider, effective_base)
-        or _nous_on_messages_wire(provider_norm, model)
+        or _thor_on_messages_wire(provider_norm, model)
         or provider_norm in _NVIDIA_PROVIDER_NAMES
         or base_url_host_matches(effective_base, "integrate.api.nvidia.com")
         or str(task) == "moa_reference"
@@ -6496,7 +6496,7 @@ def _merge_aux_extra_body(
     # Portal tags + sticky session_id fallback when the profile didn't supply them; session_id
     # keeps aux calls on the main turn's upstream instance (cache warmth) — tags alone are not
     # enough on /v1/messages.
-    if provider_norm in _NOUS_PROVIDER_NAMES:
+    if provider_norm in _THOR_PROVIDER_NAMES:
         if "tags" not in merged_extra:
             merged_extra["tags"] = _nous_portal_tags()
         if "session_id" not in merged_extra:
@@ -6574,7 +6574,7 @@ def _build_call_kwargs(
     if reasoning_config and isinstance(reasoning_config, dict):
         raw_base = base_url or ""
         if (
-            provider_norm == "anthropic" or projection.messages_wire or _nous_on_messages_wire(provider_norm, model)
+            provider_norm == "anthropic" or projection.messages_wire or _thor_on_messages_wire(provider_norm, model)
             or _endpoint_speaks_anthropic_messages(raw_base) or _is_anthropic_compat_endpoint(provider_norm, raw_base)
         ):
             kwargs["_reasoning_config"] = dict(reasoning_config)

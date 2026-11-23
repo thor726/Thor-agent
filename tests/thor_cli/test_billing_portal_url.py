@@ -1,42 +1,45 @@
-"""Portal-URL resolution for Phase 2b billing errors (nous_billing).
+"""Portal-URL resolution for ThorHub billing errors.
 
-The server emits ``portalUrl`` relative by design (``/billing?topup=open``); the
-client must resolve it against the active portal base so deep-links are clickable
-on whatever deployment (preview / staging / prod) the user is pointed at.
+The server emits ``portalUrl`` relative by design (``/beli/topup``); the client must
+resolve it against the active ThorHub base so deep-links are clickable on whatever
+deployment (staging / prod) the user is pointed at. ThorHub has no billing HTTP API,
+so there is no HTTP -> exception mapping to test here — write paths raise
+``BillingError`` with the topup URL (see test_thorhub_billing.py).
 """
 
 from __future__ import annotations
 
 import pytest
 
-from thor_cli.nous_billing import (
-    BillingError,
+from thor_cli.thorhub_billing import (
     _absolutize_portal_url,
-    _raise_for_error,
+    resolve_portal_base_url,
 )
 
 
 @pytest.fixture
-def _preview(monkeypatch):
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", "https://nas-pr-412.nousresearch.wtf")
+def _staging(monkeypatch):
+    monkeypatch.setenv("THORHUB_BASE_URL", "https://staging.thormarket.site")
 
 
-def test_absolutize_resolves_relative(_preview):
+def test_absolutize_resolves_relative(_staging):
     assert (
-        _absolutize_portal_url("/billing?topup=open")
-        == "https://nas-pr-412.nousresearch.wtf/billing?topup=open"
+        _absolutize_portal_url("/beli/topup")
+        == "https://staging.thormarket.site/beli/topup"
     )
 
 
-def test_raise_for_error_attaches_absolute_portal_url(_preview):
-    # The 403 no_payment_method envelope carries a RELATIVE portalUrl; the raised
-    # BillingError must expose it as ABSOLUTE so CLI + TUI render a clickable link.
-    with pytest.raises(BillingError) as exc_info:
-        _raise_for_error(
-            403,
-            {"error": "no_payment_method", "portalUrl": "/billing?topup=open"},
-        )
+def test_absolutize_passes_absolute_through(_staging):
     assert (
-        exc_info.value.portal_url
-        == "https://nas-pr-412.nousresearch.wtf/billing?topup=open"
+        _absolutize_portal_url("https://llm.thormarket.site/beli/topup")
+        == "https://llm.thormarket.site/beli/topup"
+    )
+
+
+def test_absolutize_defaults_to_production(monkeypatch):
+    monkeypatch.delenv("THORHUB_BASE_URL", raising=False)
+    assert resolve_portal_base_url() == "https://llm.thormarket.site"
+    assert (
+        _absolutize_portal_url("/beli/topup")
+        == "https://llm.thormarket.site/beli/topup"
     )

@@ -119,14 +119,16 @@ class TestConnectorsCallers:
         assert auth_mod.resolve_nous_access_token() == token
         assert len(nas.token_requests) == 1
 
-    def test_account_reads_use_the_connectors_token(self, trial, presented):
-        from thor_cli.nous_account import get_nous_portal_account_info, reset_nous_portal_account_info_cache
+    def test_account_reads_need_a_thorhub_key_not_the_connectors_token(self, trial, presented):
+        # ThorHub account reads need a ThorHub API key; a guest connectors token
+        # (which only authorizes vendor-tool calls) entitles nothing here.
+        from thor_cli.thorhub_account import get_thorhub_account_info, reset_thorhub_account_info_cache
         nas = trial
         nas.challenge_required = True
         auth_mod.resolve_nous_access_token()
-        reset_nous_portal_account_info_cache()
-        info = get_nous_portal_account_info()
-        assert info.logged_in and info.source == "jwt" and info.account_tier == "anonymous"
+        reset_thorhub_account_info_cache()
+        info = get_thorhub_account_info()
+        assert not info.logged_in and info.source == "none"
         assert len(nas.token_requests) == 1 and presented == []
 
     @pytest.mark.parametrize("error", ["signin_required", "access_denied"])
@@ -208,10 +210,10 @@ class TestNoInferenceIntent:
         assert anon_auth.is_guest_state(anon_auth.current_nous_state())
 
     def test_a_model_catalog_read_never_waits_on_a_challenge(self, nas, presented):
-        from thor_cli.models import _nous_catalog, get_curated_nous_model_ids
+        from thor_cli.models import _thorhub_catalog, get_curated_thorhub_model_ids
         nas.challenge_required = True
         nas.challenge_never_clears = True
-        assert _nous_catalog("nous", False) == (get_curated_nous_model_ids() or None)
+        assert _thorhub_catalog("nous", False) == (get_curated_thorhub_model_ids() or None)
         assert "/api/anonymous/challenge/status" not in [p for _, p in nas.calls]
 
 

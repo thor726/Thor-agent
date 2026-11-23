@@ -46,11 +46,13 @@ def _step_up(monkeypatch):
 
 
 def _tool_login(monkeypatch):
-    from thor_cli import nous_subscription
+    from thor_cli import thorhub_subscription
     monkeypatch.setattr(nous_subscription, "_confirm", lambda prompt: True)
     assert nous_subscription._run_nous_portal_login_only(capability="Web search") is True
 
 
+@pytest.mark.skip(reason="Settle asserted the Portal-recommended free pick; ThorHub has no "
+    "recommendations feed, and the guest upgrade flow is removed with Commit D (Fase 4).")
 @pytest.mark.parametrize("surface", [_terminal_login, _auth_add, _step_up, _tool_login],
                          ids=["thor model / login", "auth add nous", "billing step-up", "tool setup login"])
 def test_the_sign_in_settles_the_config_once_after_its_locks_are_released(
@@ -76,8 +78,10 @@ def test_the_sign_in_settles_the_config_once_after_its_locks_are_released(
     assert model_cfg["base_url"] == INFERENCE.rstrip("/")
 
 
-@pytest.mark.parametrize("surface", [_terminal_login, _auth_add, _tool_login],
-                         ids=["thor model / login", "auth add nous", "tool setup login"])
+# "auth add nous" and "tool setup login" surfaces are gone: _add_nous_oauth_credential was
+# deleted in Commit A and _run_nous_portal_login_only in Commit C (ThorHub login is API-key only).
+@pytest.mark.parametrize("surface", [_terminal_login],
+                         ids=["thor model / login"])
 def test_the_terminal_sign_in_prints_what_moved(portal, free_account, monkeypatch, capsys, surface):
     from thor_cli import auth
     anon_auth.ensure_portal_identity(explicit=True)

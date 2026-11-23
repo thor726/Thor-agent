@@ -81,10 +81,10 @@ _THOR_STALE_PORTAL_HOSTS: frozenset[str] = frozenset({"api.thorlabs.com"})
 
 def _portal_entitlement_message(capability: str) -> str:
     """Portal entitlement notice for *capability* (fresh account data), "" when unavailable."""
-    from thor_cli.nous_account import (
-        format_nous_portal_entitlement_message, get_nous_portal_account_info)
-    account_info = get_nous_portal_account_info(force_fresh=True)
-    return format_nous_portal_entitlement_message(account_info, capability=capability) or ""
+    from thor_cli.thorhub_account import (
+        format_thorhub_entitlement_message, get_thorhub_account_info)
+    account_info = get_thorhub_account_info(force_fresh=True)
+    return format_thorhub_entitlement_message(account_info, capability=capability) or ""
 
 
 def _format_nous_entitlement_auth_error(error: AuthError) -> str:
@@ -94,7 +94,7 @@ def _format_nous_entitlement_auth_error(error: AuthError) -> str:
     return f"{error} Check credits or billing in Thor Portal, then retry."
 
 
-def _migrate_stale_nous_portal_url(providers: dict[str, Any]) -> None:
+def _migrate_stale_thorhub_portal_url(providers: dict[str, Any]) -> None:
     thor = providers.get("nous")
     if not isinstance(thor, dict):
         return
@@ -1576,7 +1576,7 @@ def step_up_nous_billing_scope(
     # Every caller replays the refused billing action next: drop the billing client's 30s token cache
     # here (not per caller) so that replay sends the new token, not the pre-approval one (403 again).
     try:
-        from thor_cli.nous_billing import invalidate_cached_token
+        from thor_cli.thorhub_billing import invalidate_cached_token
         invalidate_cached_token()
     except Exception:
         logger.debug("Billing token cache invalidation failed", exc_info=True)
@@ -1598,30 +1598,30 @@ def _pick_nous_model_after_login(
     if not isinstance(runtime_key, str) or not runtime_key:
         raise _nous_err("No runtime API key available to fetch models", "invalid_token")
     from thor_cli.models import (
-        get_curated_nous_model_ids,
-        check_nous_free_tier,
-        partition_nous_models_by_tier,
-        union_with_nous_on_sale_models,
+        get_curated_thorhub_model_ids,
+        check_thorhub_free_tier,
+        partition_thorhub_models_by_tier,
+        union_with_thorhub_on_sale_models,
         union_with_portal_free_recommendations,
         union_with_portal_paid_recommendations,
     )
     from thor_cli.models_pricing import (
         get_pricing_for_provider,
-        nous_policy_allowed_ids,
-        restrict_to_nous_policy,
+        thorhub_policy_allowed_ids,
+        restrict_to_thorhub_policy,
     )
-    model_ids = get_curated_nous_model_ids()
+    model_ids = get_curated_thorhub_model_ids()
     _portal = auth_state.get("portal_base_url", "")
     print()
     unavailable_models: list = []
     unavailable_message = ""
     _policy_narrowed = False
     if model_ids:
-        pricing = get_pricing_for_provider("nous")
+        pricing = get_pricing_for_provider("thor")
         # Force fresh account data so recent credit purchases are reflected immediately.
-        free_tier = check_nous_free_tier(force_fresh=True)
+        free_tier = check_thorhub_free_tier(force_fresh=True)
         # Narrow before the tier split, so a rescued id still has to pass the free/paid predicate.
-        _policy_allowed = nous_policy_allowed_ids()
+        _policy_allowed = thorhub_policy_allowed_ids()
         if free_tier:
             with suppress(Exception):
                 unavailable_message = _portal_entitlement_message("paid Thor models")
@@ -1633,20 +1633,20 @@ def _pick_nous_model_after_login(
         model_ids, pricing = union(model_ids, pricing, _portal)
         if not free_tier:
             # Paid users also see every model on sale right now (same rule as `thor model`).
-            model_ids = union_with_nous_on_sale_models(model_ids, pricing)
+            model_ids = union_with_thorhub_on_sale_models(model_ids, pricing)
         _before_policy = model_ids
-        model_ids = restrict_to_nous_policy(model_ids, _policy_allowed, rescue_empty=True)
+        model_ids = restrict_to_thorhub_policy(model_ids, _policy_allowed, rescue_empty=True)
         _policy_narrowed = model_ids != _before_policy
         if free_tier:
-            model_ids, unavailable_models = partition_nous_models_by_tier(
+            model_ids, unavailable_models = partition_thorhub_models_by_tier(
                 model_ids, pricing, free_tier=True)
     if model_ids:
-        from thor_cli.nous_account import nous_policy_notice
-        _policy_notice = nous_policy_notice(removed=_policy_narrowed)
+        from thor_cli.thorhub_account import thorhub_policy_notice
+        _policy_notice = thorhub_policy_notice(removed=_policy_narrowed)
         if _policy_notice:
             print(_policy_notice)
-        from thor_cli.model_picker_usage import featured_first, nous_picker_usage
-        _usage = nous_picker_usage(warm=True)
+        from thor_cli.model_picker_usage import featured_first, thorhub_picker_usage
+        _usage = thorhub_picker_usage(warm=True)
         # Window plans: every model is usable; the plan's featured picks lead the list.
         if _usage is not None:
             model_ids = featured_first(model_ids, _usage.featured_model_ids)

@@ -1015,7 +1015,7 @@ class TestToolsetsEndpoint:
             "thor_cli.tools_config._get_platform_tools",
             return_value={"default"},
         ), patch(
-            "thor_cli.tools_config.get_nous_subscription_features",
+            "thor_cli.tools_config.get_thorhub_subscription_features",
             return_value=feature_snapshot,
         ) as resolve_features, patch(
             "thor_cli.tools_config._toolset_has_keys",

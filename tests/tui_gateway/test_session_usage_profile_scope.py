@@ -1,7 +1,8 @@
-"""``session.usage`` fetches Nous credits in the session's profile scope once the process multiplexes (#141859).
+"""``session.usage`` must not fetch account credits in any profile scope.
 
-The credits fetch reads the Portal override and auth. Unscoped, a secondary profile's session read the
-launch profile's (or hit ``UnscopedSecretError``, swallowed fail-open, so the fetch fell back to defaults).
+The Nous fields are a shape-compat stub since PR #51 (the ThorHub balance lives on
+/topup and is read by ``/usage``, not by this RPC), so no profile's key or portal
+is touched here — and no cross-profile read can leak through this RPC either.
 """
 
 from __future__ import annotations
@@ -48,26 +49,23 @@ def _session(profile_home):
             "history": [], "history_lock": threading.Lock()}
 
 
-def test_session_usage_fetches_credits_in_the_sessions_profile_scope(two_homes, monkeypatch):
+def test_session_usage_does_not_fetch_account_info_in_any_profile_scope(two_homes, monkeypatch):
     root, b = two_homes
     calls: list = []
 
     def fake_account_info(**_kwargs):
-        """Stand-in for the Portal request, past the logged-in gate and the fetch's worker-thread hop:
-        records the Portal override, home and Nous token the request would have used."""
-        from thor_cli.auth import get_provider_auth_state
-        from thor_cli.auth_nous import _nous_portal_env_override
-        from thor_constants import get_thor_home
-        token = (get_provider_auth_state("nous") or {}).get("access_token")
-        calls.append((_nous_portal_env_override(), Path(get_thor_home()).resolve(), token))
-        raise RuntimeError("no network in tests")  # fail-open: session.usage still answers
+        calls.append(1)
+        raise RuntimeError("no network in tests")
 
-    # Both Portal reads: a session off a Nous route (this empty config) reads with the stored token only.
-    monkeypatch.setattr("thor_cli.nous_account.get_nous_portal_account_info", fake_account_info)
-    monkeypatch.setattr("thor_cli.nous_account.stored_token_account_info", fake_account_info)
+    monkeypatch.setattr("thor_cli.thorhub_account.get_thorhub_account_info", fake_account_info)
+    monkeypatch.setattr("thor_cli.thorhub_account.stored_token_account_info", fake_account_info)
     monkeypatch.setattr(server, "_sessions", {"sa": _session(None), "sb": _session(str(b))})
 
     for sid in ("sa", "sb"):
-        assert "result" in server._methods["session.usage"]("rid", {"session_id": sid})
+        res = server._methods["session.usage"]("rid", {"session_id": sid})
+        assert "result" in res
+        assert res["result"]["nous_route"] is False
 
-    assert calls == [(LAUNCH_PORTAL, root.resolve(), "tok-launch"), (B_PORTAL, b.resolve(), "tok-b")]
+    assert calls == []
+
+

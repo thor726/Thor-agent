@@ -21,7 +21,7 @@ _BASE = "https://inference.example.test/v1"
 _LIST = {"prompt": "0.000002", "completion": "0.00001"}
 
 
-def _serve_nous_catalog(monkeypatch, payload: dict) -> None:
+def _serve_thorhub_catalog(monkeypatch, payload: dict) -> None:
     resp = MagicMock()
     resp.read.return_value = json.dumps(payload).encode()
     resp.__enter__ = lambda self: self
@@ -35,7 +35,7 @@ def test_picker_on_sale_union_reads_the_authenticated_prewarm(monkeypatch):
     mp._pricing_cache_retry_after.clear()
     mp._pricing_provider_cache_keys.clear()
 
-    _serve_nous_catalog(monkeypatch, {"data": [
+    _serve_thorhub_catalog(monkeypatch, {"data": [
         {"id": "nous/curated", "pricing": dict(_LIST)},
         {"id": "sale/deep", "supported_parameters": ["tools"],
          "pricing": {"prompt": "0.0000004", "completion": "0.000002",
@@ -44,22 +44,21 @@ def test_picker_on_sale_union_reads_the_authenticated_prewarm(monkeypatch):
 
     # The prewarm path: a logged-in account resolves an api key, so the catalog is written
     # under base + auth fingerprint. Anonymous/base-only stubs hide the mismatch.
-    monkeypatch.setattr(mp, "_resolve_nous_pricing_credentials", lambda: ("sk-logged-in", _BASE))
-    warmed = mp._fetch_nous_pricing_for_provider()
+    monkeypatch.setattr(mp, "_resolve_thorhub_pricing_credentials", lambda: ("sk-logged-in", _BASE))
+    warmed = mp._fetch_thorhub_pricing_for_provider()
     assert "sale/deep" in warmed
 
     # The picker path: NO stub on get_pricing_for_provider/_cached_only_pricing — the real
     # cached_only read must resolve the same entry the prewarm filled.
-    monkeypatch.setattr("thor_cli.models.check_nous_free_tier", lambda **kw: False)
-    monkeypatch.setattr("thor_cli.models.fetch_nous_recommended_models", lambda *a, **kw: None)
-    monkeypatch.setattr(mp, "nous_policy_allowed_ids", lambda **kw: None)
+    monkeypatch.setattr("thor_cli.models.check_thorhub_free_tier", lambda **kw: False)
+    monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: None)
     monkeypatch.setattr(
         "thor_cli.model_switch_providers.get_pricing_for_provider",
         mp.get_pricing_for_provider,
         raising=False,
     )
 
-    ids = msp._nous_picker_model_ids({"nous": ["nous/curated"]}, False)
+    ids = msp._thorhub_picker_model_ids({"nous": ["nous/curated"]}, False)
     assert ids == ["nous/curated", "sale/deep"]
 
 
@@ -69,9 +68,9 @@ def test_anonymous_reads_still_resolve(monkeypatch):
     mp._pricing_cache_retry_after.clear()
     mp._pricing_provider_cache_keys.clear()
 
-    _serve_nous_catalog(monkeypatch, {"data": [{"id": "nous/curated", "pricing": dict(_LIST)}]})
-    monkeypatch.setattr(mp, "_resolve_nous_pricing_credentials", lambda: ("", _BASE))
-    warmed = mp._fetch_nous_pricing_for_provider()
+    _serve_thorhub_catalog(monkeypatch, {"data": [{"id": "nous/curated", "pricing": dict(_LIST)}]})
+    monkeypatch.setattr(mp, "_resolve_thorhub_pricing_credentials", lambda: ("", _BASE))
+    warmed = mp._fetch_thorhub_pricing_for_provider()
     assert warmed == {"nous/curated": dict(_LIST)}
 
-    assert mp.get_pricing_for_provider("nous", cached_only=True) == warmed
+    assert mp.get_pricing_for_provider("thor", cached_only=True) == warmed

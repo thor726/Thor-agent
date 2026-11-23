@@ -75,9 +75,9 @@ def managed_tools_rolled_out() -> bool:
     says nothing about that, so entitlement is the wrong predicate here: the portal mints its
     answer onto the token as ``managed_tools`` and this reads only that. A token minted before
     the claim existed carries none and reads as not enabled."""
-    from thor_cli.nous_account import get_nous_portal_account_info
+    from thor_cli.thorhub_account import get_thorhub_account_info
 
-    account_info = get_nous_portal_account_info()
+    account_info = get_thorhub_account_info()
     return bool(account_info.logged_in) and account_info.managed_tools_rolled_out
 
 

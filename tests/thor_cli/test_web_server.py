@@ -2846,12 +2846,12 @@ class TestNewEndpoints:
         state so keyless ≠ ready.
         """
         from thor_cli import tools_config
-        from thor_cli.nous_account import NousPortalAccountInfo
+        from thor_cli.thorhub_account import ThorHubAccountInfo
 
-        # Logged out of Nous Portal → managed subscription rows need sign-in.
+        # Logged out of ThorHub → managed subscription rows need sign-in.
         monkeypatch.setattr(
-            "thor_cli.nous_subscription.get_nous_portal_account_info",
-            lambda *a, **k: NousPortalAccountInfo(
+            "thor_cli.thorhub_subscription.get_thorhub_account_info",
+            lambda *a, **k: ThorHubAccountInfo(
                 logged_in=False, source="none", fresh=False, paid_service_access=None
             ),
         )
@@ -2873,7 +2873,7 @@ class TestNewEndpoints:
         # Genuinely-free keyless row stays Ready.
         assert by_name["Microsoft Edge TTS"]["status"] == "ready"
         # Keyless ≠ ready for gated rows:
-        assert by_name["Nous Subscription"]["status"] == "needs_auth"
+        assert by_name["Thor Subscription"]["status"] == "needs_auth"
         assert by_name["xAI TTS"]["status"] == "needs_auth"
         assert by_name["KittenTTS"]["status"] == "needs_setup"
         assert by_name["Piper"]["status"] == "needs_setup"
@@ -2881,27 +2881,27 @@ class TestNewEndpoints:
         assert by_name["ElevenLabs"]["status"] == "needs_keys"
 
 
-    def test_select_managed_nous_provider_reports_needs_nous_auth(self, monkeypatch):
-        """Selecting a managed Nous row while logged out flags needs_nous_auth.
+    def test_select_managed_thorhub_provider_reports_needs_nous_auth(self, monkeypatch):
+        """Selecting a managed ThorHub row while logged out flags needs_nous_auth.
 
         Regression: the GUI PUT wrote browser.cloud_provider + use_gateway
-        but skipped the Portal entitlement handshake the CLI runs inline
-        (ensure_nous_portal_access) — so the row never activated and nothing
+        but skipped the ThorHub entitlement handshake the CLI runs inline
+        (ensure_thorhub_access) — so the row never activated and nothing
         told the user to sign in. The endpoint now reports the entitlement
-        gap so the client can drive the existing Nous OAuth flow.
+        gap so the client can drive the ThorHub key flow.
         """
-        from thor_cli.nous_account import NousPortalAccountInfo
+        from thor_cli.thorhub_account import ThorHubAccountInfo
 
         monkeypatch.setattr(
-            "thor_cli.nous_subscription.get_nous_portal_account_info",
-            lambda *a, **k: NousPortalAccountInfo(
+            "thor_cli.thorhub_subscription.get_thorhub_account_info",
+            lambda *a, **k: ThorHubAccountInfo(
                 logged_in=False, source="none", fresh=False, paid_service_access=None
             ),
         )
 
         resp = self.client.put(
             "/api/tools/toolsets/browser/provider",
-            json={"provider": "Nous Subscription (Browser Use cloud)"},
+            json={"provider": "Thor Subscription (Browser Use cloud)"},
         )
         assert resp.status_code == 200
         data = resp.json()

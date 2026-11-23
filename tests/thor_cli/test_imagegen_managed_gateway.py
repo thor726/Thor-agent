@@ -91,9 +91,9 @@ def _quiet_reconfigure(monkeypatch):
     monkeypatch.setattr(tc, "_run_post_setup", lambda *a, **k: None, raising=False)
     monkeypatch.setattr(tools_config_post_setup, "_run_post_setup", lambda *a, **k: None, raising=False)
     # Managed rows gate on live Portal auth — stub it green.
-    import thor_cli.nous_subscription as ns
+    import thor_cli.thorhub_subscription as ns
 
-    monkeypatch.setattr(ns, "ensure_nous_portal_access", lambda **k: True)
+    monkeypatch.setattr(ns, "ensure_thorhub_access", lambda **k: True)
 
 
 def test_reconfigure_managed_fal_row_keeps_managed_selection(monkeypatch):
@@ -108,8 +108,8 @@ def test_reconfigure_managed_fal_row_keeps_managed_selection(monkeypatch):
     managed_row = {
         "name": "Nous Subscription",
         "env_vars": [],
-        "requires_nous_auth": True,
-        "managed_nous_feature": "image_gen",
+        "requires_thorhub_auth": True,
+        "managed_thorhub_feature": "image_gen",
         "override_env_vars": ["FAL_KEY"],
         "imagegen_backend": "fal",
     }
