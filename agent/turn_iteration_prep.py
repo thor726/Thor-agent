@@ -149,11 +149,6 @@ def prepare_iteration(
     filter neutralises copies of hidden interrupt placeholders, and repair runs BEFORE the request build."""
     from agent.conversation_loop import _maybe_inject_run_budget_wrapup
 
-    # nous.anthropic_wire=auto: a wire switch decided from the previous response lands here,
-    # before this iteration's request is built and with nothing in flight.
-    if getattr(agent, "_nous_wire_pending", None):
-        from agent.nous_wire import apply_pending_wire_switch
-        apply_pending_wire_switch(agent)
 
     # Fire step_callback for gateway hooks (agent:step event).
     if agent.step_callback is not None:

@@ -14,7 +14,7 @@ You need at least one way to connect to an LLM. Use `thor model` to switch provi
 
 | Provider | Setup |
 |----------|-------|
-| **Nous Portal** | `thor model` (OAuth, subscription-based) |
+| **ThorHub** | custom provider, token packages (QRIS) |
 | **OpenAI Codex** | `thor model` → **ChatGPT or Codex Subscription** (ChatGPT OAuth, uses Codex models) |
 | **Anthropic** | `thor model` (Claude Max + extra usage credits via OAuth; also supports Anthropic API key or manual setup-token — see note below) |
 | **OpenRouter** | `OPENROUTER_API_KEY` in `~/.thor/.env`, or `thor auth add openrouter --type oauth` (browser login via OpenRouter's PKCE flow; stores a key in the credential pool) |
@@ -69,53 +69,18 @@ In the `model:` config section, you can use either `default:` or `model:` as the
 :::
 
 
-### Nous Portal
+### ThorHub
 
-[Nous Portal](https://portal.thor-agent.local) is Thor Labs's unified subscription gateway and **the recommended way to run Thor Agent**. One OAuth login covers 300+ frontier agentic models (Claude, GPT, Gemini, DeepSeek, Qwen, Kimi, GLM, MiniMax, Grok, ...) plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, browser automation) — billed against your Nous subscription instead of separate per-provider accounts.
+[ThorHub](https://llm.thormarket.site) is Thor's own token store. Buy token packages (QRIS) at [llm.thormarket.site/beli](https://llm.thormarket.site/beli), get a sub-key (`sk-thor-...`), and use it in Thor as a custom provider with `base_url https://llm.thormarket.site/v1`. Check your balance with `/topup` (when a ThorHub key is configured) or `/skill saldo`, and top up at [llm.thormarket.site/beli/topup](https://llm.thormarket.site/beli/topup).
 
 ```bash
-thor setup --portal     # fresh install — OAuth + provider + gateway in one command
-thor model              # existing install — pick "Nous Portal" from the list
-thor portal info        # inspect login + routing at any time
+thor model              # pick a model, or switch to your ThorHub alias
+thor portal info        # inspect ThorHub sign-up link + routing at any time
 ```
 
-Don't have a subscription yet? Get one at [portal.thor-agent.local/manage-subscription](https://portal.thor-agent.local/manage-subscription).
+ThorHub is a paid token store, not a free tier — the free routes are direct providers such as Gemini and Groq. You choose your own provider and model in `thor setup`; ThorHub is one optional provider among them.
 
-**For full details:** see the dedicated [Nous Portal integration page](./nous-portal.md) (what's in the subscription, model catalog, troubleshooting) and the step-by-step [Run Thor Agent with Nous Portal guide](../guides/run-thor-with-nous-portal.md).
-
-**Client identification.** Every Portal request from Thor Agent carries a `client=thor-client-v<version>` tag (e.g. `client=thor-client-v0.13.0`) auto-aligned to your installed release. This is sent on all Portal pathways — main chat loop, auxiliary calls, compression summarizer, web extraction — and lets Portal-side telemetry distinguish Thor traffic from other clients. No config required; the tag updates automatically when you `thor update`.
-
-**JWT auth (automatic).** Thor prefers scoped `inference:invoke` JWTs for Portal requests with the legacy opaque session-key path as a fallback. No configuration is required — credentials are managed by the OAuth flow and rotate transparently. Revoked refresh tokens are quarantined to avoid replay loops.
-
-
-:::info Codex Note
-The OpenAI Codex provider authenticates via device code by default (open a URL, enter a code). Organizations that disable the device-code grant can opt in to the browser authorization-code + PKCE flow instead: `thor auth add openai-codex --browser` (one login) or `auth.codex_login_flow: browser` in `config.yaml` (every Codex login, including `thor model`). That flow listens on `http://localhost:1455/auth/callback` — the redirect URI registered for the Codex client, so the port is fixed; if it is already taken (a Codex CLI sign-in in progress) Thor says so and falls back to device code. Over SSH the listener needs a tunnel (`ssh -N -L 1455:127.0.0.1:1455 user@host`, see [OAuth over SSH](../guides/oauth-over-ssh.md)). Thor stores the resulting credentials in its own auth store under `~/.thor/auth.json` and can import existing Codex CLI credentials from `~/.codex/auth.json` when present. No Codex CLI installation is required. Automatic adoption of the Codex CLI login (when Thor' own refresh fails) is controlled by `auth.adopt_external_logins` — see [Borrowed CLI logins](../user-guide/security.md#borrowed-cli-logins).
-
-If a token refresh fails with a terminal error (HTTP 4xx, `invalid_grant`, revoked grant, etc.), Thor marks the refresh token as dead and stops replaying it so you don't see a flood of identical auth failures. The next request surfaces a typed re-auth message instead. Run `thor auth add openai-codex` (or `thor model` → **ChatGPT or Codex Subscription**) to start a fresh login (device code, or `--browser` for the loopback PKCE flow); the quarantine clears on the next successful exchange.
-
-Device login can fail with `[SSL: UNEXPECTED_EOF_WHILE_READING]` or a TLS handshake timeout on Python/OpenSSL 3.5+ when a middlebox rejects post-quantum groups such as X25519MLKEM768 (curl may still work). A one-off dropped connection is not fatal: while waiting for your browser approval Thor keeps polling through up to six consecutive transport errors (and retries the device-code request and token exchange twice) before giving up, so only a persistently broken network surfaces this error. Thor does not change default TLS policy. Point `OPENSSL_CONF` at a config that restricts `Groups` to classic curves before running `thor model`, or diagnose with TLS 1.2:
-
-```ini
-openssl_conf = openssl_init
-
-[openssl_init]
-ssl_conf = ssl_sect
-
-[ssl_sect]
-system_default = system_default_sect
-
-[system_default_sect]
-Groups = x25519:secp256r1:secp384r1:x448
-```
-:::
-
-:::warning
-Even when using Nous Portal, Codex, or a custom endpoint, some features (vision, compression, MoA) use a separate "auxiliary" model. By default (`auxiliary.*.provider: "auto"`), Thor routes these tasks to your **main chat model** — the same model you picked in `thor model`. You can override each task individually to route it to a cheaper/faster model (e.g. Gemini Flash on OpenRouter) — see [Auxiliary Models](../user-guide/configuration.md#auxiliary-models).
-:::
-
-:::tip Nous Tool Gateway
-Paid Nous Portal subscribers also get access to the **[Tool Gateway](../user-guide/features/tool-gateway.md)** — web search, image generation, TTS, and browser automation routed through your subscription. No extra API keys needed. On a fresh install, `thor setup --portal` logs you in, sets Nous as your provider, and turns the gateway on in one command. Existing users can enable it from `thor model` or per-tool from `thor tools`. Inspect routing at any time with `thor portal info`.
-:::
+**For full details:** see the dedicated [ThorHub integration page](./thorhub.md).
 
 ### Two Commands for Model Management
 
@@ -145,14 +110,14 @@ Several providers let you sign in to Thor with a **consumer subscription** (Clau
 
 **Anthropic.** The OAuth path routes as Claude Code against your Anthropic account and **only works on a Claude Max plan with purchased extra usage credits** — the base Max allowance is never consumed by Thor, only the extra/overage credits on top. Claude Pro subscribers cannot use this path; the supported alternative is an `ANTHROPIC_API_KEY`, billed pay-per-token against that key's organization at standard API pricing. See [Anthropic (Native)](#anthropic-native) below.
 
-**OpenAI Codex.** Thor authenticates via ChatGPT device-code OAuth, stores credentials in `~/.thor/auth.json`, and can import existing Codex CLI credentials from `~/.codex/auth.json`. Which ChatGPT plan tiers are eligible, and how Thor usage counts against your plan's Codex limits, are **not currently documented** — the Codex note under [Nous Portal](#nous-portal) covers authentication and token-refresh behavior only.
+**OpenAI Codex.** Thor authenticates via ChatGPT device-code OAuth, stores credentials in `~/.thor/auth.json`, and can import existing Codex CLI credentials from `~/.codex/auth.json`. Which ChatGPT plan tiers are eligible, and how Thor usage counts against your plan's Codex limits, are **not currently documented** — the Codex note under [ThorHub](#thorhub) covers authentication and token-refresh behavior only.
 
 **xAI (SuperGrok / X Premium+).** Browser OAuth works with either an active SuperGrok subscription or an X Premium+ subscription on the linked X account, and the same bearer token is reused by direct-to-xAI tools (TTS, image gen, video gen, transcription, X Search). If inference returns `HTTP 403` after a successful login, that's a tier/entitlement restriction on xAI's side, not a stale token — the workaround is switching to an `XAI_API_KEY`. See [xAI (Grok)](#xai-grok--responses-api--prompt-caching) below and the [xAI Grok OAuth guide](../guides/xai-grok-oauth.md).
 
 **Google Gemini.** There is currently no way to sign in to Thor with a consumer Gemini subscription — the `gemini` provider takes an API key, and [Google Vertex AI](#google-vertex-ai) bills to your GCP project. A billing-enabled Google Cloud project is recommended for agent use; free-tier quotas are too small for long-running agent sessions. See the [Google Gemini guide](../guides/google-gemini.md).
 
 :::tip One subscription instead of five
-If you'd rather not track per-provider plan semantics at all, [Nous Portal](#nous-portal) covers 300+ models under a single subscription with one OAuth login.
+If you'd rather not track per-provider plan semantics at all, [ThorHub](#thorhub) sells token packages under one key.
 :::
 
 ### Anthropic (Native)
@@ -1278,7 +1243,7 @@ Thor uses a multi-source resolution chain to detect the correct context window f
 4. **Endpoint `/models`** — queries your server's API (local/custom endpoints)
 5. **Anthropic `/v1/models`** — queries Anthropic's API for `max_input_tokens` (API-key users only)
 6. **OpenRouter API** — live model metadata from OpenRouter
-7. **Nous Portal** — suffix-matches Nous model IDs against OpenRouter metadata
+7. **ThorHub** — token packages for the models ThorHub serves (see the ThorHub page)
 8. **[models.dev](https://models.dev)** — community-maintained registry with provider-specific context lengths for 3800+ models across 100+ providers
 9. **Fallback defaults** — broad model family patterns (128K default)
 
@@ -1387,7 +1352,7 @@ Older configs used a top-level `custom_providers:` list instead. It still works 
 
 **Context window on `codex_responses` proxies.** A custom entry with `transport: codex_responses` (a local Codex proxy, for example) resolves the context window of Codex OAuth models (`gpt-6-astra`, `gpt-5.6-sol`/`-terra`/`-luna`, `gpt-5.5`, …) from the Codex OAuth table — 272K for most slugs — not from the 1.05M direct-API catalog, so compression fires before the Codex backend's limit and its 272K billing tier. The decision follows the transport, not the hostname; the same holds for `openai-codex` behind `THOR_CODEX_BASE_URL` or `model.base_url`. A per-model `models.<id>.context_length`, an entry-level `context_length`, or `model.context_length` still wins; the opt-in `-900k` picker variants keep their verified 900K.
 
-**Reasoning effort on custom endpoints.** The configured `reasoning_effort` (`/reasoning max`, `agent.reasoning_effort`) reaches a custom endpoint unchanged on both the `chat_completions` and the `codex_responses` transport — up to `max`; only the Thor-internal `ultra` is clamped to `max`. Two exceptions follow the host rather than the entry: a custom entry pointed at `api.openai.com` keeps OpenAI's per-model ladder (`max` is a gpt-5.6-only level there), and an entry pointed at a provider whose profile publishes a per-model vocabulary (Ramp Router) is clamped to that catalog. An endpoint that rejects the level answers with an HTTP 400 instead of Thor silently downgrading it. When no effort is configured at all, `chat_completions` requests carry `reasoning_effort: medium` — the same default the Nous Portal and OpenRouter routes apply — rather than leaving the endpoint's own default in charge (kimi-k3's is `max`, about 3x the reasoning tokens of `medium`); models marked `supports_reasoning: false` in the catalog or `model_overrides`, and Ollama models without the `thinking` capability, keep the field off.
+**Reasoning effort on custom endpoints.** The configured `reasoning_effort` (`/reasoning max`, `agent.reasoning_effort`) reaches a custom endpoint unchanged on both the `chat_completions` and the `codex_responses` transport — up to `max`; only the Thor-internal `ultra` is clamped to `max`. Two exceptions follow the host rather than the entry: a custom entry pointed at `api.openai.com` keeps OpenAI's per-model ladder (`max` is a gpt-5.6-only level there), and an entry pointed at a provider whose profile publishes a per-model vocabulary (Ramp Router) is clamped to that catalog. An endpoint that rejects the level answers with an HTTP 400 instead of Thor silently downgrading it. When no effort is configured at all, `chat_completions` requests carry `reasoning_effort: medium` — the same default the OpenRouter route applies — rather than leaving the endpoint's own default in charge (kimi-k3's is `max`, about 3x the reasoning tokens of `medium`); models marked `supports_reasoning: false` in the catalog or `model_overrides`, and Ollama models without the `thinking` capability, keep the field off.
 
 Some OpenAI-compatible endpoints need provider-specific request body fields. Add an `extra_body` map to the matching custom provider and Thor will merge it into each chat-completions request for that endpoint:
 
@@ -1572,7 +1537,7 @@ model:
 
 | Use Case | Recommended |
 |----------|-------------|
-| **Just want it to work** | OpenRouter (default) or Nous Portal |
+| **Just want it to work** | OpenRouter (default) or ThorHub |
 | **Local models, easy setup** | Ollama |
 | **Production GPU serving** | vLLM or SGLang |
 | **Mac / no GPU** | Ollama or llama.cpp |

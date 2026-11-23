@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "不明な /usage サブコマンド: `{args}`。`/usage` または `/usage reset [--force]` をお試しください。"
     reset_wrong_provider: "バンクされた使用制限リセットは openai-codex プロバイダーでのみ利用できます。まず `/model` で切り替えてください。"
   credits:
-    not_logged_in: "Nous Portal にログインしていません。ログインすると残高の確認とチャージができます。"
+    not_logged_in: "ThorHub にログインしていません。ログインすると残高の確認とチャージができます。"
   verbose:
     not_enabled: "`/verbose` コマンドはメッセージングプラットフォームで有効になっていません。\n\n`config.yaml` で有効にしてください:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ ツール進捗: **OFF** — ツールの動作は表示されません。"
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "請求情報を読み込めませんでした"
-    not_logged_in: "Nous Portal にログインしていません。"
+    not_logged_in: "ThorHub にログインしていません。"
     run_portal_then: "`thor portal` を実行してログインし、その後 {cmd} を実行してください。"
     org_line: "組織: {org}"
     org_line_role: "組織: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  プロバイダーリゾルバーが空のベース URL を返しました。プロバイダー設定を確認するか、次を実行してください: thor setup"
     switching_to_fallback: "⚠️  {reason} — フォールバックに切り替えます: {provider} / {model}"
     first_run_no_provider: "☤ 推論プロバイダーがまだ設定されていません — 今から設定しましょう。"
-    first_run_pick_provider: "プロバイダー（Nous Portal の OAuth が最速で、API キー不要です）とモデルを選択します。"
+    first_run_pick_provider: "プロバイダー（ThorHub の OAuth が最速で、API キー不要です）とモデルを選択します。"
     first_run_prompt: "今すぐプロバイダーを設定しますか？ [Y/n]:"
     first_run_skipped: "スキップしました。'thor model' または 'thor setup' はいつでも実行できます。"
     first_run_cancelled: "セットアップをキャンセルしました。'thor model' はいつでも実行できます。"

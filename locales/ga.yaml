@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "Fo-ordú /usage anaithnid: `{args}`. Bain triail as `/usage` nó `/usage reset [--force]`."
     reset_wrong_provider: "Níl athshocruithe teorann bainc ar fáil ach ar an soláthraí openai-codex. Athraigh le `/model` ar dtús."
   credits:
-    not_logged_in: "Níl tú logáilte isteach i Nous Portal. Logáil isteach chun d'iarmhéid creidmheasa a fheiceáil agus breis a chur leis."
+    not_logged_in: "Níl tú logáilte isteach i ThorHub. Logáil isteach chun d'iarmhéid creidmheasa a fheiceáil agus breis a chur leis."
   verbose:
     not_enabled: "Níl an t-ordú `/verbose` cumasaithe d'ardáin teachtaireachtaí.\n\nCumasaigh in `config.yaml`:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Dul chun cinn uirlise: **AS** — gan aon ghníomhaíocht uirlise á thaispeáint."
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Níorbh fhéidir an bhilleáil a lódáil"
-    not_logged_in: "Níl tú logáilte isteach i Nous Portal."
+    not_logged_in: "Níl tú logáilte isteach i ThorHub."
     run_portal_then: "Rith `thor portal` chun logáil isteach, ansin {cmd}."
     org_line: "Eagraíocht: {org}"
     org_line_role: "Eagraíocht: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  D'fhill réiteoir an tsoláthraí URL bunaidh folamh. Seiceáil cumraíocht do sholáthraí nó rith: thor setup"
     switching_to_fallback: "⚠️  {reason} — ag athrú go dtí an cúltaca: {provider} / {model}"
     first_run_no_provider: "☤ Níl aon soláthraí inférála cumraithe fós — réitímis é sin."
-    first_run_pick_provider: "Roghnóidh tú soláthraí (is é Nous Portal OAuth an ceann is tapúla; ní gá eochair API) agus samhail."
+    first_run_pick_provider: "Roghnóidh tú soláthraí (is é ThorHub OAuth an ceann is tapúla; ní gá eochair API) agus samhail."
     first_run_prompt: "Socraigh soláthraí anois? [T/n]:"
     first_run_skipped: "Scipeáilte. Rith 'thor model' nó 'thor setup' am ar bith."
     first_run_cancelled: "Socrú cealaithe. Rith 'thor model' am ar bith."

@@ -1,7 +1,7 @@
 ---
 sidebar_position: 15
 title: "Subscription Proxy"
-description: "Use your Nous Portal subscription (or other OAuth provider) as an OpenAI-compatible endpoint for external apps"
+description: "Use your OAuth provider subscription as an OpenAI-compatible endpoint for external apps"
 ---
 
 # Subscription Proxy
@@ -32,7 +32,9 @@ proxy when you just want **the model** through your subscription.
 thor portal
 ```
 
-This opens your browser for the Nous Portal OAuth flow. Thor stores
+This opens your browser for the provider OAuth flow (the Nous Portal
+login was removed from Thor; the proxy now works with the remaining
+OAuth providers). Thor stores
 the refresh token in `~/.thor/auth.json` — the same place all Thor
 provider logins live.
 
@@ -43,7 +45,7 @@ thor proxy start
 ```
 
 ```
-Starting Thor proxy for Nous Portal
+Starting Thor proxy
   Listening on:  http://127.0.0.1:8645/v1
   Forwarding to: (resolved per-request from your subscription)
   Use any bearer token in the client — the proxy attaches your real credential.
@@ -72,7 +74,8 @@ automatically when the bearer approaches expiry.
 thor proxy providers
 ```
 
-Currently shipped: `nous` (Nous Portal) and `xai` (xAI / Grok). More
+Currently shipped: `xai` (xAI / Grok). The `nous` (Nous Portal) adapter
+was removed with Nous Portal. More
 OAuth providers can be added by implementing the `UpstreamAdapter`
 interface in `thor_cli/proxy/adapters/`.
 
@@ -85,18 +88,17 @@ thor proxy status
 ```
 Thor proxy upstream adapters
 
-  [nous    ] Nous Portal — ready (bearer expires 2026-05-15T06:43:21Z)
+  [xai     ] xAI / Grok — ready (bearer <redacted> 2026-05-15T06:43:21Z)
 ```
 
 If you see `not logged in`, run `thor portal`. If you see
-`credentials need attention`, your refresh token was revoked (rare —
-happens if you signed out from the Portal web UI) — just re-run
+`credentials need attention`, your refresh token was revoked — just re-run
 `thor portal`.
 
 ## Allowed paths
 
-The proxy only forwards paths the upstream actually serves. For Nous
-Portal:
+The proxy only forwards paths the upstream actually serves. For the
+configured upstream:
 
 | Path | Purpose |
 |------|---------|
@@ -139,10 +141,8 @@ thor proxy start
 openviking-server
 ```
 
-OpenViking's VLM calls now flow through your Portal subscription. The
-embedding model side still needs its own provider — Portal does serve
-`/v1/embeddings` but the model selection depends on what your tier
-supports; check `portal.thor-agent.local/models`.
+OpenViking's VLM calls now flow through your proxied subscription. The
+embedding model side still needs its own provider.
 
 ## Configuring Karakeep (or any bookmark/summarizer app)
 

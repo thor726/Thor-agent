@@ -1,82 +1,71 @@
-"""Tests for the /credits command — shared view core + gateway handler.
+"""Tests for the /topup balance view — ThorHub edition (agent/thorhub_usage.py).
 
-`/credits` is the focused money surface (balance in, top-up out). These tests
-exercise the surface-agnostic `build_credits_view()` core and assert the gateway
-handler renders the block + tappable top-up URL + no-wait copy. The CLI panel is
-a thin wrapper over the same view (interactive prompt_toolkit modal — covered by
-the view-core tests plus manual verification).
+``/topup`` is the focused money surface (balance in, top-up out). These tests
+exercise the surface-agnostic ``build_credits_view()`` core: a ThorHub token
+balance when THORHUB_API_KEY is set, fail-open (``logged_in=False``) when there
+is no key or the fetch fails. The old Nous Portal dollar-credits view is gone
+with ``agent.account_usage_nous``.
 """
 
 from __future__ import annotations
 
 import pytest
 
-from agent.account_usage_nous import build_credits_view
-from thor_cli.nous_account import NousPortalAccountInfo, NousPaidServiceAccessInfo
+from agent.thorhub_usage import CreditsView, build_credits_view
+from thor_cli.thorhub_account import THORHUB_TOPUP_URL
 
-def _account(**kwargs) -> NousPortalAccountInfo:
-    kwargs.setdefault("logged_in", True)
-    kwargs.setdefault("source", "account_api")
-    kwargs.setdefault("fresh", True)
-    kwargs.setdefault("portal_base_url", "https://portal.example.test")
-    return NousPortalAccountInfo(**kwargs)
+
+def _balance(**over):
+    data = {
+        "user_name": "Tes",
+        "token_limit": 1_000_000,
+        "tokens_used": 36_908,
+        "tokens_remaining": 963_092,
+        "key_days_left": 24,
+    }
+    data.update(over)
+    return data
+
 
 @pytest.fixture
-def _logged_in_account(monkeypatch):
-    """Stub the auth token + account fetch so build_credits_view runs offline."""
-    monkeypatch.setattr(
-        "thor_cli.auth.get_provider_auth_state",
-        lambda provider: {"access_token": "tok", "portal_base_url": "https://portal.example.test"},
-    )
-
-    def _install(account):
-        monkeypatch.setattr(
-            "thor_cli.nous_account.get_nous_portal_account_info",
-            lambda *a, **kw: account,
-        )
-
+def _stub_balance(monkeypatch):
+    """Stub the ThorHub fetch so build_credits_view runs offline."""
+    def _install(data):
+        monkeypatch.setattr("thor_cli.thorhub_account.fetch_thorhub_balance", lambda: data)
     return _install
 
-# ── build_credits_view core ─────────────────────────────────────────────────
 
-def test_view_built_with_thorhub_topup_url_and_identity(_logged_in_account):
-    # Debrand Fase 2: URL top-up Nous (org-pinned portal.example.test) sudah
-    # pensiun — topup_url sekarang selalu ThorHub /beli/topup.
-    _logged_in_account(
-        _account(
-            org_slug="acme",
-            org_name="Acme Inc",
-            email="alice@example.test",
-            paid_service_access=True,
-            paid_service_access_info=NousPaidServiceAccessInfo(
-                purchased_credits_remaining=30.0,
-                total_usable_credits=30.0,
-            ),
-            subscription=None,
-        )
-    )
-
+def test_view_logged_out_when_no_key(_stub_balance):
+    _stub_balance(None)
     view = build_credits_view()
+    assert view == CreditsView(logged_in=False)
+    assert view.topup_url is None
 
+
+def test_view_built_with_thorhub_balance_and_identity(_stub_balance):
+    _stub_balance(_balance())
+    view = build_credits_view()
     assert view.logged_in is True
-    assert view.topup_url == "https://llm.thormarket.site/beli/topup"
-    assert "alice@example.test" in view.identity_line and "Acme Inc" in view.identity_line
+    assert view.topup_url == THORHUB_TOPUP_URL
+    assert view.identity_line and "ThorHub" in view.identity_line and "Tes" in view.identity_line
+    assert view.balance_lines, "the balance block must render the ThorHub numbers"
     assert view.depleted is False
-    assert "$30.00" in "\n".join(view.balance_lines)
 
-# ── gateway _handle_topup_command (the messaging billing surface) ────────────
 
-class _FakeEvent:
-    pass
+def test_view_depleted_when_remaining_zero(_stub_balance):
+    _stub_balance(_balance(tokens_remaining=0, tokens_used=1_000_000))
+    assert build_credits_view().depleted is True
 
-def _make_gateway_stub():
-    """Minimal object exposing the mixin's _handle_topup_command."""
-    from gateway.slash_commands import GatewaySlashCommandsMixin
 
-    class _Stub(GatewaySlashCommandsMixin):
-        def __init__(self):
-            pass
+def test_view_fail_open_when_fetch_raises(monkeypatch):
+    monkeypatch.setattr(
+        "thor_cli.thorhub_account.fetch_thorhub_balance",
+        lambda: (_ for _ in ()).throw(RuntimeError("kaboom")),
+    )
+    assert build_credits_view().logged_in is False
 
-    return _Stub()
 
-# ── command registry ────────────────────────────────────────────────────────
+def test_view_importable_from_account_usage_facade():
+    """Published plugin API: catalog plugins import build_credits_view from agent.account_usage."""
+    from agent.account_usage import build_credits_view as facade_view
+    assert facade_view is build_credits_view

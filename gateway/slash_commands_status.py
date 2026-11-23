@@ -543,9 +543,9 @@ class GatewayStatusCommandsMixin:
         return "\n".join(lines)
 
     async def _handle_topup_command(self, event: MessageEvent) -> str:
-        """Handle /topup -- show the Nous balance and hand off to the portal. Does NOT charge, confirm,
+        """Handle /topup -- show the ThorHub balance and hand off to the top-up page. Does NOT charge, confirm,
         or track payment (that happens in the browser; the next /topup shows the new balance)."""
-        from agent.account_usage_nous import build_credits_view
+        from agent.thorhub_usage import build_credits_view
         view = await _quiet(lambda: asyncio.to_thread(build_credits_view, markdown=True))
         if view is None or not view.logged_in:
             return t("gateway.credits.not_logged_in")
@@ -661,17 +661,9 @@ class GatewayStatusCommandsMixin:
             render_account_usage_lines(account_snapshot, markdown=True) if account_snapshot else []
         )
 
-        # The Nous section (shared with CLI/TUI) after the provider's block, whenever Nous is signed in;
-        # its top-up lines only on a Nous route. Fail-open: never break /usage.
-        from agent.account_usage_nous import nous_usage_lines
-        from agent.billing_links import is_nous_inference_route
-        credits_state = getattr(agent, "_credits_state", None) if agent else None
-        nous_route = is_nous_inference_route(provider or "", base_url or "")
-        credits_lines = await _quiet(lambda: asyncio.to_thread(
-            nous_usage_lines, nous_route=nous_route, markdown=True, credits_state=credits_state), [])
-        # Window plans: a chat's /topup has no Keep going control, so point the setting at the Portal.
-        from agent.plan_limits import portal_wording
-        credits_lines = [portal_wording(line) for line in credits_lines]
+        # No Nous section anymore: /usage shows only the active provider's block.
+        # The ThorHub balance lives on /topup (agent.thorhub_usage.build_credits_view).
+        credits_lines: list[str] = []
 
         def _with_account_blocks(lines: list[str]) -> str:
             # Each block is preceded by a blank divider only when something precedes it.

@@ -1463,12 +1463,6 @@ def _start_server_runtime(
 
     import uvicorn
 
-    try:
-        from thor_cli.nous_auth_keepalive import start_nous_auth_keepalive
-
-        start_nous_auth_keepalive()
-    except Exception as exc:
-        _log.debug("Thor auth keepalive did not start: %s", exc)
 
     _configure_auth_gate(host, allow_public, ssh_session_token, ssh_owner_nonce)
 

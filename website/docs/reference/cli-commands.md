@@ -58,7 +58,7 @@ The install also ships `thor-agent`, a minimal runner that sends one query and e
 | `thor whatsapp` | Configure and pair the WhatsApp bridge. |
 | `thor whatsapp-cloud` | Configure the official Meta WhatsApp Business Cloud API adapter (Business account + public webhook required). Distinct from `thor whatsapp` (Baileys personal-account bridge). |
 | `thor slack` | Slack helpers (currently: generate the app manifest with every command as a native slash). |
-| `thor auth` | Manage credentials — add, list, remove, reset, status, logout. Handles OAuth flows for Codex/Nous/Anthropic. |
+| `thor auth` | Manage credentials — add, list, remove, reset, status, logout. Handles OAuth flows for Codex/Anthropic. |
 | `thor login` / `logout` | **Deprecated** — use `thor auth` instead. |
 | `thor send` | Send a one-shot message to a configured messaging platform (Telegram, Discord, Slack, Signal, SMS, …). Useful from shell scripts, cron jobs, CI hooks, and monitoring daemons — no agent loop, no LLM. |
 | `thor peer` | Register peer Thor gateways on other machines and DM their agents' canonical Bot Chats (`thor peer dm <peer>[/<agent>] "…"`). The transport behind cross-machine bot-to-bot messaging. |
@@ -96,7 +96,7 @@ The install also ships `thor-agent`, a minimal runner that sends one query and e
 | `thor mcp` | Manage MCP server configurations. Running Thor as an MCP server is the [mcp-serve plugin](../user-guide/features/mcp.md#running-thor-as-an-mcp-server). |
 | `thor connectors` | List, connect, rename and disconnect hosted connector accounts. |
 | `thor plugins` | Manage Thor Agent plugins (install, enable, disable, remove). |
-| `thor portal` | Nous Portal status, subscription link, and Tool Gateway routing. See [Tool Gateway](../user-guide/features/tool-gateway.md). |
+| `thor portal` | ThorHub sign-up link and routing info. See [ThorHub](../integrations/thorhub.md). |
 | `thor tools` | Configure enabled tools per platform. |
 | `thor computer-use` | Install or check the Computer Use (cua-driver) backend (macOS/Windows/Linux). |
 | `thor pets` | Browse, install, and select [petdex](../user-guide/features/pets.md) animated pets shown across the CLI, TUI, and desktop app. Subcommands: `list`, `install`, `select`, `show`, `off`, `scale`, `remove`, `doctor`. |
@@ -428,13 +428,13 @@ the full guide, supported languages, and configuration knobs.
 thor setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset] [--quick] [--reconfigure] [--portal]
 ```
 
-**Easiest path:** `thor setup --portal` — OAuth into Nous Portal and opt into the [Tool Gateway](../user-guide/features/tool-gateway.md) in one shot.
+**Easiest path:** `thor setup` — pick a provider (ThorHub or direct) in one shot.
 
 **First run:** launches the first-time wizard.
 
 **Returning user (already configured):** drops straight into the full reconfigure wizard — every prompt shows your current value as its default, press Enter to keep or type a new value. No menu.
 
-**Coming from another agent:** when the first run finds an OpenClaw, Claude Code, Codex CLI or Cursor setup (`~/.openclaw`, `~/.claude`, `~/.codex`, `~/.cursor`), it first asks **"Import your setup from …?"** (default yes). With more than one found, you then pick which from a checklist. Setup installs the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin from the catalog, unless you already have it, and runs its import for each pick, which shows a preview and asks before changing anything (OpenClaw's allowlisted API keys and bot tokens are included, as the old built-in step did). Quick Setup after an import that brought a model and its key asks **"Keep your imported model (…) or switch to Nous Portal?"** (default keep, which skips the Nous Portal login). Nothing found, a no, `--non-interactive` or a setup started by the dashboard: no question and nothing installed. On an already configured install, run `thor import-agent` instead.
+**Coming from another agent:** when the first run finds an OpenClaw, Claude Code, Codex CLI or Cursor setup (`~/.openclaw`, `~/.claude`, `~/.codex`, `~/.cursor`), it first asks **"Import your setup from …?"** (default yes). With more than one found, you then pick which from a checklist. Setup installs the [`agent-importers`](../user-guide/import-from-other-agents.md) plugin from the catalog, unless you already have it, and runs its import for each pick, which shows a preview and asks before changing anything (OpenClaw's allowlisted API keys and bot tokens are included, as the old built-in step did). Quick Setup after an import that brought a model and its key asks **"Keep your imported model (…) or switch to ThorHub?"** (default keep, which skips the ThorHub setup). Nothing found, a no, `--non-interactive` or a setup started by the dashboard: no question and nothing installed. On an already configured install, run `thor import-agent` instead.
 
 Jump into one section instead of the full wizard:
 
@@ -454,7 +454,7 @@ Options:
 | `--non-interactive` | Use defaults / environment values without prompts. |
 | `--reset` | Reset configuration to defaults before setup. |
 | `--reconfigure` | Backwards-compat alias — bare `thor setup` on an existing install now does this by default. |
-| `--portal` | One-shot Nous Portal setup: log in via OAuth, set Nous as the inference provider, and opt into the [Tool Gateway](../user-guide/features/tool-gateway.md). Skips the rest of the wizard. |
+| `--portal` | One-shot ThorHub setup guide: how to buy a ThorHub key and add it as a custom provider. Skips the rest of the wizard. |
 
 ## `thor portal`
 
@@ -462,13 +462,13 @@ Options:
 thor portal [status|open|tools]
 ```
 
-Inspect Nous Portal auth, Tool Gateway routing, and reach the subscription page. Subcommand-less invocation runs `status`.
+Inspect the ThorHub sign-up link and routing info. Subcommand-less invocation runs `status`.
 
 | Subcommand | Description |
 |------------|-------------|
 | `status` (default) | Portal auth state + per-tool Tool Gateway routing summary. Also shown when no subcommand is given. |
 | `open` | Open `portal.thor-agent.local/manage-subscription` in your default browser. |
-| `tools` | List every Tool Gateway partner (Firecrawl, FAL, OpenAI TTS, Browser Use, Modal) and which are routed via Nous. |
+| `tools` | List every Tool Gateway partner (Firecrawl, FAL, OpenAI TTS, Browser Use, Modal) and which are routed via your own keys. |
 
 For configuration of the gateway itself, see [Tool Gateway](../user-guide/features/tool-gateway.md). For the one-shot setup path, see `thor setup --portal` above.
 

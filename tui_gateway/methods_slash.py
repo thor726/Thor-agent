@@ -145,39 +145,26 @@ def _usage_route(session: dict) -> dict:
 
 
 def _usage_on_nous_route(route: dict) -> bool:
-    """The /topup CTA applies to a Nous route only; another provider's session sees the balance alone."""
-    from agent.billing_links import is_nous_inference_route
-    return is_nous_inference_route(route.get("provider") or "", route.get("base_url") or "")
+    """Legacy helper: there is no Nous route anymore, so this is always False."""
+    return False
 
 
 def _usage_nous_fields(session: dict) -> dict:
-    """``session.usage``'s Nous fields: ``nous_route`` (the /topup CTA applies), plus the balance lines
-    whenever Nous is signed in (``nous_credits_usage_fields``, which never raises), in the session's scope."""
-    from agent.account_usage_nous import nous_credits_usage_fields
-    with _session_profile_runtime_scope(session):
-        nous_route = _usage_on_nous_route(_usage_route(session))
-        return {**nous_credits_usage_fields(session.get("agent"), nous_route=nous_route), "nous_route": nous_route}
+    """``session.usage``'s legacy Nous fields: kept for shape-compat, always empty now.
+    The ThorHub balance lives on /topup."""
+    return {"nous_route": False}
 
 
 def _usage_account_blocks(session: dict) -> list[str]:
-    """Provider limits then the Nous section (``nous_usage_lines``), as CLI/messaging /usage show them;
-    neither needs an agent. Both read the session profile's credentials, unreadable outside its scope
-    when multiplexed (#132422)."""
+    """Provider limits only, as CLI/messaging /usage show them; no agent needed.
+    The old Nous section is gone; the ThorHub balance lives on /topup."""
     from agent.account_usage import account_limit_lines
-    from agent.account_usage_nous import nous_usage_lines
-    agent = session.get("agent")
     lines: list[str] = []
     with _session_profile_runtime_scope(session):
         route = _usage_route(session)
         with contextlib.suppress(Exception):
             lines += account_limit_lines(route.get("provider"), base_url=route.get("base_url"),
                                          api_key=route.get("api_key"))
-        with contextlib.suppress(Exception):
-            # Window plans: the last reply's gauges lift the portal's lagging percents (``is True``: a
-            # Mock agent's attribute is not a plan). Every other account: no gauges.
-            state = getattr(agent, "_credits_state", None)
-            window = getattr(state, "is_usage_window", False) is True
-            lines += nous_usage_lines(nous_route=_usage_on_nous_route(route), credits_state=state if window else None)
     return lines
 
 

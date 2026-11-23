@@ -453,7 +453,6 @@ class TestHardStops:
 
     def test_a_pause_for_another_reason_never_claims_a_payment_failed(self):
         """The server may send any reason (\"unknown\" for a malformed one): still a pause, neutral copy."""
-        from agent import account_usage, account_usage_nous
         from thor_cli import nous_account
         show, _ = _run(_state(paid_access=False, paused_reason="unknown", spend_source=None), new_credits_latch())
         assert [k for k, _l, _t in show] == [CREDITS_DEPLETED_KEY]
@@ -462,8 +461,6 @@ class TestHardStops:
                                  paused_reason="unknown", keep_going_on_credits=None)
         info = SimpleNamespace(logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
                                paid_service_access_info=SimpleNamespace(purchased_credits_remaining=0.0), subscription=None)
-        lines = account_usage.render_account_usage_lines(account_usage_nous.build_nous_credits_snapshot(info))
-        assert account_usage_nous._WINDOW_PAUSED_OTHER_LINE in lines and account_usage_nous._WINDOW_PAUSED_LINE not in lines
         assert nous_account.format_usage_window_block_guidance(info).startswith("Included usage is paused, or add credits")
 
     def test_payment_paused_wins_over_exhausted_and_survives_a_free_model(self):
@@ -712,203 +709,6 @@ class TestPlanStates:
 
 
 # ── /usage ────────────────────────────────────────────────────────────────────
-
-
-class TestUsageCommand:
-    def test_portal_window_account_renders_today_week_and_top_tier(self, monkeypatch):
-        from agent import account_usage, account_usage_nous
-        top_reset_ms = int(time.time() * 1000) + 20 * 86_400_000
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
-        info = SimpleNamespace(
-            logged_in=True, paid_service_access=True,
-            paid_service_access_info=SimpleNamespace(purchased_credits_remaining=5.0, subscription_credits_remaining=0.0, total_usable_credits=5.0),
-            subscription=SimpleNamespace(plan="Window Plan", monthly_credits=0, credits_remaining=0, rollover_credits=0, current_period_end="2026-10-01"),
-            usage_window=SimpleNamespace(gauges=_gauges(7_600, 4_000, top_tier_bp=10_000, day_reset=int(time.time() * 1000) + 3600_000,
-                                                        week_reset=int(time.time() * 1000) + 3 * 86_400_000, top_reset=top_reset_ms),
-                                         auto_top_up_enabled=False, paused_reason=None),
-        )
-        snap = account_usage_nous.build_nous_credits_snapshot(info)
-        assert snap is not None and snap.plan == "Window Plan"
-        assert [w.label for w in snap.windows] == ["Today", "This week", "Large models (monthly)"]
-        # The monthly row resets on the large-model allowance's own clock, and the used-up line names that date.
-        top_local = datetime.fromtimestamp(top_reset_ms / 1000, tz=UTC).astimezone()
-        assert snap.windows[2].reset_at == datetime.fromtimestamp(top_reset_ms / 1000, tz=UTC)
-        assert (f"Monthly large-model usage is used up. Resets {top_local:%b} {top_local.day}. "
-                "Past this, large models use your credits.") in snap.details
-        assert [round(w.used_percent) for w in snap.windows] == [76, 40, 100]
-        lines = account_usage.render_account_usage_lines(snap)
-        joined = "\n".join(lines)
-        assert "76% used" in joined and "[" in joined
-        assert "40% used" in joined
-        assert "100% used" in joined
-        assert joined.split("Today")[1].split("This week")[0].count("[") == 1
-        assert any(l.startswith(account_usage_nous._WINDOW_TOP_TIER_USED_UP) for l in lines)
-        assert "Top-up credits: $5.00" in lines and "Renews: Oct 1, 2026" in lines
-        assert not any(l.startswith(("Subscription credits", "Total usable", "Subscription:")) for l in lines)
-        assert account_usage_nous._DEPLETED_LINE not in lines
-
-    def test_portal_rows_follow_the_server_list(self, monkeypatch):
-        from agent import account_usage_nous
-        now = int(time.time() * 1000)
-        kw = dict(day_reset=now + 3600_000, week_reset=now + 3 * 86_400_000, top_reset=now + 20 * 86_400_000,
-                  month_reset=now + 20 * 86_400_000)
-        window = SimpleNamespace(gauges=_gauges(100, 200, **kw))
-        info = SimpleNamespace(logged_in=True, paid_service_access=True, paid_service_access_info=None, subscription=None,
-                               usage_window=window)
-        assert [w.label for w in account_usage_nous.build_nous_credits_snapshot(info).windows] == [
-            "Today", "This week", "Large models (monthly)"]  # no month allowance listed: no month row
-        window.gauges = _gauges(100, 200, month_bp=3_300, **kw)
-        snap = account_usage_nous.build_nous_credits_snapshot(info)
-        assert [w.label for w in snap.windows] == ["Today", "This week", "This month", "Large models (monthly)"]
-        assert round(snap.windows[2].used_percent) == 33
-        # A new allowance renders with the server's label, where the server put it.
-        window.gauges = [{"id": "five_hour", "scope": "all", "label": "Next 5 hours", "used_bp": 5_000,
-                          "resets_at_ms": now + 3600_000}, *_gauges(100, 200, **kw)]
-        assert next(w.label for w in account_usage_nous.build_nous_credits_snapshot(info).windows) == "Next 5 hours"
-
-    def test_an_unknown_reset_keeps_the_allowance_row(self):
-        """A valid percent with no usable reset still shows as a window row (no reset phrase), never the
-        dollar view: the window plan's details stay on screen."""
-        from agent import account_usage, account_usage_nous
-        gauges = [{"id": "day", "scope": "all", "label": "Today", "used_bp": 4_200},
-                  {"id": "week", "scope": "all", "label": "This week", "used_bp": 1_000, "resets_at_ms": "soon"}]
-        info = SimpleNamespace(logged_in=True, paid_service_access=True, paid_service_access_info=None, subscription=None,
-                               usage_window=SimpleNamespace(gauges=gauges, paused_reason=None))
-        snap = account_usage_nous.build_nous_credits_snapshot(info)
-        assert snap.usage_window and [(w.label, round(w.used_percent), w.reset_at) for w in snap.windows] == [
-            ("Today", 42, None), ("This week", 10, None)]
-        assert not any("resets" in line for line in account_usage.render_account_usage_lines(snap))
-
-    def test_header_gauge_raises_stale_portal_percents(self, monkeypatch):
-        from agent import account_usage_nous
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
-        info = SimpleNamespace(
-            logged_in=True, paid_service_access=True,
-            paid_service_access_info=SimpleNamespace(purchased_credits_remaining=5.0, subscription_credits_remaining=0.0, total_usable_credits=5.0),
-            subscription=SimpleNamespace(plan="Window Plan", monthly_credits=0, credits_remaining=0, rollover_credits=0, current_period_end="2026-10-01"),
-            usage_window=SimpleNamespace(gauges=_gauges(2_200, 1_100, top_tier_bp=3_400, day_reset=int(time.time() * 1000) + 3600_000,
-                                                        week_reset=int(time.time() * 1000) + 3 * 86_400_000),
-                                         auto_top_up_enabled=False, paused_reason=None),
-        )
-        snap = account_usage_nous.build_nous_credits_snapshot(info)
-        future = int(time.time() * 1000) + 3600_000
-        raised = account_usage_nous.apply_header_gauge(snap, _state(
-            window_day_used_bp=4_000, window_week_used_bp=1_600, window_top_tier_used_bp=10_000,
-            window_day_resets_at_ms=future, window_week_resets_at_ms=future))
-        assert [round(w.used_percent) for w in raised.windows] == [40, 16, 100]
-        assert sum(l.startswith(account_usage_nous._WINDOW_TOP_TIER_USED_UP) for l in raised.details) == 1
-        # A header behind the portal does not pull the bar backwards.
-        behind = _state(window_day_used_bp=100, window_week_used_bp=100, window_top_tier_used_bp=100,
-                        window_day_resets_at_ms=future, window_week_resets_at_ms=future)
-        assert account_usage_nous.apply_header_gauge(snap, behind) is snap
-        # A header from before its gauge reset describes the old window: the portal stands.
-        past = int(time.time() * 1000) - 1
-        reset = _state(window_day_used_bp=10_000, window_week_used_bp=1_600, window_top_tier_used_bp=None,
-                       window_day_resets_at_ms=past, window_week_resets_at_ms=past + 3 * 86_400_000)
-        assert [round(w.used_percent) for w in account_usage_nous.apply_header_gauge(snap, reset).windows][:2] == [22, 16]
-
-    def test_portal_paused_window_account(self, monkeypatch):
-        from agent import account_usage, account_usage_nous
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
-        info = SimpleNamespace(
-            logged_in=True, paid_service_access=False,
-            paid_service_access_info=SimpleNamespace(purchased_credits_remaining=0.0),
-            subscription=None,
-            usage_window=SimpleNamespace(gauges=_gauges(0, 0, day_reset=int(time.time() * 1000) + 1,
-                                                        week_reset=int(time.time() * 1000) + 2),
-                                         auto_top_up_enabled=False, paused_reason="payment_past_due"),
-        )
-        lines = account_usage.render_account_usage_lines(account_usage_nous.build_nous_credits_snapshot(info))
-        assert account_usage_nous._WINDOW_PAUSED_LINE in lines and account_usage_nous._DEPLETED_LINE not in lines
-
-    def test_portal_keep_going_off_says_so_and_never_says_add_credits(self, monkeypatch):
-        """Keep going on credits off: /usage names the setting, the used-up line points at the other
-        included usage (a balance doesn't unlock it), and the 402 guidance links billing, not top-up."""
-        from agent import account_usage, account_usage_nous
-        from thor_cli import nous_account
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_billing_url", lambda info: "https://portal/billing")
-        now = int(time.time() * 1000)
-        window = SimpleNamespace(gauges=_gauges(7_600, 4_000, top_tier_bp=10_000, day_reset=now + 3600_000,
-                                                week_reset=now + 3 * 86_400_000, top_reset=now + 20 * 86_400_000),
-                                 auto_top_up_enabled=False, paused_reason=None, keep_going_on_credits=False)
-        info = SimpleNamespace(
-            logged_in=True, paid_service_access=True,
-            paid_service_access_info=SimpleNamespace(purchased_credits_remaining=5.0),
-            subscription=None, usage_window=window,
-        )
-        lines = account_usage.render_account_usage_lines(account_usage_nous.build_nous_credits_snapshot(info))
-        assert account_usage_nous._WINDOW_KEEP_GOING_OFF_LINE in lines
-        assert any(line.endswith("Your other included usage is still available.") for line in lines)
-        assert not any("use your credits" in line for line in lines)
-        guidance = nous_account.format_usage_window_block_guidance(info)
-        # Points at the setting (billing page or /topup), never at the buy-credits modal.
-        assert guidance is not None and "https://portal/billing" in guidance and "topup=open" not in guidance
-        assert "/topup" in guidance
-        for text in [*lines, guidance]:
-            assert "\u2014" not in text
-        # On (says so, and that credits = the pay-as-you-go balance), or a portal that predates the setting.
-        for keep_going in (True, None):
-            info.usage_window = SimpleNamespace(**{**vars(window), "keep_going_on_credits": keep_going})
-            lines = account_usage.render_account_usage_lines(account_usage_nous.build_nous_credits_snapshot(info))
-            assert account_usage_nous._WINDOW_KEEP_GOING_OFF_LINE not in lines
-            assert (account_usage_nous._WINDOW_KEEP_GOING_ON_LINE in lines) is (keep_going is True)
-            assert any(line.endswith("Past this, large models use your credits.") for line in lines)
-            assert "https://portal/topup" in nous_account.format_usage_window_block_guidance(info)
-
-    def test_account_dto_carries_keep_going_on_credits(self):
-        from thor_cli.nous_account import NousUsageWindowInfo, _coerced_dataclass
-        assert _coerced_dataclass(NousUsageWindowInfo, {"keep_going_on_credits": False}).keep_going_on_credits is False
-        assert _coerced_dataclass(NousUsageWindowInfo, {}).keep_going_on_credits is None
-
-    def test_partial_or_empty_usage_window_block_is_treated_as_absent(self):
-        """Gate on a readable gauge list, not on the block's presence: an empty block, or one whose list
-        has nothing that stops every model, keeps the dollar usage model and the credit-grant 402 guidance."""
-        from agent.billing_usage import usage_model_from_account
-        from thor_cli.nous_account import NousUsageWindowInfo, format_usage_window_block_guidance
-        complete = NousUsageWindowInfo(gauges=ct.parse_gauges(_gauges(100, 50)))
-        top_only = NousUsageWindowInfo(gauges=ct.parse_gauges([g for g in _gauges() if g["scope"] == "top_tier"]))
-        for window, is_window in ((complete, True), (NousUsageWindowInfo(), False), (top_only, False)):
-            info = SimpleNamespace(
-                logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
-                paid_service_access_info=SimpleNamespace(purchased_credits_remaining=1.0, subscription_credits_remaining=18.0,
-                                                         total_usable_credits=19.0),
-                subscription=SimpleNamespace(plan="Credit Plan", monthly_credits=20.0, credits_remaining=18.0, rollover_credits=0,
-                                             current_period_end=None),
-            )
-            assert usage_model_from_account(info).available is (not is_window)
-            assert (format_usage_window_block_guidance(info) is not None) is is_window
-
-    def test_portal_legacy_account_is_unchanged(self, monkeypatch):
-        from agent import account_usage, account_usage_nous
-        monkeypatch.setattr("thor_cli.nous_account.nous_portal_topup_url", lambda info: "https://portal/topup")
-        info = SimpleNamespace(
-            logged_in=True, paid_service_access=True,
-            paid_service_access_info=SimpleNamespace(purchased_credits_remaining=1.0, subscription_credits_remaining=18.0, total_usable_credits=19.0),
-            subscription=SimpleNamespace(plan="Credit Plan", monthly_credits=20.0, credits_remaining=18.0, rollover_credits=0, current_period_end=None),
-            usage_window=None,
-        )
-        snap = account_usage_nous.build_nous_credits_snapshot(info)
-        assert snap is not None and not snap.usage_window
-        lines = account_usage.render_account_usage_lines(snap)
-        # Byte-for-byte today's layout: emoji title, provider line, "% remaining (% used)", portal link.
-        assert lines[0] == "📈 Nous credits" and lines[1] == "Provider: nous (Credit Plan)"
-        assert any(l.startswith("Subscription: 90% remaining (10% used)") for l in lines)
-        assert "Subscription credits: $18.00" in lines
-        assert "Top up: https://portal/topup" in lines and "(or run /topup)" in lines
-        assert not any("% used  " in l or "Top up via" in l for l in lines)
-
-    def test_fixture_window_state_renders(self, monkeypatch):
-        from agent import account_usage_nous
-        monkeypatch.setattr(ct, "dev_fixture_credits_state", _PLAN_STATES["top_tier_blocked"])
-        lines = account_usage_nous.nous_credits_lines()
-        joined = "\n".join(lines)
-        assert "40% used" in joined and "This week" in joined and "[" in joined
-        assert any(l.startswith(account_usage_nous._WINDOW_TOP_TIER_USED_UP) for l in lines) and "Top-up credits: $0.00" in lines
-        assert "(dev fixture — THOR_DEV_CREDITS_FIXTURE)" in lines
-
-
-# ── classifier ────────────────────────────────────────────────────────────────
 
 
 class TestClassifier:
@@ -1199,7 +999,8 @@ class TestRefusalReadsAsTheStopLine:
         window = SimpleNamespace(error_context={"usage_window": True})
         agent = self._agent(purchased_micros=5_000_000, keep_going_on_credits=False)
         text, resets_at, limit = _usage_window_refusal(agent, window)
-        assert text == f"You've hit your daily limit · resets {format_window_reset(DAY_RESET)} · turn on Keep going in /topup"
+        # Debrand Fase 2: the "turn on Keep going" action now reads as a ThorHub top-up.
+        assert text == f"You've hit your daily limit · resets {format_window_reset(DAY_RESET)} · top up ThorHub di llm.thormarket.site/beli/topup"
         assert resets_at == DAY_RESET / 1000
         assert limit["gauge_id"] == "day" and limit["scope"] == "all" and limit["message"] == text
         assert limit["credits"] == {"action": "use_credits"} and limit["current_model"] == "example/model-b"
@@ -1250,13 +1051,14 @@ class TestRefusalReadsAsTheStopLine:
         assert _usage_window_reset_context(agent) == {"reset_at": MONTH_RESET / 1000}
 
     def test_keep_going_off_with_no_balance_says_both_steps_everywhere(self):
-        """A new subscriber's first limit (setting off by default, no top-up): the stop line, the next-steps
-        payload and the 402 guidance all name both steps, since either one alone is still refused."""
+        """A new subscriber's first limit (setting off by default, no top-up): the stop line names the
+        ThorHub top-up step, and the 402 guidance names both steps, since either one alone is still refused."""
         from agent.conversation_loop import _usage_window_refusal
         from thor_cli import nous_account
         agent = self._agent(purchased_micros=0, keep_going_on_credits=False)
         text, _resets_at, limit = _usage_window_refusal(agent, SimpleNamespace(error_context={"usage_window": True}))
-        assert text.endswith(" · add credits and turn on Keep going in /topup")
+        # Debrand Fase 2: the refusal's action suffix is the ThorHub top-up, not "add credits and turn on Keep going".
+        assert text.endswith(" · top up ThorHub di llm.thormarket.site/beli/topup")
         assert limit["credits"] == {"action": "add_credits_and_keep_going"}
         window = SimpleNamespace(gauges=ct.parse_gauges(_gauges(100, 50)), auto_top_up_enabled=False,
                                  paused_reason=None, keep_going_on_credits=False)

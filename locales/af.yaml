@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "Onbekende /usage subopdrag: `{args}`. Probeer `/usage` of `/usage reset [--force]`."
     reset_wrong_provider: "Gebankte gebruikslimiet-terugstellings is slegs beskikbaar op die openai-codex verskaffer. Skakel eers oor met `/model`."
   credits:
-    not_logged_in: "Nie by Nous Portal aangemeld nie. Meld aan om jou kredietsaldo te sien en op te laai."
+    not_logged_in: "Nie by ThorHub aangemeld nie. Meld aan om jou kredietsaldo te sien en op te laai."
   verbose:
     not_enabled: "Die `/verbose`-opdrag is nie vir boodskapplatforms geaktiveer nie.\n\nAktiveer dit in `config.yaml`:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Gereedskap-vordering: **AF** — geen gereedskap-aktiwiteit word vertoon nie."
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Kon nie faktureringsinligting laai nie"
-    not_logged_in: "Nie by Nous Portal aangemeld nie."
+    not_logged_in: "Nie by ThorHub aangemeld nie."
     run_portal_then: "Voer `thor portal` uit om aan te meld, en dan {cmd}."
     org_line: "Org: {org}"
     org_line_role: "Org: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  Verskaffer-oplosser het 'n leë basis-URL teruggegee. Gaan jou verskaffer-konfigurasie na of voer uit: thor setup"
     switching_to_fallback: "⚠️  {reason} — skakel oor na terugval: {provider} / {model}"
     first_run_no_provider: "☤ Geen inferensie-verskaffer is nog opgestel nie — kom ons stel dit reg."
-    first_run_pick_provider: "Jy sal 'n verskaffer kies (Nous Portal OAuth is die vinnigste; geen API-sleutel nodig) en 'n model."
+    first_run_pick_provider: "Jy sal 'n verskaffer kies (ThorHub OAuth is die vinnigste; geen API-sleutel nodig) en 'n model."
     first_run_prompt: "Stel nou 'n verskaffer op? [J/n]:"
     first_run_skipped: "Oorgeslaan. Voer enige tyd 'thor model' of 'thor setup' uit."
     first_run_cancelled: "Opstelling gekanselleer. Voer enige tyd 'thor model' uit."

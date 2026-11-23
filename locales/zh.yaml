@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "未知的 /usage 子命令：`{args}`。请尝试 `/usage` 或 `/usage reset [--force]`。"
     reset_wrong_provider: "存储的用量重置仅在 openai-codex 提供商上可用。请先使用 `/model` 切换。"
   credits:
-    not_logged_in: "未登录 Nous Portal。登录后即可查看额度余额并充值。"
+    not_logged_in: "未登录 ThorHub。登录后即可查看额度余额并充值。"
   verbose:
     not_enabled: "`/verbose` 命令未在消息平台启用。\n\n请在 `config.yaml` 中启用：\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ 工具进度：**OFF** — 不显示任何工具活动。"
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}：{error}"
     load_failed_label: "无法加载账单信息"
-    not_logged_in: "尚未登录 Nous Portal。"
+    not_logged_in: "尚未登录 ThorHub。"
     run_portal_then: "运行 `thor portal` 登录，然后 {cmd}。"
     org_line: "组织：{org}"
     org_line_role: "组织：{org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  提供方解析器返回了空的 base URL。请检查提供方配置，或运行：thor setup"
     switching_to_fallback: "⚠️  {reason}——正在切换到备用：{provider} / {model}"
     first_run_no_provider: "☤ 尚未配置推理提供方——我们来解决这个问题。"
-    first_run_pick_provider: "你将选择一个提供方（Nous Portal OAuth 最快，无需 API 密钥）和一个模型。"
+    first_run_pick_provider: "你将选择一个提供方（ThorHub OAuth 最快，无需 API 密钥）和一个模型。"
     first_run_prompt: "现在设置提供方吗？[Y/n]："
     first_run_skipped: "已跳过。可随时运行 'thor model' 或 'thor setup'。"
     first_run_cancelled: "设置已取消。可随时运行 'thor model'。"

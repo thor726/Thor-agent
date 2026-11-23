@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "Unbekannter /usage-Unterbefehl: `{args}`. Versuche `/usage` oder `/usage reset [--force]`."
     reset_wrong_provider: "Gespeicherte Limit-Resets sind nur mit dem openai-codex-Anbieter verfügbar. Wechsle zuerst mit `/model`."
   credits:
-    not_logged_in: "Nicht bei Nous Portal angemeldet. Melde dich an, um dein Guthaben zu sehen und aufzuladen."
+    not_logged_in: "Nicht bei ThorHub angemeldet. Melde dich an, um dein Guthaben zu sehen und aufzuladen."
   verbose:
     not_enabled: "Der Befehl `/verbose` ist für Messaging-Plattformen nicht aktiviert.\n\nIn `config.yaml` aktivieren:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Tool-Fortschritt: **OFF** — keine Tool-Aktivität angezeigt."
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Abrechnung konnte nicht geladen werden"
-    not_logged_in: "Nicht bei Nous Portal angemeldet."
+    not_logged_in: "Nicht bei ThorHub angemeldet."
     run_portal_then: "Führen Sie `thor portal` aus, um sich anzumelden, und dann {cmd}."
     org_line: "Org: {org}"
     org_line_role: "Org: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  Der Anbieter-Resolver hat eine leere Basis-URL zurückgegeben. Prüfen Sie Ihre Anbieter-Konfiguration oder führen Sie aus: thor setup"
     switching_to_fallback: "⚠️  {reason} — Wechsel auf Rückfall: {provider} / {model}"
     first_run_no_provider: "☤ Es ist noch kein Inferenz-Anbieter konfiguriert — das ändern wir jetzt."
-    first_run_pick_provider: "Sie wählen einen Anbieter (Nous Portal OAuth ist am schnellsten; kein API-Schlüssel nötig) und ein Modell."
+    first_run_pick_provider: "Sie wählen einen Anbieter (ThorHub OAuth ist am schnellsten; kein API-Schlüssel nötig) und ein Modell."
     first_run_prompt: "Jetzt einen Anbieter einrichten? [Y/n]:"
     first_run_skipped: "Übersprungen. Führen Sie jederzeit 'thor model' oder 'thor setup' aus."
     first_run_cancelled: "Einrichtung abgebrochen. Führen Sie jederzeit 'thor model' aus."

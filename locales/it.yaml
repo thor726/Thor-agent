@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "Sottocomando /usage sconosciuto: `{args}`. Prova `/usage` o `/usage reset [--force]`."
     reset_wrong_provider: "I reset dei limiti accumulati sono disponibili solo con il provider openai-codex. Cambia prima con `/model`."
   credits:
-    not_logged_in: "Non hai effettuato l'accesso a Nous Portal. Accedi per vedere il saldo dei crediti e ricaricare."
+    not_logged_in: "Non hai effettuato l'accesso a ThorHub. Accedi per vedere il saldo dei crediti e ricaricare."
   verbose:
     not_enabled: "Il comando `/verbose` non è abilitato per le piattaforme di messaggistica.\n\nAbilitalo in `config.yaml`:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Progresso strumenti: **OFF** — nessuna attività degli strumenti mostrata."
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Impossibile caricare la fatturazione"
-    not_logged_in: "Non hai effettuato l'accesso a Nous Portal."
+    not_logged_in: "Non hai effettuato l'accesso a ThorHub."
     run_portal_then: "Esegui `thor portal` per accedere, poi {cmd}."
     org_line: "Org: {org}"
     org_line_role: "Org: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  Il resolver del provider ha restituito un URL base vuoto. Controlla la configurazione del provider o esegui: thor setup"
     switching_to_fallback: "⚠️  {reason} — passo al fallback: {provider} / {model}"
     first_run_no_provider: "☤ Nessun provider di inferenza è ancora configurato — rimediamo subito."
-    first_run_pick_provider: "Sceglierai un provider (l'OAuth di Nous Portal è il più rapido; nessuna chiave API richiesta) e un modello."
+    first_run_pick_provider: "Sceglierai un provider (l'OAuth di ThorHub è il più rapido; nessuna chiave API richiesta) e un modello."
     first_run_prompt: "Configurare un provider adesso? [S/n]:"
     first_run_skipped: "Saltato. Esegui 'thor model' o 'thor setup' in qualsiasi momento."
     first_run_cancelled: "Configurazione annullata. Esegui 'thor model' in qualsiasi momento."

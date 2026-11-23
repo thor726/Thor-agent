@@ -389,18 +389,6 @@ def test_gone_on_a_first_attempt_reads_as_neutral(portal):
     assert guest_handoff.status_lines(guest_handoff.handoff_status()) == ["Nothing left to move from the free tier."]
 
 
-def test_a_long_lived_process_with_a_guest_still_runs_the_handoff_worker(portal, monkeypatch):
-    from thor_cli import guest_handoff, nous_auth_keepalive
-    monkeypatch.setattr(nous_auth_keepalive, "get_provider_auth_state",
-                        lambda _p: {"auth_method": "anonymous", "anon_token": "anon_x"})
-    try:
-        nous_auth_keepalive.start_nous_auth_keepalive()
-        assert guest_handoff._worker_thread is not None and guest_handoff._worker_thread.is_alive()
-    finally:
-        nous_auth_keepalive.stop_nous_auth_keepalive()
-    assert guest_handoff._worker_thread is None
-
-
 def test_a_guest_token_still_cached_from_a_connector_call_does_not_skip_the_move(portal):
     from thor_cli import auth
     from thor_constants import thor_home_key

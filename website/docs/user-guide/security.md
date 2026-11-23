@@ -1007,7 +1007,7 @@ The former startup certificate guard is gone with it: Thor no longer
 validates `THOR_CA_BUNDLE` / `SSL_CERT_FILE` / `REQUESTS_CA_BUNDLE` /
 `CURL_CA_BUNDLE` at launch, so there is no `SSLConfigurationError` and the
 `THOR_SKIP_SSL_GUARD` escape hatch has no effect. `THOR_CA_BUNDLE` is
-still honoured by the Nous Portal login flow only (`thor login`, or its
+still honoured by the `thor login` flow only (`thor login`, or its
 `--ca-bundle` flag); the standard `SSL_CERT_FILE` / `REQUESTS_CA_BUNDLE` / `CURL_CA_BUNDLE` variables
 are still read by the plain `requests`/`urllib` calls some tools make (and by
 `pip`, `uv`, `curl`, Node), so a stale path in one of them now fails at the

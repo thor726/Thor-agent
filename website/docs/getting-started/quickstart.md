@@ -87,14 +87,14 @@ The single most important setup step. Use `thor model` to walk through the choic
 thor model
 ```
 
-:::tip Easiest path: Nous Portal
-One subscription covers 300+ models plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, cloud browser). On a fresh install:
+:::tip Easiest path: ThorHub or a direct provider
+Pick a provider in `thor setup` — for example [ThorHub](../integrations/thorhub.md) (buy token packages, use the key as a custom provider) or any direct provider (Gemini, Groq, OpenAI, Anthropic, OpenRouter) with your own API key.
 
 ```bash
-thor setup --portal
+thor setup
 ```
 
-That logs you in, sets Nous as your provider, and turns on the Tool Gateway in one command.
+That walks you through providers, models, and tools. ThorHub is one optional provider; you choose your own defaults.
 :::
 
 :::info Setup modes
@@ -102,7 +102,7 @@ Coming from OpenClaw, Claude Code, Codex CLI or Cursor? When a fresh `thor setup
 
 On a fresh install, `thor setup` offers three modes:
 
-- **Quick Setup (Nous Portal)** — OAuth login, no API keys to manage; sets up a model plus the Tool Gateway tools, billed to your [Nous Portal subscription](../integrations/nous-portal.md). The recommended fast path.
+- **Quick Setup** — pick a provider and model quickly (for example ThorHub or a direct provider). The recommended fast path.
 - **Full Setup** — walk through every provider, tool, and option yourself (bring your own keys).
 - **Blank Slate** — everything starts **off** except the bare minimum needed to run an agent: **provider & model, the File Operations toolset, and the Terminal toolset**. No web, browser, code execution, vision, memory, delegation, cron, skills, plugins, or MCP servers — and compression, checkpoints, smart routing, and memory capture are all disabled. After the minimal baseline is applied, you choose one of two paths: **start with everything disabled** (finish now with the minimal agent), or **walk through all configurations** (opt in to tools, skills, plugins, MCP, and messaging). Pick this when you want a minimal, fully-controlled agent and intend to enable only exactly what you need.
 
@@ -113,7 +113,7 @@ Good defaults:
 
 | Provider | What it is | How to set up |
 |----------|-----------|---------------|
-| **Nous Portal** | Subscription-based, zero-config | OAuth login via `thor model` |
+| **ThorHub** | Token packages, pay-as-you-go | Buy at https://llm.thormarket.site/beli, add the key as a custom provider |
 | **OpenAI Codex** | ChatGPT or Codex subscription, uses Codex models | Device code auth via `thor model` → **ChatGPT or Codex Subscription** |
 | **Anthropic** | Claude models directly — Max plan + extra usage credits (OAuth), or API key for pay-per-token | `thor model` → OAuth login (requires Max + extra credits), or an Anthropic API key |
 | **OpenRouter** | Multi-provider routing across many models | Enter your API key |

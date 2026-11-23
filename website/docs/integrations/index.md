@@ -9,7 +9,7 @@ sidebar_position: 0
 Thor Agent connects to external systems for AI inference, tool servers, IDE workflows, programmatic access, and more. These integrations extend what Thor can do and where it can run.
 
 :::tip Start here
-If you only have time to set up one integration, set up [Nous Portal](./nous-portal.md) — a single OAuth login covers 300+ models plus the four Tool Gateway tools (web search, image generation, TTS, and browser automation).
+If you only have time to set up one integration, set up [ThorHub](./thorhub.md) — buy token packages once, use the key as a custom provider in Thor.
 :::
 
 ## AI Providers & Routing

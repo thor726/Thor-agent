@@ -661,7 +661,7 @@ gateway:
     unknown_subcommand: "Sous-commande /usage inconnue : `{args}`. Essayez `/usage` ou `/usage reset [--force]`."
     reset_wrong_provider: "Les réinitialisations de limite en réserve ne sont disponibles qu'avec le fournisseur openai-codex. Changez d'abord avec `/model`."
   credits:
-    not_logged_in: "Non connecté à Nous Portal. Connecte-toi pour voir ton solde de crédits et recharger."
+    not_logged_in: "Non connecté à ThorHub. Connecte-toi pour voir ton solde de crédits et recharger."
   verbose:
     not_enabled: "La commande `/verbose` n'est pas activée pour les plateformes de messagerie.\n\nActivez-la dans `config.yaml` :\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Progression des outils : **OFF** — aucune activité d'outil affichée."
@@ -2025,7 +2025,7 @@ cli:
   billing:
     load_failed: "{label} : {error}"
     load_failed_label: "Facturation indisponible"
-    not_logged_in: "Non connecté à Nous Portal."
+    not_logged_in: "Non connecté à ThorHub."
     run_portal_then: "Lancez `thor portal` pour vous connecter, puis {cmd}."
     org_line: "Org : {org}"
     org_line_role: "Org : {org} · {role}"
@@ -2810,7 +2810,7 @@ cli:
     empty_base_url: "⚠️  Le résolveur de fournisseur a renvoyé une URL de base vide. Vérifiez la configuration de votre fournisseur ou exécutez : thor setup"
     switching_to_fallback: "⚠️  {reason} — bascule vers le fournisseur de secours : {provider} / {model}"
     first_run_no_provider: "☤ Aucun fournisseur d'inférence n'est encore configuré — réglons cela."
-    first_run_pick_provider: "Vous allez choisir un fournisseur (Nous Portal OAuth est le plus rapide ; aucune clé API requise) puis un modèle."
+    first_run_pick_provider: "Vous allez choisir un fournisseur (ThorHub OAuth est le plus rapide ; aucune clé API requise) puis un modèle."
     first_run_prompt: "Configurer un fournisseur maintenant ? [Y/n] :"
     first_run_skipped: "Ignoré. Exécutez 'thor model' ou 'thor setup' à tout moment."
     first_run_cancelled: "Configuration annulée. Exécutez 'thor model' à tout moment."

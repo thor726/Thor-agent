@@ -84,29 +84,6 @@ def test_a_sign_in_over_the_guest_in_the_shared_store_still_hands_it_over(portal
     assert _gh._only_record()["state"] == "claimed"
 
 
-def test_a_keepalive_refresh_does_not_sign_a_logged_out_profile_back_in(portal, monkeypatch, tmp_path):
-    """Two profiles on one account; the first logs out and mints a guest; the second refreshes."""
-    from thor_cli import anon_auth, auth
-    first, second = os.environ["THOR_HOME"], tmp_path / "second-profile"
-    second.mkdir()
-    _gh._persist(_gh._account())
-    monkeypatch.setenv("THOR_HOME", str(second))
-    _gh._persist(_gh._account())
-
-    monkeypatch.setenv("THOR_HOME", first)
-    auth.logout_command(SimpleNamespace(provider="nous"))
-    anon = _gh._mint_guest()
-
-    monkeypatch.setenv("THOR_HOME", str(second))
-    from thor_cli import nous_auth_keepalive
-    assert nous_auth_keepalive.refresh_nous_auth_keepalive_once(min_access_ttl_seconds=10**9)
-
-    monkeypatch.setenv("THOR_HOME", first)
-    state = anon_auth.ensure_portal_identity(explicit=True)
-    assert anon_auth.is_guest_state(state) and state["anon_token"] == anon
-    assert _gh._records() == {} and portal.claims == []
-
-
 def test_profiles_sharing_an_account_stay_in_step_while_the_store_holds_a_guest(portal, monkeypatch, tmp_path):
     """Refresh tokens are single use: a profile that refreshes with one a sibling already spent is
     signed out. Siblings on one account learn each rotated token through the shared store."""

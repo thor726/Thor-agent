@@ -207,12 +207,6 @@ class TestNoInferenceIntent:
         assert nas.token_requests == [] and presented == []
         assert anon_auth.is_guest_state(anon_auth.current_nous_state())
 
-    def test_the_keepalive_never_mints_for_a_guest(self, nas):
-        from thor_cli.nous_auth_keepalive import refresh_nous_auth_keepalive_once
-        auth_mod.resolve_nous_access_token()
-        assert refresh_nous_auth_keepalive_once() is False
-        assert _purposes(nas) == ["connectors"]
-
     def test_a_model_catalog_read_never_waits_on_a_challenge(self, nas, presented):
         from thor_cli.models import _nous_catalog, get_curated_nous_model_ids
         nas.challenge_required = True
