@@ -1,31 +1,35 @@
-"""First-party gateway bearer trust, ported from connectors-only 43608084f4."""
+"""First-party gateway bearer auth (ThorHub era).
+
+There is no managed vendor gateway anymore: the only origins that may
+receive a bearer are ones the user explicitly configured
+(``TOOL_GATEWAY_URL`` / ``CONNECTOR_GATEWAY_URL``), authenticated with the
+static ThorHub key. Everything else gets ``{}``.
+"""
 
 import logging
 from typing import Callable, Optional
 from urllib.parse import urlsplit
 
-from tools.managed_tool_gateway import build_vendor_gateway_url, read_nous_access_token
+from tools.managed_tool_gateway import build_vendor_gateway_url, read_thorhub_api_key
 
 logger = logging.getLogger(__name__)
 
 
 def connector_gateway_origin() -> str:
-    """Separate connector deployment; honors CONNECTOR_GATEWAY_URL."""
+    """Explicit ``CONNECTOR_GATEWAY_URL``, or "" (no managed connectors host)."""
     return build_vendor_gateway_url("connector")
 
 
-def is_managed_nous_gateway_url(
+def is_managed_thorhub_gateway_url(
     url: object,
     gateway_builder: Optional[Callable[[str], str]] = None,
 ) -> bool:
-    """True when ``url`` is on one of the first-party gateway origins we build.
+    """True when ``url`` is on an explicitly configured gateway origin.
 
-    Both first-party surfaces count: the media/on-origin-vendor host
-    (``build_vendor_gateway_url("tool")``) and the connectors host
-    (:func:`connector_gateway_origin`). Each is compared as an exact
-    ``(scheme, netloc)`` pair — never as a name or a domain suffix — so
-    ``evil-connector-gateway.thor-agent.local.attacker.dev`` and an ``http``
-    downgrade of a real host both stay outside the set.
+    Compared as an exact ``(scheme, netloc)`` pair — never as a name or a
+    domain suffix — so a lookalike host and an ``http`` downgrade of a real
+    host both stay outside the set. Unconfigured origins (empty string) never
+    match anything.
 
     Anything granting a URL extra trust — our bearer, reading files off disk to
     upload — must gate on this, so an arbitrary URL can never inherit it.
@@ -42,6 +46,7 @@ def is_managed_nous_gateway_url(
         actual = urlsplit(url.strip())
     except ValueError:
         return False
+    expected.discard(("", ""))
 
     return bool(actual.scheme) and (actual.scheme, actual.netloc) in expected
 
@@ -53,15 +58,14 @@ def managed_gateway_auth_headers(
 ) -> dict:
     """Live auth headers for a managed gateway URL, or ``{}`` when not managed.
 
-    Read fresh on every call rather than cached: a Nous access token expires
-    within the hour, and a long session would otherwise keep presenting a dead
-    bearer. Returns ``{}`` rather than raising when no token is available, so a
-    caller can report "sign in" instead of sending an unauthenticated request.
+    Read fresh on every call rather than cached. Returns ``{}`` rather than
+    raising when no token is available, so a caller can report "sign in"
+    instead of sending an unauthenticated request.
     """
-    if not is_managed_nous_gateway_url(url, gateway_builder):
+    if not is_managed_thorhub_gateway_url(url, gateway_builder):
         return {}
 
-    resolved_token_reader = token_reader or read_nous_access_token
+    resolved_token_reader = token_reader or read_thorhub_api_key
     try:
         token = resolved_token_reader()
     except Exception as exc:  # pragma: no cover — defensive

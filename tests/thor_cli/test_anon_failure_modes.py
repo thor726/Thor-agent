@@ -100,7 +100,7 @@ class TestNasRefusalCodes:
             store["providers"]["nous"]["access_token"] = make_jwt(exp=1)
             _save_auth_store(store)
         nas.token_response = httpx.Response(403, json={"error": "account_locked"})
-        assert mtg.read_nous_access_token() is None
+        assert mtg.read_thorhub_api_key() is None
         assert "nous" not in _load_auth_store().get("providers", {})
         assert nas.creates() == 1
 

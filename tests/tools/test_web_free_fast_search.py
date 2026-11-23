@@ -106,14 +106,15 @@ def test_unentitled_nous_identity_autodetects_free_fast_search(monkeypatch, tmp_
     both reach the gateway, while the paid gate stays closed for extract and every other vendor."""
     from thor_cli.nous_account import get_nous_portal_account_info
     from tools import web_tools
-    from tools.tool_backend_helpers import managed_nous_tools_enabled
+    from tools.tool_backend_helpers import managed_thorhub_tools_enabled
 
     _write_home(tmp_path / "home", monkeypatch, nous_state=state)
-    # Premise: the guest case really reads as the anonymous tier, and the paid-tool gate is closed
-    # for this identity and stays closed for extract.
+    # Premise: the guest case really reads as the anonymous tier, and there is no
+    # default managed gate anymore; the fixture's explicit FIRECRAWL_GATEWAY_URL
+    # makes the firecrawl route available, while extract stays off Perplexity.
     assert get_nous_portal_account_info().is_anonymous_tier is (state["auth_method"] == "anonymous")
-    assert managed_nous_tools_enabled() is False
-    assert web_tools.check_firecrawl_api_key() is False
+    assert managed_thorhub_tools_enabled() is False
+    assert web_tools.check_firecrawl_api_key() is True
     assert web_tools._get_extract_backend() != "perplexity"
 
     result = _search()

@@ -245,7 +245,7 @@ def _setup_tts_provider(config: dict):
     _setup.print_header("Text-to-Speech Provider (optional)")
     _setup._info(f"Current: {current_label}", None)
     options = list(_TTS_PROVIDER_CHOICES)
-    if tool_backend_helpers.managed_nous_tools_enabled() and nous_subscription.get_nous_subscription_features(config).nous_auth_present:
+    if tool_backend_helpers.managed_thorhub_tools_enabled() and nous_subscription.get_nous_subscription_features(config).nous_auth_present:
         options.insert(0, ("nous-openai",
                            "Thor Subscription (managed OpenAI TTS, billed to your subscription)"))
     choices = [label for _, label in options] + [f"Keep current ({current_label})"]

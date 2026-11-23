@@ -1,6 +1,12 @@
+"""Tests for tools/managed_tool_gateway.py (ThorHub era).
+
+ThorHub runs no default managed gateway: resolve_* report "not available"
+unless the user explicitly configured a ``{VENDOR}_GATEWAY_URL`` override
+(a self-hosted gateway). The bearer is the static ThorHub key, attached
+only to an explicitly configured gateway origin.
+"""
 import os
 import json
-from datetime import datetime, timedelta, timezone, UTC
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 import sys
@@ -19,198 +25,98 @@ is_managed_tool_gateway_ready = managed_tool_gateway.is_managed_tool_gateway_rea
 resolve_managed_tool_gateway = managed_tool_gateway.resolve_managed_tool_gateway
 
 
-def test_resolve_managed_tool_gateway_derives_vendor_origin_from_shared_domain():
-    with patch.dict(
-        os.environ,
-        {
-            "TOOL_GATEWAY_DOMAIN": "thor-agent.local",
-        },
-        clear=False,
-    ), patch.object(managed_tool_gateway, "managed_nous_tools_enabled", return_value=True):
-        result = resolve_managed_tool_gateway(
-            "firecrawl",
-            token_reader=lambda: "nous-token",
-        )
-
-    assert result is not None
-    assert result.gateway_origin == "https://firecrawl-gateway.thor-agent.local"
-    assert result.nous_user_token == "nous-token"
-    assert result.managed_mode is True
+def test_resolve_managed_tool_gateway_is_none_without_an_explicit_override():
+    # No default managed gateway: without an explicit {VENDOR}_GATEWAY_URL there
+    # is nowhere to route a vendor call, even with a token reader.
+    with patch.dict(os.environ, {}, clear=False):
+        os.environ.pop("FIRECRAWL_GATEWAY_URL", None)
+        assert resolve_managed_tool_gateway("firecrawl", token_reader=lambda: "sk-thor-x") is None
+        assert resolve_managed_tool_gateway("fal-queue") is None
+        assert is_managed_tool_gateway_ready("modal") is False
+        assert managed_tool_gateway.resolve_free_search_gateway(token_reader=lambda: "sk-thor-x") is None
 
 
-def test_resolve_managed_tool_gateway_uses_vendor_specific_override():
-    with patch.dict(
-        os.environ,
-        {
-            "BROWSER_USE_GATEWAY_URL": "http://browser-use-gateway.localhost:3009/",
-        },
-        clear=False,
-    ), patch.object(managed_tool_gateway, "managed_nous_tools_enabled", return_value=True):
-        result = resolve_managed_tool_gateway(
-            "browser-use",
-            token_reader=lambda: "nous-token",
-        )
-
-    assert result is not None
-    assert result.gateway_origin == "http://browser-use-gateway.localhost:3009"
+def test_resolve_managed_tool_gateway_honors_an_explicit_override():
+    with patch.dict(os.environ, {"FIRECRAWL_GATEWAY_URL": "http://127.0.0.1:3009/"}, clear=False):
+        cfg = resolve_managed_tool_gateway("firecrawl", token_reader=lambda: "sk-thor-x")
+        assert cfg is not None
+        assert cfg.gateway_origin == "http://127.0.0.1:3009"
+        assert cfg.api_key == "sk-thor-x"
+        assert is_managed_tool_gateway_ready("firecrawl", token_reader=lambda: "sk-thor-x") is True
 
 
-def test_resolve_managed_tool_gateway_is_inactive_without_nous_token():
-    with patch.dict(
-        os.environ,
-        {
-            "TOOL_GATEWAY_DOMAIN": "thor-agent.local",
-        },
-        clear=False,
-    ), patch.object(managed_tool_gateway, "managed_nous_tools_enabled", return_value=True):
-        result = resolve_managed_tool_gateway(
-            "firecrawl",
-            token_reader=lambda: None,
-        )
-
-    assert result is None
+def test_build_vendor_gateway_url_honors_explicit_override_only():
+    with patch.dict(os.environ, {"FIRECRAWL_GATEWAY_URL": "http://127.0.0.1:3009/"}, clear=False):
+        assert managed_tool_gateway.build_vendor_gateway_url("firecrawl") == "http://127.0.0.1:3009"
+    with patch.dict(os.environ, {}, clear=False):
+        os.environ.pop("FIRECRAWL_GATEWAY_URL", None)
+        assert managed_tool_gateway.build_vendor_gateway_url("firecrawl") == ""
 
 
-def test_resolve_managed_tool_gateway_is_disabled_without_subscription():
-    with patch.dict(os.environ, {"TOOL_GATEWAY_DOMAIN": "thor-agent.local"}, clear=False), \
-         patch.object(managed_tool_gateway, "managed_nous_tools_enabled", return_value=False):
-        result = resolve_managed_tool_gateway(
-            "firecrawl",
-            token_reader=lambda: "nous-token",
-        )
-
-    assert result is None
-
-
-def test_read_nous_access_token_refreshes_expiring_cached_token(tmp_path, monkeypatch):
-    monkeypatch.delenv("TOOL_GATEWAY_USER_TOKEN", raising=False)
+def test_thorhub_api_key_readers_use_the_static_key(tmp_path, monkeypatch):
     monkeypatch.setenv("THOR_HOME", str(tmp_path))
-    expires_at = (datetime.now(UTC) + timedelta(seconds=30)).isoformat()
-    (tmp_path / "auth.json").write_text(json.dumps({
-        "providers": {
-            "nous": {
-                "access_token": "stale-token",
-                "refresh_token": "refresh-token",
-                "expires_at": expires_at,
-            }
-        }
-    }))
-    monkeypatch.setattr(
-        "thor_cli.auth.resolve_nous_access_token",
-        lambda refresh_skew_seconds=120: "fresh-token",
-    )
-
-    assert managed_tool_gateway.read_nous_access_token() == "fresh-token"
+    monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-test")
+    assert managed_tool_gateway.peek_thorhub_api_key() == "sk-thor-test"
+    assert managed_tool_gateway.read_thorhub_api_key() == "sk-thor-test"
+    monkeypatch.delenv("THORHUB_API_KEY")
+    assert managed_tool_gateway.peek_thorhub_api_key() is None
+    assert managed_tool_gateway.read_thorhub_api_key() is None
 
 
-def test_is_managed_tool_gateway_ready_skips_refresh_for_expired_cached_token(tmp_path, monkeypatch):
-    monkeypatch.delenv("TOOL_GATEWAY_USER_TOKEN", raising=False)
-    monkeypatch.setenv("THOR_HOME", str(tmp_path))
-    expired_at = (datetime.now(UTC) - timedelta(seconds=30)).isoformat()
-    (tmp_path / "auth.json").write_text(json.dumps({
-        "providers": {
-            "nous": {
-                "access_token": "expired-token",
-                "refresh_token": "refresh-token",
-                "expires_at": expired_at,
-            }
-        }
-    }))
-    refresh_calls = []
-
-    def _record_refresh(*, refresh_skew_seconds=120, **_kwargs):
-        refresh_calls.append(refresh_skew_seconds)
-        return "fresh-token"
-
-    monkeypatch.setattr(
-        "thor_cli.auth.resolve_nous_access_token",
-        _record_refresh,
-    )
-
-    with patch.dict(
-        os.environ,
-        {"TOOL_GATEWAY_DOMAIN": "thor-agent.local"},
-        clear=False,
-    ), patch.object(managed_tool_gateway, "managed_nous_tools_enabled", return_value=True):
-        assert is_managed_tool_gateway_ready("modal") is True
-
-    assert refresh_calls == []
-
-
-def test_connector_gateway_origin_pins_the_deployed_connectors_host():
-    # The connectors API is its own deployment on its own canonical host, so
-    # the default resolution must not land on the media/vendor origin.
-    with patch.dict(
-        os.environ,
-        {"TOOL_GATEWAY_DOMAIN": "thor-agent.local", "TOOL_GATEWAY_SCHEME": "https"},
-        clear=False,
-    ):
+def test_connector_gateway_origin_is_empty_without_an_override():
+    with patch.dict(os.environ, {}, clear=False):
         os.environ.pop("CONNECTOR_GATEWAY_URL", None)
-        assert managed_gateway_auth.connector_gateway_origin() == (
-            "https://connector-gateway.thor-agent.local"
+        assert managed_gateway_auth.connector_gateway_origin() == ""
+
+
+def test_connector_gateway_origin_honors_its_own_override():
+    with patch.dict(os.environ, {"CONNECTOR_GATEWAY_URL": "http://127.0.0.1:3009/"}, clear=False):
+        assert managed_gateway_auth.connector_gateway_origin() == "http://127.0.0.1:3009"
+        assert managed_gateway_auth.is_managed_thorhub_gateway_url(
+            "http://127.0.0.1:3009/v1/connectors/search"
         )
 
-def test_tool_gateway_origin_honors_the_harness_override():
-    # TOOL_GATEWAY_URL pins the full media origin (the e2e harness sets it to a
+
+def test_bearer_gate_trusts_only_an_explicitly_configured_origin():
+    # TOOL_GATEWAY_URL pins the media origin (the e2e harness sets it to a
     # loopback gateway), and the bearer gate must accept exactly that origin.
     with patch.dict(os.environ, {"TOOL_GATEWAY_URL": "http://127.0.0.1:3009/"}, clear=False):
         os.environ.pop("CONNECTOR_GATEWAY_URL", None)
         assert managed_gateway_auth.build_vendor_gateway_url("tool") == "http://127.0.0.1:3009"
-        assert managed_gateway_auth.is_managed_nous_gateway_url(
+        assert managed_gateway_auth.is_managed_thorhub_gateway_url(
             "http://127.0.0.1:3009/api/vendorx/generations"
         )
-        assert not managed_gateway_auth.is_managed_nous_gateway_url(
-            "https://tools.thor-agent.local/api/vendorx/generations"
+        assert not managed_gateway_auth.is_managed_thorhub_gateway_url(
+            "https://tool-gateway.thor-agent.local/api/vendorx/generations"
+        )
+        assert not managed_gateway_auth.is_managed_thorhub_gateway_url(
+            "http://127.0.0.1:3009.attacker.dev/api/vendorx/generations"
         )
 
-def test_connector_gateway_origin_honors_its_own_override():
-    # CONNECTOR_GATEWAY_URL is the connectors host's own key: it moves the
-    # connectors origin without touching the media origin, and the bearer gate
-    # accepts the overridden origin.
-    with patch.dict(
-        os.environ,
-        {
-            "CONNECTOR_GATEWAY_URL": "http://127.0.0.1:3009/",
-            "TOOL_GATEWAY_DOMAIN": "thor-agent.local",
-        },
-        clear=False,
-    ):
-        os.environ.pop("TOOL_GATEWAY_URL", None)
-        assert managed_gateway_auth.connector_gateway_origin() == "http://127.0.0.1:3009"
-        assert managed_gateway_auth.build_vendor_gateway_url("tool") == (
-            "https://tool-gateway.thor-agent.local"
-        )
-        assert managed_gateway_auth.is_managed_nous_gateway_url(
-            "http://127.0.0.1:3009/v1/connectors/search"
-        )
 
-def test_default_bearer_gate_accepts_both_deployed_hosts_only():
-    # Exact (scheme, netloc) equality against each deployed origin. Both
-    # first-party hosts are in; the retired `tools.` host, subdomain cousins,
-    # and scheme downgrades are all out.
-    with patch.dict(
-        os.environ,
-        {"TOOL_GATEWAY_DOMAIN": "thor-agent.local", "TOOL_GATEWAY_SCHEME": "https"},
-        clear=False,
-    ):
+def test_bearer_gate_trusts_nothing_by_default():
+    with patch.dict(os.environ, {}, clear=False):
         os.environ.pop("TOOL_GATEWAY_URL", None)
         os.environ.pop("CONNECTOR_GATEWAY_URL", None)
-        for trusted in (
+        for untrusted in (
             "https://connector-gateway.thor-agent.local/v1/connectors/execute",
             "https://tool-gateway.thor-agent.local/api/vendorx/generations",
-        ):
-            assert managed_gateway_auth.is_managed_nous_gateway_url(trusted)
-        for untrusted in (
-            "https://tools.thor-agent.local/v1/connectors/execute",
-            "https://evil-connector-gateway.thor-agent.local.attacker.dev/v1/connectors",
-            "https://connector-gateway.thor-agent.local.attacker.dev/v1/connectors",
             "http://connector-gateway.thor-agent.local/v1/connectors",
-            "http://tool-gateway.thor-agent.local/api/vendorx/generations",
         ):
-            assert not managed_gateway_auth.is_managed_nous_gateway_url(untrusted)
+            assert not managed_gateway_auth.is_managed_thorhub_gateway_url(untrusted)
+        assert managed_gateway_auth.managed_gateway_auth_headers("https://example.invalid/v1") == {}
 
 
-def test_read_nous_provider_state_falls_back_to_global_root_for_share_auth_profiles(tmp_path, monkeypatch):
+def test_auth_headers_attach_the_thorhub_key_on_a_configured_origin(monkeypatch):
+    monkeypatch.setenv("TOOL_GATEWAY_URL", "http://127.0.0.1:3009/")
+    monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-test")
+    headers = managed_gateway_auth.managed_gateway_auth_headers(
+        "http://127.0.0.1:3009/api/vendorx/generations")
+    assert headers["Authorization"] == "Bearer sk-thor-test"
+    assert headers["User-Agent"].startswith("thor-agent/")
+
+
+def test_read_thorhub_provider_state_falls_back_to_global_root_for_share_auth_profiles(tmp_path, monkeypatch):
     # A profile created with ``share_auth`` has no auth.json of its own; it signs in with the
     # root identity. The connector gate must see that identity, or manage_connections vanishes
     # from the profile's tool list while every other credential reader still works.
@@ -219,7 +125,7 @@ def test_read_nous_provider_state_falls_back_to_global_root_for_share_auth_profi
     profile.mkdir(parents=True)
     (root / "auth.json").write_text(json.dumps({
         "version": 1,
-        "providers": {"nous": {"auth_method": "anonymous", "access_token": "tok"}},
+        "providers": {"thor": {"auth_type": "api_key", "api_key": "sk-thor-x"}},
     }))
     monkeypatch.setenv("THOR_HOME", str(profile))
     monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
@@ -232,7 +138,7 @@ def test_read_nous_provider_state_falls_back_to_global_root_for_share_auth_profi
     monkeypatch.setattr(auth_mod, "_global_auth_store_cache", None)
     monkeypatch.setattr(auth_mod, "_auth_file_path", lambda: profile / "auth.json")
 
-    state = managed_tool_gateway._read_nous_provider_state()
+    state = managed_tool_gateway._read_thorhub_provider_state()
 
     assert state is not None
-    assert state["auth_method"] == "anonymous"
+    assert state["auth_type"] == "api_key"

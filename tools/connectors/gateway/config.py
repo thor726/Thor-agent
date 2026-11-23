@@ -97,10 +97,10 @@ def connectors_available(
             return False
         if entitlement_check is None:
             from thor_cli.anon_auth import is_guest_state
-            from tools.managed_tool_gateway import _read_nous_provider_state
+            from tools.managed_tool_gateway import _read_thorhub_provider_state
 
             # Availability must not mint or refresh an identity.
-            if is_guest_state(_read_nous_provider_state()) or guest_identity_pending():
+            if is_guest_state(_read_thorhub_provider_state()) or guest_identity_pending():
                 return True
 
             entitlement_check = managed_tools_rolled_out
@@ -114,9 +114,9 @@ def guest_identity_pending() -> bool:
     """No Nous identity or bearer yet, and a guest one may be created (``nous.guest`` is not false
     and no earlier mint was refused for good). No network: this feeds the ``check_fn``."""
     from thor_cli.anon_auth import guest_allowed, last_mint_failure
-    from tools.managed_tool_gateway import _read_nous_provider_state, peek_nous_access_token
+    from tools.managed_tool_gateway import _read_thorhub_provider_state, peek_thorhub_api_key
 
-    if not guest_allowed() or _read_nous_provider_state() is not None or peek_nous_access_token():
+    if not guest_allowed() or _read_thorhub_provider_state() is not None or peek_thorhub_api_key():
         return False
     failure = last_mint_failure()
     return not failure or bool(failure["retryable"])

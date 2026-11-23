@@ -55,64 +55,6 @@ def test_named_errors_do_not_offer_anonymous_recovery(api_key, base_url, case):
     assert "without signing in" not in result["final_response"]
 
 
-def guard_for(agent):
-    from agent.turn_api_call import nous_rate_limit_guard
-    return nous_rate_limit_guard(
-        agent, _retry=None, api_messages=[], messages=[], conversation_history=[],
-        active_system_prompt="system", retry_count=0, compression_attempts=0, api_call_count=0,
-    )
-
-
-def test_signing_in_does_not_inherit_anonymous_cooldown(tmp_path, monkeypatch):
-    from agent.agent_runtime_helpers import extract_api_error_context
-    from agent.nous_rate_guard import clear_nous_rate_limit, nous_rate_limit_remaining, record_nous_rate_limit
-    from agent.turn_recovery import _is_genuine_nous_rate_limit
-
-    monkeypatch.setenv("THOR_HOME", str(tmp_path))
-    guest = agent_for(make_jwt(), WELCOME)
-    error = Exception("refused")
-    error.status_code = 429
-    error.body = {"status": 429, "message": "refused", "reason": "rate_limited", "retry_after": 600}
-    classified = classify_api_error(error, provider="nous", base_url=WELCOME, api_key=guest.api_key)
-    assert _is_genuine_nous_rate_limit(guest, error, extract_api_error_context(error), classified)
-    blocked = guard_for(guest)
-    assert blocked.action == "return"
-    assert build_error_surface_from_result(blocked.result)["code"] == "free_tier_rate_limited"
-
-    # Keep the old welcome URL deliberately: the changed credential owns the boundary.
-    guest.api_key = make_jwt(account_tier="free", client_id="thor-cli")
-    assert guard_for(guest).action == "fallthrough"
-    record_nous_rate_limit(headers={"retry-after": "300"})
-    named_blocked = guard_for(guest)
-    assert named_blocked.action == "return"
-    assert "free_tier" not in named_blocked.result
-    clear_nous_rate_limit()
-    assert nous_rate_limit_remaining() is None
-    assert nous_rate_limit_remaining(anonymous=True) > 0
-
-
-def test_auxiliary_anonymous_cooldown_does_not_outlive_signing_in(tmp_path, monkeypatch):
-    """An anonymous cooldown marks the provider unhealthy only briefly: a named sign-in
-    mid-cooldown must not inherit the anonymous allowance's wait."""
-    import agent.auxiliary_client as aux
-    from agent.nous_rate_guard import record_nous_rate_limit
-
-    monkeypatch.setenv("THOR_HOME", str(tmp_path))
-    record_nous_rate_limit(headers={"retry-after": "600"}, anonymous=True)
-    runtime = [make_jwt(), WELCOME]
-    monkeypatch.setattr(aux, "_read_nous_auth", dict)
-    monkeypatch.setattr(aux, "_resolve_nous_runtime_api", lambda **kw: tuple(runtime))
-    unhealthy = []
-    monkeypatch.setattr(aux, "_mark_provider_unhealthy", lambda *a, **kw: unhealthy.append(kw.get("ttl")))
-    client = object()
-    monkeypatch.setattr(aux, "_create_openai_client", lambda **kw: client)
-    monkeypatch.setattr(aux, "_aux_probe_active", lambda: True)
-    assert aux._try_nous() == (None, None)
-    assert unhealthy and all(ttl <= 60 for ttl in unhealthy)
-    runtime[:] = [make_jwt(account_tier="free", client_id="thor-cli"), NAMED]
-    assert aux._try_nous()[0] is client
-
-
 @pytest.mark.parametrize("tier", ["anonymous", "free"])
 def test_401_diagnostics_follow_request_identity_on_welcome_host(tier, capsys, monkeypatch):
     import agent.conversation_loop as loop

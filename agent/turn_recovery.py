@@ -1779,34 +1779,23 @@ def activate_codex_app_server_fallback(agent: Any, result: dict[str, Any]) -> bo
     return True
 
 
-def _is_genuine_nous_rate_limit(agent: Any, api_error: Exception, error_context: Any, classified: Any = None) -> bool:
-    """Record a genuine account-level Thor 429 to the cross-session breaker; upstream
-    capacity 429s (no exhausted bucket in headers or last-known state) are left alone.
-
-    *error_context* is the turn's (``extract_api_error_context``); *classified* brings the
-    classifier's own context, where a welcome-tier ``rate_limited`` refusal and its ``reset_at``
-    live. A long welcome reset is an exhausted allowance whatever the headers say, and the one
-    place the user is told that signing in lifts it."""
+def _is_genuine_thorhub_rate_limit(agent: Any, api_error: Exception, error_context: Any, classified: Any = None) -> bool:
+    """Record a genuine ThorHub account-level 429 to the cross-session breaker; upstream
+    capacity 429s (no exhausted bucket in headers or last-known state) are left alone."""
     _genuine = False
     try:
-        from agent.nous_rate_guard import (
-            is_genuine_nous_rate_limit, is_long_welcome_rate_limit, record_nous_rate_limit)
+        from agent.thorhub_rate_guard import is_genuine_thorhub_rate_limit, record_thorhub_rate_limit
         _err_resp = getattr(api_error, "response", None)
         _err_hdrs = getattr(_err_resp, "headers", None) if _err_resp else None
-        from thor_cli.anon_auth import is_anonymous_agent
-        anonymous = is_anonymous_agent(agent)
-        _classified_ctx = getattr(classified, "error_context", None) or {}
-        # Only an anonymous request's fairshare body is an allowance verdict; named
-        # requests keep the exhausted-bucket rule, whatever their host or body says.
-        _genuine = (
-            (anonymous and is_long_welcome_rate_limit(_classified_ctx))
-            or is_genuine_nous_rate_limit(headers=_err_hdrs, last_known_state=agent._rate_limit_state))
+        _genuine = is_genuine_thorhub_rate_limit(
+            headers=_err_hdrs, last_known_state=agent._rate_limit_state)
         if _genuine:
-            _merged = {**(error_context if isinstance(error_context, dict) else {}), **_classified_ctx}
-            record_nous_rate_limit(headers=_err_hdrs, error_context=_merged, anonymous=anonymous)
+            _merged = {**(error_context if isinstance(error_context, dict) else {}),
+                       **(getattr(classified, "error_context", None) or {})}
+            record_thorhub_rate_limit(headers=_err_hdrs, error_context=_merged)
         else:
             logger.info(
-                "Thor 429 looks like upstream capacity "
+                "ThorHub 429 looks like upstream capacity "
                 "(no exhausted bucket in headers or "
                 "last-known state) -- not tripping "
                 "cross-session breaker."
@@ -1814,7 +1803,6 @@ def _is_genuine_nous_rate_limit(agent: Any, api_error: Exception, error_context:
     except Exception:
         pass
     return _genuine
-
 
 def route_classified_error(
     agent: Any, api_error: Exception, classified: Any, _retry: TurnRetryState, *, error_msg: str,
@@ -1976,13 +1964,13 @@ def route_classified_error(
             return _fallback_break()
 
     # Nous Portal: a genuine account-level 429 is recorded to a shared file so ALL
-    # sessions back off; is_genuine_nous_rate_limit excludes upstream 429s.
+    # sessions back off; is_genuine_thorhub_rate_limit excludes upstream 429s.
     if (
         is_rate_limited
         and agent.provider == "nous"
         and classified.reason == FailoverReason.rate_limit
         and not recovered_with_pool
-        and _is_genuine_nous_rate_limit(agent, api_error, error_context, classified)
+        and _is_genuine_thorhub_rate_limit(agent, api_error, error_context, classified)
     ):
         # Re-enter the loop exactly once so the top-of-loop Nous guard runs
         # (retry_count = max_retries would skip it entirely).

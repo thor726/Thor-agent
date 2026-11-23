@@ -22,7 +22,7 @@ class TestAuxiliaryOnWelcomeHost:
     def _isolate(self):
         import agent.auxiliary_client as ac
         with patch.object(ac, "_read_nous_auth", return_value={"auth_method": "anonymous"}), \
-             patch.object(ac, "nous_rate_limit_remaining", return_value=None, create=True):
+             patch.object(ac, "thorhub_rate_limit_remaining", return_value=None, create=True):
             yield
 
     def test_text_aux_on_welcome_host_pins_the_welcome_model(self):

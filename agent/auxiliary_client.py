@@ -2352,18 +2352,13 @@ def _try_nous(vision: bool = False) -> tuple[Optional[OpenAI], Optional[str]]:
             (nous or {}).get("inference_base_url") or _scoped_key_env("NOUS_INFERENCE_BASE_URL") or _NOUS_DEFAULT_BASE_URL
         ).rstrip("/")
     with contextlib.suppress(Exception):
-        from agent.nous_rate_guard import nous_rate_limit_remaining
-        from thor_cli.anon_auth import is_anonymous_request
-        anonymous = is_anonymous_request("nous", api_key)
-        remaining = nous_rate_limit_remaining(anonymous=anonymous)
+        from agent.thorhub_rate_guard import thorhub_rate_limit_remaining
+        remaining = thorhub_rate_limit_remaining()
         if remaining is not None and remaining > 0:
-            logger.debug("Auxiliary: skipping Thor Portal (rate-limited, resets in %.0fs)", remaining)
-            # The health marker is provider-wide, so a full-length anonymous cooldown would
-            # outlive signing in mid-cooldown; bound it instead of re-resolving credentials
-            # (auth store lock, pool read) on every auxiliary call for the cooldown's duration.
+            logger.debug("Auxiliary: skipping ThorHub (rate-limited, resets in %.0fs)", remaining)
             _mark_provider_unhealthy(
-                "nous", ttl=min(remaining, 60.0) if anonymous else remaining,
-                reason="Thor Portal rate-limited", level=logging.INFO)
+                "nous", ttl=remaining,
+                reason="ThorHub rate-limited", level=logging.INFO)
             return None, None
     lane = "vision" if vision else "text"
     # The free tier's host serves exactly one model, for every lane: asking it for the Portal's

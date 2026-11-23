@@ -138,45 +138,6 @@ class TestOneShotRecoveries:
         assert _recover_welcome_tier(agent, _classify(_gateway_error(400, body), base_url=PAID), TurnRetryState()) is False
 
 
-class TestLongWaitRule:
-    @pytest.mark.parametrize("reason,retry_after,expected", [
-        ("rate_limited", 20, True), ("rate_limited", 600, True), ("rate_limited", 19, False),
-        ("rate_limited", 0, False), ("at_capacity", 30, False), ("admission_closed", 30, False),
-    ])
-    def test_only_a_long_rate_limited_refusal_is_an_exhausted_allowance(self, reason, retry_after, expected):
-        from agent.nous_rate_guard import is_long_welcome_rate_limit
-        classified = _classify(_refusal(reason, retry_after=retry_after))
-        assert is_long_welcome_rate_limit(classified.error_context) is expected
-
-    def test_no_refusal_is_not_long(self):
-        from agent.nous_rate_guard import is_long_welcome_rate_limit
-        assert is_long_welcome_rate_limit({}) is False and is_long_welcome_rate_limit(None) is False
-
-    def test_the_turn_records_a_long_refusal_from_the_classifiers_context(self, monkeypatch):
-        """The turn hands the guard TWO contexts: its own (``extract_api_error_context``), which
-        never carries ``welcome_refusal``, and the classifier's, which does. The breaker must key on
-        the latter and record the reset it computed."""
-        import agent.nous_rate_guard as guard
-        from agent.turn_recovery import _is_genuine_nous_rate_limit
-        recorded = []
-        monkeypatch.setattr(guard, "record_nous_rate_limit", lambda **kw: recorded.append(kw))
-        err = _refusal("rate_limited", retry_after=600)
-        turn_ctx = extract_api_error_context(err)
-        assert "welcome_refusal" not in turn_ctx
-        classified = _classify(err)
-        assert _is_genuine_nous_rate_limit(_agent(), err, turn_ctx, classified) is True
-        assert recorded and recorded[0]["error_context"]["reset_at"] == classified.error_context["reset_at"]
-        # The same body for a named account is not an anonymous allowance verdict.
-        recorded.clear()
-        assert _is_genuine_nous_rate_limit(_agent(base_url=PAID, api_key=make_jwt(account_tier="paid")), err, turn_ctx, classified) is False
-        assert recorded == []
-        # A short one is not an exhausted allowance: nothing recorded, the turn waits it out.
-        recorded.clear()
-        short = _refusal("rate_limited", retry_after=5)
-        assert _is_genuine_nous_rate_limit(_agent(), short, extract_api_error_context(short), _classify(short)) is False
-        assert recorded == []
-
-
 _ANON = SimpleNamespace(provider="nous", api_key=make_jwt())
 
 

@@ -96,10 +96,10 @@ def _use_keyless_ring(capability: Optional[str] = None) -> bool:
     gateway isn't the selected path for *capability*, and the keyless tier isn't disabled or pinned paid."""
     if _env("FIRECRAWL_API_KEY") or _env("FIRECRAWL_API_URL"):
         return False
-    from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_web_capability_selection
+    from tools.tool_backend_helpers import MANAGED_PROVIDER, read_web_capability_selection
     from plugins.web.keyless_mcp import use_keyless
     # Both probes are optional layers: a failing probe never blocks the ring.
-    for probe in (lambda: read_web_capability_selection(capability) == NOUS_MANAGED_PROVIDER,
+    for probe in (lambda: read_web_capability_selection(capability) == MANAGED_PROVIDER,
                   lambda: _is_tool_gateway_ready() and not _is_explicit_firecrawl_selection()):
         try:
             if probe():
@@ -139,17 +139,17 @@ def _get_firecrawl_gateway_url() -> str:
 
 
 def _is_tool_gateway_ready() -> bool:
-    """True when gateway URL + Nous Subscriber token are available."""
-    return _gateway.resolve_managed_tool_gateway("firecrawl", token_reader=_gateway.peek_nous_access_token) is not None
+    """True when a managed Firecrawl gateway is available (never on ThorHub)."""
+    return _gateway.resolve_managed_tool_gateway("firecrawl") is not None
 
 
 def check_firecrawl_api_key() -> bool:
     """True when the route selected via ``thor tools`` (or, on a never-configured
     install, either route) is usable."""
-    from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_web_capability_selection
+    from tools.tool_backend_helpers import MANAGED_PROVIDER, read_web_capability_selection
 
     def _usable(selected) -> bool:
-        if selected == NOUS_MANAGED_PROVIDER:
+        if selected == MANAGED_PROVIDER:
             return _is_tool_gateway_ready()
         return _get_direct_firecrawl_config() is not None or (selected is None and _is_tool_gateway_ready())
 
@@ -158,17 +158,19 @@ def check_firecrawl_api_key() -> bool:
 
 
 def is_managed_route(capability: Optional[str] = None) -> bool:
-    """True when Firecrawl calls for *capability* go through the Nous Tool Gateway rather than the user's
-    own key / instance — the same decision :func:`_get_firecrawl_client` makes, without building a client."""
-    from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_web_capability_selection
+    """True when Firecrawl calls for *capability* go through the managed Tool Gateway rather than the user's
+    own key / instance — the same decision :func:`_get_firecrawl_client` makes, without building a client.
+    On ThorHub the managed route is unavailable, so True here means the call fails with the
+    managed-unavailable error until the selection changes."""
+    from tools.tool_backend_helpers import MANAGED_PROVIDER, read_web_capability_selection
     selected = read_web_capability_selection(capability)
     if selected is not None or _is_explicit_firecrawl_selection():
-        return selected == NOUS_MANAGED_PROVIDER
+        return selected == MANAGED_PROVIDER
     return _get_direct_firecrawl_config() is None and _is_tool_gateway_ready()
 
 
 def _firecrawl_backend_help_suffix() -> str:
-    return ", or use the Nous Tool Gateway via your subscription (FIRECRAWL_GATEWAY_URL or TOOL_GATEWAY_DOMAIN)" if _backend_helpers.managed_nous_tools_enabled() else ""
+    return ", or set FIRECRAWL_GATEWAY_URL for a self-hosted Firecrawl gateway" if _backend_helpers.managed_thorhub_tools_enabled() else ""
 
 
 def _get_firecrawl_client(capability: Optional[str] = None) -> Any:
@@ -178,26 +180,24 @@ def _get_firecrawl_client(capability: Optional[str] = None) -> Any:
     Nous); never-configured → direct when present, else managed. Raises ValueError when the resolved path is
     unusable."""
     wt = _wt()
-    from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_web_capability_selection, selection_error
+    from tools.tool_backend_helpers import MANAGED_PROVIDER, read_web_capability_selection, selection_error
     selected = read_web_capability_selection(capability)
     direct_config = _get_direct_firecrawl_config()
 
     def _managed():
-        gw = _gateway.resolve_managed_tool_gateway("firecrawl", token_reader=_gateway.read_nous_access_token)
+        gw = _gateway.resolve_managed_tool_gateway("firecrawl", token_reader=_gateway.read_thorhub_api_key)
         if gw is None:
             return None
-        return "sdk", {"api_key": gw.nous_user_token, "api_url": gw.gateway_origin}, ("tool-gateway", gw.gateway_origin, gw.nous_user_token)
+        return "sdk", {"api_key": gw.api_key, "api_url": gw.gateway_origin}, ("tool-gateway", gw.gateway_origin, gw.api_key)
 
     def _unconfigured_message() -> str:
         message = "Web tools are not configured. Set FIRECRAWL_API_KEY for cloud Firecrawl or set FIRECRAWL_API_URL for a self-hosted Firecrawl instance."
-        if _backend_helpers.managed_nous_tools_enabled():
-            return message + " With your Nous subscription you can also use the Tool Gateway. run `thor tools` and select Nous Subscription as the web provider."
-        return message + " " + _backend_helpers.nous_tool_gateway_unavailable_message("managed Firecrawl web tools")
+        return message + " " + _backend_helpers.thorhub_tool_gateway_unavailable_message("managed Firecrawl web tools")
 
     # (resolved config, log detail, error message) per selection state; the message is built lazily.
-    if selected == NOUS_MANAGED_PROVIDER:
-        resolved, log, message = _managed(), "the Nous Subscription web selection is stored but the tool gateway is unavailable.", lambda: selection_error(
-            "web", NOUS_MANAGED_PROVIDER, "the Nous Tool Gateway is not available (not entitled or unreachable)")
+    if selected == MANAGED_PROVIDER:
+        resolved, log, message = _managed(), "the managed web selection is stored but the tool gateway is unavailable on ThorHub.", lambda: selection_error(
+            "web", MANAGED_PROVIDER, "the managed tool gateway is not available on ThorHub")
     elif selected is not None or _is_explicit_firecrawl_selection():
         # Stored vendor selection (shared name, or a per-capability key naming firecrawl): direct only (no
         # credentials → explicit selection unlocks keyless cloud mode). A per-capability key naming ANOTHER

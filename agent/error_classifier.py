@@ -938,7 +938,8 @@ def _nous_welcome_tier(c: _Ctx) -> Optional[Verdict]:
     if status == 429:
         # Every free-tier 429 is the allowance talking, so even one without a ``reason`` (header-only,
         # quota words) is a refusal; otherwise it would fall to billing or the generic rate-limit copy.
-        from agent.nous_rate_guard import welcome_refusal_from_headers
+        # (Legacy welcome-tier shape; removed with the guest tier.)
+        from agent.thorhub_rate_guard import welcome_refusal_from_headers
         refusal = parse_welcome_refusal(c.body) or welcome_refusal_from_headers(
             c.headers, body_wait=_rate_limit_reset_seconds(c.msg, c.body, c.headers))
         ctx = {"welcome_refusal": refusal}

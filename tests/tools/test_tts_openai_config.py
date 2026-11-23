@@ -51,7 +51,7 @@ class TestResolveOpenaiAudioClientConfig:
         managed even when direct credentials are present."""
         config = {"openai": {"api_key": "cfg-key", "base_url": "http://localhost:4003/v1"}}
         managed = SimpleNamespace(
-            nous_user_token="managed-token",
+            api_key="managed-token",
             gateway_origin="https://openai-audio-gateway.thor-agent.local",
         )
 
@@ -94,7 +94,7 @@ class TestResolveOpenaiAudioClientConfig:
              patch.object(tts_tool_openai, "read_selection", return_value=None), \
              patch.object(tts_tool_openai, "resolve_openai_audio_api_key", return_value=""), \
              patch.object(tts_tool_openai, "resolve_managed_tool_gateway", return_value=None), \
-             patch.object(tts_tool_openai, "managed_nous_tools_enabled", return_value=False):
+             patch.object(tts_tool_openai, "managed_thorhub_tools_enabled", return_value=False):
             with pytest.raises(ValueError) as exc:
                 tts_tool_openai._resolve_openai_audio_client_config()
 

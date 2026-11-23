@@ -165,7 +165,7 @@ def _setup_backend_modal(config: dict) -> None:
     from tools.tool_backend_helpers import coerce_modal_mode
     from thor_cli import nous_subscription
     managed_modal_available = bool(
-        tool_backend_helpers.managed_nous_tools_enabled()
+        tool_backend_helpers.managed_thorhub_tools_enabled()
         and nous_subscription.get_nous_subscription_features(config).nous_auth_present
         and is_managed_tool_gateway_ready("modal"))
     modal_mode = coerce_modal_mode(_setup.cfg_get(config, "terminal", "modal_mode"))

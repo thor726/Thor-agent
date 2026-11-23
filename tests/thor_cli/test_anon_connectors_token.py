@@ -80,12 +80,12 @@ def _persist_guest_tokens(*, inference: int | None = None, connectors: int | Non
 
 class TestConnectorsCallers:
     def test_never_challenged_even_while_the_inference_mint_would_be(self, nas, presented):
-        from tools.managed_tool_gateway import read_nous_access_token
+        from tools.managed_tool_gateway import read_thorhub_api_key
         nas.challenge_required = True
         nas.challenge_never_clears = True
         token = auth_mod.resolve_nous_access_token()
         assert _scope(token) == "connectors:invoke"
-        assert read_nous_access_token() == token
+        assert read_thorhub_api_key() == token
         assert _purposes(nas) == ["connectors"]
         assert presented == [] and "/api/anonymous/challenge/status" not in [p for _, p in nas.calls]
 
@@ -97,12 +97,12 @@ class TestConnectorsCallers:
     ])
     def test_picks_the_live_slot_or_mints_connectors_only(self, nas, presented, monkeypatch,
                                                           inference, connectors, serves):
-        from tools.managed_tool_gateway import read_nous_access_token
+        from tools.managed_tool_gateway import read_thorhub_api_key
         held = _persist_guest_tokens(inference=inference, connectors=connectors)
         nas.challenge_required = True
         token = auth_mod.resolve_nous_access_token()
         _forget_memo(monkeypatch)
-        assert read_nous_access_token() == token
+        assert read_thorhub_api_key() == token
         if serves:
             assert token == held[serves] and nas.token_requests == []
         else:
@@ -239,9 +239,9 @@ class TestOlderNas:
 class TestPersistedState:
     def test_state_written_by_current_releases_loads_unchanged(self, trial):
         nas = trial
-        from tools.managed_tool_gateway import peek_nous_access_token
+        from tools.managed_tool_gateway import peek_thorhub_api_key
         token = _persist_guest_tokens(inference=900)["inference"]
-        assert peek_nous_access_token() == token
+        assert peek_thorhub_api_key() == token
         assert auth_mod.resolve_nous_access_token() == token
         assert resolve_nous_runtime_credentials()["api_key"] == token
         assert nas.token_requests == []

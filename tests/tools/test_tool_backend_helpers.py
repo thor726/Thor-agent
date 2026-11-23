@@ -1,7 +1,7 @@
 """Unit tests for tools/tool_backend_helpers.py.
 
 Tests cover:
-- managed_nous_tools_enabled() subscription-based gate
+- managed_thorhub_tools_enabled() subscription-based gate
 - normalize_browser_cloud_provider() coercion
 - coerce_modal_mode() validation
 - has_direct_modal_credentials() detection
@@ -20,8 +20,8 @@ from thor_cli.nous_account import NousPaidServiceAccessInfo, NousPortalAccountIn
 from tools.tool_backend_helpers import (
     coerce_modal_mode,
     has_direct_modal_credentials,
-    managed_nous_tools_enabled,
-    nous_tool_gateway_unavailable_message,
+    managed_thorhub_tools_enabled,
+    thorhub_tool_gateway_unavailable_message,
     normalize_browser_cloud_provider,
     resolve_modal_backend_state,
     resolve_openai_audio_api_key,
@@ -33,7 +33,7 @@ def _raise_import():
 
 
 # ---------------------------------------------------------------------------
-# managed_nous_tools_enabled
+# managed_thorhub_tools_enabled
 # ---------------------------------------------------------------------------
 class TestManagedNousToolsEnabled:
     """Subscription-based gate: True for paid Nous subscribers."""
@@ -43,7 +43,7 @@ class TestManagedNousToolsEnabled:
             "thor_cli.nous_account.get_nous_portal_account_info",
             lambda: NousPortalAccountInfo(logged_in=False, source="none", fresh=False),
         )
-        assert managed_nous_tools_enabled() is False
+        assert managed_thorhub_tools_enabled() is False
 
 
     def test_returns_false_on_exception(self, monkeypatch):
@@ -52,7 +52,7 @@ class TestManagedNousToolsEnabled:
             "thor_cli.nous_account.get_nous_portal_account_info",
             _raise_import,
         )
-        assert managed_nous_tools_enabled() is False
+        assert managed_thorhub_tools_enabled() is False
 
 
 class TestNousToolGatewayUnavailableMessage:
@@ -77,7 +77,7 @@ class TestNousToolGatewayUnavailableMessage:
             ),
         )
 
-        message = nous_tool_gateway_unavailable_message("managed image generation")
+        message = thorhub_tool_gateway_unavailable_message("managed image generation")
 
         assert "credits are exhausted" in message
         assert "managed image generation" in message
@@ -168,7 +168,7 @@ class TestResolveModalBackendState:
     def _resolve(monkeypatch, mode, *, has_direct, managed_ready, nous_enabled=False):
         """Helper to call resolve_modal_backend_state with feature flag control."""
         monkeypatch.setattr(
-            "tools.tool_backend_helpers.managed_nous_tools_enabled",
+            "tools.tool_backend_helpers.managed_thorhub_tools_enabled",
             lambda: nous_enabled,
         )
         return resolve_modal_backend_state(

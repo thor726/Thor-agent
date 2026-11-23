@@ -15,35 +15,20 @@ _DEFAULT_MODAL_MODE = "auto"
 _VALID_MODAL_MODES = {"auto", "direct", "managed"}
 
 
-def managed_nous_tools_enabled(*, force_fresh: bool = False) -> bool:
-    """Coarse gate: entitled to the Nous Tool Gateway (paid Portal access OR a live free
-    pool). Fails closed on unknown/error — never blocks startup. Callers narrow per category
-    via ``tool_gateway_entitled_for``; ``force_fresh`` is for flows needing a just-bought grant."""
-    try:
-        from thor_cli.nous_account import get_nous_portal_account_info
-        # Branched call, not ``force_fresh=force_fresh``: tests stub the reader with zero-arg lambdas.
-        account_info = (get_nous_portal_account_info(force_fresh=True) if force_fresh
-                        else get_nous_portal_account_info())
-        return bool(account_info.logged_in) and account_info.tool_gateway_entitled
-    except Exception:
-        return False
+def managed_thorhub_tools_enabled(*, force_fresh: bool = False) -> bool:
+    """Coarse gate for the managed tool gateway. Always False: ThorHub has no
+    managed vendor-tool gateway, so every caller takes its direct-key path."""
+    return False
 
 
-def nous_tool_gateway_unavailable_message(capability: str = "the Nous Tool Gateway", *,
-                                          force_fresh: bool = False) -> str:
-    """Return account-aware guidance for an unavailable Nous Tool Gateway path."""
-    try:
-        from thor_cli.nous_account import (
-            format_nous_portal_entitlement_message, get_nous_portal_account_info)
-        message = format_nous_portal_entitlement_message(
-            get_nous_portal_account_info(force_fresh=force_fresh), capability=capability,
-            in_chat=True)
-        if message:
-            return message
-    except Exception:
-        pass
-    return (f"{capability} is unavailable. Run `thor model` to refresh your "
-            "Nous Portal login and billing status.")
+def thorhub_tool_gateway_unavailable_message(capability: str = "the managed tool gateway", *,
+                                             force_fresh: bool = False) -> str:
+    """Guidance for an unavailable managed tool path (ThorHub era).
+
+    ThorHub covers LLM calls only; vendor tools need the vendor's own key.
+    """
+    return (f"{capability} is unavailable on ThorHub: ThorHub covers LLM calls only. "
+            "Configure the vendor's own API key (run `thor tools`) to use it directly.")
 
 
 def normalize_browser_cloud_provider(value: object | None) -> str:
@@ -77,7 +62,7 @@ def resolve_modal_backend_state(modal_mode: object | None, *, has_direct: bool,
     prefers managed when available, else direct."""
     requested_mode = coerce_modal_mode(modal_mode)
     if managed_enabled is None:
-        managed_enabled = managed_nous_tools_enabled()
+        managed_enabled = managed_thorhub_tools_enabled()
     managed_ok = managed_enabled and managed_ready
     exclusive = {"managed": "managed" if managed_ok else None,
                  "direct": "direct" if has_direct else None}
@@ -179,7 +164,9 @@ def resolve_openai_audio_api_key() -> str:
 
 # Provider value the managed "Nous Subscription" picker rows write for every category;
 # any other name = that vendor direct; no key = legacy autodetect.
-NOUS_MANAGED_PROVIDER = "nous"
+# Legacy stored selection value meaning "managed subscription route". The managed
+# gateway is gone (ThorHub era), so selections matching it fall back to direct-key paths.
+MANAGED_PROVIDER = "nous"
 # Per-capability keys that also count as "this category has been configured".
 _EXTRA_SELECTION_KEYS = {"web": ("search_backend", "extract_backend")}
 _DEFAULT_NAME_KEYS = ("provider", "backend", "cloud_provider")
@@ -224,7 +211,7 @@ def read_selection(section: str) -> str | None:
     if raw is None:
         return None
     if is_truthy_value(raw.get("use_gateway")):
-        return NOUS_MANAGED_PROVIDER
+        return MANAGED_PROVIDER
     for key in _SELECTION_NAME_KEYS.get(section, _DEFAULT_NAME_KEYS):
         text = str(raw.get(key)).strip().lower() if raw.get(key) is not None else ""
         if text:

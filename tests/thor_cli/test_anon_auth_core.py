@@ -356,8 +356,8 @@ class TestBootstrapNeverCreates:
         """status, provider resolution and the connector bearer are reads: with no identity they
         answer 'nothing' and touch no network."""
         monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: False)
-        from tools.managed_tool_gateway import read_nous_access_token
-        assert read_nous_access_token() is None
+        from tools.managed_tool_gateway import read_thorhub_api_key
+        assert read_thorhub_api_key() is None
         with pytest.raises(anon_auth.AuthError):
             resolve_provider("auto")
         from thor_cli.main import _has_any_provider_configured
@@ -428,10 +428,10 @@ class TestConnectorTokenPath:
     def test_opt_out_hides_the_free_tier_from_connectors_including_cached_tokens(self, portal, monkeypatch):
         anon_auth.ensure_portal_identity(explicit=True)
         from tools import managed_tool_gateway as mtg
-        assert mtg.read_nous_access_token()  # now a cached, valid JWT exists
+        assert mtg.read_thorhub_api_key()  # now a cached, valid JWT exists
         _write_config(monkeypatch, guest=False)
-        assert mtg.peek_nous_access_token() is None
-        assert mtg.read_nous_access_token() is None
+        assert mtg.peek_thorhub_api_key() is None
+        assert mtg.read_thorhub_api_key() is None
 
     def test_connector_path_replaces_a_dead_credential_once(self, portal):
         first = anon_auth.ensure_portal_identity(explicit=True)
@@ -443,7 +443,7 @@ class TestConnectorTokenPath:
             _save_auth_store(store)
         portal.dead_tokens.add(first["anon_token"])
         from tools import managed_tool_gateway as mtg
-        token = mtg.read_nous_access_token()
+        token = mtg.read_thorhub_api_key()
         assert token and token != _jwt(exp=1)
         assert _load_auth_store()["providers"]["nous"]["anon_token"] != first["anon_token"]
         assert portal.minted == 2

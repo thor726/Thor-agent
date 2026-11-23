@@ -1,28 +1,37 @@
-"""Generic managed-tool gateway helpers for Nous-hosted vendor passthroughs."""
+"""Managed-tool gateway helpers (ThorHub era).
+
+ThorHub does not proxy third-party vendor tools (fal, Modal, Firecrawl,
+Perplexity, OpenAI audio, Krea, browser-use): there is no managed vendor
+gateway to resolve. Vendor tools work only with their own direct API keys,
+so the ``resolve_*`` helpers always report "not available" and call sites
+fall back to their direct-key paths.
+
+The ThorHub LLM key itself is a static ``sk-thor-...`` key: read it with
+:func:`peek_thorhub_api_key` / :func:`read_thorhub_api_key` (``THORHUB_API_KEY``
+or the ``thor`` auth-store provider). The only refresh left is the legacy
+guest connectors-token leg inside those two readers; it is removed with the
+guest tier.
+"""
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 from dataclasses import dataclass
 from typing import Callable, Optional
 
-from thor_constants import get_thor_home
-from tools.tool_backend_helpers import managed_nous_tools_enabled
+from tools.tool_backend_helpers import managed_thorhub_tools_enabled  # re-export: patch target for tool tests
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_TOOL_GATEWAY_DOMAIN = "thor-agent.local"
-_DEFAULT_TOOL_GATEWAY_SCHEME = "https"
-_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120
+_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120  # legacy guest-token refresh skew; removed with the guest tier
 
 
 @dataclass(frozen=True)
 class ManagedToolGatewayConfig:
     vendor: str
     gateway_origin: str
-    nous_user_token: str
+    api_key: str
     managed_mode: bool
 
 
@@ -31,33 +40,29 @@ def _clean(value: object) -> Optional[str]:
     return value.strip() if isinstance(value, str) and value.strip() else None
 
 
-def auth_json_path():
-    """Return the Thor auth store path, respecting THOR_HOME overrides."""
-    return get_thor_home() / "auth.json"
+def _read_thorhub_provider_state() -> Optional[dict]:
+    """The profile's ThorHub auth state, or None.
 
-
-def _read_nous_provider_state() -> Optional[dict]:
-    """The profile's Nous state, or None. A free-tier identity counts only while guests are allowed:
-    with ``nous.guest: false`` it is invisible here, so no cached or refreshed token of it is ever
-    attached to a request.
-
-    Resolves through the same profile-then-global-root fallback every other credential reader
-    uses: a profile created with ``share_auth`` has no ``auth.json`` of its own and signs in with
-    the root identity. Reading only ``THOR_HOME/auth.json`` made that profile look signed out to
-    the connector gate alone, so ``manage_connections`` vanished from its tool list."""
+    Provider ``thor`` first; legacy provider ``nous`` state is accepted as a
+    migration bridge (the ``thor`` provider still aliases ``nous*``). A guest
+    state counts only while guests are allowed: with ``nous.guest: false`` it
+    is invisible here, so no cached or refreshed token of it is ever attached
+    to a request.
+    """
     try:
         from thor_cli.auth import get_provider_auth_state
-
-        nous_provider = get_provider_auth_state("nous")
-        if not isinstance(nous_provider, dict):
-            return None
         from thor_cli.anon_auth import guest_allowed, is_guest_state
 
-        if is_guest_state(nous_provider) and not guest_allowed():
-            return None
-        return nous_provider
+        for provider in ("thor", "nous"):
+            state = get_provider_auth_state(provider)
+            if not isinstance(state, dict):
+                continue
+            if is_guest_state(state) and not guest_allowed():
+                continue
+            return state
     except Exception:
-        return None
+        pass
+    return None
 
 
 def _read_user_token_override() -> Optional[str]:
@@ -72,48 +77,6 @@ def _read_user_token_override() -> Optional[str]:
     except UnscopedSecretError:
         explicit = os.getenv("TOOL_GATEWAY_USER_TOKEN")
     return _clean(explicit)
-
-
-def peek_nous_access_token() -> Optional[str]:
-    """Cheap token probe: env override or cached auth-store token, no expiry check and no network —
-    availability scans must stay off the synchronous OAuth refresh path (:func:`read_nous_access_token`)."""
-    from thor_cli.anon_auth import held_connectors_token
-
-    return _read_user_token_override() or _clean(held_connectors_token(_read_nous_provider_state()))
-
-
-def read_nous_access_token() -> Optional[str]:
-    """Read a Nous Subscriber OAuth access token from auth store or env override.
-
-    A read: with no Nous identity there is no bearer and the answer is None. The free-tier identity
-    is created by the boot bootstrap or the first hosted connector action, never on a token-read
-    path (NS-845 Q1.2). A retired free-tier credential IS replaced here, once: that is the explicit
-    dead-credential rule, shared with inference.
-    """
-    if explicit := _read_user_token_override():
-        return explicit
-    nous_provider = _read_nous_provider_state() or {}
-    if not nous_provider:
-        return None
-    from thor_cli.anon_auth import held_connectors_token
-
-    if fresh_token := _clean(held_connectors_token(nous_provider, skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
-        return fresh_token
-    cached_token = peek_nous_access_token()
-    try:
-        from thor_cli.auth import resolve_nous_access_token
-
-        if refreshed_token := _clean(resolve_nous_access_token(refresh_skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
-            return refreshed_token
-    except Exception as exc:
-        # Same dead-credential rule as inference (one place decides it: anon_auth): a retired free-tier
-        # identity is replaced once, here, instead of handing back its stale token forever.
-        from thor_cli.anon_auth import AnonCredentialDead
-
-        if isinstance(exc, AnonCredentialDead):
-            return _replace_dead_guest_token(nous_provider, str(exc.code or "anon_credential_dead"))
-        logger.debug("Nous access token refresh failed: %s", exc)
-    return cached_token
 
 
 def _replace_dead_guest_token(dead_state: dict, code: str = "anon_credential_dead") -> Optional[str]:
@@ -133,51 +96,109 @@ def _replace_dead_guest_token(dead_state: dict, code: str = "anon_credential_dea
         return None
 
 
-def get_tool_gateway_scheme() -> str:
-    """Return configured shared gateway URL scheme."""
-    scheme = os.getenv("TOOL_GATEWAY_SCHEME", "").strip().lower() or _DEFAULT_TOOL_GATEWAY_SCHEME
-    if scheme not in {"http", "https"}:
-        raise ValueError("TOOL_GATEWAY_SCHEME must be 'http' or 'https'")
-    return scheme
+def peek_thorhub_api_key() -> Optional[str]:
+    """Cheap ThorHub key probe: env override, static ThorHub key, or the cached
+    guest connectors token — no expiry check and no network.
+
+    The guest-token leg is legacy (the connectors guest tier is removed with
+    the guest identity machinery); availability scans must stay off the
+    synchronous refresh path (:func:`read_thorhub_api_key`).
+    """
+    try:
+        from thor_cli.anon_auth import held_connectors_token
+        from thor_cli.thorhub_account import thorhub_api_key
+
+        return (
+            _read_user_token_override()
+            or _clean(thorhub_api_key())
+            or _clean(held_connectors_token(_read_thorhub_provider_state()))
+        )
+    except Exception:
+        return None
+
+
+def read_thorhub_api_key() -> Optional[str]:
+    """Read the ThorHub API key, or the guest connectors token as a legacy fallback.
+
+    Order: env override, static ThorHub key, then the guest path — a fresh held
+    connectors token, else a refresh via the auth core (the retired-credential
+    rule replaces a dead guest once, shared with inference). The guest leg is
+    legacy and is removed with the guest tier; with no ThorHub key and no guest
+    identity there is no bearer <redacted> answer is None.
+    """
+    if explicit := _read_user_token_override():
+        return explicit
+    try:
+        from thor_cli.thorhub_account import thorhub_api_key
+
+        if static := _clean(thorhub_api_key()):
+            return static
+    except Exception:
+        pass
+    provider = _read_thorhub_provider_state() or {}
+    if not provider:
+        return None
+    from thor_cli.anon_auth import held_connectors_token
+
+    if fresh_token := _clean(held_connectors_token(
+            provider, skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
+        return fresh_token
+    cached_token = _clean(provider.get("access_token"))
+    try:
+        from thor_cli.auth import resolve_nous_access_token
+
+        if refreshed_token := _clean(resolve_nous_access_token(
+            refresh_skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS)):
+            return refreshed_token
+    except Exception as exc:
+        # Same dead-credential rule as inference (one place decides it: anon_auth): a retired free-tier
+        # identity is replaced once, here, instead of handing back its stale token forever.
+        from thor_cli.anon_auth import AnonCredentialDead
+
+        if isinstance(exc, AnonCredentialDead):
+            return _replace_dead_guest_token(provider, str(exc.code or "anon_credential_dead"))
+        logger.debug("ThorHub API key refresh failed: %s", exc)
+    return cached_token
 
 
 def build_vendor_gateway_url(vendor: str) -> str:
-    """Return the gateway origin for a specific vendor."""
-    if explicit_vendor_url := os.getenv(f"{vendor.upper().replace('-', '_')}_GATEWAY_URL", "").strip().rstrip("/"):
-        return explicit_vendor_url
-    shared_domain = os.getenv("TOOL_GATEWAY_DOMAIN", "").strip().strip("/") or _DEFAULT_TOOL_GATEWAY_DOMAIN
-    return f"{get_tool_gateway_scheme()}://{vendor}-gateway.{shared_domain}"
+    """Explicit per-vendor gateway URL override (``{VENDOR}_GATEWAY_URL``), or "".
 
-
-def _vendor_gateway(vendor: str, gateway_builder, token_reader) -> Optional[ManagedToolGatewayConfig]:
-    gateway_origin = (gateway_builder or build_vendor_gateway_url)(vendor)
-    nous_user_token = (token_reader or read_nous_access_token)()
-    if not gateway_origin or not nous_user_token:
-        return None
-    return ManagedToolGatewayConfig(vendor=vendor, gateway_origin=gateway_origin, nous_user_token=nous_user_token, managed_mode=True)
+    There is no default managed gateway origin anymore: without an explicit
+    override there is nowhere to route a vendor call.
+    """
+    if explicit := os.getenv(f"{vendor.upper().replace('-', '_')}_GATEWAY_URL", "").strip().rstrip("/"):
+        return explicit
+    return ""
 
 
 def resolve_managed_tool_gateway(
     vendor: str, gateway_builder: Optional[Callable[[str], str]] = None,
     token_reader: Optional[Callable[[], Optional[str]]] = None) -> Optional[ManagedToolGatewayConfig]:
-    """Resolve shared managed-tool gateway config for a vendor (entitled accounts only)."""
-    if not managed_nous_tools_enabled():
+    """Explicit override only: a config when ``{VENDOR}_GATEWAY_URL`` (or *gateway_builder*) names an
+    origin — a self-hosted gateway the user configured. There is no default managed gateway: without
+    an explicit override the answer is None, so vendor tools fall back to their direct-key paths.
+    The bearer is the ThorHub key (or *token_reader*'s value); a self-hosted gateway that needs no
+    auth simply gets an empty key.
+    """
+    origin = (gateway_builder or build_vendor_gateway_url)(vendor)
+    if not origin:
         return None
-    return _vendor_gateway(vendor, gateway_builder, token_reader)
+    token = (token_reader or peek_thorhub_api_key)()
+    if not token:
+        return None
+    return ManagedToolGatewayConfig(
+        vendor=vendor, gateway_origin=origin, api_key=token, managed_mode=True)
 
 
 def resolve_free_search_gateway(token_reader: Optional[Callable[[], Optional[str]]] = None) -> Optional[ManagedToolGatewayConfig]:
-    """Perplexity ``search_type: "fast"`` is served to every Nous identity with no funding check, the
-    anonymous guest tier included, so it needs a token this profile may use (guest-disabled and refresh
-    rules live in the reader), not paid entitlement or a registered account. Search only: every other
-    vendor route goes through :func:`resolve_managed_tool_gateway`."""
-    return _vendor_gateway("perplexity", None, token_reader)
+    """Perplexity fast search through an explicitly configured gateway only; ThorHub has no free
+    Perplexity route of its own."""
+    return resolve_managed_tool_gateway("perplexity", token_reader=token_reader)
 
 
 def is_managed_tool_gateway_ready(
     vendor: str, gateway_builder: Optional[Callable[[str], str]] = None,
     token_reader: Optional[Callable[[], Optional[str]]] = None) -> bool:
-    """True when a gateway URL and a likely-usable Nous token are present. Defaults to
-    :func:`peek_nous_access_token` (no OAuth refresh); callers about to make a real request use
-    :func:`resolve_managed_tool_gateway` instead."""
-    return resolve_managed_tool_gateway(vendor, gateway_builder=gateway_builder, token_reader=token_reader or peek_nous_access_token) is not None
+    """True when an explicit gateway origin is configured for *vendor*."""
+    return resolve_managed_tool_gateway(vendor, gateway_builder=gateway_builder, token_reader=token_reader) is not None

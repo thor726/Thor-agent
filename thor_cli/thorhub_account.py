@@ -21,8 +21,31 @@ THORHUB_PACKAGES_URL = f"{THORHUB_BASE_URL}/beli"
 
 
 def thorhub_api_key() -> str:
-    """Key ThorHub dari env (alias thorhub). String kosong bila tidak ada."""
-    return (os.environ.get("THORHUB_API_KEY") or "").strip()
+    """Key ThorHub dari env (alias thorhub), lalu provider ``thor`` di auth store.
+
+    Provider ``nous`` lama ikut dibaca sebagai jembatan migrasi (alias provider
+    ``thor`` masih menerima ``nous*``) agar auth store lama tetap jalan.
+    String kosong bila tidak ada. Tidak pernah melempar.
+    """
+    if key := (os.environ.get("THORHUB_API_KEY") or "").strip():
+        return key
+    try:
+        from thor_cli.auth import get_provider_auth_state
+
+        for provider in ("thor", "nous"):
+            state = get_provider_auth_state(provider) or {}
+            for field in ("api_key", "key"):
+                value = state.get(field)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+    except Exception:
+        pass
+    return ""
+
+
+def resolve_thorhub_base_url() -> str:
+    """Base URL ThorHub (portal/member)."""
+    return THORHUB_BASE_URL
 
 
 def _fmt_id(n: object) -> str:

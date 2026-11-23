@@ -160,7 +160,7 @@ def _modal_row(config, feats):
         if feats.modal.direct_override:
             return ("Modal Execution (direct Modal)", True, None)
         return ("Modal Execution", False, "run 'thor setup terminal'")
-    if tool_backend_helpers.managed_nous_tools_enabled() and feats.nous_auth_present:
+    if tool_backend_helpers.managed_thorhub_tools_enabled() and feats.nous_auth_present:
         return ("Modal Execution (optional via Thor subscription)", True, None)
     return None
 

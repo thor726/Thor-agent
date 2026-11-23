@@ -15,7 +15,7 @@ from thor_cli.config import (
     cfg_get, clear_model_endpoint_credentials, get_env_value, load_config, save_config, save_env_value)
 from thor_cli.nous_account import format_nous_portal_entitlement_message
 from thor_cli.nous_subscription import MANAGED_FEATURE_COVERAGE_CATEGORY, NousSubscriptionFeatures
-from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, fal_key_is_configured
+from tools.tool_backend_helpers import MANAGED_PROVIDER, fal_key_is_configured
 from tools.transcription_common import STT_MODEL_CATALOG, STT_MODEL_CONFIG_KEY
 from utils import base_url_hostname, is_truthy_value
 
@@ -371,7 +371,7 @@ def _web_serving_backends(config: dict) -> set:
         value = web_cfg.get(key)
         return value.lower().strip() if isinstance(value, str) else ""
 
-    shared = NOUS_MANAGED_PROVIDER if is_truthy_value(web_cfg.get("use_gateway"), default=False) else _name("backend")
+    shared = MANAGED_PROVIDER if is_truthy_value(web_cfg.get("use_gateway"), default=False) else _name("backend")
     serving = {_name(key) or shared for key in ("search_backend", "extract_backend")}
     serving.discard("")
     return serving
@@ -421,10 +421,10 @@ def _managed_provider_active(provider: dict, config: dict, managed_feature: str,
         gen_cfg = config.get(managed_feature, {})
         if isinstance(gen_cfg, dict):
             configured_provider = gen_cfg.get("provider")
-            if configured_provider not in {None, "", "fal", NOUS_MANAGED_PROVIDER}:
+            if configured_provider not in {None, "", "fal", MANAGED_PROVIDER}:
                 return False
             if (
-                configured_provider != NOUS_MANAGED_PROVIDER
+                configured_provider != MANAGED_PROVIDER
                 and gen_cfg.get("use_gateway") is not None
                 and not is_truthy_value(gen_cfg.get("use_gateway"), default=False)):
                 return False
@@ -432,11 +432,11 @@ def _managed_provider_active(provider: dict, config: dict, managed_feature: str,
     if _has_marker(provider, "web_backend"):
         # Search and extract pick their route separately: the managed row serves whichever one
         # resolves to the gateway (a ``nous`` override, or the shared ``nous`` selection).
-        return feature.managed_by_nous and NOUS_MANAGED_PROVIDER in _web_serving_backends(config)
+        return feature.managed_by_nous and MANAGED_PROVIDER in _web_serving_backends(config)
     for marker, section, key in _MANAGED_SELECTION_KEYS:
         if _has_marker(provider, marker):
             current = cfg_get(config, section, key)
-            return feature.managed_by_nous and current in {provider[marker], NOUS_MANAGED_PROVIDER}
+            return feature.managed_by_nous and current in {provider[marker], MANAGED_PROVIDER}
     return feature.managed_by_nous
 
 
@@ -645,7 +645,7 @@ def _select_into(config: dict, section: str, key: str, vendor, managed) -> dict:
     from thor_cli.tools_config import _cfg_section
 
     cfg = _cfg_section(config, section)
-    cfg[key] = NOUS_MANAGED_PROVIDER if managed else vendor
+    cfg[key] = MANAGED_PROVIDER if managed else vendor
     cfg.pop("use_gateway", None)
     return cfg
 
@@ -734,7 +734,7 @@ def _write_provider_config(provider: dict, config: dict, *, managed_feature) -> 
         # managed_nous_feature) still persist the "nous" selection.
         section = config.setdefault(managed_feature, {})
         if isinstance(section, dict):
-            section["provider"] = NOUS_MANAGED_PROVIDER
+            section["provider"] = MANAGED_PROVIDER
             section.pop("use_gateway", None)
     elif not managed_feature:
         # Non-gateway pick — clear any stale legacy use_gateway key on the category. Resolve the category from
@@ -843,7 +843,7 @@ def _print_provider_selection(provider: dict, managed_feature, *, reconfigure: b
         _print_success(f"  Browser engine set to: {provider['browser_engine']}")
     if provider.get("web_backend"):
         tier = f" ({provider['web_tier']} tier)" if reconfigure and provider.get("web_tier") else ""
-        backend = NOUS_MANAGED_PROVIDER if managed_feature else provider["web_backend"]
+        backend = MANAGED_PROVIDER if managed_feature else provider["web_backend"]
         _print_success(f"  Web backend set to: {backend}{tier}")
     if reconfigure and provider.get("computer_use_backend"):
         _print_success(f"  Computer Use backend set to: {provider['computer_use_backend']}")

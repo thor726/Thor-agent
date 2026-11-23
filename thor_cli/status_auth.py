@@ -8,7 +8,7 @@ from thor_cli.auth import AuthError
 from thor_cli.nous_account import (
     format_nous_portal_entitlement_message, get_nous_portal_account_info)
 from thor_cli.nous_subscription import get_nous_subscription_features
-from tools.tool_backend_helpers import managed_nous_tools_enabled
+from tools.tool_backend_helpers import managed_thorhub_tools_enabled
 from thor_cli import config
 from thor_time import safe_strftime
 
@@ -159,7 +159,7 @@ def _render_auth_providers(ctx):
 
 
 def _render_nous_gateway(ctx):
-    if managed_nous_tools_enabled():
+    if managed_thorhub_tools_enabled():
         features = get_nous_subscription_features(ctx.config)
         _status._section("Thor Tool Gateway")
         print("  Thor Portal   ✓ managed tools available" if features.nous_auth_present
