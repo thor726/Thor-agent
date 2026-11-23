@@ -135,9 +135,9 @@ Type `/` in the CLI to open the autocomplete menu. Built-in commands are case-in
 | `/version` | Show Thor Agent version, build, and environment info. |
 | `/whoami` | Show your slash command access level (admin / user). |
 | `/usage` | Show token usage, cost breakdown, session duration, and — when available from the active provider — an **Account limits** section with remaining quota / credits / plan usage pulled live from the provider's API. |
-| `/topup` | Show your Nous balance and manage billing on the portal (replaces the old `/credits` and `/billing` commands). |
-| `/subscription` (alias: `/upgrade`) | **CLI only.** View your Nous plan and change it in the browser. |
-| `/login` | Sign in with a Nous account. Runs off-turn: the consent link and code arrive in the session, and the sign-in settles when you approve it in the browser. |
+| `/topup` | Show your ThorHub balance and top up at ThorHub (replaces the old `/credits` and `/billing` commands). |
+| `/subscription` (alias: `/upgrade`) | **CLI only.** View ThorHub token packages and buy in the browser. |
+| `/login` | Show the ThorHub guide (buy a key, add it as a custom provider). Runs off-turn. |
 | `/insights` | Show usage insights and analytics (last 30 days) |
 | `/update` | Update Thor Agent to the latest version. |
 | `/platforms` (alias: `/gateway`) | Show gateway/messaging platform status (CLI-only summary view). |
@@ -264,8 +264,8 @@ The messaging gateway supports the following built-in commands inside Telegram, 
 | `/resume [name]` | Resume a previously named session. |
 | `/sessions [all] [search <query>]` | List previous sessions for this chat; the active session appears with a `(current)` marker. `/sessions search <query>` filters by title/id match (most recently active first); `/sessions all` lists across origins (admin only — non-admins get a notice and the chat-scoped list). |
 | `/usage` | Show token usage, estimated cost breakdown (input/output), context window state, session duration, and — when available from the active provider — an **Account limits** section with remaining quota / credits pulled live from the provider's API. |
-| `/topup` | Show your Nous balance and manage billing on the portal. |
-| `/login` | Sign in with a Nous account. **Paired direct messages only** — in a group, channel, or broadcast-shaped platform Thor refuses. On Slack use `/thor login`. |
+| `/topup` | Show your ThorHub balance and top up at ThorHub. |
+| `/login` | Show the ThorHub guide. **Paired direct messages only** — in a group, channel, or broadcast-shaped platform Thor refuses. On Slack use `/thor login`. |
 | `/whoami` | Show your slash command access level (admin / user). |
 | `/insights [days]` | Show usage analytics. |
 | `/reasoning [level\|show\|hide\|full\|clamp] [--global]` | Change reasoning effort (levels up to `max` / `ultra`) or toggle reasoning display (`full` / `clamp` included). `--global` persists to config. |
