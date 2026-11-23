@@ -632,16 +632,7 @@ def fetch_account_usage(
     return snapshot
 
 
-# Published plugin API (thor_cli/data/plugin_api.json lists this whole module): names that moved to the Nous
-# sibling stay importable here; catalog plugins import build_credits_view and build_nous_credits_snapshot.
+# Published plugin API (thor_cli/data/plugin_api.json lists this whole module): names that moved to the
+# ThorHub sibling stay importable here; catalog plugins import build_credits_view.
 # Bottom of the file because the sibling late-imports this facade.
-from agent.usage_gauges import BP_FULL
-from agent.account_usage_nous import (
-    CreditsView,
-    apply_header_gauge,
-    build_credits_view,
-    build_nous_credits_snapshot,
-    nous_credits_lines,
-    nous_credits_usage_fields,
-    nous_credits_view,
-)
+from agent.thorhub_usage import CreditsView, build_credits_view

@@ -1,11 +1,10 @@
 """Klien saldo ThorHub (llm.thormarket.site) — pengganti portal Nous untuk ``/topup``.
 
-Dipakai ``/topup`` (agent, via ``agent.account_usage_nous``) dan CLI ``_show_billing``.
+Dipakai ``/topup`` (agent, via ``agent.thorhub_usage``) dan CLI ``_show_billing``.
 Hanya membaca saldo lewat ``GET /portal/member/me`` dengan header
 ``Authorization: Bearer <key ThorHub>``. Key dibaca dari env ``THORHUB_API_KEY``
 (alias ``thorhub`` di config Thor). Fungsi di sini tidak pernah melempar:
-gagal (tidak ada key, jaringan, key salah) -> ``None``, pemanggil jatuh ke
-alur lama.
+gagal (tidak ada key, jaringan, key salah) -> ``None``.
 """
 
 from __future__ import annotations

@@ -201,7 +201,6 @@ class TestCLIUsageNoAgentAccountLimits:
         from agent.account_usage import AccountUsageSnapshot, AccountUsageWindow
         cli_obj = _make_cli()
         cli_obj.provider, cli_obj.base_url, cli_obj.api_key = "openai-codex", None, None
-        monkeypatch.setattr("agent.account_usage_nous.nous_usage_view", lambda **kw: ([], None))
         seen = {}
 
         def _fetch(provider, **kwargs):

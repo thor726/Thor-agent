@@ -40,10 +40,6 @@ def test_usage_slash_shows_account_limits_before_first_turn_inside_session_scope
         fetched.append(provider)
         return _snapshot()
 
-    def _credits(**kw):
-        assert scoped == ["enter"], scoped  # the profile's own Nous login, not the launch profile's
-        return ["Nous credits: 100 remaining"]
-
     with (
         patch.object(server, "_session_usage_snapshot", return_value={}),
         patch.object(server, "_session_profile_runtime_scope", lambda sess, **kw: _Scope()),
@@ -51,13 +47,12 @@ def test_usage_slash_shows_account_limits_before_first_turn_inside_session_scope
         patch("thor_cli.runtime_provider.resolve_runtime_provider",
               lambda *, requested=None, **kw: {"provider": requested or "openrouter", "base_url": "", "api_key": "k"}),
         patch("agent.account_usage.fetch_account_usage", _fetch),
-        patch("agent.account_usage_nous.nous_credits_lines", _credits),
     ):
         out = server._live_slash_command_output("sid-usage", session, "usage", "")
 
     assert scoped == ["enter", "exit"]
     assert fetched == ["openai-codex"]
     assert "Account limits" in out, out
-    # The profile's Nous balance follows the Codex block as its own section, read in the same scope.
-    assert out.index("Account limits") < out.index("Nous Portal balance") < out.index("Nous credits: 100 remaining"), out
+    # No Nous section anymore: the ThorHub balance lives on /topup.
+    assert "Nous" not in out, out
     assert "send a message first" not in out

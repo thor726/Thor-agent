@@ -38,25 +38,6 @@ def _fmt_usd(value: Optional[float]) -> str:
     return f"${(value or 0.0):,.2f}"
 
 
-def nous_logged_in() -> bool:
-    """Cheap local auth-state check: a Thor access token is present. Fail-closed."""
-    try:
-        from thor_cli.auth import get_provider_auth_state
-        tok = (get_provider_auth_state("nous") or {}).get("access_token")
-        return isinstance(tok, str) and bool(tok.strip())
-    except Exception:
-        return False
-
-
-def fetch_nous_account(timeout: float):
-    """Wall-clock-bounded fresh portal account fetch. Raises on failure/timeout.
-
-    Shares the one bounded implementation so a stalled portal releases the
-    /billing surface at ``timeout`` too (see ``_fetch_portal_account``)."""
-    from agent.account_usage_nous import _fetch_portal_account
-    return _fetch_portal_account(timeout)
-
-
 def format_renews(value: Optional[str]) -> Optional[str]:
     """ISO date/timestamp -> ``Jul 24, 2026``; unparseable input is returned unchanged."""
     from datetime import datetime
@@ -118,60 +99,6 @@ class UsageModel:
         return bool(self.topup_remaining_usd and self.topup_remaining_usd > 0)
 
 
-def usage_model_from_account(account_info: Any) -> UsageModel:
-    """Build a :class:`UsageModel` from a ``NousPortalAccountInfo``. Never raises."""
-    try:
-        if account_info is None or not getattr(account_info, "logged_in", False):
-            return UsageModel(available=False)
-        # Usage-window plans have no monthly credit grant, so the credit bars don't apply;
-        # /usage falls through to the percent-window renderer instead. A partial/empty block is not a
-        # window plan (same completeness rule as the credits seed).
-        from agent.credits_tracker import _window_seed_fields
-        if _window_seed_fields(getattr(account_info, "usage_window", None)) is not None:
-            return UsageModel(available=False)
-        # Sub-structs are dataclasses or None; getattr(None, ..., None) is None, so no guards needed.
-        access = getattr(account_info, "paid_service_access_info", None)
-        sub = getattr(account_info, "subscription", None)
-        paid = getattr(account_info, "paid_service_access", None)
-        sub_remaining = _finite(getattr(access, "subscription_credits_remaining", None))
-        topup_remaining = _finite(getattr(access, "purchased_credits_remaining", None))
-        total_usable = _finite(getattr(access, "total_usable_credits", None))
-        plan_name = getattr(sub, "plan", None)
-        renews_at = getattr(sub, "current_period_end", None)
-        monthly = _finite(getattr(sub, "monthly_credits", None))
-        has_subscription = bool(plan_name) or (monthly is not None and monthly > 0)
-        has_topup = bool(topup_remaining and topup_remaining > 0)
-        # Prefer the server's total; else sum the parts we have.
-        parts = [v for v in (sub_remaining, topup_remaining) if v is not None]
-        total_spendable = total_usable if total_usable is not None else (sum(parts) if parts else None)
-        if paid is False:
-            status = "depleted"
-        elif not has_subscription and not has_topup:
-            status = "free"  # no plan and no purchased balance -> free-models-only
-        elif total_spendable is not None and total_spendable < LOW_BALANCE_THRESHOLD_USD:
-            status = "low"
-        else:
-            status = "healthy"
-        # Plan bar needs a positive allowance AND a remaining to place on it; spent is
-        # clamped so a debt/over-cap balance reads fully spent, not negative.
-        plan_bar = topup_bar = None
-        if monthly is not None and monthly > 0 and sub_remaining is not None:
-            plan_bar = UsageBar(kind="plan", remaining_usd=max(0.0, min(monthly, sub_remaining)), total_usd=monthly,
-                                spent_usd=max(0.0, monthly - sub_remaining))
-        # Top-up has no monthly cap, so the bar renders full = balance.
-        if topup_remaining is not None and topup_remaining > 0:
-            topup_bar = UsageBar(kind="topup", remaining_usd=topup_remaining, total_usd=topup_remaining, spent_usd=0.0)
-        return UsageModel(
-            available=True, status=status, plan_name=plan_name, renews_at=renews_at,
-            renews_display=format_renews(renews_at), subscription_remaining_usd=sub_remaining,
-            topup_remaining_usd=topup_remaining, total_spendable_usd=total_spendable,
-            plan_bar=plan_bar, topup_bar=topup_bar,
-        )
-    except Exception:
-        logger.debug("usage ▸ model build failed (fail-open)", exc_info=True)
-        return UsageModel(available=False)
-
-
 def usage_model_wire(model: Optional[UsageModel]) -> Optional[dict]:
     """The model as ``session.account_usage``'s ``nous_usage`` (numbers, not display strings); None when unavailable."""
     return asdict(model) if model is not None and model.available else None
@@ -187,17 +114,13 @@ def usage_model_from_wire(value: Any) -> Optional[UsageModel]:
 
 
 def build_usage_model(*, timeout: float = 10.0) -> UsageModel:
-    """Fetch account-info and build the usage model; fail-open. ``THOR_DEV_CREDITS_FIXTURE`` short-circuits to a fixture."""
+    """Build the usage model; fail-open. ``THOR_DEV_CREDITS_FIXTURE`` short-circuits to a fixture.
+    The Nous Portal account fetch that used to feed this is gone; without a fixture there is no
+    dollar usage model anymore (the ThorHub balance lives on /topup)."""
     fixture = _dev_fixture_usage_model()
     if fixture is not None:
         return fixture
-    if not nous_logged_in():
-        return UsageModel(available=False)
-    try:
-        return usage_model_from_account(fetch_nous_account(timeout))
-    except Exception:
-        logger.debug("usage ▸ portal fetch failed (fail-open)", exc_info=True)
-        return UsageModel(available=False)
+    return UsageModel(available=False)
 
 
 def _plan_bar(remaining: float, spent: float) -> UsageBar:

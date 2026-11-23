@@ -644,12 +644,9 @@ class CLIInfoMixin:
             from agent.billing_usage import usage_model_from_wire
             return (list(view.get("lines") or []), list(view.get("nous_lines") or []), view.get("nous_route") is True,
                     usage_model_from_wire(view.get("nous_usage")))
-        from agent.account_usage_nous import nous_usage_view
-        provider, base_url = self._agent_or_self("provider") or "", self._agent_or_self("base_url") or ""
-        nous_route = is_nous_inference_route(provider, base_url)
-        nous_lines, usage = nous_usage_view(nous_route=nous_route,
-                                            credits_state=getattr(self.agent, "_credits_state", None) if self.agent else None)
-        return self._local_account_limit_lines(), nous_lines, nous_route, usage
+        # No Nous section anymore: /usage shows only the active provider's limits.
+        # The ThorHub balance lives on /topup.
+        return self._local_account_limit_lines(), [], False, None
 
     def _print_usage_account_blocks(self) -> bool:
         """`/usage`'s account blocks: the active provider's limits, then the Thor section whenever Thor is
