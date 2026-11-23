@@ -20,6 +20,18 @@ from thor_cli import anon_auth
 logger = logging.getLogger("gateway.run")
 
 _LOGIN_SINGLE = "login"
+
+# Login Nous sudah pensiun (debrand Fase 2): Thor berdiri sendiri, /login tidak
+# lagi memulai OAuth Nous. Balasannya mengarahkan ke ThorHub (toko token) + cara
+# pasang key di Thor sendiri.
+_LOGIN_THORHUB_GUIDANCE = (
+    "Login lewat Nous sudah tidak dipakai lagi \u2014 Thor sekarang berdiri sendiri.\n\n"
+    "Beli key token di https://llm.thormarket.site/beli, lalu pasang di Thor kamu:\n"
+    "jalankan `thor setup` dan pilih provider sendiri, atau tambah ThorHub sebagai\n"
+    "custom provider (base URL https://llm.thormarket.site/v1) dengan key kamu.\n"
+    "Cek saldo dengan /skill saldo, beli / top-up dengan /skill beli."
+)
+
 _LOCK_TYPE = type(threading.Lock())
 
 
@@ -112,18 +124,9 @@ class GatewayLoginCommandsMixin:
         if state and not anon_auth.is_guest_state(state):
             return anon_auth.UPGRADE_ALREADY_SIGNED_IN
 
-        with lock:
-            live = attempts.get(_LOGIN_SINGLE)
-            if live is not None and (live.key != key or live.saving):
-                return anon_auth.LOGIN_BUSY_ELSEWHERE
-            if live is not None:
-                live.cancelled = True
-            attempt = _SignInAttempt(
-                attempt_id=uuid4().hex[:8], key=key, source=src)
-            attempts[_LOGIN_SINGLE] = attempt
-
-        self._retain_background_task(asyncio.create_task(self._run_login(attempt)))
-        return anon_auth.UPGRADE_START
+        # Login Nous sudah pensiun: jangan mulai OAuth, arahkan ke ThorHub.
+        # Penjaga di atas (DM saja, admin, sudah login) tetap berlaku.
+        return _LOGIN_THORHUB_GUIDANCE
 
     async def _run_login(self, attempt: _SignInAttempt) -> None:
         lock, attempts = self._login_registry()
