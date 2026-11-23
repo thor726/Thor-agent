@@ -183,9 +183,9 @@ CREDITS_DEPLETED_KEY = "credits.depleted"
 CREDITS_WINDOW_LIMIT_KEY = "credits.window_limit"
 CREDITS_RESTORED_KEY = "credits.restored"
 CREDITS_GRANT_SPENT_KEY = "credits.grant_spent"
-_DEPLETED_TEXT = "✕ Credit access paused · run /topup to top up"
-_PAUSED_TEXT = "✕ Included usage paused · your subscription payment failed · update your card, or add credits in /topup to keep going"
-_PAUSED_OTHER_TEXT = "✕ Included usage paused · see Billing in the Portal, or add credits in /topup to keep going"
+_DEPLETED_TEXT = "✕ Credit access paused · top up ThorHub: https://llm.thormarket.site/beli/topup"
+_PAUSED_TEXT = "✕ Included usage paused · your subscription payment failed · update your card, or top up ThorHub (https://llm.thormarket.site/beli/topup) to keep going"
+_PAUSED_OTHER_TEXT = "✕ Included usage paused · see ThorHub portal, or top up ThorHub (https://llm.thormarket.site/beli/topup) to keep going"
 _TOP_TIER_LIMIT = "You've hit your monthly large-model limit"
 _AUTO_TOP_UP_SUFFIX = " · auto top-up is on"
 
@@ -295,12 +295,13 @@ def window_stop_resets_at_ms(state: CreditsState, *, model_is_top_tier: Optional
     return g.resets_at_ms if g is not None else None
 
 
-# "Keep going on credits": the account setting (/topup or Portal billing), off by default on a window plan.
-_ADD_CREDITS_ACTION = "/topup to add credits"
+# "Keep going on credits" (pengaturan akun Nous) sudah pensiun; CTA sekarang
+# menunjuk top-up ThorHub.
+_ADD_CREDITS_ACTION = "top up ThorHub di llm.thormarket.site/beli/topup"
 _CREDITS_STEP = {  # keyed by agent.plan_limits.credits_action
-    "use_credits": "turn on Keep going in /topup",
+    "use_credits": "top up ThorHub di llm.thormarket.site/beli/topup",
     "add_credits": _ADD_CREDITS_ACTION,
-    "add_credits_and_keep_going": "add credits and turn on Keep going in /topup",
+    "add_credits_and_keep_going": "top up ThorHub di llm.thormarket.site/beli/topup",
 }
 
 
@@ -504,7 +505,7 @@ def evaluate_credits_notices(state: CreditsState, latch: dict, *, model_is_free:
     depleted_cond = not state.paid_access
     show_depleted = depleted_cond and not model_is_free
     if show_depleted and "credits.depleted" not in active:
-        to_show.append(_sticky_notice("✕ Credit access paused · run /topup to top up", "error", "credits.depleted"))
+        to_show.append(_sticky_notice(_DEPLETED_TEXT, "error", "credits.depleted"))
         active.add("credits.depleted")
     elif "credits.depleted" in active and not show_depleted:
         to_clear.append("credits.depleted")

@@ -185,7 +185,7 @@ class TestParser:
         show, _ = _run(state, latch)
         stops = [t for k, _l, t in show if k == CREDITS_WINDOW_LIMIT_KEY]
         assert stops == [f"✕ You've hit your daily limit · resets {ct.format_window_reset(DAY_RESET)}"
-                         " · turn on Keep going in /topup"]
+                         " · top up ThorHub di llm.thormarket.site/beli/topup"]
         # The same state with the setting on (or unknown): top-up pays, so no stop line.
         for keep_going in (True, None):
             latch = new_credits_latch()
@@ -200,7 +200,7 @@ class TestParser:
         show, _ = _run(state, new_credits_latch())
         stop = next(t for k, _l, t in show if k == CREDITS_WINDOW_LIMIT_KEY)
         assert stop.startswith("✕ You've hit your monthly large-model limit") and stop.endswith(
-            " · turn on Keep going in /topup")
+            " · top up ThorHub di llm.thormarket.site/beli/topup")
         assert "—" not in stop and "$" not in stop
 
     def test_header_names_are_case_insensitive(self):
@@ -421,7 +421,7 @@ class TestHardStops:
         assert _keys(show)[-1] == CREDITS_WINDOW_LIMIT_KEY
         _key, level, text = show[-1]
         assert level == "error"
-        assert text == f"✕ You've hit your daily limit · resets {format_window_reset(DAY_RESET)} · /topup to add credits"
+        assert text == f"✕ You've hit your daily limit · resets {format_window_reset(DAY_RESET)} · top up ThorHub di llm.thormarket.site/beli/topup"
         assert CREDITS_WINDOW_PAYG_KEY not in _keys(show)
 
     def test_exhausted_names_the_month_and_its_reset_when_it_binds(self):
@@ -448,7 +448,7 @@ class TestHardStops:
         show, _ = _run(_state(paid_access=False, paused_reason="payment_past_due", spend_source=None), new_credits_latch())
         assert [k for k, _l, _t in show] == [CREDITS_DEPLETED_KEY]
         text = show[0][2]
-        assert "payment failed" in text and "update your card" in text and "add credits in /topup" in text
+        assert "payment failed" in text and "update your card" in text and "top up ThorHub" in text
         assert "Keep going on credits" not in text  # the setting doesn't gate a paused plan
 
     def test_a_pause_for_another_reason_never_claims_a_payment_failed(self):
@@ -457,7 +457,7 @@ class TestHardStops:
         from thor_cli import nous_account
         show, _ = _run(_state(paid_access=False, paused_reason="unknown", spend_source=None), new_credits_latch())
         assert [k for k, _l, _t in show] == [CREDITS_DEPLETED_KEY]
-        assert "payment" not in show[0][2] and "add credits in /topup" in show[0][2]
+        assert "payment" not in show[0][2] and "top up ThorHub" in show[0][2]
         window = SimpleNamespace(gauges=ct.parse_gauges(_gauges(100, 50)), auto_top_up_enabled=False,
                                  paused_reason="unknown", keep_going_on_credits=None)
         info = SimpleNamespace(logged_in=True, paid_service_access=True, usage_window=window, portal_base_url=None,
@@ -484,7 +484,7 @@ class TestHardStops:
         show, _ = _run(_state(window_day_used_bp=4_000, window_top_tier_used_bp=10_000, window_top_tier_resets_at_ms=top_reset,
                               spend_source=None), new_credits_latch())
         assert show[-1][0] == CREDITS_WINDOW_LIMIT_KEY
-        assert show[-1][2] == f"✕ You've hit your monthly large-model limit · resets {format_window_reset(top_reset)} · /topup to add credits"
+        assert show[-1][2] == f"✕ You've hit your monthly large-model limit · resets {format_window_reset(top_reset)} · top up ThorHub di llm.thormarket.site/beli/topup"
         # An older server sends no large-model reset: the reset falls back to the day's.
         old, _ = _run(_state(window_day_used_bp=4_000, window_top_tier_used_bp=10_000, spend_source=None), new_credits_latch())
         assert f"resets {format_window_reset(DAY_RESET)} ·" in old[-1][2]
@@ -492,7 +492,7 @@ class TestHardStops:
     def test_top_tier_blocked_mentions_auto_top_up(self):
         show, _ = _run(_state(window_day_used_bp=4_000, window_top_tier_used_bp=10_000, spend_source=None, auto_top_up_enabled=True),
                        new_credits_latch())
-        assert show[-1][2].endswith(" · /topup to add credits · auto top-up is on")
+        assert show[-1][2].endswith(" · top up ThorHub di llm.thormarket.site/beli/topup · auto top-up is on")
 
     def test_top_tier_used_but_this_model_admitted_is_not_a_stop(self):
         """An ``included`` spend-source means the current model is not top-tier — no block."""
@@ -507,7 +507,7 @@ class TestHardStops:
 
     def test_portal_paid_access_false_without_a_pause_is_the_legacy_depleted_line(self):
         show, _ = _run(_state(paid_access=False, spend_source=None), new_credits_latch())
-        assert show[0][2] == "✕ Credit access paused · run /topup to top up"
+        assert show[0][2] == "✕ Credit access paused · top up ThorHub: https://llm.thormarket.site/beli/topup"
 
     def test_free_model_suppresses_the_window_stop_without_restored(self):
         latch = new_credits_latch()
@@ -681,11 +681,11 @@ class TestPlanStates:
         ("payg_top_tier", [CREDITS_WINDOW_PAYG_KEY], "You've hit your monthly large-model limit · resets"),
         ("top_tier_blocked", [CREDITS_WINDOW_LIMIT_KEY], "You've hit your monthly large-model limit · resets"),
         ("top_tier_blocked_autotopup", [CREDITS_WINDOW_LIMIT_KEY], "auto top-up is on"),
-        ("exhausted", [CREDITS_WINDOW_LIMIT_KEY], "/topup to add credits"),
-        # A balance, but top-up for Thor is off: the stop names the account setting, not /topup.
-        ("keep_going_off", [CREDITS_WINDOW_LIMIT_KEY], "turn on Keep going in /topup"),
+        ("exhausted", [CREDITS_WINDOW_LIMIT_KEY], "top up ThorHub di llm.thormarket.site/beli/topup"),
+        # A balance, but top-up for Thor is off: the stop names the ThorHub top-up, not a setting.
+        ("keep_going_off", [CREDITS_WINDOW_LIMIT_KEY], "top up ThorHub di llm.thormarket.site/beli/topup"),
         # No balance and the setting off (the default): the gateway refuses either way, so both steps.
-        ("keep_going_off_no_balance", [CREDITS_WINDOW_LIMIT_KEY], "add credits and turn on Keep going in /topup"),
+        ("keep_going_off_no_balance", [CREDITS_WINDOW_LIMIT_KEY], "top up ThorHub di llm.thormarket.site/beli/topup"),
         ("paused", [CREDITS_DEPLETED_KEY], "payment failed"),
     ])
     def test_every_window_state_drives_its_notice(self, name, expect_keys, must_contain):
