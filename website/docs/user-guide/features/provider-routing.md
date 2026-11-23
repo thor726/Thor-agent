@@ -9,10 +9,10 @@ sidebar_position: 7
 
 When using [OpenRouter](https://openrouter.ai) as your LLM provider, Thor Agent supports **provider routing** — fine-grained control over which underlying AI providers handle your requests and how they're prioritized.
 
-OpenRouter routes requests to many providers (e.g., Anthropic, Google, AWS Bedrock, Together AI). Provider routing lets you optimize for cost, speed, quality, or enforce specific provider requirements. Comparing the two gateways? [Nous Portal vs OpenRouter](https://portal.thor-agent.local/compare/openrouter) covers pricing, free models and plans.
+OpenRouter routes requests to many providers (e.g., Anthropic, Google, AWS Bedrock, Together AI). Provider routing lets you optimize for cost, speed, quality, or enforce specific provider requirements.
 
 :::note
-[Nous Portal](../../integrations/nous-portal.md) decides routing centrally per model and does not accept caller-supplied provider preferences; Thor never sends the `provider` object to Portal, so `provider_routing` is simply ignored there.
+Provider routing is a caller-side OpenRouter feature.
 :::
 
 ## Configuration
@@ -30,7 +30,7 @@ provider_routing:
 ```
 
 :::info
-Provider routing only applies when using OpenRouter. It has no effect on Nous Portal or direct provider connections (e.g., connecting directly to the Anthropic API).
+Provider routing only applies when using OpenRouter. It has no effect on direct provider connections (e.g., connecting directly to the Anthropic API).
 :::
 
 ## Options
