@@ -391,12 +391,44 @@ class CreditsView:
     depleted: bool = False
 
 
+
+def _thorhub_credits_view() -> Optional[CreditsView]:
+    """``/topup`` versi ThorHub: saldo token dari ThorHub bila THORHUB_API_KEY ada.
+
+    None bila tidak ada key / fetch gagal — pemanggil jatuh ke alur Nous lama.
+    """
+    try:
+        from thor_cli.thorhub_account import (
+            THORHUB_TOPUP_URL,
+            fetch_thorhub_balance,
+            format_thorhub_balance_lines,
+        )
+    except Exception:
+        return None
+    data = fetch_thorhub_balance()
+    if not data:
+        return None
+    who = [str(v) for v in (data.get("user_name"),) if v]
+    return CreditsView(
+        logged_in=True,
+        balance_lines=format_thorhub_balance_lines(data),
+        identity_line=("ThorHub · " + " / ".join(who)) if who else "ThorHub",
+        topup_url=THORHUB_TOPUP_URL,
+        depleted=bool(data.get("tokens_remaining") == 0),
+    )
+
+
 def build_credits_view(*, markdown: bool = False, timeout: float = 10.0) -> CreditsView:
     """/topup view: balance block + identity line + top-up URL. Reuses the /usage fetch + snapshot so numbers
     match; the balance block drops the trailing top-up/hint lines (/topup has its own affordance).
     Fail-open → ``CreditsView(logged_in=False)``."""
     from agent.account_usage import render_account_usage_lines
     not_logged_in = CreditsView(logged_in=False)
+    # ThorHub dulu: bila key ThorHub terpasang, /topup menampilkan saldo token
+    # ThorHub (bukan saldo USD Nous). Gagal -> jatuh ke alur Nous lama di bawah.
+    thorhub_view = _thorhub_credits_view()
+    if thorhub_view is not None:
+        return thorhub_view
     if not _nous_logged_in():
         return not_logged_in
     try:
