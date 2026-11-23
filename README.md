@@ -37,16 +37,12 @@ Use any model you want — [ThorHub](https://llm.thormarket.site), OpenRouter, O
 ### Linux, macOS, WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
 ```
 
-> **Want the latest version?** That one-liner installs the latest stable release (v0.23.2). To install the newest code on `main` instead — including the ThorHub billing integration, where `/topup` shows your ThorHub balance — use:
+> That one-liner installs the latest version — including the ThorHub billing integration, where `/topup` shows your ThorHub balance.
 >
-> ```bash
-> curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
-> ```
->
-> Already installed? Switch channels with `thor update --set-channel main`.
+> Already installed? Switch to the latest version with `thor update --set-channel main`.
 
 ### Windows (native, PowerShell)
 
@@ -55,7 +51,7 @@ curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/ins
 Run this in PowerShell:
 
 ```powershell
-iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
+iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) } -Channel main"
 ```
 
 The source installer delegates Python 3.14, Node.js, npm, pnpm, ripgrep, FFmpeg,
