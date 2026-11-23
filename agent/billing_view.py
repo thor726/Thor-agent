@@ -298,7 +298,7 @@ def build_billing_state(*, timeout: float = 15.0) -> BillingState:
         "get_billing_state", "billing", timeout=timeout, log=logger,
         failed=lambda **kw: BillingState(logged_in=False, **kw),
         parse=lambda payload, portal_url: billing_state_from_payload(payload, portal_url=portal_url),
-        portal_fallback=lambda base: f"{base.rstrip('/')}/billing?topup=open",
+        portal_fallback=lambda base: f"{base.rstrip('/')}/beli/topup",
     )
 
 

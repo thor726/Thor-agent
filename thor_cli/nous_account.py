@@ -175,28 +175,23 @@ def nous_portal_billing_url(account_info: Optional[NousPortalAccountInfo] = None
     try:
         from thor_cli.auth import DEFAULT_NOUS_PORTAL_URL
     except Exception:
-        DEFAULT_NOUS_PORTAL_URL = "https://portal.thor-agent.local"
+        DEFAULT_NOUS_PORTAL_URL = "https://llm.thormarket.site"
 
     base = account_info.portal_base_url if account_info is not None else None
     if not _nonblank(base):
         base = DEFAULT_NOUS_PORTAL_URL
-    return f"{base.rstrip('/')}/billing"
+    # ThorHub tidak punya halaman /billing — portal member adalah /portal.
+    return f"{base.rstrip('/')}/portal"
 
 
 def nous_portal_topup_url(account_info: Optional[NousPortalAccountInfo] = None) -> str:
-    """Portal top-up URL (``?topup=open`` auto-opens the top-up modal).
+    """ThorHub top-up URL.
 
-    Prefers the org-pinned ``{base}/orgs/{slug}/billing`` (skips the legacy shim's multi-org
-    re-resolution); falls back to ``{base}/billing`` when ``org_slug`` is null — never
-    ``/orgs/None/billing``.
+    Dulu: portal Nous ``{base}/billing?topup=open`` (portal .local sudah mati).
+    Sekarang: halaman top-up ThorHub ``/beli/topup`` — kuota ditambah ke key yang
+    sama dan masa aktif diperpanjang 25 hari.
     """
-    base = nous_portal_billing_url(account_info)[: -len("/billing")]
-    slug = getattr(account_info, "org_slug", None) if account_info is not None else None
-    if _nonblank(slug):
-        from urllib.parse import quote
-
-        return f"{base}/orgs/{quote(slug.strip(), safe='')}/billing?topup=open"
-    return f"{base}/billing?topup=open"
+    return "https://llm.thormarket.site/beli/topup"
 
 
 def format_usage_window_block_guidance(account_info: Optional[NousPortalAccountInfo]) -> Optional[str]:
@@ -602,7 +597,7 @@ def _pool_entry_is_portal_oauth(entry: Any) -> bool:
 
 
 def _fetch_nous_account_info(access_token: str, portal_base_url: Optional[str] = None) -> dict[str, Any]:
-    base = (portal_base_url or "https://portal.thor-agent.local").rstrip("/")
+    base = (portal_base_url or "https://llm.thormarket.site").rstrip("/")
     headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
     req = urllib.request.Request(f"{base}/api/oauth/account", headers=headers)
     with urllib.request.urlopen(req, timeout=8) as resp:

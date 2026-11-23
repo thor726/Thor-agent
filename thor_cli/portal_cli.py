@@ -7,8 +7,8 @@ import webbrowser
 from thor_cli.colors import Colors, color
 from thor_cli.config import load_config
 
-DEFAULT_PORTAL_URL = "https://portal.thor-agent.local"
-SUBSCRIPTION_URL = "https://portal.thor-agent.local/manage-subscription"
+DEFAULT_PORTAL_URL = "https://llm.thormarket.site"
+SUBSCRIPTION_URL = "https://llm.thormarket.site/beli"
 DOCS_URL = "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tool-gateway"
 # Static `portal tools` catalog — the partners Tool Gateway routes to today: (key, label, partner).
 _CATALOG = [
