@@ -28,7 +28,7 @@ class ThorOverlay:
 THOR_OVERLAYS: dict[str, ThorOverlay] = {
     "moa": ThorOverlay(auth_type="virtual", base_url_override="moa://local"),
     "openrouter": ThorOverlay(is_aggregator=True, base_url_env_var="OPENROUTER_BASE_URL"),
-    "nous": ThorOverlay(auth_type="oauth_device_code", base_url_override="https://inference-api.thor-agent.local/v1"),
+    "thor": ThorOverlay(is_aggregator=True, auth_type="api_key", base_url_override="https://llm.thormarket.site/v1", base_url_env_var="THORHUB_BASE_URL"),
     "openai-codex": ThorOverlay(transport="codex_responses", auth_type="oauth_external",
                                   base_url_override="https://chatgpt.com/backend-api/codex"),
     "openai-api": ThorOverlay(transport="codex_responses", base_url_override="https://api.openai.com/v1",
@@ -142,7 +142,7 @@ ALIASES: dict[str, str] = {alias: canon for canon, aliases in _ALIAS_GROUPS.item
 # -- Display labels for providers not in the models.dev catalog ---------------
 
 _LABEL_OVERRIDES: dict[str, str] = {
-    "moa": "Mixture of Agents", "nous": "Thor Portal", "openai-codex": "ChatGPT or Codex Subscription",
+    "moa": "Mixture of Agents", "thor": "ThorHub", "openai-codex": "ChatGPT or Codex Subscription",
     "stepfun": "StepFun Step Plan", "xiaomi": "Xiaomi MiMo", "gmi": "GMI Cloud",
     "upstage": "Upstage Solar", "actual": "Actual Computer", "tencent-tokenhub": "Tencent TokenHub",
     "nebius-token-factory": "Nebius Token Factory", "tencent-tokenplan": "Tencent TokenPlan", "lmstudio": "LM Studio",
@@ -281,7 +281,7 @@ def _plugin_alias_owner(canonical: str) -> str:
 
 def get_provider(name: str, *, allow_network: bool = True) -> Optional[ProviderDef]:
     """Look up a built-in provider by id or alias: models.dev catalog merged with the Thor overlay;
-    Thor-only overlay (nous, openai-codex, …); plugin provider profiles with a concrete endpoint."""
+    Thor-only overlay (thor, openai-codex, …); plugin provider profiles with a concrete endpoint."""
     canonical = _plugin_alias_owner(normalize_provider(name))
     from thor_cli.left_core_migration import provider_left_core
     if provider_left_core(canonical):  # its plugin is not loaded: models.dev must not stand in for it
@@ -428,34 +428,13 @@ def host_mandated_api_mode(base_url: str = "") -> Optional[str]:
     return None
 
 
-def nous_api_mode(model: str = "") -> str:
-    """Wire protocol for a Thor Portal model. Portal serves its ``anthropic/*`` catalog on a native
-    Messages route alongside OpenAI-compatible chat/completions for everything else.
+def thor_api_mode(model: str = "") -> str:
+    """Wire protocol for a ThorHub model: plain OpenAI-compatible chat/completions.
 
-    ``anthropic/*`` rides chat/completions by default for now (``nous.anthropic_wire``). Measured
-    2026-09-06, 20 concurrent sessions x 6 tool calls on Fable 5.1, same account and hour: the
-    native route re-wrote the previous turn on 14-20% of consecutive calls (4 runs; the cache read
-    stopped at the prior breakpoint with byte-identical prefixes), chat/completions 0 of 320 pairs.
-    That is 15-20% of a fan-out's cache-write bill. The cause is inside the portal's native route
-    (thor726/api#227 carries the diagnostics); flip the default back to ``native`` when it is
-    fixed. Cost of ``chat``: prior-turn thinking travels as OpenAI-style reasoning fields instead of
-    signed native blocks, and cache_control scopes are translated by the portal's adapter.
-    Empty/unknown model defaults to ``chat_completions`` (the historical Thor transport)."""
-    if str(model or "").strip().lower().startswith("anthropic/"):
-        # promotes the session to native from the first response when the upstream allows it.
-        return "anthropic_messages" if _nous_anthropic_wire() == "native" else "chat_completions"
+    ThorHub serves every model (including ``anthropic/*``) on chat/completions;
+    there is no native Messages route and no ``anthropic_wire`` config.
+    """
     return "chat_completions"
-
-
-def _nous_anthropic_wire() -> str:
-    """``nous.anthropic_wire``: ``"chat"`` (default), ``"native"``, or ``"auto"`` (chat, then per-session
-    promotion decided from the first response). Anything else reads as ``chat``."""
-    try:
-        from thor_cli.config import load_config_readonly
-        value = str(((load_config_readonly().get("nous") or {}).get("anthropic_wire")) or "chat").strip().lower()
-    except Exception:
-        return "chat"
-    return value if value in ("native", "auto") else "chat"
 
 
 def determine_api_mode(provider: str, base_url: str = "", model: str = "") -> str:
@@ -467,8 +446,8 @@ def determine_api_mode(provider: str, base_url: str = "", model: str = "") -> st
     mandated = host_mandated_api_mode(base_url)
     if mandated is not None:
         return mandated
-    if (provider or "").strip().lower() in {"nous", "nous-portal", "nousresearch"}:
-        return nous_api_mode(model)
+    if (provider or "").strip().lower() in {"thor", "thorhub"}:
+        return thor_api_mode(model)
     pdef = get_provider(provider)
     if pdef is not None:
         if pdef.transport in TRANSPORT_TO_API_MODE:

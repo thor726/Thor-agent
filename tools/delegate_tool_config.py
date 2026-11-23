@@ -550,7 +550,7 @@ _ROUTING_FILTER_DEFAULTS = (
     ("provider_require_parameters", False), ("provider_data_collection", ""),
 )
 
-_NOUS_PROVIDERS = frozenset({"nous", "nous-portal", "nousresearch"})
+_THOR_PROVIDERS = frozenset({"thor", "thorhub"})
 
 
 def _resolve_child_fallback_chain(parent_agent, routing_cfg: Any, pinned: bool) -> Optional[list[dict[str, Any]]]:
@@ -622,20 +622,19 @@ def _resolve_child_runtime(
         effective_provider = getattr(parent_agent, "provider", None)
         effective_base_url, parent_api_key = _inherit_parent_endpoint(parent_agent, parent_agent.base_url, parent_api_key)
     # api_mode: each provider has its own wire, so a different provider re-derives (None) instead of inheriting (404s
-    # otherwise). Nous Portal is dual-wire within one provider (anthropic/* → Messages, else chat_completions), so
-    # same-provider inheritance would pin the child on the wrong wire — re-derive.
+    # otherwise). ThorHub is chat/completions-only, so same-provider inheritance is safe.
     # Bug #20558 / PR #20563: api_mode must NOT be inherited when the child uses a different provider than
     # the parent — each provider has its own API surface (e.g. MiniMax uses anthropic_messages, DeepSeek
     # uses chat_completions). Inheriting the parent's mode causes 404 errors when the child routes to the
     # wrong endpoint. Derive the mode from the target provider when it differs. Same-provider inheritance
     # would pin a child Thor/Qwen subagent onto the parent's Claude Messages wire (or the reverse).
-    # agent_init honors an explicit api_mode above its nous branch, so re-derive here before construction.
+    # agent_init honors an explicit api_mode above its thor branch, so re-derive here before construction.
     _parent_provider = getattr(parent_agent, "provider", None) or ""
     if override_api_mode is not None:
         effective_api_mode = override_api_mode
-    elif (effective_provider or "").strip().lower() in _NOUS_PROVIDERS:
-        from thor_cli.providers import nous_api_mode
-        effective_api_mode = nous_api_mode(effective_model)
+    elif (effective_provider or "").strip().lower() in _THOR_PROVIDERS:
+        from thor_cli.providers import thor_api_mode
+        effective_api_mode = thor_api_mode(effective_model)
     elif effective_provider != _parent_provider:
         effective_api_mode = None  # force re-derivation from provider's defaults
     else:

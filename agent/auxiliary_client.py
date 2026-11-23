@@ -4823,15 +4823,15 @@ def _resolve_nous_branch(req: _ResolveRequest) -> _ResolveResult:
     client, default = _try_nous(vision=(req.is_vision or model in _PROVIDER_VISION_MODELS.values()
                                         or (model or "").strip().lower() == "mimo-v2-omni"))
     if client is None:
-        logger.warning("resolve_provider_client: nous requested but Thor Portal not configured (run: thor auth)")
+        logger.warning("resolve_provider_client: thor requested but ThorHub not configured (run: thor auth add thor)")
         return None, None
     final_model = _normalize_resolved_model(model or default, req.provider)
-    # Dual-wire: anthropic/* → /v1/messages, else /chat/completions. Derive from the catalog id
+    # ThorHub is chat/completions-only. Derive from the catalog id
     # (not a stale api_mode) so aux matches the main agent.
-    from thor_cli.providers import nous_api_mode
+    from thor_cli.providers import thor_api_mode
     client = _maybe_wrap_anthropic(
         client, final_model, str(getattr(client, "api_key", "") or ""),
-        str(getattr(client, "base_url", "") or ""), nous_api_mode(final_model),
+        str(getattr(client, "base_url", "") or ""), thor_api_mode(final_model),
     )
     return _route_client(req, client, final_model)
 
@@ -6335,15 +6335,16 @@ def _convert_openai_images_to_anthropic(messages: list) -> list:
     return converted
 
 
-_NOUS_PROVIDER_NAMES = frozenset({"nous", "nous-portal", "nousresearch"})
+_THOR_PROVIDER_NAMES = frozenset({"thor", "thorhub"})
 
 
-def _nous_on_messages_wire(provider_norm: str, model: str) -> bool:
-    """True when a Thor Portal route serves ``model`` over /v1/messages (dual-wire catalog)."""
-    if provider_norm not in _NOUS_PROVIDER_NAMES:
+def _thor_on_messages_wire(provider_norm: str, model: str) -> bool:
+    """True when a ThorHub route serves ``model`` over /v1/messages. ThorHub has no Messages
+    wire, so this is always False; kept so call sites keep a single predicate."""
+    if provider_norm not in _THOR_PROVIDER_NAMES:
         return False
-    from thor_cli.providers import nous_api_mode
-    return nous_api_mode(model) == "anthropic_messages"
+    from thor_cli.providers import thor_api_mode
+    return thor_api_mode(model) == "anthropic_messages"
 
 
 _NVIDIA_PROVIDER_NAMES = {"nvidia", "nvidia-nim", "nim", "build-nvidia", "nemotron"}

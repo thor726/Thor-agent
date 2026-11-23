@@ -156,8 +156,8 @@ MODEL = ARGS.model or ("claude-fable-5.1" if PROVIDER == "anthropic" else "anthr
 if ARGS.wire:
     API_MODE = "chat_completions" if ARGS.wire == "chat" else "anthropic_messages"
 elif PROVIDER == "nous":
-    from thor_cli.providers import nous_api_mode
-    API_MODE = nous_api_mode(MODEL)
+    from thor_cli.providers import thor_api_mode
+    API_MODE = thor_api_mode(MODEL)
 else:
     API_MODE = "chat_completions" if PROVIDER == "openrouter" else "anthropic_messages"
 if API_MODE == "chat_completions": Completions.create = patched_create

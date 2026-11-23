@@ -34,7 +34,7 @@ from thor_cli.auth import (  # resolve_external_process_provider_credentials is 
 from thor_cli import config as _config_mod
 from thor_cli import models as _models  # attribute access keeps ``thor_cli.models.<name>`` patches effective
 from thor_constants import OPENROUTER_BASE_URL
-from thor_cli.providers import determine_api_mode, get_provider, is_actual_route, is_official_openai_host, nous_api_mode
+from thor_cli.providers import determine_api_mode, get_provider, is_actual_route, is_official_openai_host, thor_api_mode
 from utils import base_url_host_matches, base_url_hostname, base_url_path, env_int, same_base_url_origin
 
 
@@ -615,7 +615,7 @@ def _pool_entry_mode_and_url(provider, entry, model_cfg, effective_model, base_u
     if provider == "anthropic":
         return "anthropic_messages", _anthropic_cfg_base_url(model_cfg) or base_url or _ANTHROPIC_DEFAULT_BASE_URL
     if provider == "nous":
-        return nous_api_mode(effective_model), (_nous_inference_env_override() or "") or base_url
+        return thor_api_mode(effective_model), (_nous_inference_env_override() or "") or base_url
     if _per_model_profile(provider) is not None:
         api_mode = _profile_runtime_api_mode(provider, model_cfg, getattr(entry, "runtime_api_key", ""),
                                              target_model=effective_model)
@@ -850,7 +850,7 @@ def _explicit_nous(requested_provider, model_cfg, api_key, explicit_base_url, ta
     api_key, base_url, expires_at = _creds_fallback(api_key, explicit_base_url, base_url,
                                                     state.get("agent_key_expires_at") or state.get("expires_at"), "expires_at",
                                                     _resolve_nous_creds)
-    return _runtime("nous", nous_api_mode(_effective_model(model_cfg, target_model)), base_url, api_key, source="explicit",
+    return _runtime("nous", thor_api_mode(_effective_model(model_cfg, target_model)), base_url, api_key, source="explicit",
                     expires_at=expires_at, requested_provider=requested_provider)
 
 
@@ -929,7 +929,7 @@ class _OAuthRuntimeSpec:
 # ``resolve`` entries are late-bound lambdas so tests can monkeypatch the module-level
 # ``resolve_*_runtime_credentials`` names.
 _OAUTH_RUNTIME_PROVIDERS: dict[str, _OAuthRuntimeSpec] = {
-    "nous": _OAuthRuntimeSpec(_resolve_nous_creds, nous_api_mode, "portal", "expires_at",
+    "nous": _OAuthRuntimeSpec(_resolve_nous_creds, thor_api_mode, "portal", "expires_at",
                               "Auto-detected Thor provider but credentials failed"),
     "openai-codex": _OAuthRuntimeSpec(lambda: resolve_codex_runtime_credentials(), "codex_responses", "thor-auth-store",
                                       "last_refresh", "Auto-detected Codex provider but credentials failed"),

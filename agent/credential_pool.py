@@ -902,12 +902,11 @@ _TOKENS_SINGLETON_PROVIDERS: dict[str, tuple[str, str, str, str]] = {
 # providers are refreshable when their profile ships ``refresh_credential`` (see
 # ``thor_cli.auth_plugin_providers.is_refreshable_oauth_provider``); any other provider is returned
 # unchanged by that path, so callers must not report a refresh for them.
-REFRESHABLE_OAUTH_PROVIDERS = frozenset({"anthropic", "nous", *_TOKENS_SINGLETON_PROVIDERS})
+REFRESHABLE_OAUTH_PROVIDERS = frozenset({"anthropic", *_TOKENS_SINGLETON_PROVIDERS})
 
 # Providers whose refresh tokens are single-use: the sync -> POST -> write-back
 # sequence must be serialized across processes under the auth-store flock.
-# ``nous`` is deliberately absent even though it is in SINGLE_USE_REFRESH_POOL_PROVIDERS:
-# its refresh path serializes on its own auth-store lock (``_refresh_entry_impl`` nous branch).
+# ThorHub (``thor``) is deliberately absent: it is an API-key provider with no OAuth refresh.
 _SINGLE_USE_REFRESH_PROVIDERS = ("openai-codex", "xai-oauth", "anthropic")
 
 # Lock-free window between consecutive auth-store holds in a deferred refresh sweep
