@@ -1,6 +1,6 @@
 """A cold Remote Config read of profile B from inside profile A's bound scope completes.
 
-In Cloud mode the plane bearer is the Nous token from the profile's ``auth.json``. The credential
+In Cloud mode the plane bearer is the ThorHub key from the profile's ``auth.json``. The credential
 reader used to select that file by moving the THOR_HOME override to B while B's first fetch held
 B's fetch lock. With a scope bound, that override move rebinds the WHOLE scope to B (the legacy
 setter cannot split home from secrets and terminal policy), and building B's terminal policy reads
@@ -13,8 +13,8 @@ import json
 import os
 import sys
 
-from .stub_plane import INSTANCE, NOUS_TOKEN, StubPlane
-from .test_remote_nous_cold_boot import REPO, _auth_json, _run, _value
+from .stub_plane import INSTANCE, NOUS_TOKEN as THORHUB_TOKEN, StubPlane
+from .test_remote_thorhub_cold_boot import REPO, _auth_json, _run, _value
 
 CROSS_PROFILE_READ = """
 import json, os
@@ -41,7 +41,7 @@ def test_cold_read_of_another_profile_inside_a_bound_scope_completes(tmp_path):
         env.update(HOME=str(tmp_path), THOR_HOME=str(home), PYTHONPATH=str(REPO), PYTHONDONTWRITEBYTECODE="1",
                    THOR_CONFIG_BACKEND="remote", THOR_CONFIG_REMOTE_URL=plane.url,
                    THOR_CONFIG_INSTANCE_ID=INSTANCE)
-        assert not any(k.startswith("GATEWAY_RELAY_IDP_") for k in env)  # Cloud: the Nous credential
+        assert not any(k.startswith("GATEWAY_RELAY_IDP_") for k in env)  # Cloud: the ThorHub credential
         assert _value(_run([sys.executable, "-c", CROSS_PROFILE_READ], env)) == "ok"
         gets = [r for r in plane.requests if r["method"] == "GET"]
-        assert {r["profile"] for r in gets} >= {"b"} and {r["auth"] for r in gets} == {f"Bearer {NOUS_TOKEN}"}
+        assert {r["profile"] for r in gets} >= {"b"} and {r["auth"] for r in gets} == {f"Bearer {THORHUB_TOKEN}"}

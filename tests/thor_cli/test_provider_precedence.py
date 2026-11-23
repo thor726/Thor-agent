@@ -93,50 +93,47 @@ def _never_mint(monkeypatch):
                         lambda **kw: (_ for _ in ()).throw(AssertionError("resolve_provider must not mint")))
 
 
-def _claimed_trial_with_aws(monkeypatch):
-    """A claimed welcome trial on the desktop's local backend, then a leftover ~/.aws profile."""
-    from tests.thor_cli.anon_portal import claimed_trial
+def _thorhub_key_with_aws(monkeypatch):
+    """A ThorHub key in the env, then a leftover ~/.aws profile."""
+    from tests.thor_cli.anon_portal import as_local_desktop_backend
     _clear_provider_env(monkeypatch)
-    claimed_trial(monkeypatch)
+    as_local_desktop_backend(monkeypatch)
     _never_mint(monkeypatch)
+    monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-test")
     monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: True)
 
 
-class TestFreeTierBeatsImplicitHostCredentials:
-    """NS-829: a leftover ~/.aws profile must not pre-empt the welcome trial on a fresh install.
+class TestThorhubKeyBeatsImplicitHostCredentials:
+    """NS-829 (ThorHub era): a leftover ~/.aws profile must not pre-empt a configured ThorHub key.
 
-    A claimed trial on the desktop's local backend sits above the implicit Bedrock chain; explicit
-    intent still beats it; off the desktop backend a claimed guest never resolves to nous. The
-    resolver never creates the identity."""
+    A ThorHub key sits above the implicit Bedrock chain; explicit intent still beats it.
+    The resolver never creates an identity. (There is no free tier anymore: the welcome
+    trial and its ladder rung are retired with the Nous Portal.)
+    """
 
-    def test_a_claimed_trial_on_the_desktop_backend_beats_the_bedrock_chain(self, portal, monkeypatch):
-        _claimed_trial_with_aws(monkeypatch)
-        assert resolve_provider("auto") == "nous"
+    def test_a_thorhub_key_beats_the_bedrock_chain(self, monkeypatch):
+        _thorhub_key_with_aws(monkeypatch)
+        assert resolve_provider("auto") == "thor"
 
-    @pytest.mark.parametrize("env_key, config_provider, expected", [
-        ("OPENAI_API_KEY", None, "openai-api"),  # an exported key wins
-        (None, "zai", "zai"),                     # a config pin wins
-    ], ids=["env-key", "config-provider"])
-    def test_explicit_providers_beat_a_claimed_trial(self, portal, monkeypatch, env_key, config_provider,
-                                                     expected):
-        _claimed_trial_with_aws(monkeypatch)
-        if env_key:
-            monkeypatch.setenv(env_key, "sk-test-key")
-        if config_provider:
-            _config(monkeypatch, {"provider": config_provider, "default": "some-model"})
-        assert resolve_provider("auto") == expected
+    def test_a_config_provider_beats_a_thorhub_key(self, monkeypatch):
+        _thorhub_key_with_aws(monkeypatch)
+        _config(monkeypatch, {"provider": "zai", "default": "some-model"})
+        assert resolve_provider("auto") == "zai"
 
-    def test_on_the_cli_surface_a_claimed_guest_still_beats_host_credentials(self, portal, monkeypatch):
-        from tests.thor_cli.anon_portal import off_local_desktop
-        _claimed_trial_with_aws(monkeypatch)
-        off_local_desktop(monkeypatch)
-        assert resolve_provider("auto") == "nous"
+    def test_an_explicit_env_key_beats_the_bedrock_chain(self, monkeypatch):
+        _clear_provider_env(monkeypatch)
+        _never_mint(monkeypatch)
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key")
+        monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: True)
+        assert resolve_provider("auto") == "openai-api"
 
-    def test_skip_free_tier_answers_what_else_would_carry_inference(self, portal, monkeypatch):
-        """With the free tier hidden, a claimed trial is not an answer and the ladder falls through
-        to the next real rung."""
-        _claimed_trial_with_aws(monkeypatch)
-        monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: False)
-        assert resolve_provider("auto") == "nous"
-        with pytest.raises(AuthError):
-            resolve_provider("auto", skip_free_tier=True)
+    def test_skip_free_tier_still_resolves_a_thorhub_key(self, monkeypatch):
+        """``skip_free_tier`` is accepted and ignored now: a ThorHub key is not a free tier."""
+        _thorhub_key_with_aws(monkeypatch)
+        assert resolve_provider("auto", skip_free_tier=True) == "thor"
+
+    def test_without_a_key_the_ladder_falls_through_to_bedrock(self, monkeypatch):
+        _clear_provider_env(monkeypatch)
+        _never_mint(monkeypatch)
+        monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: True)
+        assert resolve_provider("auto") == "bedrock"

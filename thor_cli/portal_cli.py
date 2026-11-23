@@ -37,24 +37,17 @@ def _heading(title: str) -> None:
 
 def _cmd_status(args) -> int:
     """Show Portal auth + Tool Gateway routing summary."""
-    from thor_cli.auth import get_nous_auth_status_local
+    from thor_cli.auth_thorhub import get_thorhub_auth_status_local
     from thor_cli.thorhub_subscription import get_thorhub_subscription_features
 
     config = load_config() or {}
     try:
-        auth = get_nous_auth_status_local() or {}  # refresh-free snapshot
+        auth = get_thorhub_auth_status_local() or {}  # refresh-free snapshot
     except Exception:
         auth = {}
     logged_in = bool(auth.get("logged_in"))
-    free_tier = bool(auth.get("free_tier"))
     _heading("ThorHub")
-    if free_tier:
-        from thor_cli.anon_auth import FREE_TIER_LABEL, GUEST_MODEL, UPGRADE_HINT
-        print(f"  Auth:    {color(f'{FREE_TIER_LABEL} · {GUEST_MODEL}', Colors.GREEN)}")
-        print(f"           {UPGRADE_HINT}")
-        if auth.get("inference_base_url"):
-            print(f"  API:     {auth['inference_base_url']}")
-    elif logged_in:
+    if logged_in:
         print(f"  Auth:    {color('✓ logged in', Colors.GREEN)}")
         print(f"  ThorHub: {auth.get('portal_base_url') or DEFAULT_PORTAL_URL}")
         if auth.get("inference_base_url"):

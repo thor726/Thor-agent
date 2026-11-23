@@ -1,10 +1,9 @@
 """Why an auxiliary client could not be built — and the Thor credential failure behind it.
 
-``_resolve_nous_runtime_api`` must swallow the resolver's ``AuthError`` and return None so the
-ladder can still fall back (stored token, fallback_chain). Swallowing it at DEBUG left the goal
-loop reporting ``judge error: RuntimeError`` while the real cause was an ``invalid_grant`` refresh
-(#42177). This module remembers the latest failure so the ladder's raise and the goal judge can
-name it, and warns ONCE per distinct message so operators see it without debug logging.
+``_resolve_thorhub_runtime_api`` must swallow the resolver's ``AuthError`` and return None so the
+ladder can still fall back (stored key, fallback_chain). This module remembers the latest failure
+so the ladder's raise and the goal judge can name it, and warns ONCE per distinct message so
+operators see it without debug logging.
 """
 
 import contextlib
@@ -24,26 +23,17 @@ class AuxiliaryClientUnavailable(RuntimeError):
 
 
 _lock = threading.Lock()
-_last_nous_detail: Optional[str] = None
-_warned_nous_details: set[str] = set()
+_last_thorhub_detail: Optional[str] = None
+_warned_thorhub_details: set[str] = set()
 
 
-def _quarantined_nous_error(exc: BaseException) -> BaseException:
-    """Prefer the persisted terminal quarantine marker over *exc*; sentence-terminate either message.
-
-    The pool rung swallows the real ``invalid_grant`` and wipes the dead tokens, so by the time the
-    auth-store resolver runs it can only say "No access token found"; the marker it wrote still
-    carries the message and code the user needs (#42177). ``format_auth_error`` appends the
-    remediation sentence with a space, so an unterminated message reads "Invalid refresh token Run …".
+def _thorhub_auth_error(exc: BaseException) -> BaseException:
+    """Sentence-terminate *exc*'s message (``format_auth_error`` appends the remediation sentence
+    with a space, so an unterminated message reads "Invalid key Run …"). ThorHub has no OAuth
+    quarantine marker anymore — a revoked static key is discovered at request time.
     """
-    from thor_cli.auth import AuthError, get_provider_auth_state
-    from thor_cli.auth_nous import _terminal_quarantine_marker
+    from thor_cli.auth import AuthError
 
-    with contextlib.suppress(Exception):
-        marker = _terminal_quarantine_marker(get_provider_auth_state("nous") or {})
-        if marker and marker.get("message"):
-            return AuthError(_sentence(marker["message"]), provider="nous", code=marker.get("code"),
-                             relogin_required=True)
     if isinstance(exc, AuthError):
         return AuthError(_sentence(exc), provider=exc.provider, code=exc.code,
                          relogin_required=exc.relogin_required, retry_after=exc.retry_after,
@@ -222,54 +212,53 @@ def missing_provider_credentials_message(provider_id: str) -> str:
             + (f"{remedy}, or {switch}" if remedy else switch.capitalize()))
 
 
-def _nous_credential_present(exc: BaseException) -> bool:
-    """True when a Thor credential exists that failed — a coded error (``invalid_grant``, a quarantine
-    marker, ``refresh_failed``) or persisted Thor auth state. The uncoded "not logged into Thor Portal"
-    with no stored state is the normal condition for users who never chose Thor; the auto-route walk
-    hits it on every discovery pass and must not warn (the ladder already logs its own summary).
+def _thorhub_credential_present(exc: BaseException) -> bool:
+    """True when a ThorHub credential exists that failed — a coded error or a configured ThorHub key.
+    The uncoded "no ThorHub key configured" with no stored key is the normal condition for users who
+    never chose ThorHub; the auto-route walk hits it on every discovery pass and must not warn (the
+    ladder already logs its own summary).
     """
     if getattr(exc, "code", None):
         return True
-    from thor_cli.auth import get_provider_auth_state
-
     with contextlib.suppress(Exception):
-        return bool(get_provider_auth_state("nous"))
+        from thor_cli.thorhub_account import thorhub_api_key
+        return bool(thorhub_api_key())
     return False
 
 
-def record_nous_credential_failure(exc: BaseException) -> str:
-    """Remember *exc* as the latest Thor credential failure.
+def record_thorhub_credential_failure(exc: BaseException) -> str:
+    """Remember *exc* as the latest ThorHub credential failure.
 
-    Logged once per distinct message: WARNING when a real credential failed, DEBUG when Thor was
-    simply never logged into Thor.
+    Logged once per distinct message: WARNING when a real credential failed, DEBUG when ThorHub was
+    simply never configured.
     """
     from thor_cli.auth import format_auth_error
 
-    exc = _quarantined_nous_error(exc)
+    exc = _thorhub_auth_error(exc)
     message = format_auth_error(exc) if isinstance(exc, Exception) else str(exc)
     message = message.strip() or type(exc).__name__
     code = getattr(exc, "code", None)
     if code and str(code) not in message:
         message = f"{message} (code: {code})"
-    detail = f"Thor Portal runtime credentials unavailable: {message}"
-    global _last_nous_detail
+    detail = f"ThorHub runtime credentials unavailable: {message}"
+    global _last_thorhub_detail
     with _lock:
-        _last_nous_detail = detail
-        first_time = detail not in _warned_nous_details
-        _warned_nous_details.add(detail)
+        _last_thorhub_detail = detail
+        first_time = detail not in _warned_thorhub_details
+        _warned_thorhub_details.add(detail)
     if first_time:
-        level = logging.WARNING if _nous_credential_present(exc) else logging.DEBUG
+        level = logging.WARNING if _thorhub_credential_present(exc) else logging.DEBUG
         logger.log(level, "Auxiliary Thor client unavailable: %s", detail)
     return detail
 
 
-def clear_nous_credential_failure() -> None:
-    global _last_nous_detail
+def clear_thorhub_credential_failure() -> None:
+    global _last_thorhub_detail
     with _lock:
-        _last_nous_detail = None
+        _last_thorhub_detail = None
 
 
-def nous_credential_failure_detail() -> Optional[str]:
-    """The latest recorded Thor credential failure, or None when the last resolution succeeded."""
+def thorhub_credential_failure_detail() -> Optional[str]:
+    """The latest recorded ThorHub credential failure, or None when the last resolution succeeded."""
     with _lock:
-        return _last_nous_detail
+        return _last_thorhub_detail

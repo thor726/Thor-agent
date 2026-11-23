@@ -210,13 +210,11 @@ class CLIBillingMixin:
         if choice != "yes":
             print(declined_msg)
             return False
-        print(f"  {t('cli.billing.opening_browser_remote_spending')}")
-        try:
-            from thor_cli.auth import step_up_nous_billing_scope
-            granted = step_up_nous_billing_scope(open_browser=True)
-        except Exception as exc:
-            print(f"  {t('cli.billing.couldnt_allow_remote_spending', error=exc)}")
-            return False
+        # ThorHub has no billing API and no step-up flow: remote spending cannot be enabled
+        # from here. Point the user at the top-up page instead.
+        from thor_cli.thorhub_account import THORHUB_TOPUP_URL
+        print(f"  Top up at {THORHUB_TOPUP_URL} to add ThorHub credits.")
+        return False
         if not granted:
             print(not_granted_msg)
         return bool(granted)

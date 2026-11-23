@@ -1,6 +1,6 @@
-"""Centralized Thor Portal request tags.
+"""Centralized ThorHub request tags.
 
-Every Thor request to the Thor Portal (main loop, auxiliary client, fallback
+Every Thor request to ThorHub (main loop, auxiliary client, fallback
 paths) must carry the same product-attribution tags, sent in OpenAI-compatible
 ``extra_body['tags']``: ``["product=thor-agent", "client=thor-client-v<base_version>"]``.
 The value comes from the canonical runtime identity's base version so build
@@ -15,12 +15,12 @@ from typing import List, Optional
 # Ambient conversation id (ATTRIBUTION value, sent as ``conversation=<id>``).
 # The agent loop publishes it at turn entry; auxiliary call sites funnelling
 # through ``auxiliary_client.call_llm`` (no session handle) pick it up via
-# ``nous_portal_tags()``. A ContextVar so concurrent agents in one process never
+# ``thorhub_portal_tags()``. A ContextVar so concurrent agents in one process never
 # see each other's id; ``propagate_context_to_thread`` workers inherit it.
-_conversation_id: ContextVar[Optional[str]] = ContextVar("nous_portal_conversation_id", default=None)
+_conversation_id: ContextVar[Optional[str]] = ContextVar("thorhub_conversation_id", default=None)
 
-# Ambient affinity scope (ROUTING value): OpenRouter's sticky ``session_id``, Nous
-# Portal's sticky key and xAI's ``x-grok-conv-id`` pin a conversation to one
+# Ambient affinity scope (ROUTING value): OpenRouter's sticky ``session_id``, ThorHub
+# sticky key and xAI's ``x-grok-conv-id`` pin a conversation to one
 # backend/prompt cache. Usually equal to the conversation id, but a host that mints
 # one physical session per RESPONSE must route on the key it declared for the whole
 # chat (``prompt_cache_scope.declared_conversation_scope``). Only that declared value
@@ -53,7 +53,7 @@ def get_affinity_scope() -> Optional[str]:
 
 
 def set_conversation_context(conversation_id: Optional[str]):
-    """Publish the active conversation id for ambient Portal tagging; returns the token.
+    """Publish the active conversation id for ambient ThorHub tagging; returns the token.
 
     Called by the agent loop at turn entry with the session-lineage ROOT id (so
     the tag survives context-compression rotation). ``None`` clears.
@@ -82,8 +82,8 @@ def conversation_tag(session_id: str) -> str:
     return f"conversation={session_id}"
 
 
-def nous_portal_tags(session_id: str | None = None) -> list[str]:
-    """Fresh list of the canonical Thor Portal tags.
+def thorhub_portal_tags(session_id: str | None = None) -> list[str]:
+    """Fresh list of the canonical ThorHub tags.
 
     The ambient conversation context (lineage ROOT id) wins over the explicit
     ``session_id``, a fallback for callers outside any agent turn.

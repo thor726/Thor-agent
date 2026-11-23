@@ -17,7 +17,7 @@ or unknown routes, which would 400 on it).
 
 from typing import Any
 
-from agent.portal_tags import get_affinity_scope, get_conversation_context, nous_portal_tags
+from agent.portal_tags import get_affinity_scope, get_conversation_context, thorhub_portal_tags
 from agent.transports.codex import _cache_scope_from_session_id
 from providers import register_provider
 from providers.base import ProviderProfile
@@ -39,7 +39,7 @@ class ThorHubProfile(ProviderProfile):
     def build_extra_body(
         self, *, session_id: str | None = None, data_use: frozenset[str] = frozenset(), **context,
     ) -> dict[str, Any]:
-        body: dict[str, Any] = {"tags": nous_portal_tags(session_id=session_id)}
+        body: dict[str, Any] = {"tags": thorhub_portal_tags(session_id=session_id)}
         # Top-level session_id = sticky routing key, so Anthropic-style cache
         # breakpoints stay warm on one upstream instance. Resolved like the
         # ``conversation=`` tag: declared scope, then the ambient lineage ROOT

@@ -186,34 +186,6 @@ def test_banner_skills_are_the_routed_profiles(homes):
         banner._available_skills_cache = None
 
 
-def test_failed_guest_mint_only_suppresses_that_profile(homes, monkeypatch, tmp_path):
-    a, b = homes
-    monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared"))
-    import thor_cli.anon_auth as anon
-    from thor_cli import auth_nous
-
-    anon.reset_mint_memo_for_tests()
-    status = {"code": 429}
-    attempts: list[str] = []
-
-    def client(timeout_seconds, verify):
-        def handler(request):
-            attempts.append(str(get_thor_home()))
-            if status["code"] == 429:
-                return httpx.Response(429, json={"error": "rate"})
-            return httpx.Response(201, json={"token": "anon_b", "user_id": "u", "org_id": "o"})
-        return httpx.Client(transport=httpx.MockTransport(handler))
-
-    monkeypatch.setattr(auth_nous, "_nous_http_client", client)
-    with _Scoped(a), pytest.raises(Exception):
-        anon.ensure_portal_identity(explicit=True, timeout_seconds=1)
-    assert attempts == [str(a)]
-    status["code"] = 201
-    with _Scoped(b):
-        assert anon.ensure_portal_identity(explicit=True, timeout_seconds=1) is not None
-    assert attempts[-1] == str(b)
-
-
 def test_active_skin_is_per_profile_and_leaves_launch_slot_alone(homes):
     a, b = homes
     from thor_cli import skin_engine

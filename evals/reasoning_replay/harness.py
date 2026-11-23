@@ -5,8 +5,8 @@ prompt: the prompt-token delta of a request carrying a ~400-token reasoning trac
 byte-identical request without it, plus a canary-recall question. Stdlib HTTP only; it measures
 the WIRE, not Thor. See README.md for the method and how to read the matrix.
 
-    python evals/reasoning_replay/harness.py models --route nous
-    python evals/reasoning_replay/harness.py run --route nous --models x-ai/grok-4.7 --out DIR
+    python evals/reasoning_replay/harness.py models --route thor
+    python evals/reasoning_replay/harness.py run --route thor --models x-ai/grok-4.7 --out DIR
     python evals/reasoning_replay/harness.py run --route custom --kind chat \\
         --base-url https://api.deepseek.com/v1 --key-env DEEPSEEK_API_KEY --models deepseek-chat --out DIR
     python evals/reasoning_replay/harness.py report --out DIR
@@ -30,9 +30,9 @@ HOME = Path(os.environ.get("THOR_HOME") or Path.home() / ".thor")
 AUTH_JSON = HOME / "auth.json"
 DOTENV = HOME / ".env"
 
-# name -> (kind, base_url, credential source). "nous-auth" reads auth.json at call time.
+# name -> (kind, base_url, credential source). "thorhub-auth" reads auth.json at call time.
 ROUTES = {
-    "nous": ("chat", "https://inference-api.thor-agent.local/v1", "nous-auth"),
+    "thor": ("chat", "https://llm.thormarket.site/v1", "thorhub-auth"),
     "openai-chat": ("chat", "https://api.openai.com/v1", "OPENAI_API_KEY"),
     "openai-responses": ("responses", "https://api.openai.com/v1", "OPENAI_API_KEY"),
     "xai-chat": ("chat", "https://api.x.ai/v1", "XAI_API_KEY"),
@@ -110,9 +110,10 @@ def _dotenv() -> dict:
     return env
 
 
-def _nous_key() -> str:
-    n = (json.loads(AUTH_JSON.read_text(encoding="utf-8-sig")).get("providers") or {}).get("nous") or {}
-    return n.get("agent_key") or n.get("access_token") or ""
+def _thorhub_key() -> str:
+    providers = json.loads(AUTH_JSON.read_text(encoding="utf-8-sig")).get("providers") or {}
+    n = providers.get("thor") or providers.get("nous") or {}
+    return n.get("api_key") or n.get("key") or n.get("agent_key") or n.get("access_token") or os.environ.get("THORHUB_API_KEY") or ""
 
 
 class Budget:
@@ -144,8 +145,8 @@ class Client:
         self.budget, self.prices, self.env = budget, prices, _dotenv()
 
     def _key(self) -> str:
-        if self.cred == "nous-auth":
-            return _nous_key()
+        if self.cred == "thorhub-auth":
+            return _thorhub_key()
         return os.environ.get(self.cred) or self.env.get(self.cred, "") if self.cred else ""
 
     def post(self, path: str, body: dict, model: str, tag: str) -> tuple[int, dict, float]:
@@ -155,8 +156,8 @@ class Client:
         status, j = 0, {}
         for attempt in range(6):
             key = self._key()
-            if self.cred == "nous-auth" and key == last_key:
-                time.sleep(15)  # live install rotates the key; give it a chance, then re-read
+            if self.cred == "thorhub-auth" and key == last_key:
+                time.sleep(15)  # the key may have been rotated in the store; re-read before retrying
                 key = self._key()
             url = self.base + path
             headers = {"Content-Type": "application/json"}
@@ -178,7 +179,7 @@ class Client:
                 j = {"_raw": raw[:2000]}
             if isinstance(j, list):  # Gemini wraps some errors in a one-element list
                 j = j[0] if j and isinstance(j[0], dict) else {"_raw": raw[:2000]}
-            if status == 401 and self.cred == "nous-auth" and last_key is None:
+            if status == 401 and self.cred == "thorhub-auth" and last_key is None:
                 last_key = key
                 continue
             if status in (0, 429, 500, 502, 503, 504, 529) and attempt < 5:
@@ -239,7 +240,7 @@ def lane_of(route: str, j: dict) -> tuple[str, str]:
     else:
         m = re.match(r"[A-Za-z]+[-_]?", rid)
         prefix = m.group(0) if m else (rid[:6] or "-")
-    if route == "nous":
+    if route == "thor":
         return ("openrouter" if rid.startswith("gen-") else "direct"), prefix
     return "direct", prefix
 
@@ -328,7 +329,7 @@ def default_params(route: str, kind: str) -> dict:
     if kind == "gemini":
         return {"thinking": {"includeThoughts": True, "thinkingLevel": "low"}, "temperature": 0}
     p["temperature"] = 0
-    if route == "nous" or route in ("openrouter",):
+    if route == "thor" or route in ("openrouter",):
         p["reasoning"] = {"effort": "low"}
     elif route in ("openai-chat", "gemini-openai"):
         p["reasoning_effort"] = "low"
@@ -404,7 +405,7 @@ class Prober:
             "secs": round(dt, 2), "t": time.time()})
 
     def want_direct(self, model: str) -> bool:
-        return self.c.route == "nous" and model in self.a.want_direct
+        return self.c.route == "thor" and model in self.a.want_direct
 
     def sample(self, model, step, position, variant, params, payload, extra=None, probe="std", run_id="") -> list:
         """One call, or up to --lane-attempts calls until a direct-lane 200 for want-direct ids."""
@@ -465,8 +466,8 @@ class Prober:
                         self.sample(model, "text", position, "none", params,
                                     self.text_payload(position, "none", probe), probe=probe)
                     for variant in self.variants():
-                        if variant == "none" and self.c.route != "nous":
-                            continue  # one baseline is enough off the Portal; Portal gets a second
+                        if variant == "none" and self.c.route != "thor":
+                            continue  # one baseline is enough off ThorHub; ThorHub gets a second
                         self.sample(model, "text", position, variant, params,
                                     self.text_payload(position, variant, probe), probe=probe)
                     self.backfill_baseline(model, "text", position, params, probe)
@@ -479,7 +480,7 @@ class Prober:
 
     def backfill_baseline(self, model, step, position, params, probe="std"):
         """Every lane a carrier landed on needs a 'none' baseline on that same lane."""
-        if self.c.route != "nous":
+        if self.c.route != "thor":
             return
         recs = [r for r in read_calls(self.out) if r.get("model") == model and r.get("step") == step
                 and r.get("position") == position and r.get("status") == 200 and r.get("route") == self.c.route
@@ -691,14 +692,14 @@ def read_calls(out: Path) -> list:
 
 # ---------------------------------------------------------------- models / prices
 
-def nous_catalog() -> list:
-    req = urllib.request.Request("https://inference-api.thor-agent.local/v1/models",
-                                 headers={"Authorization": "Bearer " + _nous_key()})
+def thorhub_catalog() -> list:
+    req = urllib.request.Request("https://llm.thormarket.site/v1/models",
+                                 headers={"Authorization": "Bearer " + _thorhub_key()})
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read())["data"]
 
 
-def nous_selection(catalog: list) -> tuple[list, list]:
+def thorhub_selection(catalog: list) -> tuple[list, list]:
     """Reasoning-capable, text-out, non-alias, non-batch ids sorted by output price; plus skips."""
     keep, skip = [], []
     for m in catalog:
@@ -835,7 +836,7 @@ def summarize(out: Path) -> list:
             row = _lane_row(route, model, lane, recs, latest_lane, trace_tokens)
             if row["text"] or row["opaque"] or row.get("turn1"):
                 table.append(row)
-        if route == "nous" and model in want_direct and "direct" not in lanes:
+        if route == "thor" and model in want_direct and "direct" not in lanes:
             table.append({"route": route, "model": model, "lane": "direct", "text": {}, "opaque": {}, "canary": {},
                           "errors": {"lane": f"direct lane not reached in {len(recs)} calls (all gen-)"},
                           "verdict": "direct-lane-not-reached", "id_prefixes": [], "calls": 0})
@@ -919,19 +920,19 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("models")
-    m.add_argument("--route", default="nous")
+    m.add_argument("--route", default="thor")
     r = sub.add_parser("run")
     r.add_argument("--route", required=True, help=f"one of {sorted(ROUTES)} or 'custom'")
     r.add_argument("--kind", choices=("chat", "responses", "gemini"), help="custom routes")
     r.add_argument("--base-url")
     r.add_argument("--key-env", help="env var (process env, then ~/.thor/.env) holding the key")
-    r.add_argument("--models", required=True, help="comma list, or 'portal-all' / 'portal-max:<usd per M out>'")
+    r.add_argument("--models", required=True, help="comma list, or 'thorhub-all' / 'thorhub-max:<usd per M out>'")
     r.add_argument("--exclude", default="")
     r.add_argument("--out", required=True)
     r.add_argument("--steps", default="text,opaque")
     r.add_argument("--positions", default="in_loop,cross_turn")
     r.add_argument("--variants", default="")
-    r.add_argument("--want-direct", default="", help="Portal ids to resample until a direct-lane result")
+    r.add_argument("--want-direct", default="", help="ThorHub ids to resample until a direct-lane result")
     r.add_argument("--lane-attempts", type=int, default=4)
     r.add_argument("--max-tokens", type=int, default=400)
     r.add_argument("--turn1-max-tokens", type=int, default=1024)
@@ -945,7 +946,7 @@ def main() -> None:
     a = ap.parse_args()
 
     if a.cmd == "models":
-        keep, skip = nous_selection(nous_catalog())
+        keep, skip = thorhub_selection(thorhub_catalog())
         print(json.dumps({"test": keep, "skip": skip}, indent=1))
         return
     out = Path(a.out)
@@ -959,15 +960,15 @@ def main() -> None:
     else:
         kind, base, cred = ROUTES[a.route]
         base, cred = a.base_url or base, a.key_env or cred
-    catalog = nous_catalog() if (a.route == "nous" or a.models.startswith("portal")) else []
+    catalog = thorhub_catalog() if (a.route == "thor" or a.models.startswith("thorhub")) else []
     if not catalog:
         try:
-            catalog = nous_catalog()  # used only as a price table for vendor ids
+            catalog = thorhub_catalog()  # used only as a price table for vendor ids
         except (urllib.error.URLError, OSError, ValueError, KeyError):
             catalog = []
     models = [x for x in a.models.split(",") if x]
-    if a.models.startswith("portal"):
-        sel, _ = nous_selection(catalog)
+    if a.models.startswith("thorhub"):
+        sel, _ = thorhub_selection(catalog)
         cap = float(a.models.split(":", 1)[1]) if ":" in a.models else 1e9
         prices = {m["id"]: float((m.get("pricing") or {}).get("completion") or 0) * 1e6 for m in catalog}
         models = [x for x in sel if prices.get(x, 0) <= cap]

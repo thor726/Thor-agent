@@ -46,30 +46,6 @@ def _make_profile_home(tmp_path, monkeypatch, profile="coder"):
     return profile_home
 
 
-def _fake_nous_device_data():
-    return {
-        "device_code": "device-code",
-        "user_code": "NOUS-1234",
-        "verification_uri": "https://portal.thor-agent.local/device",
-        "verification_uri_complete": (
-            "https://portal.thor-agent.local/device?user_code=NOUS-1234"
-        ),
-        "expires_in": 600,
-        "interval": 5,
-    }
-
-
-def _invoke_scope_refusal():
-    request = httpx.Request("POST", "https://portal.thor-agent.local/oauth/device/code")
-    response = httpx.Response(
-        400,
-        json={
-            "error": "invalid_scope",
-            "error_description": "unsupported scope inference:invoke",
-        },
-        request=request,
-    )
-    return httpx.HTTPStatusError("invalid scope", request=request, response=response)
 
 
 def test_minimax_login_does_not_launch_anthropic_flow():

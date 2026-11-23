@@ -23,11 +23,7 @@ import pytest
 def _home(home, label):
     home.mkdir(parents=True)
     (home / "config.yaml").write_text("model:\n  provider: thor\n  default: fixture-model\n")
-    # THOR_PORTAL_BASE_URL is legacy, kept only for the step-up probe below:
-    # auth.step_up_nous_billing_scope still reads it (Commit D rewrites that flow).
-    (home / ".env").write_text(
-        f"THORHUB_BASE_URL=https://{label}-portal.invalid\n"
-        f"THOR_PORTAL_BASE_URL=https://{label}-portal.invalid\n")
+    (home / ".env").write_text(f"THORHUB_BASE_URL=https://{label}-portal.invalid\n")
     (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"thor": {
         "api_key": f"sk-thor-{label}",
     }}}))
@@ -53,7 +49,6 @@ def runtime(tmp_path, monkeypatch):
     monkeypatch.setattr(launch_profile_policy, "_snapshot", None)
     monkeypatch.setattr(server, "_thor_home", str(launch))
     monkeypatch.setattr(server, "_served_profile_homes", set())
-    monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
     thorhub_account.reset_thorhub_account_info_cache()
     previous = secret_scope.is_multiplex_active()
     launch_profile_policy.activate_multi_profile_hosting()
@@ -167,19 +162,14 @@ def test_sibling_writes_are_refused_without_touching_any_portal(runtime, caplog,
 
 
 @pytest.mark.parametrize("profile", ["launch", "secondary"])
-def test_step_up_binds_the_profile_before_starting_the_external_flow(runtime, monkeypatch, profile):
-    from agent.secret_scope import get_secret
-    from thor_cli import auth
-    from thor_constants import get_thor_home
-
-    seen = []
-    def external_device_flow(**kwargs):
-        seen.append((get_thor_home(), get_secret("THOR_PORTAL_BASE_URL")))
-        return True
-    monkeypatch.setattr(auth, "step_up_nous_billing_scope", external_device_flow)
+def test_step_up_is_always_declined_on_thorhub(runtime, profile):
+    """ThorHub has no billing API and no step-up flow: ``billing.step_up`` is always
+    declined in either profile, points at the top-up page, and makes no HTTP call."""
     result = _call(runtime.server, "billing.step_up", {} if profile == "launch" else {"profile": profile})
-    assert result == {"ok": True, "granted": True}, result
-    assert seen == [(runtime.homes[profile], f"https://{profile}-portal.invalid")]
+    assert result["ok"] is True, result
+    assert result["granted"] is False, result
+    assert result["message"] == "ThorHub has no billing step-up. Top up at https://llm.thormarket.site/beli/topup.", result
+    assert runtime.calls == []
 
 
 @pytest.mark.parametrize("method", ["billing.state", "subscription.state", "usage.bars"])

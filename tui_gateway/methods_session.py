@@ -1915,18 +1915,14 @@ _billing_route("billing.keep_going_on_credits", lambda nb, p, _k: _billing_pick(
 @method("billing.step_up")
 @_profile_scoped
 def _(rid, params: dict) -> dict:
-    """billing:manage step-up device flow → {ok, granted} (false when the server downscopes). Pooled (blocks
-    for minutes); URL/code reach the TUI via ``billing.step_up.verification`` (stdout is the RPC pipe) and the
-    browser opens TUI-side, never via the gateway's headless webbrowser.open."""
+    """billing:manage step-up → {ok, granted} (always False on ThorHub: there is no billing API
+    and no step-up flow — credits are topped up at the ThorHub store instead)."""
     sid = params.get("session_id") or ""
 
     def call():
-        from thor_cli.auth import step_up_nous_billing_scope
-        granted = step_up_nous_billing_scope(
-            open_browser=False,
-            on_verification=lambda url, code: _emit(
-                "billing.step_up.verification", sid, {"verification_url": url, "user_code": code}))
-        return {"ok": True, "granted": bool(granted)}
+        from thor_cli.thorhub_account import THORHUB_TOPUP_URL
+        return {"ok": True, "granted": False,
+                "message": f"ThorHub has no billing step-up. Top up at {THORHUB_TOPUP_URL}."}
     return _billing_call(rid, call, extra={"granted": False})
 
 

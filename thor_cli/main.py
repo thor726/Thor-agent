@@ -613,7 +613,7 @@ from datetime import datetime
 
 from thor_cli.model_setup_flows import (
     _model_flow_openrouter,
-    _model_flow_nous,
+    _model_flow_thorhub,
     _model_flow_openai_codex,
     _model_flow_xai_oauth,
     _model_flow_qwen_oauth,
@@ -1714,7 +1714,9 @@ _PROVIDER_MODEL_FLOWS = {
     "openrouter": lambda c, m, a: _model_flow_openrouter(c, m),
     "moa": lambda c, m, a: _model_flow_moa(c, m),
     "ai-gateway": lambda c, m, a: _model_flow_ai_gateway(c, m),
-    "nous": lambda c, m, a: _model_flow_nous(c, m, args=a),
+    "thor": lambda c, m, a: _model_flow_thorhub(c, m, args=a),
+    "thorhub": lambda c, m, a: _model_flow_thorhub(c, m, args=a),
+    "nous": lambda c, m, a: _model_flow_thorhub(c, m, args=a),  # legacy provider id
     "openai-codex": lambda c, m, a: _model_flow_openai_codex(c, m),
     "xai-oauth": lambda c, m, a: _model_flow_xai_oauth(c, m, args=a),
     "qwen-oauth": lambda c, m, a: _model_flow_qwen_oauth(c, m),

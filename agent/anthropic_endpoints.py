@@ -104,21 +104,26 @@ def _is_deepseek_anthropic_endpoint(base_url: str | None) -> bool:
     return base_url_host_matches(base_url or "", "api.deepseek.com") and "/anthropic" in _normalized_lower(base_url)
 
 
-def _is_nous_portal_endpoint(base_url: str | None) -> bool:
-    """Thor Portal's Anthropic Messages route (Bearer JWT, verbatim catalog ids, native
-    thinking-signature replay). Trusted hosts only: prod ``inference-api.thor-agent.local`` or the
-    operator-set ``NOUS_INFERENCE_BASE_URL`` host (exact hostname equality, so neither lookalike
+def _is_thorhub_endpoint(base_url: str | None) -> bool:
+    """ThorHub's Anthropic Messages route (Bearer <redacted>, verbatim catalog ids, native
+    thinking-signature replay). Trusted hosts only: prod ``llm.thormarket.site`` or the
+    operator-set ``THORHUB_BASE_URL`` host (exact hostname equality, so neither lookalike
     domains nor sibling hosts of the override match)."""
-    if base_url_host_matches(base_url or "", "inference-api.thor-agent.local"):
+    if base_url_host_matches(base_url or "", "llm.thormarket.site"):
         return True
     try:
-        from thor_cli.auth import _nous_inference_env_override
-        override = _nous_inference_env_override()
+        from thor_cli.thorhub_account import thorhub_base_url_env_override
+        override = thorhub_base_url_env_override() or ""
     except Exception:
         return False
-    override_host = base_url_hostname(override) if override else ""
-    return bool(override_host) and base_url_hostname(base_url or "") == override_host
-
+    if not override:
+        return False
+    try:
+        from urllib.parse import urlsplit
+        host = (urlsplit(override).hostname or "").lower()
+    except Exception:
+        return False
+    return bool(host) and base_url_host_matches(base_url or "", host)
 
 def _requires_bearer_auth(base_url: str | None) -> bool:
     """Providers needing ``Authorization: Bearer`` instead of ``x-api-key``: MiniMax, Azure AI
@@ -126,7 +131,7 @@ def _requires_bearer_auth(base_url: str | None) -> bool:
     hostname matching (not substring) so ``evil.com/palantirfoundry`` paths don't trigger it."""
     normalized = _normalized_lower(base_url)
     return (
-        _is_nous_portal_endpoint(base_url)
+        _is_thorhub_endpoint(base_url)
         or normalized.startswith(_MINIMAX_ANTHROPIC_PREFIXES)
         or "azure.com" in normalized
         or base_url_host_matches(normalized, "palantirfoundry.com")

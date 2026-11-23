@@ -1,17 +1,15 @@
 """Solstice sign-in: browser PKCE with a loopback redirect, token exchange and refresh brokered by the
-Nous portal (NAS), which holds the confidential client secret. Thor keeps its own PKCE verifier and
-the user's tokens; NAS never sees a prompt.
+Nous portal (NAS), which holds the confidential client secret.
 
-The generic ``thor_cli.auth_oauth_pkce_plugin`` flow runs the browser leg, the credential-pool row
-and the single-use-safe refresh. This module supplies only what is NAS-specific: the client config it
-discovers and the token POSTs it brokers. Every NAS call carries the user's Nous access token.
+The Nous Portal is retired, so Solstice has no token broker anymore: every NAS call raises an honest
+error telling the user to use ThorHub or another provider. The module shape is kept so
+``thor auth add solstice`` fails with that message instead of an import error.
 """
 
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping
 
-DEFAULT_NAS_BASE_URL = "https://portal.thor-agent.local"
 _CONFIG_PATH = "/api/oauth/gemini-auth/config"
 _TOKEN_PATHS = {"authorization_code": "/api/oauth/gemini-auth/exchange", "refresh_token": "/api/oauth/gemini-auth/refresh"}
 _TIMEOUT_SECONDS = 30.0
@@ -22,32 +20,10 @@ def _err(message: str, code: str, *, relogin: bool = False):
     return AuthError(f"solstice: {message}", provider="solstice", code=code, relogin_required=relogin)
 
 
-def _nas_base_url() -> str:
-    """The Nous portal the user is signed into (``THOR_PORTAL_BASE_URL`` override first)."""
-    from thor_cli.auth import _nous_portal_base_url, get_provider_auth_state
-    return _nous_portal_base_url(get_provider_auth_state("nous") or {})
-
-
 def _nas_request(method: str, path: str, *, json: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    from thor_cli.auth import _default_verify, resolve_nous_access_token
-    from thor_cli.auth_constants import httpx
-
-    try:
-        token = resolve_nous_access_token()
-    except Exception as exc:
-        raise _err("sign in to Nous Portal first (`thor auth add nous`).", "solstice_nous_login_required",
-                   relogin=True) from exc
-    try:
-        response = httpx.request(method, _nas_base_url() + path, json=json, timeout=_TIMEOUT_SECONDS,
-                                 headers={"Accept": "application/json", "Authorization": f"Bearer {token}"},
-                                 verify=_default_verify())
-    except Exception as exc:
-        raise _err(f"Nous portal request failed: {type(exc).__name__}", "solstice_broker_unreachable") from exc
-    if response.status_code == 404:
-        raise _err("not available on this Nous account yet.", "solstice_not_configured")
-    if response.status_code >= 400:
-        raise _err(f"Nous portal returned HTTP {response.status_code}.", "solstice_broker_failed")
-    return response.json()
+    """The Nous Portal NAS broker is retired — Solstice cannot sign in anymore."""
+    raise _err("Solstice runs on the Nous Portal, which is retired. "
+               "Use ThorHub or another provider instead.", "solstice_portal_retired")
 
 
 def discover_client() -> dict[str, str]:
@@ -55,7 +31,7 @@ def discover_client() -> dict[str, str]:
     payload = _nas_request("GET", _CONFIG_PATH)
     missing = [k for k in ("client_id", "authorize_url", "scope") if not str(payload.get(k) or "").strip()]
     if missing:
-        raise _err(f"Nous portal config is missing {', '.join(missing)}.", "solstice_config_invalid")
+        raise _err(f"Solstice config is missing {', '.join(missing)}.", "solstice_config_invalid")
     return {k: str(payload[k]).strip() for k in ("client_id", "authorize_url", "scope")}
 
 

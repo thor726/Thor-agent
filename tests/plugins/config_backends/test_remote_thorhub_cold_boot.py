@@ -1,7 +1,7 @@
-"""A Cloud agent's first remote config read, in a cold process, with the Nous credential.
+"""A Cloud agent's first remote config read, in a cold process, with the ThorHub credential.
 
-In Cloud mode (no ``GATEWAY_RELAY_IDP_*``) the plane bearer is the Nous Portal access token from the
-profile's ``auth.json``. Resolving it imports ``thor_cli.auth`` inside the profile's first fetch;
+In Cloud mode (no ``GATEWAY_RELAY_IDP_*``) the plane bearer is the ThorHub API key from the
+profile's ``auth.json``. Resolving it imports ``thor_cli.auth_thorhub`` inside the profile's first fetch;
 that import discovers model providers, and provider discovery reads config (the gate on
 pip-installed provider plugins). That read used to wait on the fetch's own lock forever, so a Cloud
 agent never booted (stage2's ``refresh_dependencies`` hung). These tests run real imports in a
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from .stub_plane import INSTANCE, NOUS_TOKEN, StubPlane
+from .stub_plane import INSTANCE, NOUS_TOKEN as THORHUB_TOKEN, StubPlane
 
 REPO = Path(__file__).resolve().parents[3]
 HARD_TIMEOUT_S = 60  # a healthy run takes about a second; the deadlock never ends
@@ -45,10 +45,10 @@ def _iso(offset_s: float) -> str:
 
 
 def _auth_json(plane: StubPlane, *, expired: bool) -> dict:
-    nous = {"access_token": "expired-token" if expired else NOUS_TOKEN, "refresh_token": "nous-refresh-1",
-            "client_id": "thor-cli-vps", "portal_base_url": plane.url,
-            "expires_at": _iso(-3600 if expired else 3600)}
-    return {"version": 1, "active_provider": "nous", "providers": {"nous": nous}}
+    # A ThorHub key is static: even an expires_at in the past changes nothing — the same key
+    # resolves, and no refresh is ever attempted. The `expired` flag only varies the fixture.
+    thor = {"api_key": THORHUB_TOKEN, "expires_at": _iso(-3600 if expired else 3600)}
+    return {"version": 1, "active_provider": "thor", "providers": {"thor": thor}}
 
 
 def _run(args, env):
@@ -82,7 +82,7 @@ def _install_probe_provider(home: Path, layout: str) -> None:
 
 
 @pytest.mark.parametrize("expired, layout", [(False, None), (True, None), (False, "model-providers"), (False, "flat")],
-                         ids=["valid-token", "token-refreshed-at-boot", "home-provider-plugin", "flat-provider-plugin"])
+                         ids=["valid-token", "expired-looking-key-still-resolves", "home-provider-plugin", "flat-provider-plugin"])
 def test_cloud_agent_first_remote_read_completes_cold(tmp_path, expired, layout):
     home = tmp_path / "home"
     home.mkdir()
@@ -95,7 +95,7 @@ def test_cloud_agent_first_remote_read_completes_cold(tmp_path, expired, layout)
         env.update(HOME=str(tmp_path), THOR_HOME=str(home), PYTHONPATH=str(REPO), PYTHONDONTWRITEBYTECODE="1",
                    THOR_CONFIG_BACKEND="remote", THOR_CONFIG_REMOTE_URL=plane.url,
                    THOR_CONFIG_INSTANCE_ID=INSTANCE, PROBE_PROVIDER="1" if layout else "")
-        assert not any(k.startswith("GATEWAY_RELAY_IDP_") for k in env)  # Cloud: the Nous credential
+        assert not any(k.startswith("GATEWAY_RELAY_IDP_") for k in env)  # Cloud: the ThorHub credential
 
         assert _value(_run([sys.executable, "-c", STAGE2_SNIPPET], env)) == "ares"
         cli = _run([sys.executable, "-m", "thor_cli.main", "config", "get", "display.skin"], env)
@@ -103,8 +103,8 @@ def test_cloud_agent_first_remote_read_completes_cold(tmp_path, expired, layout)
         assert cli.stdout.strip().splitlines()[-1] == "ares"
 
         gets = [r for r in plane.requests if r["method"] == "GET"]
-        assert len(gets) >= 2 and {r["auth"] for r in gets} == {f"Bearer {NOUS_TOKEN}"}
-        assert plane.nous_refreshes == (1 if expired else 0)
+        assert len(gets) >= 2 and {r["auth"] for r in gets} == {f"Bearer {THORHUB_TOKEN}"}
+        assert plane.nous_refreshes == 0  # ThorHub keys never refresh
         assert not (home / "config.yaml").exists()
 
 
@@ -117,15 +117,15 @@ def refuse(*a, **k):
     raise cb.ConfigBackendUnavailable("this test's backend refuses every read")
 cb._route = refuse  # every config read, through any backend, now raises
 import thor_cli.auth
-from thor_cli.auth import resolve_nous_access_token
-assert resolve_nous_access_token() == sys.argv[1]
+from thor_cli.auth_thorhub import resolve_thorhub_access_token
+assert resolve_thorhub_access_token() == sys.argv[1]
 assert reads == [], reads
 print("RESULT=" + '"ok"')
 """
 
 
-def test_importing_auth_and_resolving_the_nous_token_read_no_config(tmp_path):
-    """The Cloud credential path (import thor_cli.auth, resolve the Nous token) must not need the
+def test_importing_auth_and_resolving_the_thorhub_key_read_no_config(tmp_path):
+    """The Cloud credential path (import thor_cli.auth_thorhub, resolve the ThorHub key) must not need the
     config it is used to fetch: under a backend whose every read raises, both succeed cold."""
     home = tmp_path / "home"
     home.mkdir()
@@ -134,7 +134,7 @@ def test_importing_auth_and_resolving_the_nous_token_read_no_config(tmp_path):
         (home / "auth.json").write_text(json.dumps(_auth_json(plane, expired=False)))
         env = {k: v for k, v in os.environ.items() if k in {"PATH", "LANG", "TZ", "TMPDIR", "PYTHONHASHSEED"}}
         env.update(HOME=str(tmp_path), THOR_HOME=str(home), PYTHONPATH=str(REPO), PYTHONDONTWRITEBYTECODE="1")
-        assert _value(_run([sys.executable, "-c", AUTH_IMPORT_READS_NO_CONFIG, NOUS_TOKEN], env)) == "ok"
+        assert _value(_run([sys.executable, "-c", AUTH_IMPORT_READS_NO_CONFIG, THORHUB_TOKEN], env)) == "ok"
 
 
 CONCURRENT_AUTH_IMPORT = """
@@ -206,14 +206,14 @@ print("RESULT=" + '"ok"')
 def test_multiplexed_token_resolution_binds_its_scope_without_reading_config(tmp_path):
     """Under multiplexing the credential binds the profile's secret scope before resolving; that
     binding runs inside the profile's first fetch, so it must not read config either (cold imports
-    included). The refresh goes to the Portal the profile's .env names."""
+    included). The key comes from the profile's own auth.json; no refresh ever leaves."""
     home = tmp_path / "home"
     home.mkdir()
     with StubPlane() as plane:
         (home / "auth.json").write_text(json.dumps(_auth_json(plane, expired=True)))
-        (home / ".env").write_text(f"THOR_PORTAL_BASE_URL={plane.url}\n")
+        (home / ".env").write_text(f"THORHUB_BASE_URL={plane.url}\n")
         env = {k: v for k, v in os.environ.items() if k in {"PATH", "LANG", "TZ", "TMPDIR", "PYTHONHASHSEED"}}
         env.update(HOME=str(tmp_path), THOR_HOME=str(home), PYTHONPATH=str(REPO), PYTHONDONTWRITEBYTECODE="1",
                    THOR_SHARED_AUTH_DIR=str(tmp_path / "shared"))
-        assert _value(_run([sys.executable, "-c", MULTIPLEX_TOKEN_READS_NO_CONFIG, NOUS_TOKEN, str(home)], env)) == "ok"
-        assert plane.nous_refreshes == 1
+        assert _value(_run([sys.executable, "-c", MULTIPLEX_TOKEN_READS_NO_CONFIG, THORHUB_TOKEN, str(home)], env)) == "ok"
+        assert plane.nous_refreshes == 0  # ThorHub keys never refresh

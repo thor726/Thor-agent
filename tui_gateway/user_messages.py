@@ -111,9 +111,9 @@ def busy_message(command: str, compressing: bool = False) -> str:
 
 
 # Prefixes of the TimeoutErrors raised by ``thor_cli.auth._auth_store_lock`` (profile
-# auth.json) and ``thor_cli.auth_nous._nous_shared_store_lock`` (cross-profile shared store)
+# auth.json) (the old cross-profile shared store is gone with the Nous OAuth removal)
 # when the advisory lock times out (#124533). Both sit on the assistant-init path
-# (``resolve_nous_access_token`` acquires the shared lock inside the profile lock), and init
+# (the old resolver acquired the shared lock inside the profile lock), and init
 # died on lock contention there — the generic /model /setup hints would send the user
 # debugging credentials that are perfectly fine.
 _AUTH_LOCK_TIMEOUT_PREFIXES = (

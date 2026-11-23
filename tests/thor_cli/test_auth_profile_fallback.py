@@ -140,7 +140,7 @@ def test_provider_auth_state_returns_none_when_neither_has_it(profile_env):
 # _load_provider_state — internal global fallback (issue #18594 follow-up)
 #
 # Several runtime helpers (notably ``resolve_nous_runtime_credentials`` and
-# ``resolve_nous_access_token``) call ``_load_provider_state`` directly with
+# ``resolve_thorhub_access_token``) call ``_load_provider_state`` directly with
 # a profile-loaded auth store rather than going through
 # ``get_provider_auth_state``. Without the fallback wired into
 # ``_load_provider_state`` itself, those helpers raise ``"Thor is not

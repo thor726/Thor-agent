@@ -57,7 +57,6 @@ def gateway(tmp_path, monkeypatch):
     monkeypatch.setattr(launch_profile_policy, "_snapshot", None)
     monkeypatch.setattr(server, "_thor_home", str(launch))
     monkeypatch.setattr(server, "_served_profile_homes", set())
-    monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
     thorhub_account.reset_thorhub_account_info_cache()
     previous = secret_scope.is_multiplex_active()
     launch_profile_policy.activate_multi_profile_hosting()

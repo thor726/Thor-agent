@@ -154,21 +154,22 @@ class TestParseResetSeconds:
 class TestAuxiliaryClientIntegration:
     """Test that the auxiliary client respects the rate guard."""
 
-    def test_try_nous_skips_when_rate_limited(self, rate_guard_env, monkeypatch):
+    def test_try_thorhub_skips_when_rate_limited(self, rate_guard_env, monkeypatch):
         from agent.thorhub_rate_guard import record_thorhub_rate_limit
 
         # Record a rate limit
         record_thorhub_rate_limit(headers={"retry-after": "600"})
 
-        # Mock _read_nous_auth to return valid creds (would normally succeed)
+        # Mock _read_thorhub_auth to return valid creds (would normally succeed)
         import agent.auxiliary_client as aux
-        monkeypatch.setattr(aux, "_read_nous_auth", lambda: {
-            "access_token": "test-token",
-            "inference_base_url": "https://api.nous.test/v1",
+        monkeypatch.setattr(aux, "_read_thorhub_auth", lambda: {
+            "api_key": "sk-thor-test",
+            "base_url": "https://llm.thormarket.site/v1",
+            "source": "pool",
         })
 
-        monkeypatch.setattr(aux, "_resolve_nous_runtime_api", lambda **kw: None)
-        result = aux._try_nous()
+        monkeypatch.setattr(aux, "_resolve_thorhub_runtime_api", lambda **kw: None)
+        result = aux._try_thorhub()
         assert result == (None, None)
 
 

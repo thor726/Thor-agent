@@ -55,6 +55,23 @@ def thorhub_api_key() -> str:
                     return value.strip()
     except Exception:
         pass
+    # Credential pool: ``thor auth add thor`` writes its key here (the generic
+    # API-key path), mirroring ``thor_cli.auth._resolve_api_key_provider_secret``.
+    try:
+        from agent.credential_pool import load_pool
+        pool = load_pool("thor")
+        if pool and pool.has_credentials():
+            entry = pool.peek()
+            candidates = [entry] if entry is not None else []
+            for extra in pool.entries():
+                if extra is not None and all(extra is not c for c in candidates):
+                    candidates.append(extra)
+            for entry in candidates:
+                value = getattr(entry, "access_token", "") or getattr(entry, "runtime_api_key", "")
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+    except Exception:
+        pass
     return ""
 
 

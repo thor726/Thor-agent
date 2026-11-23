@@ -17,17 +17,16 @@ from agent import secret_scope
 from gateway import run as gateway_run
 from gateway.run_startup import GatewayStartupMixin
 
-PORTAL = "https://portal.staging-thor-agent.local"
+PORTAL = "https://staging.thormarket.site"
 
 
 @pytest.fixture
 def multiplex_home(tmp_path, monkeypatch):
     home = tmp_path / "home"
     home.mkdir()
-    (home / ".env").write_text(f"THOR_PORTAL_BASE_URL={PORTAL}\n")
+    (home / ".env").write_text(f"THORHUB_BASE_URL={PORTAL}\n")
     monkeypatch.setenv("THOR_HOME", str(home))
-    monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
-    monkeypatch.delenv("NOUS_PORTAL_BASE_URL", raising=False)
+    monkeypatch.delenv("THORHUB_BASE_URL", raising=False)
     secret_scope.set_multiplex_active(True)
     try:
         yield home
@@ -37,9 +36,9 @@ def multiplex_home(tmp_path, monkeypatch):
 
 def _probe(seen: dict):
     def probe() -> int:
-        from thor_cli.auth_nous import _nous_portal_env_override
+        from thor_cli.thorhub_account import thorhub_base_url_env_override
         seen["scope_installed"] = secret_scope.current_secret_scope() is not None
-        seen["portal_override"] = _nous_portal_env_override()
+        seen["portal_override"] = thorhub_base_url_env_override()
         return 1
     return probe
 
@@ -82,7 +81,7 @@ def test_single_profile_warmup_keeps_environ_semantics(tmp_path, monkeypatch):
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("THOR_HOME", str(home))
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", PORTAL)
+    monkeypatch.setenv("THORHUB_BASE_URL", PORTAL)
     secret_scope.set_multiplex_active(False)
     seen = _run_warmup(monkeypatch, multiplex=False)
     assert seen["scope_installed"] is False

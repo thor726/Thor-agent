@@ -164,14 +164,6 @@ def _model_flow_moa(config, current_model=""):
     )
 
 
-def _nous_login_args(args) -> argparse.Namespace:
-    return argparse.Namespace(
-        portal_url=getattr(args, "portal_url", None), inference_url=getattr(args, "inference_url", None),
-        client_id=getattr(args, "client_id", None), scope=getattr(args, "scope", None),
-        no_browser=bool(getattr(args, "no_browser", False)), timeout=getattr(args, "timeout", None) or 15.0,
-        ca_bundle=getattr(args, "ca_bundle", None), insecure=bool(getattr(args, "insecure", False)))
-
-
 def _thorhub_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pricing: dict):
     """Free/paid-tier catalog for the Thor picker: ``(model_ids, pricing, unavailable_models,
     unavailable_message, policy_narrowed)`` or None (message already printed) when nothing is selectable."""
@@ -212,48 +204,46 @@ def _thorhub_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pr
         _note_setup_failure("no_models")
         return None
     if free_tier and not model_ids:
+        # ThorHub has no free tier, so this is unreachable in practice; kept as a
+        # guard so a stale free-tier flag cannot select nothing silently.
         print("No free models currently available.")
         if unavailable_models:
-            from thor_cli.auth import DEFAULT_NOUS_PORTAL_URL
-            _url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
-            print(unavailable_message or f"Upgrade at {_url} to access paid models.")
+            from thor_cli.thorhub_account import THORHUB_TOPUP_URL
+            print(unavailable_message or f"Top up at {THORHUB_TOPUP_URL} to access paid models.")
         return None
     return model_ids, pricing, unavailable_models, unavailable_message, _policy_narrowed
 
 
-def _nous_verified_credentials(creds_or_none=None):
-    """Resolve Thor runtime credentials; on failure print the diagnosis (re-login when the
-    session expired) and return None."""
-    from thor_cli.auth import (
-        AuthError, PROVIDER_REGISTRY, _login_nous, format_auth_error, resolve_nous_runtime_credentials)
+def _thorhub_verified_credentials(creds_or_none=None):
+    """Resolve ThorHub runtime credentials; on failure print the diagnosis and return None.
+
+    A static key has no session to refresh — a missing/revoked key means the user adds a
+    new one (``thor auth add thor``), not a re-login."""
+    from thor_cli.auth import AuthError, format_auth_error
+    from thor_cli.auth_thorhub import resolve_thorhub_runtime_credentials
 
     try:
-        return resolve_nous_runtime_credentials()
+        return resolve_thorhub_runtime_credentials()
     except Exception as exc:
-        relogin = isinstance(exc, AuthError) and exc.relogin_required
         msg = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
-        if relogin:
-            _say(f"Session expired: {msg}", "Re-authenticating with Thor Portal...\n")
-            try:
-                _login_nous(_nous_login_args(None), PROVIDER_REGISTRY["nous"])
-            except Exception as login_exc:
-                print(f"Re-login failed: {login_exc}")
-            _note_setup_failure("auth")
-            return None
-        print(f"Could not verify credentials: {msg}")
+        if isinstance(exc, AuthError) and exc.relogin_required:
+            print(f"ThorHub key missing: {msg}")
+            print("Run `thor auth add thor` and paste your ThorHub key.")
+        else:
+            print(f"Could not verify credentials: {msg}")
         _note_setup_failure("auth")
         return None
 
 
-def _nous_persist_selection(selected: str, creds: dict) -> dict:
-    """Thor persist step: model choice + provider state, then rewrite ``model`` on a fresh
+def _thorhub_persist_selection(selected: str, creds: dict) -> dict:
+    """ThorHub persist step: model choice + provider state, then rewrite ``model`` on a fresh
     config (the caller's may carry stale custom-provider fields) and clear a conflicting
     OPENAI_BASE_URL / OPENAI_API_KEY. Returns the saved config."""
     from thor_cli.auth import _save_model_choice, _update_config_for_provider
     from thor_cli.config import get_env_value, load_config, save_config, save_env_value
     _save_model_choice(selected)
     inference_url = creds.get("base_url", "")
-    _update_config_for_provider("nous", inference_url)
+    _update_config_for_provider("thor", inference_url)
     config = load_config()
     current_model_cfg = config.get("model")
     if isinstance(current_model_cfg, dict):
@@ -262,7 +252,7 @@ def _nous_persist_selection(selected: str, creds: dict) -> dict:
         model_cfg = {"default": current_model_cfg.strip()}
     else:
         model_cfg = {}
-    model_cfg["provider"] = "nous"
+    model_cfg["provider"] = "thor"
     model_cfg["default"] = selected
     if inference_url and inference_url.strip():
         model_cfg["base_url"] = inference_url.rstrip("/")
@@ -277,26 +267,24 @@ def _nous_persist_selection(selected: str, creds: dict) -> dict:
     return config
 
 
-def _model_flow_nous(config, current_model="", args=None):
-    """Thor Portal provider: ensure logged in, then pick model."""
-    from thor_cli.auth import get_provider_auth_state, _prompt_model_selection, _login_nous, PROVIDER_REGISTRY
-    from thor_cli.config import load_config
-    from thor_cli.thorhub_subscription import prompt_enable_tool_gateway
-    state = get_provider_auth_state("nous")
-    from thor_cli import anon_auth
-    # A free tier with no inference here signs in like no account; its apps move to the account after.
-    if not state or not state.get("access_token") or anon_auth.guest_without_free_tier(state):
-        _say("Not logged into Thor Portal. Starting login...", "")
-
-        def _login_then_offer_gateway(login_args, pconfig):
-            _login_nous(login_args, pconfig)
-            # Offer Tool Gateway enablement for paid subscribers
-            with contextlib.suppress(Exception):
-                prompt_enable_tool_gateway(load_config() or {})
-
-        # login_nous already handles model selection + config update
-        _run_login(_login_then_offer_gateway, _nous_login_args(args), PROVIDER_REGISTRY["nous"])
-        return
+def _model_flow_thorhub(config, current_model="", args=None):
+    """ThorHub provider: ensure an API key is configured, then pick model."""
+    from thor_cli.auth import _prompt_model_selection
+    from thor_cli.thorhub_account import thorhub_api_key
+    if not thorhub_api_key():
+        _say("Not logged into ThorHub. Add your ThorHub API key...", "")
+        # Reuse the generic API-key add path (``thor auth add thor``): prompts for the
+        # key and stores it in the credential pool, which the ThorHub runtime reads.
+        import argparse
+        from agent.credential_pool import load_pool
+        from thor_cli.auth_commands import _add_api_key_credential
+        try:
+            _add_api_key_credential(argparse.Namespace(key=None, label=None), "thor", load_pool("thor"))
+        except SystemExit as exc:
+            print(str(exc) or "No API key provided.")
+            return
+        if not thorhub_api_key():
+            return
 
     # Already logged in — the curated list (agentic models users know from OpenRouter)
     # instead of the hundreds returned by the live /models endpoint.
@@ -304,11 +292,11 @@ def _model_flow_nous(config, current_model="", args=None):
     from thor_cli.models_pricing import get_pricing_for_provider
     model_ids = get_curated_thorhub_model_ids()
     if not model_ids:
-        print("No curated models available for Thor Portal.")
+        print("No curated models available for ThorHub.")
         return
 
-    # Verify credentials are still valid (catches expired sessions early)
-    creds = _nous_verified_credentials()
+    # Verify credentials are still valid (catches a missing/revoked key early)
+    creds = _thorhub_verified_credentials()
     if creds is None:
         return
 
@@ -316,17 +304,16 @@ def _model_flow_nous(config, current_model="", args=None):
     # Force fresh account data so recent credit purchases are reflected immediately.
     free_tier = check_thorhub_free_tier(force_fresh=True)
     if not free_tier:
-        from thor_cli.auth import resolve_nous_runtime_credentials
+        from thor_cli.auth_thorhub import resolve_thorhub_runtime_credentials
         try:
-            creds = resolve_nous_runtime_credentials(force_refresh=True) or creds
+            creds = resolve_thorhub_runtime_credentials(force_refresh=True) or creds
         except Exception:
             # Runtime inference has its own paid-entitlement recovery; don't block.
             pass
 
-    # Portal URL is needed for upgrade links and the recommendations endpoints.
-    _thorhub_portal_url = ""
-    with contextlib.suppress(Exception):
-        _thorhub_portal_url = (get_provider_auth_state("nous") or {}).get("portal_base_url", "")
+    # ThorHub URL is needed for upgrade links.
+    from thor_cli.thorhub_account import resolve_thorhub_base_url
+    _thorhub_portal_url = resolve_thorhub_base_url()
 
     catalog = _thorhub_model_catalog(free_tier, _thorhub_portal_url, model_ids, pricing)
     if catalog is None:
@@ -346,19 +333,22 @@ def _model_flow_nous(config, current_model="", args=None):
 
     selected = _prompt_model_selection(
         model_ids, current_model=current_model, pricing=pricing, unavailable_models=unavailable_models,
-        portal_url=_thorhub_portal_url, unavailable_message=unavailable_message, confirm_provider="nous",
+        portal_url=_thorhub_portal_url, unavailable_message=unavailable_message, confirm_provider="thor",
         confirm_base_url=creds.get("base_url", ""), confirm_api_key=creds.get("api_key", ""),
         usage=_usage)
     if not selected:
         print("No change.")
         return
-    config = _nous_persist_selection(selected, creds)
-    print(f"Default model set to: {selected} (via Thor Portal)")
+    config = _thorhub_persist_selection(selected, creds)
+    print(f"Default model set to: {selected} (via ThorHub)")
     if _usage is not None:
         from thor_cli.model_picker_usage import large_model_notice
-        if _notice := large_model_notice(selected, "nous"):
+        if _notice := large_model_notice(selected, "thor"):
             print(f"⚠ {_notice}")
-    # Offer Tool Gateway enablement for paid subscribers
+    # Offer Tool Gateway enablement for paid subscribers (inert on ThorHub:
+    # there is no managed gateway, so this always returns an empty set).
+    from thor_cli.thorhub_subscription import prompt_enable_tool_gateway
+
     prompt_enable_tool_gateway(config)
 
 

@@ -103,18 +103,6 @@ def _image_error_max_dimension(error: Exception) -> Optional[int]:
     return max_dimension if 512 <= max_dimension <= 8000 else None
 
 
-def _try_refresh_nous_paid_entitlement_credentials(agent) -> bool:
-    """Refresh Thor runtime credentials after a fresh paid-entitlement check."""
-    try:
-        from thor_cli.thorhub_account import get_thorhub_account_info
-
-        if get_thorhub_account_info(force_fresh=True).paid_service_access is not True:
-            return False
-        return agent._try_refresh_nous_client_credentials(force=True)
-    except Exception:
-        return False
-
-
 def _repair_transport_credentials(agent: Any) -> bool:
     """Strip non-ASCII from ``_client_kwargs["default_headers"]`` and the API key.
 
@@ -329,9 +317,8 @@ def recover_before_classification(
     return False, active_system_prompt
 
 
-def _print_nous_401_diagnostics(agent: Any, api_error: Exception) -> None:
-    """Thor 401 that survived a credential refresh: likely Portal OAuth expired/revoked,
-    no credits, or agent key blocked."""
+def _print_thorhub_401_diagnostics(agent: Any, api_error: Exception) -> None:
+    """ThorHub 401: the static key was revoked, or the account is out of credits."""
     from agent.conversation_loop import _print_thorhub_entitlement_guidance
     from thor_constants import display_thor_home
     _body_text = ""
@@ -341,26 +328,16 @@ def _print_nous_401_diagnostics(agent: Any, api_error: Exception) -> None:
             _body_text = str(_body)[:200]
     except Exception:
         pass
-    _plines(agent, "🔐 Thor 401 — Portal authentication failed.")
+    _plines(agent, "🔐 ThorHub 401 — authentication failed.")
     if _body_text:
         _plines(agent, f"   Response: {_body_text}")
-    try:
-        from thor_cli.anon_auth import is_anonymous_agent
-        if is_anonymous_agent(agent):
-            # The free tier has no credits, no agent key and no auth.json to inspect: its session
-            # ended and could not be replaced. The two doors are a sign-in or another provider.
-            _plines(agent, "   Your session ended and Thor couldn't start a new one.",
-                    "   Sign in with a Thor account (it's free), or switch providers with /model.")
-            return
-    except Exception:
-        pass
-    if not _print_thorhub_entitlement_guidance(agent, "Thor model access"):
-        _plines(agent, "   Most likely: Portal OAuth expired, account out of credits, or agent key revoked.")
+    if not _print_thorhub_entitlement_guidance(agent, "ThorHub model access"):
+        _plines(agent, "   Most likely: ThorHub key revoked, or account out of credits.")
     _plines(
         agent,
         "   Troubleshooting:",
-        "     • Re-authenticate: thor auth add nous",
-        "     • Check credits / billing: https://portal.thor-agent.local",
+        "     • Re-authenticate: thor auth add thor",
+        "     • Check credits / top up: https://llm.thormarket.site/beli/topup",
         f"     • Verify stored credentials: {display_thor_home()}/auth.json",
         "     • Switch providers temporarily: /model <model> --provider openrouter",
     )
@@ -405,9 +382,10 @@ def _print_anthropic_401_diagnostics(agent: Any, key: Any) -> None:
 def _refresh_credentials_after_401(
     agent: Any, api_error: Exception, _retry: TurnRetryState, status_code: Optional[int]
 ) -> bool:
-    """Per-provider one-shot credential refresh on 401 (codex/xai, vertex, nous, a profile's
+    """Per-provider one-shot credential refresh on 401 (codex/xai, vertex, a profile's
     ``refresh_runtime_credentials``, anthropic), printing user-facing diagnostics when the
-    nous/anthropic refresh fails. Returns True when a refresh succeeded and the call should be retried."""
+    thorhub/anthropic refresh fails. ThorHub keys are static, so a ThorHub 401 only prints
+    diagnostics. Returns True when a refresh succeeded and the call should be retried."""
     from agent.conversation_loop import _credential_refresh_profile
 
     if status_code != 401:
@@ -429,17 +407,13 @@ def _refresh_credentials_after_401(
             return True
     if (
         agent.api_mode in ("chat_completions", "anthropic_messages")
-        and agent.provider == "nous"
-        and not _retry.nous_auth_retry_attempted
+        and agent.provider in {"thor", "thorhub", "nous"}
+        and not _retry.thorhub_auth_retry_attempted
     ):
-        _retry.nous_auth_retry_attempted = True
-        from agent.credential_auth_recovery import nous_pool_refreshed_this_turn
-        # The pool already spent this episode's one forced refresh (and its backoff retries):
-        # a second force here would redeem the rotating grant again for a server-side 401.
-        if not nous_pool_refreshed_this_turn(agent) and agent._try_refresh_nous_client_credentials(force=True):
-            agent._buffer_vprint("🔐 Thor agent key refreshed after 401. Retrying request...")
-            return True
-        _print_nous_401_diagnostics(agent, api_error)
+        # ThorHub keys are static: a 401 means the key was revoked, never expired,
+        # so there is nothing to refresh — print diagnostics and fall through.
+        _retry.thorhub_auth_retry_attempted = True
+        _print_thorhub_401_diagnostics(agent, api_error)
     if not _retry.provider_auth_refresh_attempted and (profile := _credential_refresh_profile(agent)) is not None:
         _retry.provider_auth_refresh_attempted = True
         if agent._try_refresh_provider_runtime_credentials(reason="unauthorized"):
@@ -550,56 +524,6 @@ def _recover_format_errors(
     return False
 
 
-_WELCOME_ROUTE_HEAL_COPY = {
-    "anon_on_paid_host": "Reconnected to the free model's own route.",
-    "named_on_welcome_host": "Reconnected to your Thor account's own route.",
-    "session_expired": "Renewed the connection to the free model.",
-}
-
-
-def _recover_welcome_tier(agent: Any, classified: Any, _retry: TurnRetryState) -> bool:
-    """Two one-shot repairs for the Thor free tier, both silent on the wire and named once in chat.
-
-    ``model_not_free``: the session asked the welcome host for a model it does not serve; move
-    to the first alternate the gateway named (its own model) and retry, instead of failing the
-    turn. ``anon_on_paid_host`` / ``named_on_welcome_host``: this process is pointed at the other
-    identity's host (a stale route); re-read the credentials, which heals the URL, and retry. The
-    refresh reports False when the store yields the same route, so a user-set
-    ``NOUS_INFERENCE_BASE_URL`` falls straight through to the terminal copy. ``session_expired``
-    (403 ``invalid jwt``): the same forced refresh re-exchanges the free credential.
-
-    Reads the CLASSIFIER's context (``classified.error_context``): that is where
-    ``_nous_welcome_tier`` parks ``welcome_refusal`` / ``welcome_route``. The turn's other context
-    (``extract_api_error_context``) never carries them."""
-    ctx = getattr(classified, "error_context", None) or {}
-    refusal = ctx.get("welcome_refusal") if isinstance(ctx, dict) else None
-    if isinstance(refusal, dict) and refusal.get("reason") == "model_not_free" and not _retry.welcome_model_switch_attempted:
-        _retry.welcome_model_switch_attempted = True
-        alternates = [a for a in (refusal.get("alternates") or []) if isinstance(a, str) and a]
-        requested = str(getattr(agent, "model", "") or "")
-        target = alternates[0] if alternates else None
-        if target and target != requested:
-            try:
-                agent.model = target
-                agent._nous_model_switch = (requested, target)
-            except Exception:
-                return False
-            _vlines(agent, f"↪️  {requested} isn't available without signing in; using {target} for now. Retrying...")
-            logger.info("%sThor free tier: moved %s -> %s after model_not_free", agent.log_prefix, requested, target)
-            return True
-    route = ctx.get("welcome_route") if isinstance(ctx, dict) else None
-    if route in _WELCOME_ROUTE_HEAL_COPY and not _retry.welcome_route_heal_attempted:
-        _retry.welcome_route_heal_attempted = True
-        try:
-            healed = bool(agent._try_refresh_nous_client_credentials(force=True))
-        except Exception:
-            healed = False
-        if healed:
-            _vlines(agent, f"🔐 {_WELCOME_ROUTE_HEAL_COPY[route]} Retrying request...")
-            return True
-    return False
-
-
 def _clamp_to_affordable_budget(agent: Any, api_error: Exception, classified: Any, _retry: TurnRetryState) -> bool:
     """A credit-limited 402 (OpenRouter: "...requested up to 65536 tokens, but can only afford
     56272") means the account has credit and the output cap was too large: retry ONCE with the
@@ -668,7 +592,7 @@ def recover_after_classification(
     # The credit-limited 402 clamp runs before pool rotation, which would bench a credential
     # that still has credit. A ``reasoning.context`` 400 is classified reasoning_mandatory, whose rung
     # would drop the whole reasoning config; omit only the all_turns opt-in, ahead of it.
-    if _recover_welcome_tier(agent, classified, _retry) or _clamp_to_affordable_budget(
+    if _clamp_to_affordable_budget(
         agent, api_error, classified, _retry
     ) or (agent.api_mode == "codex_responses" and _reject_all_turns(agent, api_error)):
         return True, False
@@ -682,19 +606,6 @@ def recover_after_classification(
     ):
         return True, False
 
-    if (
-        classified.reason == FailoverReason.billing
-        # A usage-window 402 is the plan's own limit: refreshing credentials cannot lift it.
-        and not (getattr(classified, "error_context", None) or {}).get("usage_window")
-        and _is_thorhub_inference_route(
-            getattr(agent, "provider", "") or "", getattr(agent, "base_url", "") or ""
-        )
-        and not _retry.nous_paid_entitlement_refresh_attempted
-    ):
-        _retry.nous_paid_entitlement_refresh_attempted = True
-        if _try_refresh_nous_paid_entitlement_credentials(agent):
-            _vlines(agent, "🔐 Thor paid access verified — refreshed runtime credentials and retrying request...")
-            return True, False
 
     recovered_with_pool, _retry.has_retried_429 = agent._recover_with_credential_pool(
         status_code=status_code, has_retried_429=_retry.has_retried_429,
@@ -732,7 +643,7 @@ def recover_after_classification(
             "messages with image parts found; surfacing original error."
         )
 
-    # Route rejecting a reasoning disable: a reasoning-mandatory route (Nous Portal / OpenRouter,
+    # Route rejecting a reasoning disable: a reasoning-mandatory route (ThorHub / OpenRouter,
     # e.g. GLM-5.3) 400s on ``reasoning: {enabled: false}``; a chat-only OpenAI-compatible relay
     # 400s on the ``reasoning_effort: none`` the title/continuation disable projects (#114460).
     # The catalog guard in the provider profile normally swallows the first, but a process that
@@ -894,9 +805,9 @@ def _print_nonretryable_auth_guidance(
         model=model, unverified=classified.billing_unverified,
     ):
         return
-    if provider == "nous" and _print_thorhub_entitlement_guidance(agent, "Thor model access"):
+    if provider in {"thor", "thorhub", "nous"} and _print_thorhub_entitlement_guidance(agent, "Thor model access"):
         return
-    if provider in {"openai-codex", "xai-oauth", "nous"} and status_code == 401:
+    if provider in {"openai-codex", "xai-oauth", "thor", "thorhub", "nous"} and status_code == 401:
         if provider == "openai-codex":
             from agent.turn_failure_copy import oauth_relogin_command
 
@@ -912,21 +823,21 @@ def _print_nonretryable_auth_guidance(
                 "   💡 xAI OAuth token was rejected (HTTP 401). To fix:",
                 "      re-authenticate with xAI Grok OAuth (SuperGrok / Premium+) from `thor model`.",
             )
-        else:  # nous
+        else:  # thorhub
             _vlines(
                 agent,
-                "   💡 Thor Portal OAuth token was rejected (HTTP 401). Your token may be",
-                "      expired, revoked, or your account may be out of credits. To fix:",
-                "      1. Re-authenticate: thor portal",
-                "      2. Check your portal account: https://portal.thor-agent.local",
+                "   💡 ThorHub key was rejected (HTTP 401). Your key may be",
+                "      revoked, or your account may be out of credits. To fix:",
+                "      1. Re-authenticate: thor auth add thor",
+                "      2. Check credits / top up: https://llm.thormarket.site/beli/topup",
             )
-            # ``:free`` is OpenRouter slug syntax; Nous Portal will reject the model
-            # name even after a successful re-auth.
+            # ``:free`` is OpenRouter slug syntax; ThorHub will reject the model
+            # name even with a valid key.
             if isinstance(model, str) and model.endswith(":free"):
                 _vlines(
                     agent,
                     f"      ⚠️  Note: `{model}` looks like an OpenRouter slug (`:free` suffix).",
-                    "         Thor Portal won't recognize that model name. Either switch to a",
+                    "         ThorHub won't recognize that model name. Either switch to a",
                     f"         Thor catalog model, or run `/model openrouter:{model}` to use OpenRouter.",
                 )
         return
@@ -1460,7 +1371,7 @@ def interruptible_backoff_sleep(
             agent._touch_activity(f"{activity_label}, {int(sleep_end - time.time())}s remaining")
     # A long wait can outlive a short-lived credential (the free tier's JWT lives 15 minutes), and
     # the per-iteration pre-expiry adoption does not run between retries.
-    agent._adopt_nous_key_before_expiry()
+    agent._adopt_thorhub_key_before_expiry()
     return None
 
 
@@ -1963,16 +1874,16 @@ def route_classified_error(
         if agent._try_activate_fallback(reason=classified.reason):
             return _fallback_break()
 
-    # Nous Portal: a genuine account-level 429 is recorded to a shared file so ALL
+    # ThorHub: a genuine account-level 429 is recorded to a shared file so ALL
     # sessions back off; is_genuine_thorhub_rate_limit excludes upstream 429s.
     if (
         is_rate_limited
-        and agent.provider == "nous"
+        and agent.provider in {"thor", "thorhub", "nous"}
         and classified.reason == FailoverReason.rate_limit
         and not recovered_with_pool
         and _is_genuine_thorhub_rate_limit(agent, api_error, error_context, classified)
     ):
-        # Re-enter the loop exactly once so the top-of-loop Nous guard runs
+        # Re-enter the loop exactly once so the top-of-loop ThorHub guard runs
         # (retry_count = max_retries would skip it entirely).
         retry_count = max(0, max_retries - 1)
         return _verdict("continue")
