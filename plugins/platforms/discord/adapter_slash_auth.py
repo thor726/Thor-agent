@@ -28,6 +28,12 @@ class DiscordSlashAuthMixin:
         Shared with side-effect-free callers (``/skill`` autocomplete returns [] per keystroke).
         Fail closed on malformed payloads: with an allowlist, a missing channel id/user REJECTS.
         """
+        # Lazy import: the module-level import of discord may have failed
+        # gateway startup (leaving the module global as None), which crashed every
+        # slash command with AttributeError. At call time discord.py is guaranteed
+        # loaded because the adapter itself is running on it.
+        import discord
+
         self._refresh_live_gates()  # a config.yaml edit applies to the next invocation
         chan_obj = getattr(interaction, "channel", None)
         in_dm = isinstance(chan_obj, discord.DMChannel) if chan_obj is not None else False
