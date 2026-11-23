@@ -55,32 +55,28 @@ def _run_nous_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_line
 
 
 def _run_portal_one_shot(config: dict) -> None:
-    """One-shot Thor Portal setup (``thor setup --portal`` / ``thor portal``)."""
-    from thor_cli.setup import _info, _print_banner, _record_setup_completed, print_error, print_info, print_success
-    _print_banner("│     ☤ Thor Setup — Thor Portal (one-shot)             │")
-    _info(None, "  One subscription, 300+ models, plus the Tool Gateway:",
-          "    web search, image generation, TTS, browser automation",
-          "    — all routed through your Thor Portal sub.", None,
-          "  Sign up: https://portal.thor-agent.local/manage-subscription", None)
+    """One-shot ThorHub setup (``thor setup --portal`` / ``thor portal``).
 
-    def _on_error(exc: Exception) -> None:
-        from thor_cli.auth_error_copy import provider_setup_failure_lines
-        print()
-        lead, *rest = provider_setup_failure_lines(exc, retry_command="thor portal")
-        print_error(f"  {lead}")
-        for line in rest:
-            print_info(f"  {line}")
-
-    if not _run_nous_flow(config, context="`thor portal`", cancel_exc=(KeyboardInterrupt, EOFError, SystemExit),
-                          cancel_lines=(None, "  Setup cancelled.", "  You can retry later with `thor portal`."),
-                          print_error=_on_error):
-        return
-
-    # Re-sync from disk so a caller's later save_config(config) can't clobber the login save.
+    Dulu: login OAuth Nous + pilih model Nous. Sekarang: panduan ThorHub /
+    provider langsung — tidak ada login portal lagi.
+    """
+    from thor_cli.setup import _info, _print_banner, _record_setup_completed, print_success
+    _print_banner("│     ☤ Thor Setup — ThorHub (one-shot)                 │")
+    # Debrand Fase 2: login OAuth Nous sudah pensiun (portal .local mati).
+    # Tampilkan panduan ThorHub / provider langsung — jangan jalankan _run_nous_flow.
+    _info(None, "  Thor sekarang berdiri sendiri — tidak ada lagi login portal Nous.",
+          "  Beli key token di: https://llm.thormarket.site/beli", None,
+          "  Lalu pasang di Thor kamu (pilih sendiri, tanpa default bawaan):",
+          "    - jalankan `thor setup` dan pilih provider / model sendiri, atau",
+          "    - tambah ThorHub sebagai custom provider",
+          "      (base URL https://llm.thormarket.site/v1) dengan key kamu, lalu",
+          "      ganti model dengan `/model thorhub`.",
+          "  Cek saldo: /skill saldo — beli / top-up: /skill beli.", None)
+    # Re-sync from disk so a caller's later save_config(config) can't clobber a save.
     with contextlib.suppress(Exception):
         _reload_config_into(config, dict_only=True)
     print()
-    print_success("Portal setup complete.")
+    print_success("ThorHub setup guidance shown.")
     _info("  Run `thor portal info` to inspect routing.", "  Run `thor` to start chatting.")
     _record_setup_completed(config)
 
@@ -111,30 +107,31 @@ def _keep_imported_model(config: dict, imported_from: str) -> bool:
         return False
     print_header("Model & Provider", gap=True)
     _info(f"Settings were imported from {imported_from}.")
-    return prompt_choice(f"Keep your imported model ({label}) or switch to Thor Portal?", [
+    return prompt_choice(f"Keep your imported model ({label}) or switch to ThorHub / a direct provider?", [
         f"Keep {label}",
-        "Switch to Thor Portal — free OAuth login, 300+ models plus the Tool Gateway",
+        "Switch to ThorHub / a direct provider (choose it yourself in thor setup)",
     ], 0, description=f"  Settings were imported from {imported_from}.") == 0
 
 
 def _quick_setup_nous_portal(config: dict) -> None:
-    """Quick Setup's Thor Portal step: OAuth login + model selection (provider set to "nous" by the save)."""
-    from thor_cli.setup import _info, print_header, print_info, print_warning
-    print_header("Thor Portal", gap=True)
-    _info("One subscription, 300+ models, plus the Tool Gateway:",
-          "  web search, image generation, TTS, browser automation.",
-          "Sign up: https://portal.thor-agent.local/manage-subscription", None)
+    """Quick Setup's ThorHub step: panduan ThorHub / provider langsung.
 
-    def _on_error(exc: Exception) -> None:
-        from thor_cli.auth_error_copy import provider_setup_failure_lines
-        lead, *rest = provider_setup_failure_lines(exc, retry_command="thor model")
-        print_warning(lead)
-        for line in rest:
-            print_info(line)
-
-    _run_nous_flow(config, context="quick setup", cancel_exc=(KeyboardInterrupt, EOFError),
-                   cancel_lines=(None, "Thor Portal setup cancelled."), print_error=_on_error)
-    # The wizard's later save_config(config) must not clobber the login/model save.
+    Dulu: OAuth login Nous + pilih model (provider disimpan "nous"). Sekarang:
+    tidak ada login portal — pembeli memilih provider/model/key sendiri.
+    """
+    from thor_cli.setup import _info, print_header
+    print_header("ThorHub", gap=True)
+    # Debrand Fase 2: login OAuth Nous sudah pensiun (portal .local mati).
+    # Tampilkan panduan ThorHub / provider langsung — jangan jalankan _run_nous_flow.
+    _info(None, "  Thor sekarang berdiri sendiri — tidak ada lagi login portal Nous.",
+          "  Beli key token di: https://llm.thormarket.site/beli", None,
+          "  Lalu pasang di Thor kamu (pilih sendiri, tanpa default bawaan):",
+          "    - jalankan `thor setup` dan pilih provider / model sendiri, atau",
+          "    - tambah ThorHub sebagai custom provider",
+          "      (base URL https://llm.thormarket.site/v1) dengan key kamu, lalu",
+          "      ganti model dengan `/model thorhub`.",
+          "  Cek saldo: /skill saldo — beli / top-up: /skill beli.", None)
+    # The wizard's later save_config(config) must not clobber an earlier save.
     _reload_config_into(config)
 
 

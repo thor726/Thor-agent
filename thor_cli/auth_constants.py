@@ -50,8 +50,8 @@ else:
 AUTH_STORE_VERSION = 1
 AUTH_LOCK_TIMEOUT_SECONDS = 15.0
 
-# Nous Portal defaults
-DEFAULT_NOUS_PORTAL_URL = "https://portal.thor-agent.local"
+# ThorHub portal defaults (dulu Nous Portal; portal .local sudah tidak bisa diakses)
+DEFAULT_NOUS_PORTAL_URL = "https://llm.thormarket.site"
 DEFAULT_NOUS_INFERENCE_URL = "https://inference-api.thor-agent.local/v1"
 # The free tier's (anonymous account) inference host. NAS hands it to the client on every token
 # exchange (``inference_base_url``); this literal is the fallback when that field is absent or fails
