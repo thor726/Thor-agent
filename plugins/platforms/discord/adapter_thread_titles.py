@@ -104,6 +104,10 @@ class DiscordThreadTitlesMixin:
         return thread_name
 
     def _guild_channel_labels(self, channel: Any) -> tuple[str, str | None]:
+        # Lazy import: same startup-import hazard as adapter_slash_auth.py;
+        # at call time discord.py is guaranteed loaded.
+        import discord
+
         """``(chat_name, chat_topic)`` for a guild channel or thread, as a message posted there gets them."""
         if isinstance(channel, discord.Thread):
             return self._format_thread_chat_name(channel), self._get_effective_topic(channel, is_thread=True)
