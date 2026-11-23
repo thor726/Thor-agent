@@ -54,7 +54,7 @@ That's it. `coder` is now its own Thor profile with its own config, memory, and 
 ## Creating a profile
 
 :::tip
-Quickest setup: run `thor setup --portal` inside the new profile to wire up models + tools at once. See [Nous Portal](../integrations/nous-portal.md).
+Quickest setup: run `thor setup` inside the new profile and pick a provider yourself — for example [ThorHub](../integrations/thorhub.md) or a direct provider with your own API key.
 :::
 
 ### Blank profile

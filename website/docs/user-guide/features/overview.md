@@ -9,7 +9,7 @@ sidebar_position: 1
 Thor Agent includes a rich set of capabilities that extend far beyond basic chat. From persistent memory and file-aware context to browser automation and voice conversations, these features work together to make Thor a powerful autonomous assistant.
 
 :::tip Don't know where to start?
-`thor setup --portal` covers a model provider plus all four Tool Gateway tools (web search, image generation, TTS, browser) in one command. See [Nous Portal](../../integrations/nous-portal.md).
+Run `thor setup` and pick a provider yourself — for example [ThorHub](../../integrations/thorhub.md) or a direct provider with your own API key. Each tool (web search, image generation, TTS, browser) is set up separately with its own key via `thor tools`.
 :::
 
 ## Core
