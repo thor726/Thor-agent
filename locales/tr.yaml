@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "Bilinmeyen /usage alt komutu: `{args}`. `/usage` veya `/usage reset [--force]` deneyin."
     reset_wrong_provider: "Biriktirilen limit sıfırlamaları yalnızca openai-codex sağlayıcısında kullanılabilir. Önce `/model` ile geçiş yapın."
   credits:
-    not_logged_in: "Nous Portal'a giriş yapılmadı. Bakiyenizi görmek ve yükleme yapmak için giriş yapın."
+    not_logged_in: "ThorHub'a giriş yapılmadı. Bakiyenizi görmek ve yükleme yapmak için giriş yapın."
   verbose:
     not_enabled: "`/verbose` komutu mesajlaşma platformlarında etkin değil.\n\n`config.yaml` içinde etkinleştirin:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Araç ilerlemesi: **OFF** — araç etkinliği gösterilmez."
@@ -1722,7 +1722,7 @@ slash:
   usage:
     description: "Token kullanımını ve hız sınırlarını göster; `reset` biriktirilmiş Codex sınır sıfırlamasını kullanır"
   subscription:
-    description: "Nous planınızı görüntüleyin ve tarayıcıda değiştirin"
+    description: "ThorHub packagesınızı görüntüleyin ve tarayıcıda değiştirin"
   login:
     description: "Nous hesabıyla giriş yap (bağlayıcılarınız korunur)"
   topup:
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Faturalandırma yüklenemedi"
-    not_logged_in: "Nous Portal'a giriş yapılmadı."
+    not_logged_in: "ThorHub'a giriş yapılmadı."
     run_portal_then: "Giriş yapmak için `thor portal` komutunu çalıştırın, ardından {cmd}."
     org_line: "Kuruluş: {org}"
     org_line_role: "Kuruluş: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  Sağlayıcı çözümleyici boş bir temel URL döndürdü. Sağlayıcı yapılandırmanızı kontrol edin veya şunu çalıştırın: thor setup"
     switching_to_fallback: "⚠️  {reason} — yedeğe geçiliyor: {provider} / {model}"
     first_run_no_provider: "☤ Henüz yapılandırılmış bir çıkarım sağlayıcısı yok — hadi bunu halledelim."
-    first_run_pick_provider: "Bir sağlayıcı (en hızlısı Nous Portal OAuth; API anahtarı gerekmez) ve bir model seçeceksiniz."
+    first_run_pick_provider: "Bir sağlayıcı (en hızlısı ThorHub OAuth; API anahtarı gerekmez) ve bir model seçeceksiniz."
     first_run_prompt: "Şimdi bir sağlayıcı kurulsun mu? [Y/n]:"
     first_run_skipped: "Atlandı. İstediğiniz zaman 'thor model' veya 'thor setup' komutunu çalıştırın."
     first_run_cancelled: "Kurulum iptal edildi. İstediğiniz zaman 'thor model' komutunu çalıştırın."

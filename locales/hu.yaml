@@ -577,7 +577,7 @@ gateway:
     unknown_subcommand: "Ismeretlen /usage alparancs: `{args}`. Próbáld: `/usage` vagy `/usage reset [--force]`."
     reset_wrong_provider: "A félretett limit-visszaállítások csak az openai-codex szolgáltatónál érhetők el. Válts először a `/model` paranccsal."
   credits:
-    not_logged_in: "Nincs bejelentkezve a Nous Portalra. Jelentkezz be a kreditegyenleg megtekintéséhez és feltöltéséhez."
+    not_logged_in: "Nincs bejelentkezve a ThorHubra. Jelentkezz be a kreditegyenleg megtekintéséhez és feltöltéséhez."
   verbose:
     not_enabled: "A `/verbose` parancs nincs engedélyezve az üzenetküldő platformokon.\n\nEngedélyezd a `config.yaml` fájlban:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Eszközfolyamat: **OFF** — nem jelenik meg eszközaktivitás."
@@ -1793,7 +1793,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Nem sikerült betölteni a számlázást"
-    not_logged_in: "Nincs bejelentkezve a Nous Portalra."
+    not_logged_in: "Nincs bejelentkezve a ThorHubra."
     run_portal_then: "Jelentkezz be a `thor portal` paranccsal, majd: {cmd}."
     org_line: "Szervezet: {org}"
     org_line_role: "Szervezet: {org} · {role}"
@@ -2557,7 +2557,7 @@ cli:
     empty_base_url: "⚠️  A szolgáltatófeloldó üres alap-URL-t adott vissza. Ellenőrizd a szolgáltató konfigurációját, vagy futtasd: thor setup"
     switching_to_fallback: "⚠️  {reason} — átváltás tartalékra: {provider} / {model}"
     first_run_no_provider: "☤ Még nincs beállítva inferencia-szolgáltató — pótoljuk."
-    first_run_pick_provider: "Választasz egy szolgáltatót (a Nous Portal OAuth a leggyorsabb; nem kell API-kulcs) és egy modellt."
+    first_run_pick_provider: "Választasz egy szolgáltatót (a ThorHub OAuth a leggyorsabb; nem kell API-kulcs) és egy modellt."
     first_run_prompt: "Beállítasz most egy szolgáltatót? [Y/n]:"
     first_run_skipped: "Kihagyva. Bármikor futtathatod a 'thor model' vagy a 'thor setup' parancsot."
     first_run_cancelled: "Beállítás megszakítva. Bármikor futtathatod a 'thor model' parancsot."

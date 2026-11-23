@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "أمر فرعي غير معروف لـ /usage: `{args}`. جرّب `/usage` أو `/usage reset [--force]`."
     reset_wrong_provider: "إعادة تعيين الاستخدام المُدّخر متاحة فقط على مزوّد openai-codex. بدّل عبر `/model` أولًا."
   credits:
-    not_logged_in: "لم تُسجّل الدخول إلى Nous Portal. سجّل الدخول لرؤية رصيد أرصدتك وإعادة الشحن."
+    not_logged_in: "لم تُسجّل الدخول إلى ThorHub. سجّل الدخول لرؤية رصيد أرصدتك وإعادة الشحن."
   verbose:
     not_enabled: "الأمر `/verbose` غير مُفعّل لمنصّات المراسلة.\n\nفعّله في `config.yaml`:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ تقدّم الأدوات: **مُعطّل** — لا يُعرض نشاط الأدوات."
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "تعذّر تحميل الفوترة"
-    not_logged_in: "لم تسجّل الدخول إلى Nous Portal."
+    not_logged_in: "لم تسجّل الدخول إلى ThorHub."
     run_portal_then: "شغّل `thor portal` لتسجيل الدخول، ثم {cmd}."
     org_line: "المؤسسة: {org}"
     org_line_role: "المؤسسة: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  أعاد محدّد المزوّد عنوان URL أساسيًا فارغًا. تحقق من إعدادات المزوّد أو شغّل: thor setup"
     switching_to_fallback: "⚠️  {reason} — جارٍ التبديل إلى البديل: {provider} / {model}"
     first_run_no_provider: "☤ لم يُضبط أي مزوّد استدلال بعد — لنُصلح ذلك."
-    first_run_pick_provider: "ستختار مزوّدًا (Nous Portal OAuth هو الأسرع؛ لا يحتاج مفتاح API) ونموذجًا."
+    first_run_pick_provider: "ستختار مزوّدًا (ThorHub OAuth هو الأسرع؛ لا يحتاج مفتاح API) ونموذجًا."
     first_run_prompt: "هل تريد إعداد مزوّد الآن؟ [Y/n]:"
     first_run_skipped: "تم التخطّي. شغّل 'thor model' أو 'thor setup' في أي وقت."
     first_run_cancelled: "أُلغي الإعداد. شغّل 'thor model' في أي وقت."

@@ -574,7 +574,7 @@ gateway:
     unknown_subcommand: "Неизвестная подкоманда /usage: `{args}`. Попробуйте `/usage` или `/usage reset [--force]`."
     reset_wrong_provider: "Накопленные сбросы лимитов доступны только с провайдером openai-codex. Сначала переключитесь через `/model`."
   credits:
-    not_logged_in: "Вы не вошли в Nous Portal. Войдите, чтобы увидеть баланс кредитов и пополнить его."
+    not_logged_in: "Вы не вошли в ThorHub. Войдите, чтобы увидеть баланс кредитов и пополнить его."
   verbose:
     not_enabled: "Команда `/verbose` не включена для платформ обмена сообщениями.\n\nВключите в `config.yaml`:\n```yaml\ndisplay:\n  tool_progress_command: true\n```"
     mode_off: "⚙️ Прогресс инструментов: **OFF** — активность инструментов не показывается."
@@ -1776,7 +1776,7 @@ cli:
   billing:
     load_failed: "{label}: {error}"
     load_failed_label: "Не удалось загрузить данные биллинга"
-    not_logged_in: "Вы не вошли в Nous Portal."
+    not_logged_in: "Вы не вошли в ThorHub."
     run_portal_then: "Выполните `thor portal`, чтобы войти, затем {cmd}."
     org_line: "Организация: {org}"
     org_line_role: "Организация: {org} · {role}"
@@ -2540,7 +2540,7 @@ cli:
     empty_base_url: "⚠️  Резолвер провайдера вернул пустой базовый URL. Проверьте конфигурацию провайдера или выполните: thor setup"
     switching_to_fallback: "⚠️  {reason} — переключаемся на резервный вариант: {provider} / {model}"
     first_run_no_provider: "☤ Провайдер инференса ещё не настроен — давайте это исправим."
-    first_run_pick_provider: "Вы выберете провайдера (Nous Portal OAuth — самый быстрый способ; API-ключ не нужен) и модель."
+    first_run_pick_provider: "Вы выберете провайдера (ThorHub OAuth — самый быстрый способ; API-ключ не нужен) и модель."
     first_run_prompt: "Настроить провайдера сейчас? [Y/n]:"
     first_run_skipped: "Пропущено. Выполните 'thor model' или 'thor setup' в любое время."
     first_run_cancelled: "Настройка отменена. Выполните 'thor model' в любое время."
