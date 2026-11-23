@@ -39,7 +39,9 @@ def _logged_in_account(monkeypatch):
 
 # ── build_credits_view core ─────────────────────────────────────────────────
 
-def test_view_built_with_org_pinned_url_and_identity(_logged_in_account):
+def test_view_built_with_thorhub_topup_url_and_identity(_logged_in_account):
+    # Debrand Fase 2: URL top-up Nous (org-pinned portal.example.test) sudah
+    # pensiun — topup_url sekarang selalu ThorHub /beli/topup.
     _logged_in_account(
         _account(
             org_slug="acme",
@@ -57,7 +59,7 @@ def test_view_built_with_org_pinned_url_and_identity(_logged_in_account):
     view = build_credits_view()
 
     assert view.logged_in is True
-    assert view.topup_url == "https://portal.example.test/orgs/acme/billing?topup=open"
+    assert view.topup_url == "https://llm.thormarket.site/beli/topup"
     assert "alice@example.test" in view.identity_line and "Acme Inc" in view.identity_line
     assert view.depleted is False
     assert "$30.00" in "\n".join(view.balance_lines)
