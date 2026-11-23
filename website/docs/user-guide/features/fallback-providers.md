@@ -79,7 +79,7 @@ The command exits with status 1 when any entry is not ready, so cron jobs and CI
 |----------|-------|-------------|
 | AI Gateway | `ai-gateway` | `AI_GATEWAY_API_KEY` |
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
-| Nous Portal | `nous` | `thor setup --portal` (fresh) or `thor auth add nous` (OAuth) |
+| ThorHub | `custom` (alias `thorhub`) | Buy a key at https://llm.thormarket.site/beli, then add it as a custom provider (`base_url https://llm.thormarket.site/v1`) |
 | OpenAI Codex | `openai-codex` | `thor model` → **ChatGPT or Codex Subscription** (ChatGPT OAuth) |
 | Anthropic | `anthropic` | `ANTHROPIC_API_KEY` or Claude Code credentials |
 | z.ai / GLM | `zai` | `GLM_API_KEY` |

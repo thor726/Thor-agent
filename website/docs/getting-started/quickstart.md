@@ -64,6 +64,8 @@ For aarch64 Android devices, use the separate [Termux APT guide](./termux.md).
 curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
+> **Want the latest version?** That one-liner installs the latest stable release (v0.23.2). To install the newest code on `main` instead — including the ThorHub billing integration — use `bash -s -- --channel main` at the end of the command above. Already installed? Switch with `thor update --set-channel main`.
+
 #### Windows (native)
 
 Run in powershell:

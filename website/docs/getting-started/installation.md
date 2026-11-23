@@ -54,11 +54,21 @@ For a command-line only install without Thor Desktop, run:
 curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
+> **Want the latest version?** That one-liner installs the latest stable release (v0.23.2). To install the newest code on `main` instead — including the ThorHub billing integration, where `/topup` shows your ThorHub balance — use:
+>
+> ```bash
+> curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
+> ```
+>
+> Already installed? Switch with `thor update --set-channel main`.
+
 #### Windows (native)
 
 Run in powershell:
 ```powershell
-iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) 
+iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
+
+For the newest code on `main`, add `-Channel main` to the command above.
 ```
 
 If you want to install & run Thor Desktop after a command-line only install, simply run
@@ -148,14 +158,8 @@ thor config get     # Inspect individual config values
 thor setup          # Or run the full setup wizard to configure everything at once
 ```
 
-:::tip Fastest path: Nous Portal
-One subscription covers 300+ models plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, cloud browser). Skip the per-tool key juggling:
-
-```bash
-thor setup --portal
-```
-
-That logs you in, sets Nous as your provider, and turns on the Tool Gateway in one command.
+:::tip Fastest path: ThorHub or a direct provider
+Run `thor setup` and pick a provider yourself — for example [ThorHub](../integrations/thorhub.md) (buy token packages at https://llm.thormarket.site/beli and use the key as a custom provider) or any direct provider (Gemini, Groq, OpenAI, Anthropic, OpenRouter) with your own API key. ThorHub is one optional provider; you choose your own defaults.
 :::
 
 :::tip Already running Thor on another machine?

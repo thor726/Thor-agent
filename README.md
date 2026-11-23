@@ -18,7 +18,7 @@
 
 **The self-improving AI agent by [Thor Labs](https://github.com/thor726/Thor-agent).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.
 
-Use any model you want — [Nous Portal](https://portal.thor-agent.local), OpenRouter, OpenAI, your own endpoint, and [many others](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/providers). Switch with `thor model` — no code changes, no lock-in.
+Use any model you want — [ThorHub](https://llm.thormarket.site), OpenRouter, OpenAI, your own endpoint, and [many others](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/providers). Switch with `thor model` — no code changes, no lock-in.
 
 <table>
 <tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>
@@ -39,6 +39,14 @@ Use any model you want — [Nous Portal](https://portal.thor-agent.local), OpenR
 ```bash
 curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
+
+> **Want the latest version?** That one-liner installs the latest stable release (v0.23.2). To install the newest code on `main` instead — including the ThorHub billing integration, where `/topup` shows your ThorHub balance — use:
+>
+> ```bash
+> curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
+> ```
+>
+> Already installed? Switch channels with `thor update --set-channel main`.
 
 ### Windows (native, PowerShell)
 
@@ -122,22 +130,15 @@ thor doctor       # Diagnose any issues
 
 ---
 
-## Skip the API-key collection — Nous Portal
+## Buy tokens with ThorHub
 
-Thor works with whatever provider you want — that's not changing. But if you'd rather not collect five separate API keys for the model, web search, image generation, TTS, and a cloud browser, **[Nous Portal](https://portal.thor-agent.local)** covers all of them under one subscription:
+Thor works with whatever provider you want — that's not changing. Run `thor setup` and pick your own provider and model; each provider has its own API key and billing. That is the normal way to run Thor.
 
-- **300+ models** — pick any of them with `/model <name>`
-- **Tool Gateway** — web search, image generation (FAL), text-to-speech (OpenAI), cloud browser (Browser Use), all routed through your sub. No extra accounts.
+If you would rather buy tokens than manage a provider account, **[ThorHub](https://llm.thormarket.site)** is Thor's own token store: buy a token package at https://llm.thormarket.site/beli (QRIS), get a sub-key (`sk-thor-...`), and add it in Thor as a custom provider. Check your balance any time with `/topup` (when a ThorHub key is configured) or `/skill saldo`, and top up at https://llm.thormarket.site/beli/topup. Full details on the [ThorHub docs page](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub).
 
-One command from a fresh install:
+ThorHub is a paid token store, not a free tier — and it only covers model tokens, not web search, image generation, TTS, or a cloud browser. Those tools each need their own key, which you add with `thor tools`.
 
-```bash
-thor setup --portal
-```
-
-That logs you in via OAuth, sets Nous as your provider, and turns on the Tool Gateway. Check what's wired up any time with `thor portal info`. Full details on the [Tool Gateway docs page](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tool-gateway).
-
-You can still bring your own keys per-tool whenever you want — the gateway is per-backend, not all-or-nothing.
+> Nous Portal, Thor Labs's old unified subscription gateway, has been **removed from Thor Agent**. There is no Portal OAuth login and no `thor setup --portal` anymore.
 
 ---
 

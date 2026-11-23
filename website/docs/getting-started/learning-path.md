@@ -13,7 +13,7 @@ If you haven't installed Thor Agent yet, begin with the [Installation guide](./i
 :::
 
 :::tip First-time provider setup
-First-time users almost always want `thor setup --portal` — one OAuth covers a model plus the four Tool Gateway tools (search/image/TTS/browser). See [Nous Portal](../integrations/nous-portal.md).
+First-time users should run `thor setup` and pick a provider themselves — for example [ThorHub](../integrations/thorhub.md) (buy token packages and use the key as a custom provider) or any direct provider with your own API key. ThorHub is one optional provider; you choose your own defaults. Nous Portal, the old unified subscription gateway, has been removed from Thor Agent.
 :::
 
 ## How to Use This Page

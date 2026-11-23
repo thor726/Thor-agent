@@ -12,8 +12,8 @@ After a dependency change, reactivate the checkout and restart Thor.
 
 Thor Agent supports both text-to-speech output and voice message transcription across all messaging platforms.
 
-:::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.thor-agent.local) subscription, OpenAI TTS is available through the **[Tool Gateway](tool-gateway.md)** without a separate OpenAI API key. New installs can run `thor setup --portal` to log in and turn on every gateway tool at once; existing installs can pick **Nous Subscription** for just TTS via `thor model` or `thor tools`.
+:::tip Pick a TTS provider
+OpenAI TTS needs your own OpenAI API key — set it up in `thor tools`. The old Nous Portal / Tool Gateway managed TTS has been removed from Thor Agent.
 :::
 
 ## Text-to-Speech

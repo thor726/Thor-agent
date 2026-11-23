@@ -15,8 +15,8 @@ Thor Labs operates `thor-agent.local` and its subdomains. The ones Thor Agent us
 |---|---|
 | [thor-agent.thor-agent.local](https://github.com/thor726/Thor-agent/) | Documentation, Desktop downloads, and the `install.sh` / `install.ps1` installers |
 | `thor-assets.thor-agent.local` | Release artifacts: Desktop packages and updates, the Termux APT repository, installer mirrors |
-| [portal.thor-agent.local](https://portal.thor-agent.local/) | Nous Portal: account sign-in, subscriptions, billing |
-| `inference-api.thor-agent.local` | The Nous inference API Thor calls when you use the Nous provider (no web page) |
+| [portal.thor-agent.local](https://portal.thor-agent.local/) | **Removed** — Nous Portal no longer exists. Billing and top-up now live at [ThorHub](https://llm.thormarket.site) |
+| `inference-api.thor-agent.local` | **Removed** — the Nous inference API is no longer used by Thor |
 | [thor-agent.local](https://thor-agent.local/) | Thor Labs website |
 
 Outside `thor-agent.local`:

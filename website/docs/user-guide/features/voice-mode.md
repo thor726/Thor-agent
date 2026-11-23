@@ -24,8 +24,8 @@ Before using voice features, make sure you have:
 The `~/.thor/` directory and default `config.yaml` are created automatically the first time you run `thor`. You only need to create `~/.thor/.env` manually for API keys.
 :::
 
-:::tip Nous Portal covers both
-A paid [Nous Portal](./tool-gateway.md) subscription supplies the LLM (step 2) **and** OpenAI TTS via the Tool Gateway — no separate OpenAI key needed. On a fresh install, `thor setup --portal` wires both up at once.
+:::tip Set up the LLM and TTS yourself
+Run `thor setup` and pick an LLM provider and a TTS provider yourself — for example [ThorHub](../../integrations/thorhub.md) for model tokens, or a direct provider with your own API key. The old Nous Portal subscription that covered both has been removed from Thor Agent.
 :::
 
 ## Overview
