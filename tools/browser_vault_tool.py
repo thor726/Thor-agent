@@ -520,8 +520,16 @@ def _identifier_fill(classified: list, password_fill: list[dict[str, Any]], iden
     """The username/email/phone control for a user-chosen login (the Desktop key button fills both fields;
     the agent types the identifier itself). Prefers a control in the password field's form; on an
     identifier-only step (no password field yet) it is the whole fill."""
-    fields = [c for c in classified if c.token in ("username", "email", "tel")]
-    if not identifier or not fields:
+    if not identifier:
+        return []
+    from agent.vault_login_classifier import classify_otp_controls
+
+    # A box enter_code would write the code into (one-time-code, or a code/OTP/2FA name or label) is not the
+    # identifier unless the page declares a login token on it (score 100): a type=tel code box would otherwise
+    # be classified as a phone and outscore a labelled username box.
+    fields = [c for c in classified if c.token in ("username", "email", "tel")
+              and (c.score == 100 or not classify_otp_controls([c.control]))]
+    if not fields:
         return []
     anchor = password_fill[0]["index"] if password_fill else None
     form = next((c.control.form_index for c in classified if c.control.index == anchor), None)
