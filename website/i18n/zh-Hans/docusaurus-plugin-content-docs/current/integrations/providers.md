@@ -14,7 +14,7 @@ sidebar_position: 1
 
 | 提供商 | 配置方式 |
 |----------|-------|
-| **Nous Portal** | `thor model`（OAuth，订阅制） |
+| **ThorHub** | 在 https://llm.thormarket.site/beli 购买 Key，以自定义服务商添加（见 [ThorHub](#thorhub)） |
 | **OpenAI Codex** | `thor model` → **ChatGPT or Codex Subscription**（ChatGPT OAuth，使用 Codex 模型） |
 | **Anthropic** | `thor model`（Claude Max + 额外用量积分，通过 OAuth；也支持 Anthropic API key 或手动 setup-token——见下方说明） |
 | **OpenRouter** | `~/.thor/.env` 中的 `OPENROUTER_API_KEY` |
@@ -49,20 +49,19 @@ sidebar_position: 1
 :::
 
 
-### Nous Portal
+### ThorHub
 
-[Nous Portal](https://portal.thor-agent.local) 是 Thor Labs 的统一订阅网关，也是**运行 Thor Agent 的推荐方式**。一次 OAuth 登录即可访问 300+ 前沿智能体模型（Claude、GPT、Gemini、DeepSeek、Qwen、Kimi、GLM、MiniMax、Grok 等）以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网页搜索、图像生成、TTS、浏览器自动化）——费用从你的 Nous 订阅中扣除，无需单独管理各提供商账户。
+[ThorHub](https://llm.thormarket.site) 是 Thor 自己的 Token 商店：在 https://llm.thormarket.site/beli 购买 Token 套餐（QRIS 支付），获得子 Key（`sk-thor-...`），再以自定义服务商的方式添加到 Thor 中。用 `/topup`（已配置 ThorHub Key 时）或 `/skill saldo` 查看余额，在 https://llm.thormarket.site/beli/topup 充值。
 
 ```bash
-thor setup --portal     # 全新安装——一条命令完成 OAuth + 提供商 + 网关配置
-thor model              # 已有安装——从列表中选择"Nous Portal"
+thor setup --portal     # 一键 ThorHub 设置指南：购买 ThorHub Key 并添加为自定义服务商
+thor model              # 已有安装——从列表中选择 ThorHub / 自定义服务商
 thor portal info        # 随时查看登录状态和路由信息
 ```
 
-还没有订阅？前往 [portal.thor-agent.local/manage-subscription](https://portal.thor-agent.local/manage-subscription) 购买。
+ThorHub 是付费 Token 商店，不是免费套餐——它只覆盖模型 Token。完整详情见专属的 [ThorHub 集成页面](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub)。
 
-**完整详情：** 参见专属的 [Nous Portal 集成页面](./nous-portal.md)（订阅内容、模型目录、故障排查）以及分步指南[使用 Nous Portal 运行 Thor Agent](../guides/run-thor-with-nous-portal.md)。
-
+> Nous Portal（Thor Labs 旧的统一订阅网关）已从 Thor Agent 中**移除**。不再有 Portal OAuth 登录。
 
 :::info Codex 说明
 OpenAI Codex 提供商通过设备码（device code）认证——打开一个 URL 并输入验证码。Thor 将生成的凭据存储在 `~/.thor/auth.json` 的自有认证存储中，并在存在 `~/.codex/auth.json` 时可导入现有的 Codex CLI 凭据。无需安装 Codex CLI。

@@ -1097,7 +1097,7 @@ export default function SystemPage() {
                 </span>
               )}
               <a
-                href={portal?.subscription_url || "https://portal.thor-agent.local/manage-subscription"}
+                href={portal?.subscription_url || "https://llm.thormarket.site/beli/topup"}
                 target="_blank"
                 rel="noreferrer"
                 className="ml-auto text-xs text-primary underline"

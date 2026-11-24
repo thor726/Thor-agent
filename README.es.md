@@ -10,7 +10,7 @@
   <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentación"></a>
   <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge" alt="Licencia: MIT"></a>
-  <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Creado%20por-Nous%20Research-blueviolet?style=for-the-badge" alt="Creado por Thor Labs"></a>
+  <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Creado%20por-Thor%20Labs-blueviolet?style=for-the-badge" alt="Creado por Thor Labs"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-blue?style=for-the-badge" alt="English"></a>
   <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Lang-中文-red?style=for-the-badge" alt="中文"></a>
   <a href="README.ur-pk.md"><img src="https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge" alt="اردو"></a>
@@ -18,7 +18,7 @@
 
 **El agente de IA con mejora continua creado por [Thor Labs](https://github.com/thor726/Thor-agent).** Es el único agente con un bucle de aprendizaje integrado: crea habilidades a partir de la experiencia, las mejora durante el uso, se impulsa a sí mismo a persistir el conocimiento, busca en sus propias conversaciones pasadas y construye un modelo cada vez más profundo de quién eres a lo largo de las sesiones. Ejecútalo en un VPS de $5, un clúster de GPUs o infraestructura sin servidor que cuesta casi nada cuando está inactivo. No está atado a tu laptop — habla con él desde Telegram mientras trabaja en una VM en la nube.
 
-Usa cualquier modelo que quieras — [Nous Portal](https://portal.thor-agent.local), [OpenRouter](https://openrouter.ai) (más de 200 modelos), [NovitaAI](https://novita.ai), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, o tu propio endpoint. Cambia con `thor model` — sin cambios de código, sin dependencias.
+Usa cualquier modelo que quieras — [ThorHub](https://llm.thormarket.site), [OpenRouter](https://openrouter.ai) (más de 200 modelos), [NovitaAI](https://novita.ai), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, o tu propio endpoint. Cambia con `thor model` — sin cambios de código, sin dependencias.
 
 <table>
 <tr><td><b>Una interfaz de terminal real</b></td><td>TUI completa con edición multilínea, autocompletado de comandos, historial de conversaciones, interrupción y redirección, y salida de herramientas en streaming.</td></tr>
@@ -86,22 +86,15 @@ thor doctor       # Diagnostica cualquier problema
 
 ---
 
-## Evita la colección de claves API — Nous Portal
+## Compra tokens con ThorHub
 
-Thor funciona con cualquier proveedor que quieras — eso no cambiará. Pero si prefieres no recopilar cinco claves API separadas para el modelo, búsqueda web, generación de imágenes, TTS y un navegador en la nube, **[Nous Portal](https://portal.thor-agent.local)** las cubre todas bajo una sola suscripción:
+Thor funciona con cualquier proveedor que quieras — eso no cambiará. Ejecuta `thor setup` y elige tu propio proveedor y modelo; cada proveedor tiene su propia clave API y facturación. Esa es la forma normal de usar Thor.
 
-- **Más de 300 modelos** — elige cualquiera con `/model <nombre>`
-- **Tool Gateway** — búsqueda web, generación de imágenes (FAL), texto a voz (OpenAI), navegador en la nube (Browser Use), todo enrutado a través de tu suscripción. Sin cuentas adicionales.
+Si prefieres comprar tokens en lugar de gestionar una cuenta de proveedor, **[ThorHub](https://llm.thormarket.site)** es la tienda de tokens propia de Thor: compra un paquete de tokens en https://llm.thormarket.site/beli (QRIS), recibe una subclave (`sk-thor-...`) y añádela en Thor como proveedor personalizado. Consulta tu saldo cuando quieras con `/topup` (cuando hay una clave ThorHub configurada) o `/skill saldo`, y recarga en https://llm.thormarket.site/beli/topup. Detalles completos en la [página de documentación de ThorHub](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub).
 
-Un comando desde una instalación nueva:
+ThorHub es una tienda de tokens de pago, no un plan gratuito — y solo cubre tokens de modelo, no la búsqueda web, la generación de imágenes, el TTS ni un navegador en la nube. Esas herramientas necesitan su propia clave, que se añade con `thor tools`.
 
-```bash
-thor setup --portal
-```
-
-Esto te autentica vía OAuth, establece Nous como tu proveedor y activa el Tool Gateway. Comprueba qué está conectado en cualquier momento con `thor portal info`. Detalles completos en la [página de documentación del Tool Gateway](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tool-gateway).
-
-Puedes seguir usando tus propias claves por herramienta cuando quieras — el gateway es por backend, no todo o nada.
+> Nous Portal, la antigua pasarela de suscripción unificada de Thor Labs, ha sido **eliminado de Thor Agent**. Ya no hay inicio de sesión OAuth del Portal ni `thor setup --portal`.
 
 ---
 

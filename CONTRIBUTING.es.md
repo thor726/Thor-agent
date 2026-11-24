@@ -139,7 +139,7 @@ thor-agent/
 │   ├── main.py                   # Punto de entrada, análisis de argumentos, despacho de comandos
 │   ├── config.py                 # Gestión de configuración, migración, definiciones de variables de entorno
 │   ├── setup.py                  # Asistente de configuración interactivo
-│   ├── auth.py                   # Resolución de proveedor, OAuth, Nous Portal
+│   ├── auth.py                   # Resolución de proveedor, OAuth, ThorHub
 │   ├── models.py                 # Listas de selección de modelos de OpenRouter
 │   ├── banner.py                 # Banner de bienvenida, arte ASCII
 │   ├── commands.py               # Registro central de comandos de barra (CommandDef), autocompletado, ayudantes del gateway
@@ -191,7 +191,7 @@ thor-agent/
 |------|-----------|
 | `~/.thor/config.yaml` | Configuración (modelo, terminal, toolsets, compresión, etc.) |
 | `~/.thor/.env` | Claves API y secretos |
-| `~/.thor/auth.json` | Credenciales OAuth (Nous Portal) |
+| `~/.thor/auth.json` | Credenciales OAuth (inicios de sesión de proveedor) |
 | `~/.thor/skills/` | Todas las habilidades activas (incluidas + instaladas desde hub + creadas por el agente) |
 | `~/.thor/memories/` | Memoria persistente (MEMORY.md, USER.md) |
 | `~/.thor/state.db` | Base de datos de sesiones SQLite |

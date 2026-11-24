@@ -49,7 +49,7 @@ export const PROVIDER_GROUPS: ProviderPrefix[] = [
     prefix: 'NOUS_',
     name: 'Thor Portal',
     description: 'Hosted Thor & Nous-trained models',
-    docsUrl: 'https://portal.thor-agent.local',
+    docsUrl: 'https://llm.thormarket.site',
     priority: 0
   },
   {
