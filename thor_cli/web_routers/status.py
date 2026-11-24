@@ -15,6 +15,7 @@ import sys
 import time
 from fastapi import APIRouter
 from thor_cli.web_deps import LateState, late
+from thor_cli.thorhub_account import THORHUB_TOPUP_URL
 from thor_cli.web_server_gateway import _display_system_platform
 from starlette.concurrency import run_in_threadpool
 from fastapi import HTTPException, Request
@@ -888,7 +889,7 @@ def _get_portal_status_sync():
         # Free tier: a token exists, so logged_in stays true for callers that only ask "is there a
         # credential"; surfaces that render an account must branch on free_tier first.
         "free_tier": bool(auth.get("free_tier")), "account_tier": auth.get("account_tier"),
-        "subscription_url": "https://portal.thor-agent.local/manage-subscription",
+        "subscription_url": THORHUB_TOPUP_URL,
         "features": features}
 
 

@@ -648,7 +648,6 @@ def _run_debug_share_nous(args, *, log_lines: int, redact: bool) -> None:
           "(via Google login) can open it.\n"
           "\nPick up the discussion in:\n"
           "  GitHub Issues        https://github.com/thor726/thor-agent/issues\n"
-          "  Thor Portal Support  https://portal.thor-agent.local/help\n"
           "  Discord              https://discord.gg/thor726")
 
 

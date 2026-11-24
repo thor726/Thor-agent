@@ -1767,11 +1767,12 @@ DEFAULT_CONFIG = {
         # provider falls back to the built-in so cron never loses its trigger.
         "provider": "",
         # Chronos settings; consulted only when provider == "chronos". All non-secret — the agent
-        # holds NO scheduler credentials (provision reuses the Nous Portal token).
+        # holds NO scheduler credentials. The Chronos NAS lived on the Nous Portal (retired):
+        # "" leaves Chronos unavailable and the resolver falls back to the built-in ticker.
         "chronos": {
-            # NAS/portal base URL that arms/cancels one-shots and mints the inbound fire JWT (used
+            # NAS base URL that arms/cancels one-shots and mints the inbound fire JWT (used
             # as the expected issuer).
-            "portal_url": "https://portal.thor-agent.local",
+            "portal_url": "",
             # This agent's publicly reachable base URL; NAS POSTs {callback_url}/api/cron/fire. ""
             # -> Chronos unavailable, resolver falls back to the built-in ticker.
             "callback_url": "",

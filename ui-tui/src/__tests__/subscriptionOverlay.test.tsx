@@ -118,7 +118,7 @@ const state = (overrides: Partial<SubscriptionStateResponse> = {}): Subscription
   role: 'OWNER',
   current: null,
   tiers: [],
-  portal_url: 'https://portal.thor-agent.local/billing',
+  portal_url: 'https://llm.thormarket.site/portal',
   ...overrides
 })
 

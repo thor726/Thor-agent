@@ -203,11 +203,11 @@ class TestClassifyApiError:
                 "status": 404,
                 "message": (
                     "Model 'gpt-5' is not available on the Free Tier. "
-                    "Upgrade at https://portal.thor-agent.local or pick a free model."
+                    "Upgrade at https://llm.thormarket.site/beli/topup or pick a free model."
                 ),
             },
         )
-        result = classify_api_error(e, provider="nous", model="gpt-5")
+        result = classify_api_error(e, provider="thor", model="gpt-5")
         assert result.reason == FailoverReason.billing
         assert result.retryable is False
         assert result.should_fallback is True
@@ -221,11 +221,11 @@ class TestClassifyApiError:
                 "message": (
                     "Model 'openai/gpt-5.5-pro' requires available credits. "
                     "Your account balance is too low to use paid models — "
-                    "add credits at https://portal.thor-agent.local or pick a free model."
+                    "add credits at https://llm.thormarket.site/beli/topup or pick a free model."
                 ),
             },
         )
-        result = classify_api_error(e, provider="nous", model="openai/gpt-5.5-pro")
+        result = classify_api_error(e, provider="thor", model="openai/gpt-5.5-pro")
         assert result.reason == FailoverReason.billing
         assert result.retryable is False
         assert result.should_fallback is True
@@ -245,7 +245,7 @@ class TestClassifyApiError:
                 ),
             },
         )
-        result = classify_api_error(e, provider="nous", model="meituan/longcat-2.0:free")
+        result = classify_api_error(e, provider="thor", model="meituan/longcat-2.0:free")
         assert result.reason == FailoverReason.model_not_found
         assert result.retryable is False
         assert result.should_fallback is True
@@ -931,7 +931,7 @@ class TestClassifyApiError:
             "this endpoint and cannot be disabled.",
             status_code=400,
         )
-        result = classify_api_error(e, provider="nous", model="z-ai/glm-5.3-flash")
+        result = classify_api_error(e, provider="thor", model="z-ai/glm-5.3-flash")
         assert result.reason == FailoverReason.reasoning_mandatory
         assert result.retryable is True
         assert result.should_fallback is False
@@ -2035,12 +2035,13 @@ class TestServerInjectedParameterRejection:
 
 
 
-# ── Test: Nous welcome tier (free tier) refusals ───────────────────────
+# ── Test: ThorHub refusals (no welcome tier) ──────────────────────────────
 
-class TestNousWelcomeTier:
-    """The Nous gateway's welcome-tier contract: a structured 429 body carries ``reason`` /
-    ``retry_after`` / ``alternates`` / ``upgrade_url``; a 400/403 names the wrong host or a
-    dark tier in its message. The parsed refusal rides ``error_context``."""
+class TestThorhubRefusals:
+    """ThorHub refusals carry no welcome-tier contract anymore: a structured 429 body is a
+    plain rate limit (the ``reason`` / ``alternates`` / ``upgrade_url`` fields are ignored),
+    a 400 naming a retired host is a format error, and a 403 is plain auth. Nothing rides
+    ``error_context`` as ``welcome_refusal`` / ``welcome_route``."""
 
     @staticmethod
     def _refusal(reason, retry_after=0, **extra):
@@ -2048,66 +2049,62 @@ class TestNousWelcomeTier:
         return MockAPIError(f"Error code: 429 - {body}", status_code=429, body=body,
                             headers={"retry-after": str(retry_after)})
 
-    def test_model_not_free_is_a_non_retryable_gate_with_fallback(self):
-        err = self._refusal("model_not_free", alternates=["nous/welcome"], upgrade_url="https://portal.example/upgrade")
-        result = classify_api_error(err, provider="nous", api_key=make_jwt(), model="gpt-5")
-        assert result.reason == FailoverReason.model_not_found
-        assert result.retryable is False
+    def test_model_not_free_is_a_plain_rate_limit(self):
+        err = self._refusal("model_not_free", alternates=["deepseek-v4-pro"], upgrade_url="https://portal.example/upgrade")
+        result = classify_api_error(err, provider="thor", model="gpt-5")
+        assert result.reason == FailoverReason.rate_limit
+        assert result.retryable is True
         assert result.should_fallback is True
-        assert result.should_rotate_credential is False
-        refusal = result.error_context["welcome_refusal"]
-        assert refusal["reason"] == "model_not_free"
-        assert refusal["alternates"] == ["nous/welcome"]
-        assert refusal["upgrade_url"] == "https://portal.example/upgrade"
+        assert "welcome_refusal" not in result.error_context
 
-    def test_feature_not_free_is_the_same_gate(self):
-        result = classify_api_error(self._refusal("feature_not_free"), provider="nous", api_key=make_jwt())
-        assert result.reason == FailoverReason.model_not_found
-        assert result.retryable is False
+    def test_feature_not_free_is_a_plain_rate_limit(self):
+        result = classify_api_error(self._refusal("feature_not_free"), provider="thor")
+        assert result.reason == FailoverReason.rate_limit
+        assert result.retryable is True
 
     @pytest.mark.parametrize("reason", ["at_capacity", "admission_closed", "rate_limited"])
     def test_capacity_refusals_are_rate_limits_that_honour_retry_after(self, reason):
-        result = classify_api_error(self._refusal(reason, retry_after=30), provider="nous", api_key=make_jwt(), model="nous/welcome")
+        result = classify_api_error(self._refusal(reason, retry_after=30), provider="thor", model="deepseek-v4-pro")
         assert result.reason == FailoverReason.rate_limit
         assert result.retryable is True
         assert result.should_fallback is True
         ctx = result.error_context
-        assert ctx["welcome_refusal"]["retry_after"] == 30
+        assert "welcome_refusal" not in ctx
         assert ctx["reset_at"] > 0
 
     def test_retry_after_zero_carries_no_reset(self):
-        result = classify_api_error(self._refusal("at_capacity", retry_after=0), provider="nous", api_key=make_jwt())
+        result = classify_api_error(self._refusal("at_capacity", retry_after=0), provider="thor")
         assert "reset_at" not in result.error_context
 
-    def test_anonymous_jwt_on_the_paid_host_is_deterministic(self):
+    def test_a_400_naming_a_retired_host_is_a_format_error(self):
         body = {"status": 400, "message": "Anonymous accounts must use https://welcome-api.thor-agent.local for inference."}
         err = MockAPIError(f"Error code: 400 - {body}", status_code=400, body=body)
-        result = classify_api_error(err, provider="nous", api_key=make_jwt(), model="nous/welcome")
+        result = classify_api_error(err, provider="thor", model="deepseek-v4-pro")
         assert result.reason == FailoverReason.format_error
         assert result.retryable is False and result.should_fallback is True
-        assert result.error_context["welcome_route"] == "anon_on_paid_host"
-
-    def test_named_caller_on_the_welcome_host_is_deterministic(self):
-        body = {"status": 400, "message": "This endpoint serves anonymous Thor Agent accounts only. Use https://inference-api.thor-agent.local with your API key or signed-in account."}
-        err = MockAPIError(f"Error code: 400 - {body}", status_code=400, body=body)
-        result = classify_api_error(err, provider="nous", api_key=make_jwt(account_tier="free"))
-        assert result.error_context["welcome_route"] == "named_on_welcome_host"
-        assert result.retryable is False
-
-    def test_dark_tier_403_never_triggers_a_credential_refresh(self):
-        body = {"status": 403, "message": "Anonymous accounts are not accepted by this API right now."}
-        err = MockAPIError(f"Error code: 403 - {body}", status_code=403, body=body)
-        result = classify_api_error(err, provider="nous", api_key=make_jwt(), model="nous/welcome")
-        assert result.reason == FailoverReason.auth_permanent
-        assert result.retryable is False and result.should_fallback is True
-        assert result.should_rotate_credential is False
-        assert result.error_context["welcome_route"] == "tier_disabled"
-
-    def test_ordinary_403_is_untouched(self):
-        result = classify_api_error(MockAPIError("forbidden", status_code=403, body={"message": "forbidden"}), provider="nous", api_key=make_jwt())
-        assert result.reason == FailoverReason.auth
         assert "welcome_route" not in result.error_context
 
+    def test_a_400_naming_the_retired_inference_host_is_a_format_error(self):
+        body = {"status": 400, "message": "This endpoint serves anonymous Thor Agent accounts only. Use https://inference-api.thor-agent.local with your API key or signed-in account."}
+        err = MockAPIError(f"Error code: 400 - {body}", status_code=400, body=body)
+        result = classify_api_error(err, provider="thor")
+        assert result.reason == FailoverReason.format_error
+        assert "welcome_route" not in result.error_context
+        assert result.retryable is False
+
+    def test_a_403_is_plain_auth_without_rotation(self):
+        body = {"status": 403, "message": "Anonymous accounts are not accepted by this API right now."}
+        err = MockAPIError(f"Error code: 403 - {body}", status_code=403, body=body)
+        result = classify_api_error(err, provider="thor", model="deepseek-v4-pro")
+        assert result.reason == FailoverReason.auth
+        assert result.retryable is False and result.should_fallback is True
+        assert result.should_rotate_credential is False
+        assert "welcome_route" not in result.error_context
+
+    def test_ordinary_403_is_untouched(self):
+        result = classify_api_error(MockAPIError("forbidden", status_code=403, body={"message": "forbidden"}), provider="thor")
+        assert result.reason == FailoverReason.auth
+        assert "welcome_route" not in result.error_context
 
 class TestAuthErrorNamesOffRouteEndpoint:
     """#113719: an auth refusal from a route that is not the provider's own endpoint names the host."""

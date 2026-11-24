@@ -264,7 +264,15 @@ def _resolve_verify(
                 "CA bundle path does not exist: %s — falling back to default certificates",
                 ca_path)
             return _default_verify()
-        return ssl.create_default_context(cafile=ca_path)
+        # An explicit bundle REPLACES trust: build from the un-injected stdlib class
+        # (agent.ssl_verify._stdlib_ssl_context_class), not ssl.create_default_context --
+        # after install_truststore() the latter returns a truststore context that falls
+        # back to the OS verifier whenever the bundle rejects a chain.
+        from agent.ssl_verify import _stdlib_ssl_context_class
+
+        ctx = _stdlib_ssl_context_class()(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.load_verify_locations(cafile=ca_path)
+        return ctx
     return _default_verify()
 
 
