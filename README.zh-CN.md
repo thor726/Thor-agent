@@ -8,14 +8,14 @@
   <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Thor Labs"></a>
+  <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Built%20by-Thor%20Labs-blueviolet?style=for-the-badge" alt="Built by Thor Labs"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-lightgrey?style=for-the-badge" alt="English"></a>
   <a href="README.ur-pk.md"><img src="https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge" alt="اردو"></a>
 </p>
 
 **由 [Thor Labs](https://github.com/thor726/Thor-agent) 构建的自进化 AI 代理。** 它是唯一内置学习闭环的智能代理——从经验中创建技能，在使用中改进技能，主动持久化知识，搜索过往对话，并在跨会话中逐步构建对你的深度理解。可以在 $5 的 VPS 上运行，也可以在 GPU 集群上运行，或者使用几乎零成本的 Serverless 基础设施。它不绑定你的笔记本——你可以在 Telegram 上与它对话，而它在云端 VM 上工作。
 
-支持任意模型——[Nous Portal](https://portal.thor-agent.local)、[OpenRouter](https://openrouter.ai)（200+ 模型）、[NVIDIA NIM](https://build.nvidia.com)（Nemotron）、[小米 MiMo](https://platform.xiaomimimo.com)、[z.ai/GLM](https://z.ai)、[Kimi/Moonshot](https://platform.moonshot.ai)、[MiniMax](https://www.minimax.io)、[Hugging Face](https://huggingface.co)、OpenAI，或自定义端点。使用 `thor model` 即可切换——无需改代码，无锁定。
+支持任意模型——[ThorHub](https://llm.thormarket.site)、[OpenRouter](https://openrouter.ai)（200+ 模型）、[NVIDIA NIM](https://build.nvidia.com)（Nemotron）、[小米 MiMo](https://platform.xiaomimimo.com)、[z.ai/GLM](https://z.ai)、[Kimi/Moonshot](https://platform.moonshot.ai)、[MiniMax](https://www.minimax.io)、[Hugging Face](https://huggingface.co)、OpenAI，或自定义端点。使用 `thor model` 即可切换——无需改代码，无锁定。
 
 <table>
 <tr><td><b>真正的终端界面</b></td><td>完整的 TUI，支持多行编辑、斜杠命令自动补全、对话历史、中断重定向和流式工具输出。</td></tr>
@@ -72,22 +72,15 @@ thor doctor       # 诊断问题
 
 ---
 
-## 省去到处收集 API Key — Nous Portal
+## 使用 ThorHub 购买 Token
 
-Thor 始终允许你使用任意服务商，这点不会改变。但如果你不想为模型、网页搜索、图像生成、TTS、云浏览器分别去申请五个不同的 API Key，**[Nous Portal](https://portal.thor-agent.local)** 用一个订阅就能覆盖全部：
+Thor 始终允许你使用任意服务商，这点不会改变。运行 `thor setup`，选择自己的服务商和模型；每个服务商都有自己的 API Key 和计费方式。这才是使用 Thor 的常规方式。
 
-- **300+ 模型** — 用 `/model <name>` 随时切换
-- **Tool Gateway** — 网页搜索、图像生成（FAL）、文本转语音（OpenAI）、云浏览器（Browser Use），全部通过订阅托管。无需额外注册任何账户。
+如果你不想管理服务商账户、而是想直接购买 Token，**[ThorHub](https://llm.thormarket.site)** 是 Thor 自己的 Token 商店：在 https://llm.thormarket.site/beli 购买 Token 套餐（QRIS 支付），获得子 Key（`sk-thor-...`），再以自定义服务商的方式添加到 Thor 中。随时用 `/topup`（已配置 ThorHub Key 时）或 `/skill saldo` 查看余额，在 https://llm.thormarket.site/beli/topup 充值。完整说明见 [ThorHub 文档](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub)。
 
-全新安装时一条命令即可：
+ThorHub 是付费 Token 商店，不是免费套餐——它只覆盖模型 Token，不包括网页搜索、图像生成、TTS 或云浏览器。这些工具各自需要自己的 Key，用 `thor tools` 添加。
 
-```bash
-thor setup --portal
-```
-
-它会通过 OAuth 登录、把 Nous 设为推理服务商，并启用 Tool Gateway。随时用 `thor portal info` 查看路由状态。完整说明见 [Tool Gateway 文档](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tool-gateway)。
-
-你随时可以按工具单独切回自己的 API Key — Gateway 是按工具粒度生效的，不是一刀切。
+> Nous Portal（Thor Labs 旧的统一订阅网关）已从 Thor Agent 中**移除**。不再有 Portal OAuth 登录，也不再有 `thor setup --portal`。
 
 ---
 

@@ -319,7 +319,7 @@ thor-agent/
 │   ├── cli_*_mixin.py            # ThorCLI mixins (slash commands, display, session, ...)
 │   ├── config.py                 # Config management, migration, env var definitions
 │   ├── setup.py                  # Interactive setup wizard
-│   ├── auth.py                   # Provider resolution, OAuth, Nous Portal (facade + auth_*.py siblings)
+│   ├── auth.py                   # Provider resolution, OAuth, ThorHub (facade + auth_*.py siblings)
 │   ├── models.py                 # OpenRouter model selection lists
 │   ├── banner.py                 # Welcome banner, ASCII art
 │   ├── commands.py               # Central slash command registry (CommandDef), autocomplete, gateway helpers
@@ -376,7 +376,7 @@ thor-agent/
 |------|---------|
 | `~/.thor/config.yaml` | Settings (model, terminal, toolsets, compression, etc.) |
 | `~/.thor/.env` | API keys and secrets |
-| `~/.thor/auth.json` | OAuth credentials (Nous Portal) |
+| `~/.thor/auth.json` | OAuth credentials (provider logins) |
 | `~/.thor/skills/` | All active skills (bundled + hub-installed + agent-created) |
 | `~/.thor/memories/` | Persistent memory (MEMORY.md, USER.md) |
 | `~/.thor/state.db` | SQLite session database |
@@ -411,7 +411,7 @@ User message → AIAgent._run_agent_loop()
 - **Toolset grouping**: Tools are grouped into toolsets (`web`, `terminal`, `file`, `browser`, etc.) that can be enabled/disabled per platform.
 - **Session persistence**: All conversations are stored in SQLite (`thor_state.py`) with full-text search and unique session titles. Automatic per-session JSON snapshots have been removed. Existing files are left untouched; use `/save json` or `thor sessions export` for an explicit export.
 - **Ephemeral injection**: System prompts and prefill messages are injected at API call time, never persisted to the database or logs.
-- **Provider abstraction**: The agent works with any OpenAI-compatible API. Provider resolution happens at init time (Nous Portal OAuth, OpenRouter API key, or custom endpoint).
+- **Provider abstraction**: The agent works with any OpenAI-compatible API. Provider resolution happens at init time (ThorHub login, OpenRouter API key, or custom endpoint).
 - **Provider routing**: When using OpenRouter, `provider_routing` in config.yaml controls provider selection (sort by throughput/latency/price, allow/ignore specific providers, data retention policies). These are injected as `extra_body.provider` in API requests.
 
 ---
