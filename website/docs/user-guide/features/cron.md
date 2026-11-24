@@ -32,7 +32,7 @@ All of this is available to Thor itself through the `cronjob_manage` tool, so yo
 
 Whichever provider a job resolves to, its provider-specific request settings (e.g. `request_overrides` such as `extra_body`/`extra_headers` for custom providers) carry into the scheduled run just like an interactive session.
 
-`thor setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Nous Portal](../../integrations/nous-portal.md).
+`thor setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [ThorHub](../../integrations/thorhub.md).
 :::
 
 :::tip

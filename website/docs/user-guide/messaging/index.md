@@ -11,7 +11,7 @@ Chat with Thor from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home
 For the full voice feature set — including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations — see [Voice Mode](../features/voice-mode.md) and [Use Voice Mode with Thor](../../guides/use-voice-mode-with-thor.md).
 
 :::tip
-Bots need both a model provider and tool providers (TTS, web). A [Nous Portal](../../integrations/nous-portal.md) subscription bundles all of them.
+Bots need both a model provider and tool providers (TTS, web). A [ThorHub](../../integrations/thorhub.md) subscription bundles all of them.
 :::
 
 ## Messaging status in Desktop and the dashboard

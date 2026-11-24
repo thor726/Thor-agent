@@ -75,9 +75,17 @@ def published_stable_identity(repository: str, *, base_url: str | None = None,
     The protected channel names the newest release that shipped bundles. The
     GitHub releases also name one that skipped them. The newer of the two wins.
     """
-    found = published_channel_identity(
-        repository, "stable", base_url=base_url, reader_type=reader_type,
-    )
+    from thor_cli.release_channels import ChannelError
+
+    try:
+        found = published_channel_identity(
+            repository, "stable", base_url=base_url, reader_type=reader_type,
+        )
+    except ChannelError:
+        # The R2 channel record is unreadable (R2 not provisioned, the public
+        # URL not configured, or a transient network failure). Fall through to
+        # the GitHub releases below instead of failing the release.
+        found = None
     if found is not None and version_from_tag("v" + found[0]) is None:
         raise ValueError("Stable channel has an invalid source version")
     candidates = [identity for identity in (found, published_release_identity(repository, run))

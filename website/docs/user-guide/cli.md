@@ -9,7 +9,7 @@ description: "Master the Thor Agent terminal interface — commands, keybindings
 Thor Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 :::tip First-time setup
-One command — `thor setup --portal` — and you're ready to `thor chat`. See [Nous Portal](../integrations/nous-portal.md).
+One command — `thor setup --portal` — and you're ready to `thor chat`. See [ThorHub](../integrations/thorhub.md).
 :::
 
 :::tip

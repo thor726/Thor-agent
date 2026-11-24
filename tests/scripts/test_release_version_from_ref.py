@@ -151,6 +151,34 @@ def test_a_newer_published_release_outranks_the_protected_head():
     ) == ("0.21.7", "a" * 40)
 
 
+def test_unreadable_channel_falls_back_to_published_releases():
+    """An unreadable R2 channel (not provisioned, public URL unconfigured) must
+    not fail the release — the GitHub releases name the stable head instead."""
+    from scripts.releases.versioning import published_stable_identity
+    from thor_cli.release_channels import ChannelError
+
+    class FailingReader:
+        def __init__(self, base, repository):
+            pass
+
+        def resolve(self, name):
+            raise ChannelError("Channel read unavailable")
+
+    releases = [
+        {"tag_name": "v0.21.8", "draft": False, "prerelease": False},
+    ]
+
+    def run(argv):
+        if argv[:4] == ["gh", "api", "--paginate", "--slurp"]:
+            return json.dumps([releases])
+        assert argv[:2] == ["gh", "api"] and argv[3:] == ["--jq", ".sha"]
+        return "b" * 40
+
+    assert published_stable_identity(
+        "example/thor-agent", base_url="https://assets.example", reader_type=FailingReader, run=run,
+    ) == ("0.21.8", "b" * 40)
+
+
 def test_outstanding_attempts_is_the_one_shared_predicate():
     from scripts.releases.versioning import outstanding_attempts
 
