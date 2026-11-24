@@ -4,8 +4,9 @@ Dipakai ``/topup`` (agent, via ``agent.thorhub_usage``) dan CLI ``_show_billing`
 Saldo dibaca lewat ``GET /portal/member/me`` dengan header
 ``Authorization: Bearer <key ThorHub>``. Key dibaca dari env ``THORHUB_API_KEY``
 (alias ``thorhub`` di config Thor), lalu provider ``thor`` di auth store
-(``nous`` lama ikut dibaca sebagai jembatan migrasi). Fungsi di sini tidak
-pernah melempar: gagal (tidak ada key, jaringan, key salah) -> ``None``.
+(``nous`` lama ikut dibaca sebagai jembatan migrasi), lalu provider model
+custom yang alamatnya ThorHub. Fungsi di sini tidak pernah melempar: gagal
+(tidak ada key, jaringan, key salah) -> ``None``.
 
 Info akun (``ThorHubAccountInfo``) adalah snapshot yang sama dalam bentuk
 yang dipakai pemilih model / billing: ``logged_in`` = key terkonfigurasi,
@@ -35,14 +36,52 @@ THORHUB_PACKAGES_URL = f"{THORHUB_BASE_URL}/beli"
 THORHUB_API_BASE_URL = f"{THORHUB_BASE_URL}/v1"
 
 
+def _is_thorhub_url(url: str) -> bool:
+    """True bila *url* menunjuk ke ThorHub (host produksi atau override)."""
+    try:
+        from urllib.parse import urlparse
+
+        host = (urlparse(url).hostname or "").lower()
+        if not host:
+            return False
+        if host == "llm.thormarket.site" or host.endswith(".llm.thormarket.site"):
+            return True
+        base_host = (urlparse(resolve_thorhub_base_url()).hostname or "").lower()
+        return bool(base_host) and host == base_host
+    except Exception:
+        return False
+
+
+def _read_thorhub_key(var: str) -> str:
+    """Baca key *var* dari .env (didahulukan) lalu environment proses.
+
+    Gateway systemd tidak memuat .env ke ``os.environ``, jadi
+    ``os.environ.get`` saja tidak cukup di sana; ini pembaca standar
+    ``get_env_value_prefer_dotenv`` yang dipakai resolver kredensial.
+    """
+    try:
+        from thor_cli.config import get_env_value_prefer_dotenv
+
+        value = get_env_value_prefer_dotenv(var) or ""
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    except Exception:
+        pass
+    return (os.environ.get(var) or "").strip()
+
+
 def thorhub_api_key() -> str:
     """Key ThorHub dari env (alias thorhub), lalu provider ``thor`` di auth store.
 
     Provider ``nous`` lama ikut dibaca sebagai jembatan migrasi (alias provider
     ``thor`` masih menerima ``nous*``) agar auth store lama tetap jalan.
+    Terakhir, provider model custom yang alamatnya ThorHub: pembeli yang
+    memilih ThorHub sebagai custom endpoint di setup sudah memasukkan key
+    sekali — key itu dipakai ulang di sini supaya ``/topup`` (dan
+    ``thor portal info``) langsung jalan tanpa isi manual kedua.
     String kosong bila tidak ada. Tidak pernah melempar.
     """
-    if key := (os.environ.get("THORHUB_API_KEY") or "").strip():
+    if key := _read_thorhub_key("THORHUB_API_KEY"):
         return key
     try:
         from thor_cli.auth import get_provider_auth_state
@@ -70,6 +109,25 @@ def thorhub_api_key() -> str:
                 value = getattr(entry, "access_token", "") or getattr(entry, "runtime_api_key", "")
                 if isinstance(value, str) and value.strip():
                     return value.strip()
+    except Exception:
+        pass
+    # Provider model custom yang alamatnya ThorHub (legacy ``custom_providers``
+    # maupun ``providers:`` v12 — keduanya dibaca
+    # ``get_compatible_custom_providers``).
+    try:
+        from thor_cli.config_providers import get_compatible_custom_providers
+
+        for entry in get_compatible_custom_providers() or []:
+            if not isinstance(entry, dict):
+                continue
+            base_url = str(entry.get("base_url") or entry.get("url") or entry.get("api") or "").strip()
+            if not base_url or not _is_thorhub_url(base_url):
+                continue
+            key_env = str(entry.get("key_env") or entry.get("api_key_env") or "").strip()
+            if not key_env:
+                continue
+            if key := _read_thorhub_key(key_env):
+                return key
     except Exception:
         pass
     return ""

@@ -1187,6 +1187,24 @@ def _lap_custom_provider_rows(b: _PickerBuild, custom_providers: list) -> None:
         section4_slugs.add(slug.lower())
 
 
+def _live_thorhub_model_ids(*, non_blocking: bool = False) -> list[str]:
+    """Live ``/v1/models`` ids dari gateway ThorHub yang terkonfigurasi, atau ``[]``.
+
+    Tidak pernah melempar; jalur GUI non-blocking tidak melakukan fetch
+    (lantai katalog statis tetap dipakai). Key dibaca lewat
+    :func:`thor_cli.thorhub_account.thorhub_api_key`, jadi key provider
+    custom ThorHub ikut terpakai di sini.
+    """
+    if non_blocking:
+        return []
+    try:
+        from thor_cli.auth_thorhub import fetch_thorhub_models
+
+        return list(fetch_thorhub_models(timeout_seconds=5.0) or [])
+    except Exception:
+        return []
+
+
 def _build_curated_lists(current_provider: str, current_base_url: str, current_model: str,
                         non_blocking: bool = False) -> dict[str, list[str]]:
     """Curated model lists keyed by thor provider id, plus the dynamic ones (nous manifest,
@@ -1202,7 +1220,10 @@ def _build_curated_lists(current_provider: str, current_base_url: str, current_m
         if not curated.get(_pp.name) and (rows := list(_pp.static_models or _pp.fallback_models)):
             curated[_pp.name] = rows
     # Remote manifest so new Portal models surface without a release; in-repo snapshot fallback.
-    curated["thor"] = get_curated_thorhub_model_ids()
+    # Live gateway list first (blocking path only): the manifest is a static snapshot that
+    # drifts from a self-hosted gateway's catalog, so a buyer picking "ThorHub" would
+    # otherwise see model ids the gateway does not serve.
+    curated["thor"] = _live_thorhub_model_ids(non_blocking=non_blocking) or get_curated_thorhub_model_ids()
     if "ollama-cloud" not in curated:
         from thor_cli.models import fetch_ollama_cloud_models
         # Read path: cache only; the row's own SWR refresh (cached_provider_model_ids) warms it.

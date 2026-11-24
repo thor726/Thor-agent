@@ -445,9 +445,9 @@ class TestIntegrationWithModelsModule:
 
 
     def test_picker_thorhub_row_uses_curated_list(self, tmp_path, monkeypatch):
-        """The /model picker surfaces the curated ``_PROVIDER_MODELS["thor"]``
-        list in curated order — matching the ``thor model`` CLI — not the live
-        ``/v1/models`` catalog or the manifest. ThorHub has no recommendations,
+        """When the live ``/v1/models`` list is unreachable, the /model picker
+        falls back to the curated ``_PROVIDER_MODELS["thor"]`` list in curated
+        order — matching the ``thor model`` CLI. ThorHub has no recommendations,
         so offline it's exactly the curated list.
         """
         # We deliberately do NOT use the ``isolated_home`` fixture here:
@@ -473,9 +473,10 @@ class TestIntegrationWithModelsModule:
                 )
             )
 
-            # Stub the Portal recommendation union so the row is deterministic
-            # (the curated list alone) and never touches the network. ``expected``
-            # is computed from the same source the picker uses internally
+            # Stub the Portal recommendation union and the live ``/v1/models``
+            # fetch so the row is deterministic (the curated list alone) and
+            # never touches the network. ``expected`` is computed from the same
+            # source the picker uses internally as its fallback
             # (``curated["thor"] = get_curated_thorhub_model_ids()``), so the test
             # stays an invariant — it can't rot as the curated/manifest list grows.
             with patch.object(
@@ -486,6 +487,9 @@ class TestIntegrationWithModelsModule:
             ), patch(
                 "thor_cli.models.union_with_portal_paid_recommendations",
                 side_effect=lambda ids, *a, **k: (ids, {}),
+            ), patch(
+                "thor_cli.model_switch_providers._live_thorhub_model_ids",
+                return_value=[],
             ):
                 expected = get_curated_thorhub_model_ids()
                 picker = list_picker_providers(
@@ -497,6 +501,50 @@ class TestIntegrationWithModelsModule:
         thor_row = next((r for r in picker if r["slug"] == "thor"), None)
         assert thor_row is not None, "thor row must appear when authed"
         assert thor_row["models"] == expected
+
+    def test_picker_thorhub_row_uses_live_list_when_available(self, tmp_path, monkeypatch):
+        """When the live ``/v1/models`` list is reachable, the picker surfaces
+        it for the ThorHub row instead of the static curated manifest — a
+        self-hosted gateway's catalog is what its buyers must see.
+        """
+        import importlib
+        from thor_cli import model_catalog
+        importlib.reload(model_catalog)
+        try:
+            from thor_cli.model_switch_providers import list_picker_providers
+
+            active_home = Path(os.environ["THOR_HOME"])
+            (active_home / "auth.json").write_text(
+                json.dumps(
+                    {
+                        "providers": {"thor": {"api_key": "sk-thor-fake"}},
+                        "credential_pool": {},
+                    }
+                )
+            )
+
+            live = ["deepseek-v4-pro", "glm-5.3-flash", "auto"]
+            with patch.object(
+                model_catalog, "_fetch_manifest", return_value=_valid_manifest()
+            ), patch("thor_cli.models.check_thorhub_free_tier", return_value=False), patch(
+                "thor_cli.models.union_with_portal_free_recommendations",
+                side_effect=lambda ids, *a, **k: (ids, {}),
+            ), patch(
+                "thor_cli.models.union_with_portal_paid_recommendations",
+                side_effect=lambda ids, *a, **k: (ids, {}),
+            ), patch(
+                "thor_cli.model_switch_providers._live_thorhub_model_ids",
+                return_value=list(live),
+            ):
+                picker = list_picker_providers(
+                    current_provider="thor", max_models=99
+                )
+        finally:
+            model_catalog.reset_cache()
+
+        thor_row = next((r for r in picker if r["slug"] == "thor"), None)
+        assert thor_row is not None, "thor row must appear when authed"
+        assert thor_row["models"] == live
 
     def test_picker_max_models_cap_semantics(self, tmp_path, monkeypatch):
         """The cap argument has three distinct meanings on the real slicing
