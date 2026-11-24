@@ -9,6 +9,11 @@ only the ``/topup`` view (``CreditsView`` / ``build_credits_view``) that
 the CLI, the gateway and the TUI shared.
 
 Fail-open: no key / fetch fails -> ``CreditsView(logged_in=False)``.
+
+``balance_lines`` ikut menampilkan ringkasan prompt-cache ThorHub (hit rate
++ token kuota yang dihemat) bila gateway mengirim blok ``cache`` di
+``/portal/member/me``; gateway lama yang belum mengirimnya tetap menampilkan
+saldo seperti biasa.
 """
 
 from __future__ import annotations

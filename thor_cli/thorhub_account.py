@@ -122,6 +122,44 @@ def fetch_thorhub_balance(*, timeout: float = 10.0) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
+def format_thorhub_cache_lines(cache: object) -> tuple[str, ...]:
+    """Baris ringkasan prompt-cache ThorHub (blok ``cache`` dari ``/portal/member/me``).
+
+    Gateway lama tidak mengirim blok ini -> () (tanpa baris, tanpa error).
+    Blok cache berisi hit rate, token cache-read, token kuota yang dihemat,
+    dan jumlah request yang kena cache — semuanya dihitung di sisi ThorHub
+    (llm-gateway), bukan di sini.
+    """
+    if not isinstance(cache, dict):
+        return ()
+    try:
+        cached = cache.get("cached_tokens")
+        saved = cache.get("tokens_saved")
+        rate = cache.get("cache_hit_rate")
+        requests_with_cache = cache.get("requests_with_cache")
+        requests = cache.get("requests")
+        if cached is None and saved is None and rate is None and requests_with_cache is None:
+            return ()
+        lines: list[str] = []
+        parts: list[str] = []
+        if rate is not None:
+            try:
+                parts.append(f"{float(rate):g}% hit")
+            except (TypeError, ValueError):
+                pass
+        if cached is not None:
+            parts.append(f"{_fmt_id(cached)} token dari cache")
+        if parts:
+            lines.append("  Prompt-cache ThorHub: " + " · ".join(parts))
+        if saved:
+            lines.append(f"  Hemat kuota: {_fmt_id(saved)} token")
+        if requests_with_cache is not None and requests is not None:
+            lines.append(f"  Request kena cache: {_fmt_id(requests_with_cache)} dari {_fmt_id(requests)}")
+        return tuple(lines)
+    except Exception:
+        return ()
+
+
 def format_thorhub_balance_lines(data: dict) -> tuple[str, ...]:
     """Baris saldo (token, bukan USD) untuk ditampilkan di /topup."""
     limit = data.get("token_limit")
@@ -140,6 +178,7 @@ def format_thorhub_balance_lines(data: dict) -> tuple[str, ...]:
     days = data.get("key_days_left")
     if days is not None:
         lines.append(f"  Masa aktif key: {days} hari lagi")
+    lines.extend(format_thorhub_cache_lines(data.get("cache")))
     if data.get("is_active") is False:
         lines.append("  Key sedang nonaktif — hubungi admin ThorHub.")
     lines.append(f"  Top-up: {THORHUB_TOPUP_URL}")
