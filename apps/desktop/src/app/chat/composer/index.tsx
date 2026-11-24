@@ -29,7 +29,6 @@ import { $chatOnboardingSolo } from '@/store/onboarding-intro'
 import { useReplyPaused } from '@/store/paused-replies'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
-import { $gatewayState } from '@/store/session'
 import { $botChatSessionIds, $sessionStates, $sessionTiles, isBotChatSession } from '@/store/session-states'
 import { useForcedTextDirection } from '@/store/text-direction'
 import { $threadScrolledUpBySession } from '@/store/thread-scroll'
@@ -46,7 +45,6 @@ import {
   implicitSlashAcceptIndex,
   liveComposerDraft,
   type QueueEditState,
-  shouldDisableComposerInput,
   slashArgStage
 } from './composer-utils'
 import { ContextMenu } from './context-menu'
@@ -59,6 +57,7 @@ import { HelpHint } from './help-hint'
 import { useAtCompletions } from './hooks/use-at-completions'
 import { useCardWaitingSubmit } from './hooks/use-card-waiting-submit'
 import { useComposerBranch } from './hooks/use-composer-branch'
+import { controlsDisabled, useComposerConnection } from './hooks/use-composer-connection'
 import { useComposerDraft } from './hooks/use-composer-draft'
 import { useComposerDrop } from './hooks/use-composer-drop'
 import { useComposerEscCancel } from './hooks/use-composer-esc-cancel'
@@ -127,7 +126,7 @@ function controlRowGridClass(singleColumn: boolean, stacked: boolean): string {
 export function ChatBar({
   busy,
   cwd,
-  disabled,
+  disabled: gatewayDisabled,
   focusKey,
   freshDraftKey,
   gateway,
@@ -276,9 +275,7 @@ export function ChatBar({
   const emoji = useEmojiCompletions()
 
   const { t } = useI18n()
-  const gatewayState = useStore($gatewayState)
-  const reconnecting = gatewayState !== 'open'
-  const inputDisabled = shouldDisableComposerInput(disabled, gatewayState)
+  const { backendTransition, disabled, inputDisabled, reconnecting } = useComposerConnection(gatewayDisabled, profile)
 
   // The draft engine — detached source of truth (DOM + draftRef + edge
   // selectors); typing never re-renders the chrome. ChatBar owns `queueEditRef`
@@ -367,6 +364,7 @@ export function ChatBar({
   } = useComposerQueue({
     activeQueueSessionKey,
     attachments,
+    backendSwitching: backendTransition !== null,
     busy,
     clearDraft,
     draftRef,
@@ -426,6 +424,7 @@ export function ChatBar({
     activeQueueSessionKey,
     activeQueueSessionKeyRef,
     attachments,
+    backendTransition,
     busy,
     clearDraft,
     disabled,
@@ -455,7 +454,7 @@ export function ChatBar({
 
   // Resting / reconnecting / starting placeholder text, re-rolled only on a real
   // conversation change.
-  const placeholder = useComposerPlaceholder({ disabled, reconnecting, sessionId })
+  const placeholder = useComposerPlaceholder({ disabled, profile, reconnecting, sessionId })
 
   // Trigger / completion engine: @// detection, the adapter-driven item list,
   // popover selection, and chip insertion. The keydown nav block below consumes
@@ -1138,7 +1137,7 @@ export function ChatBar({
         onToggleMute: conversation.toggleMute,
         status: conversation.status
       }}
-      disabled={disabled}
+      disabled={controlsDisabled(disabled, backendTransition)}
       foldVoice={foldVoice}
       hasComposerPayload={hasComposerPayload}
       hideModelPill={guidedChat}

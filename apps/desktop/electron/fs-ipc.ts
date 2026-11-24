@@ -27,6 +27,8 @@ import { registerPluginFilesIpc } from './plugin-files-ipc'
 
 export interface FsIpcDeps {
   thorHome: string
+  /** A profile a plugin's launcher runs: its home never feeds the plugin root. */
+  isLaunchedProfile: (profile: string) => boolean
   readActiveDesktopProfile: () => null | string
   expandUserPath: (value: string) => string
   resolveRequestedPathForIpc: (value: string, options: { purpose: string }) => string
@@ -36,6 +38,7 @@ export interface FsIpcDeps {
 
 export function registerFsIpc({
   thorHome,
+  isLaunchedProfile,
   readActiveDesktopProfile,
   expandUserPath,
   resolveRequestedPathForIpc,
@@ -143,8 +146,8 @@ export function registerFsIpc({
   // moved up once so it does not silently vanish on a profile switch.
   async function desktopPluginsRoot(): Promise<string> {
     const root = await ensureDir(path.join(thorHome, DESKTOP_PLUGINS_DIR))
-    await migrateProfileScopedDesktopPlugins(thorHome, root)
-    await reconcileUnifiedDesktopHalves(thorHome, root)
+    await migrateProfileScopedDesktopPlugins(thorHome, root, isLaunchedProfile)
+    await reconcileUnifiedDesktopHalves(thorHome, root, isLaunchedProfile)
 
     return root
   }
@@ -158,7 +161,7 @@ export function registerFsIpc({
   ipcMain.handle('thor:fs:reconcileDesktopPlugins', async () => {
     const root = await ensureDir(path.join(thorHome, DESKTOP_PLUGINS_DIR))
 
-    return reconcileDesktopHalvesReport(thorHome, root)
+    return reconcileDesktopHalvesReport(thorHome, root, isLaunchedProfile)
   })
 
   // The LOCAL logs root (`<THOR_HOME>/logs`, profile-aware) — the error
