@@ -150,3 +150,104 @@ def test_session_keys():
     assert session_key_profile("agent:work:abc") == "work"
     assert session_key_profile("not-a-key") is None
     assert session_key_profile(None) is None
+
+
+# --- persistence core contracts (commit 2) -----------------------------------
+
+
+def test_error_taxonomy():
+    from persistence.core.errors import (
+        AuthorityRefusal,
+        CompressionInProgress,
+        DiskFull,
+        ExportTooLarge,
+        NotFound,
+        PersistenceError,
+        SessionRowMissing,
+        StoreContention,
+        StoreQuarantined,
+        StoreReplaced,
+        TransientStoreError,
+    )
+
+    assert issubclass(AuthorityRefusal, PersistenceError)
+    assert issubclass(AuthorityRefusal, ValueError)
+    assert issubclass(SessionRowMissing, NotFound)
+    assert issubclass(StoreContention, TransientStoreError)
+    assert issubclass(DiskFull, TransientStoreError)
+    assert issubclass(StoreQuarantined, PersistenceError)
+    assert issubclass(CompressionInProgress, PersistenceError)
+    assert issubclass(ExportTooLarge, ValueError)
+    err = StoreReplaced("db was replaced")
+    assert isinstance(err, PersistenceError) and isinstance(err, RuntimeError)
+    assert err.cause == "replaced"
+
+
+def test_identity_paging():
+    from persistence.core.identity import Page, PageRequest
+
+    with pytest.raises(ValueError):
+        PageRequest(limit=0)
+    req = PageRequest(limit=10)
+    assert req.limit == 10 and req.cursor is None
+    page = Page(items=(1, 2), continuation=None)
+    assert page.items == (1, 2)
+
+
+def test_stored_instant():
+    from datetime import datetime, timezone
+
+    from persistence.core.conventions import (
+        RowVisibility,
+        UNTRUSTED_INSTANT,
+        ensure_utc,
+        stored_instant,
+    )
+
+    assert stored_instant(None) is None
+    assert stored_instant("") is None
+    instant = stored_instant(1_700_000_000)
+    assert instant is not None and instant.tzinfo is timezone.utc
+    assert abs(instant.timestamp() - 1_700_000_000) < 1e-6
+    assert stored_instant("not-a-number") is None
+    assert stored_instant(float("inf")) is None
+    assert stored_instant(-5) is None  # outside the trust window
+    assert stored_instant(5_000_000_000) is None  # outside the trust window
+    aware = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    assert stored_instant(aware) == aware
+    with pytest.raises(ValueError):
+        ensure_utc(datetime(2026, 1, 1))  # naive rejected
+    assert UNTRUSTED_INSTANT.timestamp() == 0.0
+    assert {v.value for v in RowVisibility} == {
+        "active",
+        "rewound",
+        "compaction_archived",
+    }
+
+
+def test_authority_vocabulary():
+    from persistence.authority.vocabulary import (
+        ADMISSION_QUEUE_MAX,
+        LEGACY_CREATION_SOURCES,
+        LEGACY_LOCAL_SOURCES,
+        NOT_CLIENT_LABELS,
+        OwnerRule,
+        admission_fingerprint,
+    )
+
+    assert ADMISSION_QUEUE_MAX == 32
+    assert "cli" in LEGACY_LOCAL_SOURCES and "telegram" not in LEGACY_LOCAL_SOURCES
+    assert LEGACY_CREATION_SOURCES == {"desktop": "gui"}
+    assert "cron" in NOT_CLIENT_LABELS
+    rule = OwnerRule(
+        host_subject="uid:1000",
+        login_providers=frozenset({"thor"}),
+        messaging_labels=frozenset({"telegram"}),
+    )
+    assert rule.host_subject == "uid:1000"
+    fp1 = admission_fingerprint(canonical_target="sess", payload={"a": 1})
+    fp2 = admission_fingerprint(canonical_target="sess", payload={"a": 1})
+    assert fp1 == fp2 and isinstance(fp1, str) and fp1
+    assert admission_fingerprint(
+        canonical_target="other", payload={"a": 1}
+    ) != fp1
