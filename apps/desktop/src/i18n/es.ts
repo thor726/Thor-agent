@@ -4915,6 +4915,7 @@ export const esOverrides = {
       branchNewChat: 'Ramificar en chat nuevo',
       react: 'Reaccionar',
       dismissError: 'Descartar error',
+      responseContinuing: 'Continuando…',
       responseStopped: 'Respuesta detenida',
       ...esErrorLayers,
       errorCodes: {

@@ -4940,6 +4940,7 @@ export const frOverrides = {
       branchNewChat: 'Créer une branche dans une nouvelle conversation',
       react: 'Réagir',
       dismissError: "Ignorer l'erreur",
+      responseContinuing: 'Reprise en cours…',
       responseStopped: 'Réponse interrompue',
       ...frErrorLayers,
       errorCodes: {
