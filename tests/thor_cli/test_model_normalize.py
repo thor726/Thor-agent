@@ -57,6 +57,40 @@ class TestCopilotModelNormalization:
 # ── Aggregator providers (regression) ──────────────────────────────────
 
 
+# ── ThorHub flat-namespace normalization ───────────────────────────────
+
+class TestThorHubFlatNamespace:
+    """ThorHub is a flat-namespace reseller: its /v1/models returns bare IDs and the
+    gateway rejects vendor-prefixed names. ``normalize_model_for_provider`` must
+    therefore NEVER prepend a vendor prefix for ThorHub — the picker shows bare
+    IDs and the switch must send exactly what the picker showed, or the
+    validation step rejects the prefixed id the user never picked.
+    """
+
+    @pytest.mark.parametrize("model,expected", [
+        ("glm-5.3-flash", "glm-5.3-flash"),
+        ("deepseek-v4.1-flash", "deepseek-v4.1-flash"),
+        ("deepseek-v4-flash-vision-exp", "deepseek-v4-flash-vision-exp"),
+        ("auto", "auto"),
+    ])
+    def test_thorhub_bare_id_passes_through(self, model, expected):
+        assert normalize_model_for_provider(model, "thor") == expected
+
+    @pytest.mark.parametrize("model,expected", [
+        ("z-ai/glm-5.3-flash", "glm-5.3-flash"),
+        ("deepseek/deepseek-v4.1-flash", "deepseek-v4.1-flash"),
+    ])
+    def test_thorhub_prefixed_id_is_stripped_to_bare(self, model, expected):
+        assert normalize_model_for_provider(model, "thor") == expected
+
+    def test_thorhub_alias_slug_behaves_the_same(self):
+        assert normalize_model_for_provider("glm-5.3-flash", "thorhub") == "glm-5.3-flash"
+
+    def test_openrouter_still_prepends_vendor(self):
+        """Regression guard: real aggregators keep their vendor-prefixed slugs."""
+        assert normalize_model_for_provider("glm-5.3-flash", "openrouter") == "z-ai/glm-5.3-flash"
+
+
 # ── detect_vendor ──────────────────────────────────────────────────────
 
 

@@ -208,6 +208,14 @@ def normalize_model_for_provider(model_input: str, target_provider: str) -> str:
         return name
     provider = _normalize_provider_alias(target_provider)
 
+    # ThorHub is a flat-namespace reseller: /v1/models returns bare IDs and the gateway
+    # rejects vendor-prefixed names, so strip ANY leading ``vendor/`` (commonly copied
+    # from aggregator slugs) and pass through bare — never prepend one.
+    if provider in ("thor", "thorhub"):
+        if "/" in name:
+            name = name.split("/", 1)[1].strip() or name
+        return name
+
     if provider in _AGGREGATOR_PROVIDERS:
         return _prepend_vendor(name)
 
