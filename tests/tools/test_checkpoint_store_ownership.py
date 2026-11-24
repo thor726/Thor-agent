@@ -35,7 +35,9 @@ def paused(args, *rest, **kwargs):
 c._run_git = paused
 assert c.CheckpointManager(enabled=True, max_total_size_mb=0).ensure_checkpoint(sys.argv[2], "concurrent")
 '''
-    env = {**os.environ, "PYTHONPATH": str(Path(checkpoints.__file__).resolve().parents[1])}
+    # tools.checkpoint_manager is an alias for agent.checkpoints.manager
+    # (Fase 7 move), so the repo root is two levels above it, not one.
+    env = {**os.environ, "PYTHONPATH": str(Path(checkpoints.__file__).resolve().parents[2])}
     child = subprocess.Popen([sys.executable, "-u", "-c", program, str(base), str(project)],
                              cwd=tmp_path, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE, text=True, encoding="utf-8")
