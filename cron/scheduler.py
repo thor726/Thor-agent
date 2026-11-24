@@ -2657,27 +2657,9 @@ def run_job(
         return False, output, "", error_msg
 
     finally:
-        from cron.scheduler_detached_worker import defer_teardown_to_running_worker
-        _worker_teardown_deferred = defer_teardown_to_running_worker(
-            _worker_state.get("future"), _session_db, agent, job_id, job_name, _cron_session_id,
-            workdir=scope.workdir)
-        scope.exit()
-        if _session_db and not _worker_teardown_deferred:
-            _finalize_cron_session(_session_db, agent, job_id, job_name, _cron_session_id,
-                                   workdir=scope.workdir)
-        # Tear down the ephemeral agent or the gateway leaks fds per tick (EMFILE). With deferred
-        # teardown, hand the live agent back: delivery needs a live async client.
-        # Release subprocesses, terminal sandboxes, browser daemons, and the main OpenAI/httpx client held
-        # by this ephemeral cron agent. Without this, a gateway that ticks cron every N minutes leaks fds
-        # per job until it hits EMFILE (#10200 / "too many open files"). When the caller opted to defer
-        # teardown (passed a list), hand the live agent back instead of closing it here — delivery must run
-        # against a live async client, and the caller tears down afterwards (#58720).
-        if not _worker_teardown_deferred:
-            if defer_agent_teardown is not None:
-                if agent is not None:
-                    defer_agent_teardown.append(agent)
-            else:
-                _teardown_cron_agent(agent, job_id)
+        from cron.scheduler_session_cleanup import finish_cron_run
+        finish_cron_run(job, job_name, _cron_session_id, owner_execution, scope, _session_db,
+                        agent, _worker_state.get("future"), defer_agent_teardown)
 
 
 def _teardown_cron_agent(

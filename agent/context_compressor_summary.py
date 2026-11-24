@@ -26,6 +26,11 @@ def _accepts_keyword_argument(callable_obj: Any, name: str) -> bool:
     )
 
 
+# Public alias: upstream callers import ``accepts_keyword_argument`` (turn_preflight,
+# conversation_compression, state hooks); Thor keeps the private name internally.
+accepts_keyword_argument = _accepts_keyword_argument
+
+
 class SummaryDispatchMixin:
     def _apply_summary_route(self, call_kwargs: dict, pinned: Optional[dict[str, Any]] = None) -> None:
         """Pin the summary route onto ``call_kwargs`` for both compression entry points.

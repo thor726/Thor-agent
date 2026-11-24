@@ -10,6 +10,7 @@ module, and every origin-module symbol is read through ``_cc()`` at call time so
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any, Optional
 
 logger = logging.getLogger("agent.context_compressor")
@@ -20,6 +21,25 @@ def _cc():
     ``agent.context_compressor.X`` effective (attributes are read at call time)."""
     from agent import context_compressor
     return context_compressor
+
+
+def terminal_stub(args: dict, content: str, line_count: int) -> str:
+    """One-line terminal stub. Lines are counted on the decoded ``output`` (the JSON envelope has no
+    literal newlines), and a failed command keeps its last non-empty output line. The whole stub stays
+    under ``_PRUNE_MIN_CHARS``, so a later pass never takes it for a result to summarise again."""
+    cmd = " ".join(_cc()._str_arg(args, "command").splitlines())
+    cmd = cmd if len(cmd) <= 80 else cmd[:77] + "..."
+    exit_code = m.group(1) if (m := re.search(r'"exit_code"\s*:\s*(-?\d+)', content)) else "?"
+    output = _cc()._json_dict(content).get("output")
+    lines = output.splitlines() if isinstance(output, str) else []
+    if isinstance(output, str):
+        line_count = len(lines)
+    stub = f"[terminal] ran `{cmd}` -> exit {exit_code}, {line_count} {'line' if line_count == 1 else 'lines'} output"
+    last = next((line.strip() for line in reversed(lines) if line.strip()), "")
+    room = min(120, _cc()._PRUNE_MIN_CHARS - 1 - len(stub) - len(" | last: "))
+    if exit_code not in ("?", "0") and last and room >= 20:
+        stub += f" | last: {last[:room]}"
+    return stub
 
 
 class ProactivePruneMixin:
