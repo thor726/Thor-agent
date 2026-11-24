@@ -6,7 +6,7 @@ import { useI18n } from '@/i18n'
 import { isSlashCommandText } from '@/lib/chat-runtime'
 import { triggerHaptic } from '@/lib/haptics'
 import { useSessionSlice } from '@/lib/use-session-slice'
-import { type ComposerAttachment, freezeComposerTransportPayload } from '@/store/composer'
+import { type ComposerAttachment, freezeComposerTransportPayload, isFreshDraftScope } from '@/store/composer'
 import { resetBrowseState } from '@/store/composer-input-history'
 import {
   $parkedQueueSessions,
@@ -21,6 +21,7 @@ import {
   type QueuedPromptEntry,
   queuedSubmissionId,
   removeQueuedPrompt,
+  removeSentQueuedPrompt,
   resolveQueuedPromptTransport,
   serverOwnsComposerQueue,
   shouldAutoDrain,
@@ -30,6 +31,7 @@ import {
 } from '@/store/composer-queue'
 import { activeGateway } from '@/store/gateway'
 import { notify } from '@/store/notifications'
+import { useReplyPaused } from '@/store/paused-replies'
 import { $sessionsLoading } from '@/store/session'
 
 import { cloneAttachments, type QueueEditState } from '../composer-utils'
@@ -40,7 +42,7 @@ import type { ChatBarProps } from '../types'
 /** Freeze terminal chips for queue persistence. Persists the chip/display
  *  form; fenced selection CONTENTS stay in the runtime map. Returns null when
  *  a chip has no selection payload (caller should abort without mutating the queue). */
-function freezeQueuedDraftText(
+export function freezeQueuedDraftText(
   text: string,
   copy: {
     terminalSelectionMissingTitle: string
@@ -74,9 +76,16 @@ function freezeQueuedDraftText(
   }
 }
 
+// A new chat's queue (its fresh draft key: no session yet) drains as the chat's first message, which
+// creates the session; a stored chat's queue drains into that chat.
+const queueDrainTarget = (queueKey: string, runtimeSessionId: null | string) =>
+  isFreshDraftScope(queueKey) ? {} : { sessionId: runtimeSessionId, storedSessionId: queueKey }
+
 interface UseComposerQueueArgs {
   activeQueueSessionKey: string | null
   attachments: ComposerAttachment[]
+  /** The profile's backend is starting, stopping or restarting (store/backend-transition.ts): the queue holds until it is done. */
+  backendSwitching?: boolean
   busy: boolean
   clearDraft: () => void
   draftRef: RefObject<string>
@@ -114,6 +123,7 @@ const isOwnerRefusal = (error: unknown) =>
 export function useComposerQueue({
   activeQueueSessionKey,
   attachments,
+  backendSwitching = false,
   busy,
   clearDraft,
   draftRef,
@@ -154,6 +164,7 @@ export function useComposerQueue({
   const parkedSessions = useStore($parkedQueueSessions)
   const queueParked = Boolean(activeQueueSessionKey && parkedSessions[activeQueueSessionKey])
   const sessionsLoading = useStore($sessionsLoading)
+  const replyPaused = useReplyPaused(activeQueueSessionKey, sessionId)
 
   const [queueEdit, setQueueEdit] = useState<QueueEditState | null>(null)
   queueEditRef.current = queueEdit
@@ -440,7 +451,12 @@ export function useComposerQueue({
       // Canonical (gateway-owned) sessions admit busy input straight into the
       // durable gateway FIFO; the row comes back as a server-owned queue entry.
       // `fromQueue` submits skip the transport freeze, so send the frozen text.
-      if (serverOwnsComposerQueue(sessionId ?? activeQueueSessionKey)) {
+      // Not while the reply is paused for its continuation (store/paused-replies.ts):
+      // admitted now, the send would be drawn in the thread as the next turn's
+      // prompt between the paused reply and its continuation, and would run ahead
+      // of a continuation not yet admitted. The local queue holds it until the
+      // continuation has completed.
+      if (!replyPaused && serverOwnsComposerQueue(sessionId ?? activeQueueSessionKey)) {
         return Promise.resolve(
           onSubmit(frozen.frozenTransport ?? frozen.text, {
             attachments: cloneAttachments(attachments),
@@ -486,7 +502,7 @@ export function useComposerQueue({
 
       return true
     },
-    [activeQueueSessionKey, attachments, clearDraft, draftRef, scope.attachments, onSubmit, sessionId, t.composer]
+    [activeQueueSessionKey, attachments, clearDraft, draftRef, scope.attachments, onSubmit, replyPaused, sessionId, t.composer]
   )
 
   // All queue drain paths share one lock + send-then-remove sequence.
@@ -495,7 +511,8 @@ export function useComposerQueue({
   // is nothing to send: another window already sent the picked entry.
   const runDrain = useCallback(
     async (pickEntry: (entries: QueuedPromptEntry[]) => QueuedPromptEntry | undefined): Promise<boolean | null> => {
-      if (drainingQueueRef.current || !activeQueueSessionKey) {
+      // Held while the profile's backend is away on purpose: sent now, it would land on a backend going away.
+      if (backendSwitching || drainingQueueRef.current || !activeQueueSessionKey) {
         return false
       }
 
@@ -533,8 +550,7 @@ export function useComposerQueue({
               ...(entry.displayKind ? { displayKind: entry.displayKind } : {}),
               fromQueue: true,
               submission_id: queuedSubmissionId(entry),
-              sessionId: drainRuntimeSessionId,
-              storedSessionId: drainQueueSessionKey
+              ...queueDrainTarget(drainQueueSessionKey, drainRuntimeSessionId)
             })
           )
 
@@ -544,7 +560,7 @@ export function useComposerQueue({
 
           drainFailuresRef.current.delete(entry.id)
           // Submit now owns the blob: previews (optimistic bubble); do not revoke.
-          removeQueuedPrompt(drainQueueSessionKey, entry.id, { retainPreviewUrls: true })
+          removeSentQueuedPrompt(drainQueueSessionKey, entry.id, { retainPreviewUrls: true })
           resetBrowseState(drainRuntimeSessionId)
           // A successful drain means the queue is flowing again — lift any park
           // so the remaining entries follow. Manual drains (Enter on an empty
@@ -558,7 +574,7 @@ export function useComposerQueue({
         drainingQueueRef.current = false
       }
     },
-    [activeQueueSessionKey, onSubmit, sessionId, t.composer]
+    [activeQueueSessionKey, backendSwitching, onSubmit, sessionId, t.composer]
   )
 
   const pickDrainHead = useCallback(
@@ -570,11 +586,17 @@ export function useComposerQueue({
     [queueEditRef] // reads the edit id off a ref so the lock-holder always sees the latest
   )
 
-  const drainNextQueued = useCallback(async () => (await runDrain(pickDrainHead)) === true, [pickDrainHead, runDrain])
+  // A message held for a paused reply's continuation goes once that has completed (the auto-drain below),
+  // not on an empty Enter in between.
+  const drainNextQueued = useCallback(
+    async () => !replyPaused && (await runDrain(pickDrainHead)) === true,
+    [pickDrainHead, replyPaused, runDrain]
+  )
 
   const sendQueuedNow = useCallback(
     (id: string) => {
-      if (!activeQueueSessionKey || id === queueEdit?.entryId) {
+      // Held like the rest of the queue while the profile's backend is in a planned transition (runDrain).
+      if (backendSwitching || !activeQueueSessionKey || id === queueEdit?.entryId) {
         return false
       }
 
@@ -601,7 +623,7 @@ export function useComposerQueue({
 
       return runDrain(entries => entries.find(e => e.id === id))
     },
-    [activeQueueSessionKey, busy, onCancel, queueEdit, runDrain]
+    [activeQueueSessionKey, backendSwitching, busy, onCancel, queueEdit, runDrain]
   )
 
   // Deliver a queued entry as a mid-turn redirect — the queue-panel sibling of
@@ -612,7 +634,8 @@ export function useComposerQueue({
   // busy — idle has no turn to redirect, and `sendQueuedNow` already covers it.
   const steerQueuedNow = useCallback(
     async (id: string): Promise<boolean> => {
-      if (!onSteer || !busy || !activeQueueSessionKey || id === queueEditRef.current?.entryId) {
+      // Not into a reply on a backend in a planned transition: the entry waits in the queue (runDrain).
+      if (backendSwitching || !onSteer || !busy || !activeQueueSessionKey || id === queueEditRef.current?.entryId) {
         return false
       }
 
@@ -653,7 +676,7 @@ export function useComposerQueue({
 
       return true
     },
-    [activeQueueSessionKey, busy, onSteer, queueEditRef, t.composer]
+    [activeQueueSessionKey, backendSwitching, busy, onSteer, queueEditRef, t.composer]
   )
 
   // Double-Enter while busy. The entry usually sits in the queue because the
@@ -667,6 +690,11 @@ export function useComposerQueue({
 
   const deliverQueuedNow = useCallback(
     async (id: string) => {
+      // Held for a paused reply's continuation: never steered into it or sent as an interrupt of it.
+      if (replyPaused) {
+        return false
+      }
+
       const entry = activeQueueSessionKey ? getQueuedPrompts(activeQueueSessionKey).find(e => e.id === id) : undefined
 
       if (!busy || !entry || entry.displayKind || entry.displayText || !isSteerableEntry(entry)) {
@@ -687,7 +715,7 @@ export function useComposerQueue({
         (busyRef.current && getQueuedPrompts(activeQueueSessionKey!).some(e => e.id === id) && sendQueuedNow(id))
       )
     },
-    [activeQueueSessionKey, busy, sendQueuedNow, steerQueuedNow]
+    [activeQueueSessionKey, busy, replyPaused, sendQueuedNow, steerQueuedNow]
   )
 
   // Edge-independent auto-drain: send the head whenever the session is idle and
@@ -695,7 +723,9 @@ export function useComposerQueue({
   // a stale-session 404) can't strand the entry permanently nor spin-loop. The
   // drain lock serializes sends; a remount/reconnect resets the failure counts.
   const autoDrainNext = useCallback(() => {
-    if (busy || queueParked || drainingQueueRef.current || !activeQueueSessionKey) {
+    // A planned transition of the profile's backend holds the queue like a running turn; it drains once
+    // the transition has completed.
+    if (backendSwitching || busy || queueParked || drainingQueueRef.current || !activeQueueSessionKey) {
       return
     }
 
@@ -744,7 +774,7 @@ export function useComposerQueue({
       cancelled = true
       clearTimeout(retryTimer)
     }
-  }, [activeQueueSessionKey, busy, pickDrainHead, queueParked, queuedPrompts, runDrain, t])
+  }, [activeQueueSessionKey, backendSwitching, busy, pickDrainHead, queueParked, queuedPrompts, runDrain, t])
 
   // Re-key on a runtime session-id change. A stable stored id (queueSessionKey)
   // never churns, so a change there is a real session switch and must NOT
@@ -779,10 +809,12 @@ export function useComposerQueue({
       return
     }
 
-    if (shouldAutoDrain({ isBusy: busy, parked: queueParked, queueLength: queuedPrompts.length })) {
+    // A reply paused for an automatic continuation (store/paused-replies.ts) holds the queue like a running turn:
+    // the queued send goes after the continuation, not into it.
+    if (shouldAutoDrain({ isBusy: busy || replyPaused, parked: queueParked, queueLength: queuedPrompts.length })) {
       return autoDrainNext()
     }
-  }, [autoDrainNext, busy, drainRetryTick, queueParked, queuedPrompts.length, sessionsLoading])
+  }, [autoDrainNext, busy, drainRetryTick, queueParked, queuedPrompts.length, replyPaused, sessionsLoading])
 
   // Queue-edit cleanup: on session swap the scope effect already stashed the
   // edit snapshot; only restore into the composer when still on the same scope.

@@ -92,6 +92,15 @@ let streamMessageSeq = 0
 
 const nextStreamMessageId = (prefix: string) => `${prefix}-${Date.now()}-${++streamMessageSeq}`
 
+function streamMessageIndex(messages: readonly ChatMessage[], streamId: string): number {
+  // Live output almost always owns the tail; late tool events may own a sealed row.
+  const tailIndex = messages.length - 1
+
+  return tailIndex >= 0 && messages[tailIndex].id === streamId
+    ? tailIndex
+    : messages.findIndex(message => message.id === streamId)
+}
+
 /**
  * A sealed stream can lose a few characters while the authoritative final
  * remains the same reply. Limit the tolerated edit distance so a separate

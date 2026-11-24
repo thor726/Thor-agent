@@ -3,6 +3,7 @@ import { defineFieldCopy } from '@/app/settings/field-copy'
 
 import { defineLocale, type TranslationOverrides } from './define-locale'
 import { introJa } from './intro-ja'
+import { jaApproval } from './ja_approval'
 import { jaBoot } from './ja_boot'
 import { jaCatalog, jaSkillDeepLink } from './ja_catalog'
 import { jaClarify } from './ja_clarify'
@@ -187,6 +188,12 @@ export const jaOverrides = {
       approvalTitleNamed: session => `承認が必要です — ${session}`,
       approveAction: '承認',
       rejectAction: '拒否',
+      accessTitle: 'フォルダーアクセスが必要です',
+      accessTitleNamed: session => `フォルダーアクセスが必要です — ${session}`,
+      networkTitle: 'サイトへのアクセスが必要です',
+      networkTitleNamed: session => `サイトへのアクセスが必要です — ${session}`,
+      allowAction: '許可',
+      denyAction: '拒否',
       inputTitle: '入力が必要です',
       inputTitleNamed: session => `入力が必要です — ${session}`,
       inputBody: 'Thor が応答を待っています。',
@@ -1862,6 +1869,8 @@ export const jaOverrides = {
     remoteOverride: {
       menuItem: 'リモートホストに接続…',
       badge: (host: string) => `${host} で実行中`,
+      runHere: 'このコンピューターで実行…',
+      sandboxed: 'サンドボックス化',
       title: (profile: string) => `${profile} をリモートホストに接続`,
       description: 'このプロファイルのセッションは、このパソコンではなく指定したリモートの Thor で実行されます。',
       urlLabel: 'リモートアドレス',
@@ -2312,7 +2321,10 @@ export const jaOverrides = {
 
   composer: {
     message: 'メッセージ',
-    wakingProfile: profile => `${profile} を起動中…`,
+    switchingProfile: profile => `${profile} に切り替え中…`,
+    switchingProfileSlow: 'まだ接続中です。今送信したメッセージは接続を待ってからこのエージェントに届きます。',
+    switchProfileFailed: profile => `${profile} に切り替えられませんでした`,
+    willSendTo: profile => `${profile} に送信します`,
     placeholderStarting: 'Thor を起動中...',
     placeholderReconnecting: 'Thor に再接続中…',
     placeholderFollowUp: 'フォローアップを送信',
@@ -3482,21 +3494,7 @@ export const jaOverrides = {
       sendEdited: '編集済みメッセージを送信',
       attachingFile: '添付中…'
     },
-    approval: {
-      gatewayDisconnected: 'Thor ゲートウェイが接続されていません',
-      sendFailed: '承認応答を送信できませんでした',
-      run: '実行',
-      command: 'コマンド',
-      moreOptions: 'その他の承認オプション',
-      allowSession: 'このセッションで許可',
-      alwaysAllowMenu: '常に許可…',
-      jumpToApproval: '承認が必要',
-      reject: '拒否',
-      alwaysTitle: 'このコマンドを常に許可しますか？',
-      alwaysDescription: pattern =>
-        `これにより "${pattern}" パターンが永続的な許可リスト (~/.thor/config.yaml) に追加されます。Thor はこのセッションや将来のセッションで、このようなコマンドについて再度尋ねません。`,
-      alwaysAllow: '常に許可'
-    },
+    approval: jaApproval,
     clarify: jaClarify,
     themePicker: jaThemePicker,
     tool: {

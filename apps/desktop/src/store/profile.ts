@@ -29,6 +29,7 @@ import {
 } from '@/store/gateway'
 import { notifyError } from '@/store/notifications'
 import { notifyRemoteOverrideAuthFailure } from '@/store/profile-remote-override'
+import { dismissProfileSwitchFailure, trackProfileSwitch } from '@/store/profile-switch-state'
 import { exitProjectScope } from '@/store/project-scope'
 import { $connection, clearComposerSelectionOwner, setComposerSelectionOwner, setConnection } from '@/store/session'
 import type { SessionOwnerRoute } from '@/store/session-request-router'
@@ -70,13 +71,23 @@ export const $profilesByConnection = atom<ReadonlyMap<string, ProfileInfo[]>>(ne
 
 // Registry descriptors carry their connection id (a slug, so it never contains
 // ':'); legacy primaries are keyed by endpoint. Null is a reconnect blip (see
-// setConnection), not a source.
+// setConnection), not a source. Every local backend is this computer, and so
+// is a plugin-run profile's backend (this host answers its profile list): one
+// source, so switching between them never blanks the rail.
 function profileListSource(connection: ThorConnection | null): null | string {
   if (!connection) {
     return null
   }
 
-  return connection.connectionId ?? `${connection.mode ?? 'local'}:${connection.baseUrl}`
+  if (connection.connectionId) {
+    return connection.connectionId
+  }
+
+  if (connection.launcher || (connection.mode ?? 'local') === 'local') {
+    return LOCAL_CONNECTION_ID
+  }
+
+  return `${connection.mode}:${connection.baseUrl}`
 }
 
 export function setActiveProfile(name: string): void {
@@ -484,9 +495,18 @@ $activeGatewayProfile.subscribe(value => {
 })
 
 // Target profile while a gateway swap is mid-flight (spawning/reconnecting that
-// profile's backend), else null. Drives the chat's "waking up <profile>" loader
-// so a lazy spawn doesn't read as a hang. Single-profile users never swap.
+// profile's backend), else null. Behavioural (transcript suppression, the
+// gone-session verdict, tile retire calm) and the chat's switch indicator.
+// Single-profile users never swap.
 export const $gatewaySwapTarget = atom<string | null>(null)
+
+// A new swap supersedes an earlier rail failure: its strip names a switch the
+// user has since moved on from.
+$gatewaySwapTarget.listen(target => {
+  if (target) {
+    dismissProfileSwitchFailure()
+  }
+})
 
 // Profile whose wake resolved PAINT-FIRST while the active-profile gate was
 // still unsatisfied (#89843): on a shared-remote connection every profile is
@@ -558,6 +578,24 @@ let profileSelectionRevision = 0
 
 export function currentProfileSelectionRevision(): number {
   return profileSelectionRevision
+}
+
+/**
+ * Whether the window shows `profile`, asked once every pick that is still
+ * connecting has landed or failed. A job that changes what the window shows
+ * for a profile after it waited on something (the redial once the profile's
+ * backend has moved, the reconnect once its backend is back) asks this right
+ * before each change: a stale async result never overwrites newer intent.
+ * Asked in the middle of a pick, the job's own activation would be the newer
+ * of the two and the pick would lose to it. A pick that failed leaves the
+ * window on the profile, and the job still acts for it.
+ */
+export async function foregroundShows(profile: string): Promise<boolean> {
+  while (gatewaySwitch) {
+    await gatewaySwitch.catch(() => undefined)
+  }
+
+  return normalizeProfileKey($activeGatewayProfile.get()) === normalizeProfileKey(profile)
 }
 
 // Descriptor lookups are IPC round-trips into Electron main. A wedged main
@@ -1006,19 +1044,29 @@ export function selectProfile(name: string): void {
   // call instead (#79886). Decided now: the source is the one picked from.
   const shouldRememberStartupProfile = remembersProfilePick(target)
 
-  void Promise.all([activateOnCurrentSource(target), shouldRememberStartupProfile])
-    .then(([, shouldRemember]) => {
-      if (shouldRemember) {
-        return window.thorDesktop?.profile?.remember(target)
-      }
+  runRailSwitch(target, `Failed to switch to profile "${target}"`, async () => {
+    if (await shouldRememberStartupProfile) {
+      await window.thorDesktop?.profile?.remember(target)
+    }
+  })
+}
 
-      return undefined
-    })
-    .catch((error: unknown) => {
-      if (!notifyRemoteOverrideAuthFailure(target, error)) {
-        notifyError(error, `Failed to switch to profile "${target}"`)
-      }
-    })
+// Activate a rail pick and surface the outcome: the pending pick drives the
+// rail square's spinner, a rejection leaves a retryable failure in the chat's
+// switch indicator beside the toast. Retry re-runs only the activation — the
+// fresh draft and pins from the original pick still stand.
+function runRailSwitch(target: string, failedTitle: string, onActivated?: () => Promise<void>): void {
+  const attempt = (): void => {
+    void trackProfileSwitch(target, activateOnCurrentSource(target), attempt)
+      .then(onActivated)
+      .catch((error: unknown) => {
+        if (!notifyRemoteOverrideAuthFailure(target, error)) {
+          notifyError(error, failedTitle)
+        }
+      })
+  }
+
+  attempt()
 }
 
 // Whether a pick becomes the profile this window starts in next time.
@@ -1112,11 +1160,7 @@ export function newSessionInProfile(name: string): void {
   leaveForeignProjectScope(target)
   requestFreshSession()
   // #81094: surface the failed dial instead of failing silently.
-  void activateOnCurrentSource(target).catch((error: unknown) => {
-    if (!notifyRemoteOverrideAuthFailure(target, error)) {
-      notifyError(error, `Failed to open profile "${target}"`)
-    }
-  })
+  runRailSwitch(target, `Failed to open profile "${target}"`)
 }
 
 /** Pin the next new chat to an exact registry agent; session.create reads this route. */

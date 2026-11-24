@@ -1,12 +1,22 @@
 import { $gateway } from '@/store/gateway'
-import { receiveApprovalRequest, replayPendingApproval } from '@/store/prompts'
+import {
+  approvalKindFields,
+  approvalNamesNothing,
+  isCommandApproval,
+  receiveApprovalRequest,
+  replayPendingApproval
+} from '@/store/prompts'
 import type { SessionResumeResult } from '@/types/thor'
 
-/** Re-park a resume snapshot's pending approval; true when one was restored. */
+/** Re-park a resume snapshot's pending approval. True when the session's turn waits on it: a
+ *  command approval. A folder or site card marks its session by being parked. */
 export function restorePendingApproval(response: SessionResumeResult, sessionId: string): boolean {
   const pending = response.pending_approval
 
-  if (!pending) {
+  const kindFields = approvalKindFields(pending as Record<string, unknown>)
+
+  // A folder or site request that names no folder or site is refused, as a live one is.
+  if (!pending || approvalNamesNothing(kindFields)) {
     return false
   }
 
@@ -20,9 +30,10 @@ export function restorePendingApproval(response: SessionResumeResult, sessionId:
     description: pending.description ?? 'dangerous command',
     requestId: typeof pending.request_id === 'string' ? pending.request_id : undefined,
     sessionId,
-    smartDenied: pending.smart_denied === true
+    smartDenied: pending.smart_denied === true,
+    ...kindFields
   })
   void replayPendingApproval($gateway.get(), sessionId).catch(() => undefined)
 
-  return true
+  return isCommandApproval(kindFields)
 }

@@ -289,6 +289,12 @@ contextBridge.exposeInMainWorld('thorDesktop', {
   saveConnectionConfig: payload => ipcRenderer.invoke('thor:connection-config:save', payload),
   applyConnectionConfig: payload => ipcRenderer.invoke('thor:connection-config:apply', payload),
   testConnectionConfig: payload => ipcRenderer.invoke('thor:connection-config:test', payload),
+  // Plugin SDK host.setProfileBackend / clearProfileBackend: main confirms
+  // natively before a plugin's backend serves, or stops serving, a profile.
+  setProfileBackend: payload => ipcRenderer.invoke('thor:profile-backend:set', payload),
+  confirmSetProfileBackend: payload => ipcRenderer.invoke('thor:profile-backend:confirm-set', payload),
+  clearProfileBackend: payload => ipcRenderer.invoke('thor:profile-backend:clear', payload),
+  confirmClearProfileBackend: payload => ipcRenderer.invoke('thor:profile-backend:confirm-clear', payload),
   // Opt-in OS-keychain encryption for stored gateway secrets (default off —
   // see secret-storage-policy.ts). get never touches the OS keychain.
   getSecretStorageEncryption: () => ipcRenderer.invoke('thor:secret-storage:get'),
@@ -652,9 +658,10 @@ contextBridge.exposeInMainWorld('thorDesktop', {
     return () => ipcRenderer.removeListener('thor:backend-exit', listener)
   },
   // Soft gateway-mode apply finished tearing down the primary backend. Renderer
-  // should wipe session lists + re-dial without a window reload.
+  // should wipe session lists + re-dial without a window reload. `detail.profile`
+  // names the one profile whose route moved (a plugin's setProfileBackend).
   onConnectionApplied: callback => {
-    const listener = () => callback()
+    const listener = (_event, detail) => callback(detail && typeof detail === 'object' ? detail : {})
     ipcRenderer.on('thor:connection:applied', listener)
 
     return () => ipcRenderer.removeListener('thor:connection:applied', listener)
@@ -672,6 +679,16 @@ contextBridge.exposeInMainWorld('thorDesktop', {
     ipcRenderer.on('thor:power-battery', listener)
 
     return () => ipcRenderer.removeListener('thor:power-battery', listener)
+  },
+  // Whether the user is at this computer, by the OS idle clock where one is trustworthy.
+  presence: {
+    get: () => ipcRenderer.invoke('thor:presence:get'),
+    onChange: callback => {
+      const listener = (_event, snapshot) => callback(snapshot)
+      ipcRenderer.on('thor:presence', listener)
+
+      return () => ipcRenderer.removeListener('thor:presence', listener)
+    }
   },
   onBootProgress: callback => {
     const listener = (_event, payload) => callback(payload)

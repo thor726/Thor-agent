@@ -466,7 +466,7 @@ function pillLabel(phase: Phase, busy: Busy, w: WebAccessTranslations): string {
 
 function describe(phase: Phase, status: WebAccessStatus, w: WebAccessTranslations): string {
   const descriptions: Record<Phase, string> = {
-    off: status.nous_signed_in ? w.notRunningDetail : w.needsNous,
+    off: status.nous_signed_in ? w.notRunningDetail : w.needsThor,
     pendingOff: w.pendingOff,
     pendingOn: w.pendingOn,
     serving: status.mode === 'public' ? w.runningPublic : status.mode === 'local' ? w.runningLocal : w.runningLan,

@@ -1,4 +1,5 @@
 import {
+  type CanonicalClientIdentity,
   type ConnectionState,
   type GatewayEvent,
   type GatewayEventName,
@@ -9,6 +10,7 @@ import {
 import { map, type MapStore } from 'nanostores'
 
 import type { ThorApiRequest } from '@/global'
+import { desktopClientIdentity } from '@/lib/client-identity'
 
 import {
   CanonicalDesktopProtocol,
@@ -383,6 +385,10 @@ export class ThorGateway extends JsonRpcGatewayClient {
 
   protected override isDesktopLocal(): boolean {
     return this.nativeDial
+  }
+
+  protected override clientIdentity(): Promise<CanonicalClientIdentity> {
+    return desktopClientIdentity()
   }
 
   /** The session wire this connection negotiated; null until its readiness settles. */
