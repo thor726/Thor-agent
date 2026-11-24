@@ -546,13 +546,13 @@ def _apply_nous_gateway_defaults(cfg: dict) -> list:
     *unconfigured* tools through the Thor Tool Gateway. Purely additive — tools with a direct
     key or explicit backend are skipped. Failures never block saving the assignment."""
     try:
-        from thor_cli.nous_subscription import apply_nous_managed_defaults
+        from thor_cli.thorhub_subscription import apply_thorhub_managed_defaults
         from thor_cli.tools_config import _get_platform_tools
 
         enabled = _get_platform_tools(cfg, "cli", include_default_mcp_servers=False)
-        return sorted(apply_nous_managed_defaults(cfg, enabled_toolsets=enabled, force_fresh=True))
+        return sorted(apply_thorhub_managed_defaults(cfg, enabled_toolsets=enabled, force_fresh=True))
     except Exception:
-        _log.debug("apply_nous_managed_defaults skipped", exc_info=True)
+        _log.debug("apply_thorhub_managed_defaults skipped", exc_info=True)
         return []
 
 

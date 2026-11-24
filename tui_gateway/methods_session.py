@@ -209,7 +209,7 @@ def _active_pet():
 
 def _billing_call(rid, fn, extra: dict | None = None) -> dict:
     """Portal call → ok; BillingError → serialized envelope, else generic; ``extra`` rides both ERROR envelopes."""
-    from thor_cli.nous_billing import BillingError
+    from thor_cli.thorhub_billing import BillingError
     try:
         return _ok(rid, fn())
     except BillingError as exc:
@@ -1848,7 +1848,7 @@ _billing_view("subscription.state", "agent.subscription_view", "build_subscripti
 def _(rid, params: dict) -> dict:
     """POST /api/billing/subscription/preview → chargeless effect quote. billing:manage."""
     from agent.subscription_view import subscription_change_preview_from_payload
-    from thor_cli.nous_billing import post_subscription_preview
+    from thor_cli.thorhub_billing import post_subscription_preview
     if not (tier_id := params.get("subscription_type_id")):
         return _billing_invalid(rid, "subscription_type_id is required")
     return _billing_call(rid, lambda: _serialize_subscription_preview(
@@ -1857,13 +1857,13 @@ def _(rid, params: dict) -> dict:
 
 def _billing_route(name: str, call, *, invalid=None, message: str = "", error: str = "invalid_request",
                    idempotent: bool = False):
-    """Portal write route on ``thor_cli.nous_billing`` (lazy; tests patch its functions): ``invalid(params)``
+    """Portal write route on ``thor_cli.thorhub_billing`` (lazy; tests patch its functions): ``invalid(params)``
     → ``_billing_invalid(message, error)``; ``call(nb, params, key)`` performs the request. ``idempotent``
     mints ``idempotency_key`` if absent and echoes it (also on error) so the TUI retries the SAME operation."""
     @method(name)
     @_profile_scoped
     def _(rid, params: dict) -> dict:
-        import thor_cli.nous_billing as nb
+        import thor_cli.thorhub_billing as nb
         if invalid is not None and invalid(params):
             return _billing_invalid(rid, message, error=error)
         key = extra = None
@@ -1915,18 +1915,14 @@ _billing_route("billing.keep_going_on_credits", lambda nb, p, _k: _billing_pick(
 @method("billing.step_up")
 @_profile_scoped
 def _(rid, params: dict) -> dict:
-    """billing:manage step-up device flow → {ok, granted} (false when the server downscopes). Pooled (blocks
-    for minutes); URL/code reach the TUI via ``billing.step_up.verification`` (stdout is the RPC pipe) and the
-    browser opens TUI-side, never via the gateway's headless webbrowser.open."""
+    """billing:manage step-up → {ok, granted} (always False on ThorHub: there is no billing API
+    and no step-up flow — credits are topped up at the ThorHub store instead)."""
     sid = params.get("session_id") or ""
 
     def call():
-        from thor_cli.auth import step_up_nous_billing_scope
-        granted = step_up_nous_billing_scope(
-            open_browser=False,
-            on_verification=lambda url, code: _emit(
-                "billing.step_up.verification", sid, {"verification_url": url, "user_code": code}))
-        return {"ok": True, "granted": bool(granted)}
+        from thor_cli.thorhub_account import THORHUB_TOPUP_URL
+        return {"ok": True, "granted": False,
+                "message": f"ThorHub has no billing step-up. Top up at {THORHUB_TOPUP_URL}."}
     return _billing_call(rid, call, extra={"granted": False})
 
 

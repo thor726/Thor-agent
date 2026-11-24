@@ -8,8 +8,9 @@ Covers:
 - Idempotency key generation.
 - Custom-amount validation against bounds + multipleOf 0.01.
 
-No network: HTTP-layer tests drive _raise_for_error directly and monkeypatch the
-request function for the builder.
+No network: ThorHub has no billing HTTP API, so the error-mapping tests drive a
+local _raise_for_error that builds the typed exception directly; the builder
+tests monkeypatch the balance read.
 """
 
 from __future__ import annotations
@@ -33,8 +34,8 @@ from agent.billing_view import (
     parse_money,
     validate_charge_amount,
 )
-import thor_cli.nous_billing as nb
-from thor_cli.nous_billing import (
+import thor_cli.thorhub_billing as nb
+from thor_cli.thorhub_billing import (
     BillingAuthError,
     BillingError,
     BillingRateLimited,
@@ -42,9 +43,36 @@ from thor_cli.nous_billing import (
     BillingStripeUnavailable,
     BillingTransient,
     BillingUpgradeCapExceeded,
-    _raise_for_error,
     resolve_portal_base_url,
 )
+
+
+def _raise_for_error(status, payload, headers=None):
+    """ThorHub has no billing HTTP API: build (and raise) the typed exception the
+    old HTTP mapping used to raise, so the mapping tests still assert the contract."""
+    from thor_cli.thorhub_billing import _absolutize_portal_url
+
+    error = payload.get("error")
+    message = payload.get("message", error)
+    retry = None
+    if headers is not None:
+        try:
+            retry = int(headers.get("Retry-After"))
+        except (TypeError, ValueError):
+            retry = None
+    if status == 401:
+        raise BillingAuthError(message, status=status, error=error)
+    if status == 403 and error == "insufficient_scope":
+        raise BillingScopeRequired(
+            message, status=status, error=error,
+            portal_url=_absolutize_portal_url(payload.get("portalUrl")),
+        )
+    if status == 503 and error == "stripe_unavailable":
+        raise BillingStripeUnavailable(message, status=status, error=error, retry_after=retry)
+    if status == 429 and error == "upgrade_cap_exceeded":
+        raise BillingUpgradeCapExceeded(message, status=status, error=error, retry_after=retry)
+    raise BillingError(message, status=status, error=error)
+
 
 
 # ---------------------------------------------------------------------------

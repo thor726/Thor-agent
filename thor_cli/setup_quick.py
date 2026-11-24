@@ -35,21 +35,21 @@ def _reload_config_into(config: dict, *, dict_only: bool = False) -> None:
         config.update(refreshed)
 
 
-def _run_nous_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_lines: tuple, print_error) -> bool:
-    """Run ``_model_flow_nous`` (login, model pick, provider switch, Tool Gateway opt-in) — the
+def _run_thorhub_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_lines: tuple, print_error) -> bool:
+    """Run ``_model_flow_thorhub`` (key check, model pick, provider switch) — the
     single source of truth shared with ``thor model``. False when cancelled or failed (the
     message is already printed)."""
     from thor_cli.setup import _info
     try:
-        from thor_cli.model_setup_flows import _model_flow_nous
-        _model_flow_nous(config)
+        from thor_cli.model_setup_flows import _model_flow_thorhub
+        _model_flow_thorhub(config)
         return True
     except cancel_exc:
-        # _login_nous raises SystemExit(130)/(1) on cancel/failure; the expired-session re-login
-        # path inside _model_flow_nous only catches Exception, so SystemExit would kill the CLI.
+        # The key prompt raises SystemExit(130)/(1) on cancel/failure; the
+        # path inside _model_flow_thorhub only catches Exception, so SystemExit would kill the CLI.
         _info(*cancel_lines)
     except Exception as exc:
-        logger.debug("_model_flow_nous error during %s: %s", context, exc)
+        logger.debug("_model_flow_thorhub error during %s: %s", context, exc)
         print_error(exc)
     return False
 
@@ -57,14 +57,12 @@ def _run_nous_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_line
 def _run_portal_one_shot(config: dict) -> None:
     """One-shot ThorHub setup (``thor setup --portal`` / ``thor portal``).
 
-    Dulu: login OAuth Nous + pilih model Nous. Sekarang: panduan ThorHub /
-    provider langsung — tidak ada login portal lagi.
+    Panduan ThorHub / provider langsung — tidak ada login portal.
     """
     from thor_cli.setup import _info, _print_banner, _record_setup_completed, print_success
     _print_banner("│     ☤ Thor Setup — ThorHub (one-shot)                 │")
-    # Debrand Fase 2: login OAuth Nous sudah pensiun (portal .local mati).
-    # Tampilkan panduan ThorHub / provider langsung — jangan jalankan _run_nous_flow.
-    _info(None, "  Thor sekarang berdiri sendiri — tidak ada lagi login portal Nous.",
+    # Tampilkan panduan ThorHub / provider langsung.
+    _info(None, "  Thor sekarang berdiri sendiri — tidak ada login portal.",
           "  Beli key token di: https://llm.thormarket.site/beli", None,
           "  Lalu pasang di Thor kamu (pilih sendiri, tanpa default bawaan):",
           "    - jalankan `thor setup` dan pilih provider / model sendiri, atau",
@@ -113,17 +111,15 @@ def _keep_imported_model(config: dict, imported_from: str) -> bool:
     ], 0, description=f"  Settings were imported from {imported_from}.") == 0
 
 
-def _quick_setup_nous_portal(config: dict) -> None:
+def _quick_setup_thorhub(config: dict) -> None:
     """Quick Setup's ThorHub step: panduan ThorHub / provider langsung.
 
-    Dulu: OAuth login Nous + pilih model (provider disimpan "nous"). Sekarang:
-    tidak ada login portal — pembeli memilih provider/model/key sendiri.
+    Tidak ada login portal — pembeli memilih provider/model/key sendiri.
     """
     from thor_cli.setup import _info, print_header
     print_header("ThorHub", gap=True)
-    # Debrand Fase 2: login OAuth Nous sudah pensiun (portal .local mati).
-    # Tampilkan panduan ThorHub / provider langsung — jangan jalankan _run_nous_flow.
-    _info(None, "  Thor sekarang berdiri sendiri — tidak ada lagi login portal Nous.",
+    # Tampilkan panduan ThorHub / provider langsung.
+    _info(None, "  Thor sekarang berdiri sendiri — tidak ada login portal.",
           "  Beli key token di: https://llm.thormarket.site/beli", None,
           "  Lalu pasang di Thor kamu (pilih sendiri, tanpa default bawaan):",
           "    - jalankan `thor setup` dan pilih provider / model sendiri, atau",
@@ -143,9 +139,9 @@ def _run_first_time_quick_setup(config: dict, thor_home, is_existing: bool, impo
         _apply_default_agent_settings, _info, print_info, _print_setup_summary, print_success,
         prompt_choice, save_config, setup_gateway, setup_terminal_backend
     )
-    # Step 1: the imported model, or Nous Portal.
+    # Step 1: the imported model, or ThorHub.
     if not _keep_imported_model(config, imported_from):
-        _quick_setup_nous_portal(config)
+        _quick_setup_thorhub(config)
 
     # Step 2: Terminal Backend; Step 3: defaults for everything else.
     setup_terminal_backend(config)

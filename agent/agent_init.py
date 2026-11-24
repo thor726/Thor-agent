@@ -302,11 +302,11 @@ def _resolve_api_mode(agent, api_mode, provider_name, base_url):
         host.startswith("bedrock-runtime.") and base_url_host_matches(url, "amazonaws.com")
     ):
         agent.api_mode = "bedrock_converse"
-    elif agent.provider in {"nous", "nous-portal", "nousresearch"}:
-        # Portal is dual-wire (anthropic/* → Messages, else chat_completions); covers direct
+    elif agent.provider in {"thor", "thorhub"}:
+        # ThorHub is chat/completions-only; covers direct
         # AIAgent construction without a resolved runtime.
-        from thor_cli.providers import nous_api_mode
-        agent.api_mode = nous_api_mode(agent.model)
+        from thor_cli.providers import thor_api_mode
+        agent.api_mode = thor_api_mode(agent.model)
     else:
         # Host-mandated wire check — LAST, so the provider-slug rewrites above always win.
         # Covers api.meta.ai → codex_responses (prompt caching: 0% on chat vs 93-99%).

@@ -1,12 +1,10 @@
-"""Tests for agent/nous_rate_guard.py — cross-session Nous Portal rate limit guard."""
+"""Tests for agent/thorhub_rate_guard.py — cross-session ThorHub rate limit guard."""
 
 import json
 import os
 import time
 
 import pytest
-
-from tests.thor_cli.anon_portal import make_jwt
 
 
 @pytest.fixture
@@ -19,14 +17,14 @@ def rate_guard_env(tmp_path, monkeypatch):
     return thor_home
 
 
-class TestRecordNousRateLimit:
+class TestRecordThorhubRateLimit:
     """Test recording rate limit state."""
 
     def test_records_with_header_reset(self, rate_guard_env):
-        from agent.nous_rate_guard import record_nous_rate_limit, _state_path
+        from agent.thorhub_rate_guard import record_thorhub_rate_limit, _state_path
 
         headers = {"x-ratelimit-reset-requests-1h": "1800"}
-        record_nous_rate_limit(headers=headers)
+        record_thorhub_rate_limit(headers=headers)
 
         path = _state_path()
         assert os.path.exists(path)
@@ -39,10 +37,10 @@ class TestRecordNousRateLimit:
 
 
     def test_falls_back_to_error_context_reset_at(self, rate_guard_env):
-        from agent.nous_rate_guard import record_nous_rate_limit, _state_path
+        from agent.thorhub_rate_guard import record_thorhub_rate_limit, _state_path
 
         future_reset = time.time() + 900
-        record_nous_rate_limit(
+        record_thorhub_rate_limit(
             headers=None,
             error_context={"reset_at": future_reset},
         )
@@ -53,24 +51,23 @@ class TestRecordNousRateLimit:
 
 
     def test_the_429_bodys_wait_outranks_the_hourly_window_end(self, rate_guard_env):
-        # A welcome-tier fair-share 429 said retry after 410 s; the hourly bucket's reset header (its
+        # A 429 body said retry after 410 s; the hourly bucket's reset header (its
         # window end, ~1 h) turned that into an hour-long block on the next turns.
-        from agent.nous_rate_guard import record_nous_rate_limit, _state_path
+        from agent.thorhub_rate_guard import record_thorhub_rate_limit, _state_path
 
-        record_nous_rate_limit(
+        record_thorhub_rate_limit(
             headers={"x-ratelimit-remaining-requests-1h": "37", "x-ratelimit-reset-requests-1h": "3594"},
             error_context={"reset_at": time.time() + 410},
-            anonymous=True,
         )
 
-        with open(_state_path(anonymous=True), encoding="utf-8-sig") as f:
+        with open(_state_path(), encoding="utf-8-sig") as f:
             state = json.load(f)
         assert state["reset_seconds"] == pytest.approx(410, abs=2)
 
     def test_custom_default_cooldown(self, rate_guard_env):
-        from agent.nous_rate_guard import record_nous_rate_limit, _state_path
+        from agent.thorhub_rate_guard import record_thorhub_rate_limit, _state_path
 
-        record_nous_rate_limit(headers=None, default_cooldown=120.0)
+        record_thorhub_rate_limit(headers=None, default_cooldown=120.0)
 
         with open(_state_path(), encoding="utf-8-sig") as f:
             state = json.load(f)
@@ -78,20 +75,20 @@ class TestRecordNousRateLimit:
 
 
 
-class TestNousRateLimitRemaining:
+class TestThorhubRateLimitRemaining:
     """Test checking remaining rate limit time."""
 
 
     def test_returns_remaining_seconds_when_active(self, rate_guard_env):
-        from agent.nous_rate_guard import record_nous_rate_limit, nous_rate_limit_remaining
+        from agent.thorhub_rate_guard import record_thorhub_rate_limit, thorhub_rate_limit_remaining
 
-        record_nous_rate_limit(headers={"x-ratelimit-reset-requests-1h": "600"})
-        remaining = nous_rate_limit_remaining()
+        record_thorhub_rate_limit(headers={"x-ratelimit-reset-requests-1h": "600"})
+        remaining = thorhub_rate_limit_remaining()
         assert remaining is not None
         assert 595 < remaining <= 605  # ~600 seconds, allowing for test execution time
 
     def test_returns_none_when_expired(self, rate_guard_env):
-        from agent.nous_rate_guard import nous_rate_limit_remaining, _state_path
+        from agent.thorhub_rate_guard import thorhub_rate_limit_remaining, _state_path
 
         # Write an already-expired state
         path = _state_path()
@@ -100,28 +97,28 @@ class TestNousRateLimitRemaining:
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"reset_at": time.time() - 10, "recorded_at": time.time() - 100}, f)
 
-        assert nous_rate_limit_remaining() is None
+        assert thorhub_rate_limit_remaining() is None
         # File should be cleaned up
         assert not os.path.exists(_state_path())
 
 
 
-class TestClearNousRateLimit:
+class TestClearThorhubRateLimit:
     """Test clearing rate limit state."""
 
     def test_clears_existing_file(self, rate_guard_env):
-        from agent.nous_rate_guard import (
-            record_nous_rate_limit,
-            clear_nous_rate_limit,
-            nous_rate_limit_remaining,
+        from agent.thorhub_rate_guard import (
+            record_thorhub_rate_limit,
+            clear_thorhub_rate_limit,
+            thorhub_rate_limit_remaining,
             _state_path,
         )
 
-        record_nous_rate_limit(headers={"retry-after": "600"})
-        assert nous_rate_limit_remaining() is not None
+        record_thorhub_rate_limit(headers={"retry-after": "600"})
+        assert thorhub_rate_limit_remaining() is not None
 
-        clear_nous_rate_limit()
-        assert nous_rate_limit_remaining() is None
+        clear_thorhub_rate_limit()
+        assert thorhub_rate_limit_remaining() is None
         assert not os.path.exists(_state_path())
 
 
@@ -135,19 +132,19 @@ class TestParseResetSeconds:
     """Test header parsing for reset times."""
 
     def test_case_insensitive_headers(self, rate_guard_env):
-        from agent.nous_rate_guard import _parse_reset_seconds
+        from agent.thorhub_rate_guard import _parse_reset_seconds
 
         headers = {"X-Ratelimit-Reset-Requests-1h": "1200"}
         assert _parse_reset_seconds(headers) == 1200.0
 
     def test_returns_none_for_empty_headers(self):
-        from agent.nous_rate_guard import _parse_reset_seconds
+        from agent.thorhub_rate_guard import _parse_reset_seconds
 
         assert _parse_reset_seconds(None) is None
         assert _parse_reset_seconds({}) is None
 
     def test_ignores_zero_values(self):
-        from agent.nous_rate_guard import _parse_reset_seconds
+        from agent.thorhub_rate_guard import _parse_reset_seconds
 
         headers = {"x-ratelimit-reset-requests-1h": "0"}
         assert _parse_reset_seconds(headers) is None
@@ -157,35 +154,36 @@ class TestParseResetSeconds:
 class TestAuxiliaryClientIntegration:
     """Test that the auxiliary client respects the rate guard."""
 
-    def test_try_nous_skips_when_rate_limited(self, rate_guard_env, monkeypatch):
-        from agent.nous_rate_guard import record_nous_rate_limit
+    def test_try_thorhub_skips_when_rate_limited(self, rate_guard_env, monkeypatch):
+        from agent.thorhub_rate_guard import record_thorhub_rate_limit
 
         # Record a rate limit
-        record_nous_rate_limit(headers={"retry-after": "600"})
+        record_thorhub_rate_limit(headers={"retry-after": "600"})
 
-        # Mock _read_nous_auth to return valid creds (would normally succeed)
+        # Mock _read_thorhub_auth to return valid creds (would normally succeed)
         import agent.auxiliary_client as aux
-        monkeypatch.setattr(aux, "_read_nous_auth", lambda: {
-            "access_token": "test-token",
-            "inference_base_url": "https://api.nous.test/v1",
+        monkeypatch.setattr(aux, "_read_thorhub_auth", lambda: {
+            "api_key": "sk-thor-test",
+            "base_url": "https://llm.thormarket.site/v1",
+            "source": "pool",
         })
 
-        monkeypatch.setattr(aux, "_resolve_nous_runtime_api", lambda **kw: None)
-        result = aux._try_nous()
+        monkeypatch.setattr(aux, "_resolve_thorhub_runtime_api", lambda **kw: None)
+        result = aux._try_thorhub()
         assert result == (None, None)
 
 
 
-class TestIsGenuineNousRateLimit:
+class TestIsGenuineThorhubRateLimit:
     """Tell a real account-level 429 apart from an upstream-capacity 429.
 
-    Nous Portal multiplexes upstreams (DeepSeek, Kimi, MiMo, Thor).
+    ThorHub multiplexes upstreams (DeepSeek, Kimi, MiMo, Thor).
     A 429 from an upstream out of capacity should NOT trip the
     cross-session breaker; a real user-quota 429 should.
     """
 
     def test_exhausted_hourly_bucket_in_429_headers_is_genuine(self):
-        from agent.nous_rate_guard import is_genuine_nous_rate_limit
+        from agent.thorhub_rate_guard import is_genuine_thorhub_rate_limit
 
         headers = {
             "x-ratelimit-limit-requests-1h": "800",
@@ -195,37 +193,14 @@ class TestIsGenuineNousRateLimit:
             "x-ratelimit-remaining-requests": "198",
             "x-ratelimit-reset-requests": "40",
         }
-        assert is_genuine_nous_rate_limit(headers=headers) is True
-
-    def test_a_welcome_host_429_with_exhausted_buckets_trips_the_breaker(
-        self, rate_guard_env, monkeypatch,
-    ):
-        from agent.nous_rate_guard import (
-            is_genuine_nous_rate_limit,
-            nous_rate_limit_remaining,
-            record_nous_rate_limit,
-        )
-
-        headers = {
-            "x-ratelimit-limit-requests-1h": "800",
-            "x-ratelimit-remaining-requests-1h": "0",
-            "x-ratelimit-reset-requests-1h": "600",
-        }
-        assert is_genuine_nous_rate_limit(headers=headers) is True
-        record_nous_rate_limit(headers=headers)
-        assert nous_rate_limit_remaining() > 0
-        verdict, _buffered, statuses = TestWelcomeRouteCopy._drive_guard(
-            "https://welcome-api.thor-agent.local/v1", monkeypatch
-        )
-        assert verdict.action == "return"
-        assert "/login" in statuses[0]
+        assert is_genuine_thorhub_rate_limit(headers=headers) is True
 
     def test_bare_429_with_no_headers_is_upstream(self):
-        from agent.nous_rate_guard import is_genuine_nous_rate_limit
+        from agent.thorhub_rate_guard import is_genuine_thorhub_rate_limit
 
-        assert is_genuine_nous_rate_limit(headers=None) is False
-        assert is_genuine_nous_rate_limit(headers={}) is False
-        assert is_genuine_nous_rate_limit(
+        assert is_genuine_thorhub_rate_limit(headers=None) is False
+        assert is_genuine_thorhub_rate_limit(headers={}) is False
+        assert is_genuine_thorhub_rate_limit(
             headers={"content-type": "application/json"}
         ) is False
 
@@ -234,7 +209,7 @@ class TestIsGenuineNousRateLimit:
     def test_last_known_state_all_healthy_stays_upstream(self):
         # Prior state was healthy; bare 429 arrives; should be treated
         # as upstream capacity.
-        from agent.nous_rate_guard import is_genuine_nous_rate_limit
+        from agent.thorhub_rate_guard import is_genuine_thorhub_rate_limit
         from agent.rate_limit_tracker import parse_rate_limit_headers
 
         prior_headers = {
@@ -252,63 +227,9 @@ class TestIsGenuineNousRateLimit:
             "x-ratelimit-reset-tokens-1h": "2000",
         }
         last_state = parse_rate_limit_headers(prior_headers, provider="nous")
-        assert is_genuine_nous_rate_limit(
+        assert is_genuine_thorhub_rate_limit(
             headers=None, last_known_state=last_state
         ) is False
-
-
-
-class TestWelcomeRouteCopy:
-    @staticmethod
-    def _drive_guard(base_url, monkeypatch):
-        from types import SimpleNamespace
-
-        from agent import nous_rate_guard
-        from agent.turn_api_call import nous_rate_limit_guard
-
-        monkeypatch.setattr(nous_rate_guard, "nous_rate_limit_remaining", lambda **kw: 600)
-        buffered = []
-        statuses = []
-        agent = SimpleNamespace(
-            provider="nous",
-            api_key=make_jwt(account_tier="anonymous" if "welcome-api" in base_url else "paid"),
-            base_url=base_url,
-            log_prefix="",
-            _buffer_vprint=buffered.append,
-            _buffer_status=statuses.append,
-            _try_activate_fallback=lambda: False,
-            _flush_status_buffer=lambda: None,
-            _persist_session=lambda *_args: None,
-        )
-        from agent.status_output import StatusOutputMixin
-        agent._buffer_diagnostic_status = StatusOutputMixin._buffer_diagnostic_status.__get__(agent)
-        verdict = nous_rate_limit_guard(
-            agent,
-            _retry=None,
-            api_messages=[],
-            messages=[],
-            conversation_history=[],
-            active_system_prompt="system",
-            retry_count=0,
-            compression_attempts=0,
-            api_call_count=0,
-        )
-        return verdict, buffered, statuses
-
-    def test_the_welcome_host_rate_limit_message_names_the_slash_command(self, monkeypatch):
-        from thor_cli import anon_auth
-
-        verdict, buffered, statuses = self._drive_guard(
-            "https://welcome-api.thor-agent.local/v1", monkeypatch
-        )
-
-        expected = anon_auth.FREE_TIER_RATE_LIMIT_CHAT.format(reset=anon_auth.friendly_wait(600))
-        assert verdict.action == "return"
-        assert statuses == [f"⏳ {expected}"]
-        assert expected in verdict.result["final_response"]
-        assert "/login" in expected
-        assert "Nous Portal" not in expected
-        assert buffered == [f"⏳ {expected} Trying fallback..."]
 
 
 
@@ -324,7 +245,7 @@ class TestRateGuardStateEncoding:
     def test_read_uses_utf8_under_non_utf8_locale(self, rate_guard_env, monkeypatch):
         import builtins
 
-        from agent.nous_rate_guard import nous_rate_limit_remaining, _state_path
+        from agent.thorhub_rate_guard import thorhub_rate_limit_remaining, _state_path
 
         path = _state_path()
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -358,5 +279,5 @@ class TestRateGuardStateEncoding:
 
         monkeypatch.setattr(builtins, "open", guarded_open)
 
-        remaining = nous_rate_limit_remaining()
+        remaining = thorhub_rate_limit_remaining()
         assert remaining is not None and remaining > 0

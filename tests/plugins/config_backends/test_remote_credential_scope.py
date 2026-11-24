@@ -1,9 +1,10 @@
-"""The Nous plane credential resolves under its own profile's secret scope when the gateway multiplexes.
+"""The ThorHub plane credential resolves under its own profile's secret scope when the gateway multiplexes.
 
 The Remote Config poller is a bare thread with no profile scope. Without a binding, the resolver's
-read of ``THOR_PORTAL_BASE_URL`` fails closed, the override counts as absent, the stored
-non-production ``portal_base_url`` fails the host allowlist and the refresh token is sent to the
-production Portal (``invalid_grant`` -> the login is quarantined).
+read of ``THORHUB_BASE_URL`` fails closed and the profile's own key is never found: a secondary's
+key would be read from the wrong home, or the launch profile's env override would leak into a
+secondary. The key is static — there is no refresh and no Portal allowlist anymore — so the
+invariant under test is per-profile key resolution, not refresh routing.
 """
 from __future__ import annotations
 
@@ -17,18 +18,17 @@ import pytest
 from agent.secret_scope import set_multiplex_active, set_secret_scope, reset_secret_scope
 from plugins.config_backends.remote import credentials
 
-STAGING = "https://portal.staging-thor-agent.local"
-OTHER = "https://portal.other-thor-agent.local"
+STAGING = "https://staging.thormarket.site"
+OTHER = "https://other.thormarket.site"
+LAUNCH_KEY = "sk-thor-launch"
+WORK_KEY = "sk-thor-work"
 
 
-def _profile(home: Path, portal: str) -> Path:
+def _profile(home: Path, base_url: str, key: str = LAUNCH_KEY) -> Path:
     home.mkdir(parents=True, exist_ok=True)
-    (home / ".env").write_text(f"THOR_PORTAL_BASE_URL={portal}\n", encoding="utf-8")
-    nous = {"access_token": "expired-access", "refresh_token": f"refresh-for-{portal}",
-            "client_id": "thor-cli-vps", "portal_base_url": portal,
-            "expires_at": "2000-01-01T00:00:00+00:00"}
+    (home / ".env").write_text(f"THORHUB_BASE_URL={base_url}\n", encoding="utf-8")
     (home / "auth.json").write_text(json.dumps(
-        {"version": 1, "active_provider": "nous", "providers": {"nous": nous}}), encoding="utf-8")
+        {"version": 1, "active_provider": "thor", "providers": {"thor": {"api_key": key}}}), encoding="utf-8")
     return home
 
 
@@ -37,26 +37,8 @@ def launch_home(tmp_path, monkeypatch):
     home = _profile(tmp_path / "thor", STAGING)
     monkeypatch.setenv("THOR_HOME", str(home))
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared"))
-    monkeypatch.delenv("THOR_PORTAL_BASE_URL", raising=False)
-    monkeypatch.delenv("NOUS_PORTAL_BASE_URL", raising=False)
+    monkeypatch.delenv("THORHUB_BASE_URL", raising=False)
     return home
-
-
-@pytest.fixture
-def refreshes(monkeypatch):
-    from thor_cli import auth, auth_nous
-
-    seen: list[tuple[str, str]] = []
-
-    def fake_refresh(*, client, portal_base_url, client_id, refresh_token):
-        seen.append((portal_base_url, refresh_token))
-        return {"access_token": f"access-from-{portal_base_url}", "refresh_token": refresh_token,
-                "expires_in": 3600}
-
-    monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
-    monkeypatch.setattr(auth, "_refresh_access_token", fake_refresh)
-    monkeypatch.setattr(auth_nous, "_refresh_access_token", fake_refresh)
-    return seen
 
 
 def _in_fresh_thread(fn):
@@ -84,52 +66,48 @@ def _no_unscoped_warning(caplog) -> None:
     assert "ignoring invalid portal_base_url" not in text, text
 
 
-def test_poller_thread_refreshes_launch_profile_against_its_own_portal(launch_home, refreshes, caplog):
+def test_poller_thread_resolves_launch_profiles_own_key(launch_home, caplog):
     set_multiplex_active(True)
     caplog.set_level(logging.WARNING)
 
     token = _in_fresh_thread(lambda: credentials.plane_token(launch_home))
 
-    assert refreshes == [(STAGING, f"refresh-for-{STAGING}")]
-    assert token == f"access-from-{STAGING}"
+    assert token == LAUNCH_KEY
     _no_unscoped_warning(caplog)
 
 
-def test_poller_thread_refreshes_secondary_profile_against_its_own_portal(launch_home, refreshes, caplog):
-    secondary = _profile(launch_home / "profiles" / "work", OTHER)
+def test_poller_thread_resolves_secondary_profiles_own_key(launch_home, caplog):
+    secondary = _profile(launch_home / "profiles" / "work", OTHER, WORK_KEY)
     set_multiplex_active(True)
     caplog.set_level(logging.WARNING)
 
     token = _in_fresh_thread(lambda: credentials.plane_token(secondary))
 
-    assert refreshes == [(OTHER, f"refresh-for-{OTHER}")]
-    assert token == f"access-from-{OTHER}"
+    assert token == WORK_KEY
     _no_unscoped_warning(caplog)
 
 
-def test_another_profiles_bound_scope_does_not_route_this_profiles_token(launch_home, refreshes, caplog):
-    """A caller bound to the launch profile resolving the secondary's token routes on the
-    secondary's override, never the bound one; the caller's scope is back afterwards."""
+def test_another_profiles_bound_scope_does_not_route_this_profiles_token(launch_home, caplog):
+    """A caller bound to the launch profile resolving the secondary's token reads the
+    secondary's own key, never the bound one; the caller's scope is back afterwards."""
     from agent.secret_scope import current_secret_scope_home
 
-    secondary = _profile(launch_home / "profiles" / "work", OTHER)
+    secondary = _profile(launch_home / "profiles" / "work", OTHER, WORK_KEY)
     set_multiplex_active(True)
     caplog.set_level(logging.WARNING)
 
-    bound = set_secret_scope({"THOR_PORTAL_BASE_URL": STAGING}, profile_home=str(launch_home))
+    bound = set_secret_scope({"THORHUB_BASE_URL": STAGING}, profile_home=str(launch_home))
     try:
-        credentials.plane_token(secondary)
+        assert credentials.plane_token(secondary) == WORK_KEY
         assert current_secret_scope_home() == str(launch_home)
     finally:
         reset_secret_scope(bound)
 
-    assert refreshes == [(OTHER, f"refresh-for-{OTHER}")]
     _no_unscoped_warning(caplog)
 
 
 def test_scope_is_reset_when_resolution_fails(launch_home, monkeypatch):
     from agent.secret_scope import current_secret_scope
-    from thor_cli import auth
 
     set_multiplex_active(True)
 
@@ -137,7 +115,7 @@ def test_scope_is_reset_when_resolution_fails(launch_home, monkeypatch):
         assert current_secret_scope() is not None  # bound during the resolution
         raise RuntimeError("network down")
 
-    monkeypatch.setattr(auth, "resolve_nous_access_token", boom)
+    monkeypatch.setattr("thor_cli.auth_thorhub.resolve_thorhub_access_token", boom)
 
     def call():
         with pytest.raises(credentials.PlaneCredentialError):
@@ -152,15 +130,15 @@ def test_home_and_scope_are_restored_when_the_scope_build_fails(launch_home, mon
     from thor_constants import get_thor_home_override, reset_thor_home_override, set_thor_home_override
     from tui_gateway import launch_profile_policy
 
-    secondary = _profile(launch_home / "profiles" / "work", OTHER)
+    secondary = _profile(launch_home / "profiles" / "work", OTHER, WORK_KEY)
     set_multiplex_active(True)
 
     def boom(_home):
         raise RuntimeError("unreadable managed .env")
 
     monkeypatch.setattr(launch_profile_policy, "owner_secret_scope", boom)
-    home_token = set_thor_home_override(str(launch_home))
-    scope_token = set_secret_scope({}, profile_home=str(launch_home))
+    home_token = set_thor_home_override(launch_home)
+    scope_token = set_secret_scope({"THORHUB_BASE_URL": STAGING}, profile_home=str(launch_home))
     try:
         with pytest.raises(credentials.PlaneCredentialError):
             credentials.plane_token(secondary)
@@ -171,50 +149,71 @@ def test_home_and_scope_are_restored_when_the_scope_build_fails(launch_home, mon
         reset_thor_home_override(home_token)
 
 
-def test_launch_profile_keeps_its_env_only_override_frozen_at_activation(tmp_path, monkeypatch, refreshes):
-    """A launch Portal override with no .env line (systemd / ``op run``) is the launch profile's
+def test_launch_profile_keeps_its_env_only_override_frozen_at_activation(tmp_path, monkeypatch):
+    """A launch ThorHub override with no .env line (systemd / ``op run``) is the launch profile's
     own: it survives later live-env mutation because the launch scope reads the frozen env."""
+    from thor_cli.thorhub_account import thorhub_base_url_env_override
+
     home = _profile(tmp_path / "thor", STAGING)
     (home / ".env").write_text("", encoding="utf-8")
     monkeypatch.setenv("THOR_HOME", str(home))
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared"))
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", STAGING)
-    from tui_gateway.launch_profile_policy import activate_multi_profile_hosting
+    monkeypatch.setenv("THORHUB_BASE_URL", STAGING)
+    from tui_gateway.launch_profile_policy import activate_multi_profile_hosting, owner_secret_scope
     activate_multi_profile_hosting()  # freezes the launch env
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", OTHER)  # poisoned afterwards
+    monkeypatch.setenv("THORHUB_BASE_URL", OTHER)  # poisoned afterwards
 
-    _in_fresh_thread(lambda: credentials.plane_token(home))
+    def _read():
+        from agent.secret_scope import reset_secret_scope, set_secret_scope
+        token = set_secret_scope(owner_secret_scope(home), profile_home=str(home))
+        try:
+            return thorhub_base_url_env_override()
+        finally:
+            reset_secret_scope(token)
 
-    assert refreshes == [(STAGING, f"refresh-for-{STAGING}")]
+    assert _in_fresh_thread(_read) == STAGING
 
 
-def test_secondary_never_borrows_the_launch_profiles_env_override(launch_home, monkeypatch, refreshes):
-    """A secondary with no Portal override of its own routes on its stored (allowlisted) URL, never
-    on the launch profile's process-env override."""
-    secondary = _profile(launch_home / "profiles" / "work", "https://portal.thor-agent.local")
+def test_secondary_falls_back_to_the_launch_env_not_the_live_env(launch_home, monkeypatch):
+    """A secondary with no ThorHub override of its own falls back to the launch profile's
+    .env value — never the live process env (ignored under multiplex) — and still reads
+    its own key."""
+    from thor_cli.thorhub_account import thorhub_base_url_env_override
+
+    secondary = _profile(launch_home / "profiles" / "work", "https://llm.thormarket.site", WORK_KEY)
     (secondary / ".env").write_text("", encoding="utf-8")
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", STAGING)
+    monkeypatch.setenv("THORHUB_BASE_URL", OTHER)  # live env is ignored under multiplex
     set_multiplex_active(True)
 
-    _in_fresh_thread(lambda: credentials.plane_token(secondary))
+    assert _in_fresh_thread(lambda: credentials.plane_token(secondary)) == WORK_KEY
 
-    assert refreshes == [("https://portal.thor-agent.local", "refresh-for-https://portal.thor-agent.local")]
+    def _read():
+        from agent.secret_scope import reset_secret_scope, set_secret_scope
+        from tui_gateway.launch_profile_policy import owner_secret_scope
+        token = set_secret_scope(owner_secret_scope(secondary), profile_home=str(secondary))
+        try:
+            return thorhub_base_url_env_override()
+        finally:
+            reset_secret_scope(token)
+
+    assert _in_fresh_thread(_read) == STAGING
 
 
-def test_single_profile_binds_nothing(launch_home, refreshes, monkeypatch):
+def test_single_profile_binds_nothing(launch_home, monkeypatch):
     """Not multiplexing: no scope is bound and the process env still routes (unchanged behaviour)."""
     from agent.secret_scope import current_secret_scope
-    from thor_cli import auth
+    from thor_cli import auth_thorhub
+    from thor_cli.thorhub_account import thorhub_base_url_env_override
 
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", OTHER)
-    real = auth.resolve_nous_access_token
+    monkeypatch.setenv("THORHUB_BASE_URL", OTHER)
+    real = auth_thorhub.resolve_thorhub_access_token
     scopes = []
 
     def spy(**kw):
         scopes.append(current_secret_scope())
         return real(**kw)
 
-    monkeypatch.setattr(auth, "resolve_nous_access_token", spy)
-    credentials.plane_token(launch_home)
+    monkeypatch.setattr(auth_thorhub, "resolve_thorhub_access_token", spy)
+    assert credentials.plane_token(launch_home) == LAUNCH_KEY
     assert scopes == [None]
-    assert refreshes[0][0] == OTHER
+    assert thorhub_base_url_env_override() == OTHER

@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updated_at": "2026-11-09T21:03:18Z",
+  "updated_at": "2026-11-23T19:17:57Z",
   "metadata": {
     "source": "thor-agent repo",
-    "docs": "https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/model-catalog"
+    "docs": "https://thor726.github.io/Thor-agent/docs/reference/model-catalog"
   },
   "providers": {
     "openrouter": {
@@ -315,9 +315,9 @@
         }
       ]
     },
-    "nous": {
+    "thor": {
       "metadata": {
-        "display_name": "Nous Portal",
+        "display_name": "ThorHub",
         "note": "The entry labeled \"default\": true is the model Thor silently lands on when the user never picked one."
       },
       "models": [

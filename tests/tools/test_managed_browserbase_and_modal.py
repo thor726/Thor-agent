@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from thor_cli.nous_account import NousPortalAccountInfo
+from thor_cli.thorhub_account import ThorHubAccountInfo
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -65,16 +65,16 @@ def _restore_tool_and_agent_modules():
 
 @pytest.fixture(autouse=True)
 def _enable_managed_nous_tools(monkeypatch):
-    """Ensure managed_nous_tools_enabled() returns True even after module reloads.
+    """Ensure managed_thorhub_tools_enabled() returns True even after module reloads.
 
     The _install_fake_tools_package() helper resets and reimports tool modules,
     so a simple monkeypatch on tool_backend_helpers doesn't survive.  We patch
     the *source* modules that the reimported modules will import from — both
-    thor_cli.nous_account — so the function body returns True.
+    thor_cli.thorhub_account — so the function body returns True.
     """
     monkeypatch.setattr(
-        "thor_cli.nous_account.get_nous_portal_account_info",
-        lambda: NousPortalAccountInfo(
+        "thor_cli.thorhub_account.get_thorhub_account_info",
+        lambda: ThorHubAccountInfo(
             logged_in=True,
             source="jwt",
             fresh=False,

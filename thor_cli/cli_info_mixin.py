@@ -633,7 +633,7 @@ class CLIInfoMixin:
         one Thor account read. On a gateway session the owner answers for the route the session runs
         (``session.account_usage``): this process's provider/base_url pair is not that route once /model or a
         fallback moved the provider (the launch base_url stays). Off the gateway, the CLI's own route."""
-        from agent.billing_links import is_nous_inference_route
+        from agent.billing_links import is_thorhub_inference_route
         from thor_cli.gateway_client import GatewayClientError
         from thor_cli.gateway_side import connection_for
         if (connection := connection_for(self)) is not None:
@@ -657,7 +657,7 @@ class CLIInfoMixin:
         if not nous_route:
             return self._print_account_limits(nous_lines) or shown
         # The Nous route keeps main's two-bar balance block and its call to action.
-        if self._print_nous_balance(usage, nous_lines):
+        if self._print_thorhub_balance(usage, nous_lines):
             self._print_usage_cta()
             return True
         return shown

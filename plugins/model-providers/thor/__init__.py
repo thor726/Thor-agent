@@ -1,29 +1,45 @@
-"""Nous Portal provider profile."""
+"""ThorHub provider profile (https://llm.thormarket.site).
+
+Thor's own LLM gateway: OpenAI-compatible ``/v1`` served from a static
+``sk-thor-...`` API key (``THORHUB_API_KEY``). No OAuth, no device-code login.
+
+The ``nous*`` aliases are a deprecated migration bridge only: configs that
+still name provider ``nous`` keep resolving to ThorHub instead of failing.
+
+Wire behavior kept from the old Nous Portal profile: product tags on every call
+(``product=thor-agent`` + client + conversation tags, plus a sticky
+``session_id`` so cache breakpoints stay warm on one upstream instance), the
+``provider: {data_collection: deny}`` routing field only when an outgoing
+connector result requires it, and the reasoning wire shape ThorHub honors
+(``reasoning: {enabled, effort}``; a disable is omitted for reasoning-mandatory
+or unknown routes, which would 400 on it).
+"""
 
 from typing import Any
 
-from agent.portal_tags import get_affinity_scope, get_conversation_context, nous_portal_tags
+from agent.portal_tags import get_affinity_scope, get_conversation_context, thorhub_portal_tags
 from agent.transports.codex import _cache_scope_from_session_id
 from providers import register_provider
 from providers.base import ProviderProfile
 
 
-class NousProfile(ProviderProfile):
-    """Nous Portal — product tags, reasoning with Nous-specific omission."""
+class ThorHubProfile(ProviderProfile):
+    """ThorHub — product tags, reasoning with ThorHub-specific omission."""
 
     def resolve_aux_model(self, *, vision: bool = False) -> str:
-        """Portal's tier-aware ``/api/nous/recommended-models`` pick (cached, offline-safe)."""
+        """ThorHub's tier-aware aux pick (cached, offline-safe). ThorHub has no
+        recommendations feed, so this is always empty for now."""
         try:
-            from thor_cli.models import get_nous_recommended_aux_model
+            from thor_cli.models import get_thorhub_recommended_aux_model
 
-            return get_nous_recommended_aux_model(vision=vision) or ""
+            return get_thorhub_recommended_aux_model(vision=vision) or ""
         except Exception:
             return ""
 
     def build_extra_body(
         self, *, session_id: str | None = None, data_use: frozenset[str] = frozenset(), **context,
     ) -> dict[str, Any]:
-        body: dict[str, Any] = {"tags": nous_portal_tags(session_id=session_id)}
+        body: dict[str, Any] = {"tags": thorhub_portal_tags(session_id=session_id)}
         # Top-level session_id = sticky routing key, so Anthropic-style cache
         # breakpoints stay warm on one upstream instance. Resolved like the
         # ``conversation=`` tag: declared scope, then the ambient lineage ROOT
@@ -31,7 +47,7 @@ class NousProfile(ProviderProfile):
         sticky_key = _cache_scope_from_session_id(get_affinity_scope() or get_conversation_context() or session_id)
         if sticky_key:
             body["session_id"] = sticky_key
-        # The Portal routes centrally and 400s on caller routing fields, except data_collection and
+        # ThorHub routes centrally and 400s on caller routing fields, except data_collection and
         # zdr: sent only when an outgoing connector result requires them (``data_use``), never from config.
         if data_use:
             body["provider"] = {"data_collection": "deny", **({"zdr": True} if "zero_retention" in data_use else {})}
@@ -42,11 +58,11 @@ class NousProfile(ProviderProfile):
         """True when ``reasoning: {enabled: false}`` would 400 on *model*. Cache-only catalog
         lookup; unknown/cold (warmer kicked) and no-reasoning routes both answer True (omit > 400)."""
         try:
-            from thor_cli.models_reasoning_caps import nous_model_reasoning_capabilities, warm_nous_reasoning_caps_async
+            from thor_cli.models_reasoning_caps import thorhub_model_reasoning_capabilities, warm_thorhub_reasoning_caps_async
 
-            caps = nous_model_reasoning_capabilities(model)
+            caps = thorhub_model_reasoning_capabilities(model)
             if caps is None:
-                warm_nous_reasoning_caps_async()
+                warm_thorhub_reasoning_caps_async()
                 return True
         except Exception:
             return True
@@ -56,7 +72,7 @@ class NousProfile(ProviderProfile):
         self, *, reasoning_config: dict | None = None, supports_reasoning: bool = False,
         model: str | None = None, **context,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        """Pass the full reasoning_config, disable included (the Portal honors it;
+        """Pass the full reasoning_config, disable included (ThorHub honors it;
         omitting it means the upstream default, thinking ON for V4-class models)."""
         if not supports_reasoning:
             return {}, {}
@@ -68,15 +84,17 @@ class NousProfile(ProviderProfile):
         return {"reasoning": rc}, {}
 
 
-nous = NousProfile(
-    name="nous", aliases=("nous-portal", "nousresearch"), env_vars=("NOUS_API_KEY",),
-    display_name="Thor Labs", description="Thor Labs — Thor model family",
-    signup_url="https://github.com/thor726/Thor-agent", fallback_models=("thor-3-405b", "thor-3-70b"),
-    base_url="https://inference-api.thor-agent.local/v1", auth_type="oauth_device_code",
-    # The Portal's upstream currently drops 1h cache entries after ~7 minutes and bills them at the
+thor = ThorHubProfile(
+    name="thor", aliases=("thorhub", "nous", "nous-portal", "nousresearch"),
+    env_vars=("THORHUB_API_KEY",),
+    display_name="ThorHub", description="ThorHub — Thor's own LLM gateway",
+    signup_url="https://llm.thormarket.site",
+    fallback_models=("deepseek-v4-pro", "glm-5.3-flash"),
+    base_url="https://llm.thormarket.site/v1", auth_type="api_key",
+    # ThorHub's upstream currently drops 1h cache entries after ~7 minutes and bills them at the
     # 5m rate, so asking for 1h only pays the 2x write. Lift with config
-    # ``prompt_caching.route_ttl_ceilings: {nous: 1h}`` (or delete this line) once that is fixed.
+    # ``prompt_caching.route_ttl_ceilings: {thor: 1h}`` (or delete this line) once that is fixed.
     prompt_cache_max_ttl="5m",
 )
 
-register_provider(nous)
+register_provider(thor)

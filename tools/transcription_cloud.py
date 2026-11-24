@@ -419,7 +419,7 @@ def _resolve_openai_audio_client_config() -> tuple[str, str]:
     from tools.transcription_tools import _load_stt_config
     from tools.managed_tool_gateway import resolve_managed_tool_gateway
     from tools.tool_backend_helpers import (
-        NOUS_MANAGED_PROVIDER, managed_nous_tools_enabled, nous_tool_gateway_unavailable_message,
+        MANAGED_PROVIDER, managed_thorhub_tools_enabled, thorhub_tool_gateway_unavailable_message,
         read_selection, selection_error)
     openai_cfg = _load_stt_config().get("openai") or {}
     selected = read_selection("stt")
@@ -428,13 +428,13 @@ def _resolve_openai_audio_client_config() -> tuple[str, str]:
         gateway = resolve_managed_tool_gateway("openai-audio")
         if gateway is None:
             return None
-        return gateway.nous_user_token, urljoin(f"{gateway.gateway_origin.rstrip('/')}/", "v1")
+        return gateway.api_key, urljoin(f"{gateway.gateway_origin.rstrip('/')}/", "v1")
 
-    if selected == NOUS_MANAGED_PROVIDER:
+    if selected == MANAGED_PROVIDER:
         managed = _managed()
         if managed is None:
-            raise ValueError(selection_error("stt", NOUS_MANAGED_PROVIDER,
-                                             "the Nous Tool Gateway is not available (not entitled or unreachable)"))
+            raise ValueError(selection_error("stt", MANAGED_PROVIDER,
+                                             "the managed tool gateway is not available on ThorHub"))
         return managed
     direct = _direct_openai_credentials(openai_cfg.get("api_key", ""), openai_cfg.get("base_url", ""))
     if direct is not None:
@@ -446,8 +446,8 @@ def _resolve_openai_audio_client_config() -> tuple[str, str]:
     managed = _managed()
     if managed is None:
         message = "Neither stt.openai.api_key in config nor VOICE_TOOLS_OPENAI_KEY/OPENAI_API_KEY is set"
-        if managed_nous_tools_enabled():
-            message += ". " + nous_tool_gateway_unavailable_message("managed OpenAI audio for transcription")
+        if managed_thorhub_tools_enabled():
+            message += ". " + thorhub_tool_gateway_unavailable_message("managed OpenAI audio for transcription")
         raise ValueError(message)
     return managed
 

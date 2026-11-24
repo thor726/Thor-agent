@@ -17,21 +17,21 @@ export const subscriptionEn = {
       back: 'Back',
       close: 'Close',
       cancel: 'Cancel',
-      manageOnPortal: 'Manage on portal'
+      manageOnPortal: 'Manage on ThorHub'
     },
     // Outcome messages produced by the RPC → result mappers.
     result: {
-      genericError: 'Something went wrong. Try again, or manage on the portal.',
+      genericError: 'Something went wrong. Try again, or manage on ThorHub.',
       upgradeUnconfirmed:
         'Couldn’t confirm the upgrade — your card may or may not have been charged. Re-run /subscription to check your plan before trying again.',
-      verifyCard: 'Please verify your card in the portal to finish this upgrade.',
-      cardDeclinedTryDifferent: 'Your card was declined — try a different card on the portal.',
+      verifyCard: 'Please verify your payment on ThorHub to finish this change.',
+      cardDeclinedTryDifferent: 'Your card was declined — try a different card on ThorHub.',
       alreadyOn: (plan: string) => `You are already on ${plan}.`,
       upgraded: (plan: string) => `Upgraded to ${plan}. Your new monthly credits land in a moment.`,
-      requiresAction: 'This upgrade needs extra verification (3DS). Finish it on the portal.',
-      paymentFailed: 'Your card was declined. Update your payment method on the portal and try again.',
+      requiresAction: 'This change needs extra verification (3DS). Finish it on ThorHub.',
+      paymentFailed: 'Your card was declined. Update your payment method on ThorHub and try again.',
       scopeStillDenied:
-        'Remote Spending still isn’t active for this terminal — the authorization didn’t take. Retry, or make this change on the portal.',
+        'Remote Spending is not available on ThorHub — top up your balance instead.',
       couldNotPreview: 'Could not preview that change.',
       cancellationScheduled:
         'Scheduled — your plan stays active until the end of the billing period, then it cancels. Nothing changes today.',
@@ -41,11 +41,11 @@ export const subscriptionEn = {
     },
     // Typed denials from the remote-spending step-up.
     stepUpDenial: {
-      sessionRevoked: 'Your session expired — run /portal to log in again, then retry the change.',
-      remoteSpendingRevoked: 'Remote spending was stopped for this terminal — reconnect from the portal, then retry.',
+      sessionRevoked: 'Your session expired — run /portal to log in again, then top up on ThorHub.',
+      remoteSpendingRevoked: 'Remote spending is not available on ThorHub — top up your balance instead.',
       rateLimited: 'Too many attempts — wait a moment, then try again.',
       notAllowed:
-        'Remote Spending was not allowed — someone with billing permissions (owner, admin, or finance admin) must approve it. You can also make this change on the portal.'
+        'Remote Spending was not allowed — top up your balance on ThorHub instead.'
     },
     // The one-line plan status at the top of the overview.
     status: {
@@ -61,17 +61,17 @@ export const subscriptionEn = {
     overview: {
       scheduledChange: '⏳ Scheduled change',
       keepUntilThen: (plan: string) => `You keep ${plan} (and its credits) until then.`,
-      freeNudge: 'Paid models need a subscription. Start one to reach them.',
-      lowNudge: (amount: string) => `Low balance · ${amount} left. Top up or upgrade before a mid-run cutoff.`,
+      freeNudge: 'Paid models need ThorHub credits. Top up to reach them.',
+      lowNudge: (amount: string) => `Low balance · ${amount} left. Top up before a mid-run cutoff.`,
       lowNudgeAmountFallback: 'under $5',
-      noPortalUrl: '🔴 No portal URL available — manage your subscription on the Nous portal.',
+      noPortalUrl: '🔴 No portal URL available — manage your balance on ThorHub.',
       keepPlanUndo: (plan: string) => `Keep ${plan} (undo this change)`,
       changePlan: 'Change plan',
       cancelSubscription: 'Cancel subscription',
       // {0} tier name, {1} monthly price display (e.g. "$20")
       tierRow: (name: string, price: string) => `${name} · ${price}/mo`,
       creditsPerMonth: (credits: string) => ` · $${credits} credits/mo`,
-      startSubscription: 'Start a subscription',
+      startSubscription: 'Top up on ThorHub',
       org: (name: string) => `Org: ${name}`,
       hint: '↑/↓ select · Enter confirm · Esc close'
     },
@@ -108,7 +108,7 @@ export const subscriptionEn = {
       scheduledBody: (plan: string, date: string) =>
         `Change to ${plan} — takes effect ${date}. No charge now; you keep your current plan until then.`,
       noOp: (plan: string) => `You are already on ${plan} — nothing to change.`,
-      blockedFallback: 'That change cannot be made here — manage it on the portal.',
+      blockedFallback: 'That change cannot be made here — manage it on ThorHub.',
       hint: '↑/↓ select · Enter confirm · Esc back'
     },
     resultScreen: {
@@ -118,17 +118,17 @@ export const subscriptionEn = {
       titleFailed: 'Could not complete',
       stillApplying: 'Your upgrade succeeded and is still applying — refresh in a moment.',
       rerunHint: 'Re-run /subscription anytime to review it.',
-      openPortalToFinish: 'Open the portal to finish',
+      openPortalToFinish: 'Open ThorHub to finish',
       hint: '↑/↓ select · Enter · Esc close'
     },
     stepUp: {
       title: 'Remote Spending',
-      promptBody: 'Changing your plan needs Remote Spending allowed for this terminal. Allow it here, then continue.',
-      promptNote: 'Someone with billing permissions (owner, admin, or finance admin) approves it once in the browser.',
-      waiting: 'Opening your browser to approve… finish there, then come back — nothing is charged until you continue.',
+      promptBody: 'ThorHub has no Remote Spending and no plans to change — top up your balance instead.',
+      promptNote: 'Your balance is topped up on ThorHub.',
+      waiting: 'Opening ThorHub… finish there, then come back.',
       granted: 'Remote Spending allowed. Continue to finish your change.',
       resuming: 'Applying your change…',
-      allow: 'Allow Remote Spending',
+      allow: 'Top up on ThorHub',
       continue: 'Continue',
       continueChange: 'Continue the change',
       hintWaiting: 'Waiting for approval… · Esc to cancel',

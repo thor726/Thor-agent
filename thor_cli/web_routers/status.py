@@ -15,6 +15,7 @@ import sys
 import time
 from fastapi import APIRouter
 from thor_cli.web_deps import LateState, late
+from thor_cli.thorhub_account import THORHUB_TOPUP_URL
 from thor_cli.web_server_gateway import _display_system_platform
 from starlette.concurrency import run_in_threadpool
 from fastapi import HTTPException, Request
@@ -427,14 +428,15 @@ def _auth_gate_status() -> dict[str, Any]:
             "auth_flows": auth_flows, "peer_access": peer_access}
 
 
-def _nous_session_validity() -> str:
-    """Thor bootstrap-session validity for the NAS health sweep: a hosted agent whose Thor
-    auth dies terminally looks HEALTHY to every liveness probe yet every inference turn
-    fails, and this is the ONLY signal that surfaces it (local auth-store state, no token
-    needed). Best-effort: never let auth classification break the probe."""
+def _thorhub_session_validity() -> str:
+    """ThorHub key validity for the health sweep: a hosted agent whose ThorHub key is missing
+    looks HEALTHY to every liveness probe yet every inference turn fails, and this is the ONLY
+    signal that surfaces it (local auth-store state, no token needed). A static key is never
+    "terminal" — a revoked key is discovered at request time. Best-effort: never let auth
+    classification break the probe."""
     try:
-        from thor_cli.auth import get_nous_session_validity
-        return get_nous_session_validity()
+        from thor_cli.auth_thorhub import get_thorhub_session_validity
+        return get_thorhub_session_validity()
     except Exception:
         return "unknown"
 
@@ -502,7 +504,7 @@ def _status_local_reads() -> dict[str, Any]:
     return {"version": get_version_info().base_version, "config_version": current_ver,
             "latest_config_version": latest_ver,
             "can_update_thor": not _dashboard_local_update_managed_externally(),
-            "nous_session_valid": _nous_session_validity()}
+            "thorhub_session_valid": _thorhub_session_validity()}
 
 
 def _fts_rebuild_status() -> Optional[dict[str, Any]]:
@@ -621,7 +623,7 @@ async def get_status(profile: Optional[str] = None,
             "gateway_drainable": derive_gateway_drainable(
                 gateway_running=gateway_running, gateway_state=gateway_state),
             "restart_drain_timeout": restart_drain_timeout, "active_sessions": active_sessions,
-            **auth, "nous_session_valid": local["nous_session_valid"]}
+            **auth, "thorhub_session_valid": local["thorhub_session_valid"]}
 
         # Stable per-install identity (first call may touch disk). Omitted (not null) when
         # unpersistable so older-client behavior and the no-identity fallback stay identical.
@@ -852,8 +854,8 @@ async def list_cloud_agents(org: Optional[str] = None, profile: Optional[str] = 
 
 
 def _feature_state(feat) -> str:
-    if getattr(feat, "managed_by_nous", False):
-        return "via Thor Portal"
+    if getattr(feat, "managed_by_thorhub", False):
+        return "via ThorHub"
     if getattr(feat, "active", False):
         return getattr(feat, "current_provider", None) or "active"
     return "not configured"
@@ -863,16 +865,16 @@ def _get_portal_status_sync():
     cfg = load_config() or {}
     auth: dict[str, Any] = {}
     try:
-        from thor_cli.auth import get_nous_auth_status_local
-        # Refresh-free snapshot so polling never performs an OAuth refresh.
-        auth = get_nous_auth_status_local() or {}
+        from thor_cli.auth_thorhub import get_thorhub_auth_status_local
+        # Refresh-free snapshot so polling never touches the network.
+        auth = get_thorhub_auth_status_local() or {}
     except Exception:
         auth = {}
 
     features = []
     try:
-        from thor_cli.nous_subscription import get_nous_subscription_features
-        feats = get_nous_subscription_features(cfg)
+        from thor_cli.thorhub_subscription import get_thorhub_subscription_features
+        feats = get_thorhub_subscription_features(cfg)
         if feats is not None:
             features = [{"label": getattr(feat, "label", ""), "state": _feature_state(feat)}
                         for feat in feats.items()]
@@ -887,7 +889,7 @@ def _get_portal_status_sync():
         # Free tier: a token exists, so logged_in stays true for callers that only ask "is there a
         # credential"; surfaces that render an account must branch on free_tier first.
         "free_tier": bool(auth.get("free_tier")), "account_tier": auth.get("account_tier"),
-        "subscription_url": "https://portal.thor-agent.local/manage-subscription",
+        "subscription_url": THORHUB_TOPUP_URL,
         "features": features}
 
 

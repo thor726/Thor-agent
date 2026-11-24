@@ -161,11 +161,10 @@ def prepare_iteration(
     if agent._skill_nudge_interval > 0 and "skill_manage" in agent.valid_tool_names:
         agent._iters_since_skill += 1
 
-    # Nous agent keys live ~1 h and a single turn can run for hours: adopt the keepalive's fresh
-    # key before the one in hand expires (local JWT exp read; no network unless inside the skew)
-    # instead of letting this iteration's request 401. With many agents sharing the hour that
-    # 401 was a storm, and the pool benched the sole credential for all of them.
-    agent._adopt_nous_key_before_expiry()
+    # ThorHub keys are static API keys: they never expire, so there is nothing to adopt
+    # before expiry. (The old Nous agent keys lived ~1 h; a 401 storm from hourly expiry
+    # is gone with them.) Kept as a no-op call so the prep hook's shape is unchanged.
+    agent._adopt_thorhub_key_before_expiry()
 
     # Drain a /steer sent during the last API call so it lands THIS iteration. Delivered as a
     # standalone user row after the newest tool result (never smeared onto the tool row: that

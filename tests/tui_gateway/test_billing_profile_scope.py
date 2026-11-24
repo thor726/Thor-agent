@@ -1,107 +1,70 @@
-"""Regression for #132728: registered Portal RPCs bind the selected profile.
+"""Regression for #132728: registered ThorHub RPCs bind the selected profile.
 
-Exercise real RPC registration, worker dispatch, OAuth refresh, and endpoint
-resolution against two synthetic homes. Only external HTTP is substituted.
+Exercise real RPC registration, worker dispatch, and endpoint resolution against
+two synthetic homes. Only external HTTP is substituted.
+
+ThorHub shape: each home carries its own static ``sk-thor-...`` key plus its own
+``THORHUB_BASE_URL`` override; the balance read (``GET {base}/portal/member/me``)
+is the only HTTP the billing reads make, and every write is refused locally
+(ThorHub has no billing API) without any request leaving.
 """
 
-import base64
 import io
 import json
 import logging
 import os
 import threading
-import time
 from pathlib import Path
 from types import SimpleNamespace
 
-import httpx
 import pytest
 
 
-READS = ("billing.state", "subscription.state", "usage.bars")
-
-
-def _jwt(label):
-    def part(value):
-        return base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip("=")
-    return ".".join((part({"alg": "none"}), part({
-        "sub": label, "scope": "inference:invoke", "exp": int(time.time()) + 3600,
-    }), "fixture"))
-
-
-def _home(home, label, *, expired):
+def _home(home, label):
     home.mkdir(parents=True)
-    (home / "config.yaml").write_text("model:\n  provider: nous\n  default: fixture-model\n")
-    (home / ".env").write_text(
-        f"THOR_PORTAL_BASE_URL=https://{label}-portal.invalid\n"
-        f"NOUS_INFERENCE_BASE_URL=https://{label}-inference.invalid/v1\n"
-    )
-    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"nous": {
-        "access_token": _jwt(label), "refresh_token": f"{label}-refresh",
-        "expires_at": "2000-01-01T00:00:00+00:00" if expired else "2999-01-01T00:00:00+00:00",
-        "scope": "inference:invoke", "client_id": "fixture-client",
-        "portal_base_url": "https://portal.thor-agent.local",
-        "inference_base_url": "https://inference-api.thor-agent.local/v1",
+    (home / "config.yaml").write_text("model:\n  provider: thor\n  default: fixture-model\n")
+    (home / ".env").write_text(f"THORHUB_BASE_URL=https://{label}-portal.invalid\n")
+    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"thor": {
+        "api_key": f"sk-thor-{label}",
     }}}))
 
 
-@pytest.fixture(params=[False, True], ids=["valid-token", "expired-token"])
-def runtime(request, tmp_path, monkeypatch):
+@pytest.fixture
+def runtime(tmp_path, monkeypatch):
     launch = tmp_path / "launch-home"
     secondary = launch / "profiles" / "secondary"
-    _home(launch, "launch", expired=request.param)
-    _home(secondary, "secondary", expired=request.param)
+    _home(launch, "launch")
+    _home(secondary, "secondary")
     monkeypatch.setenv("THOR_HOME", str(launch))
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared-auth"))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     from agent import billing_usage, billing_view, secret_scope, subscription_view
-    from thor_cli import auth, nous_account, nous_billing
+    from thor_cli import auth, thorhub_account, thorhub_billing
     from tui_gateway import launch_profile_policy, server
 
-    for key in ("THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL",
+    for key in ("THORHUB_BASE_URL", "THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL",
                 "THOR_DEV_BILLING_FIXTURE", "THOR_DEV_SUBSCRIPTION_FIXTURE", "THOR_DEV_CREDITS_FIXTURE"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(launch_profile_policy, "_snapshot", None)
     monkeypatch.setattr(server, "_thor_home", str(launch))
     monkeypatch.setattr(server, "_served_profile_homes", set())
-    monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
-    monkeypatch.setattr(nous_billing, "_token_cache", {})
-    nous_account.reset_nous_portal_account_info_cache()
+    thorhub_account.reset_thorhub_account_info_cache()
     previous = secret_scope.is_multiplex_active()
     launch_profile_policy.activate_multi_profile_hosting()
     calls = []
 
-    def http_edge(request):
-        calls.append((request.method, str(request.url), request.headers.get("authorization")))
-        label = "secondary" if request.url.host == "secondary-portal.invalid" else "launch"
-        if request.url.path.endswith("/token"):
-            return httpx.Response(200, json={
-                # Nous deliberately mirrors refreshed OAuth tokens across profiles.
-                "access_token": _jwt("shared-account"), "refresh_token": "shared-rotated",
-                "expires_in": 3600, "scope": "inference:invoke",
-                "inference_base_url": f"https://{label}-inference.invalid/v1",
-            })
-        return httpx.Response(200, json={"paid_service_access": True})
-
-    real_client = httpx.Client
-    def client(*args, **kwargs):
-        kwargs["transport"] = httpx.MockTransport(http_edge)
-        return real_client(*args, **kwargs)
-    monkeypatch.setattr(httpx, "Client", client)
-
     def urlopen(request, *args, **kwargs):
         calls.append((request.get_method(), request.full_url, request.get_header("Authorization")))
-        response = io.BytesIO(json.dumps({
-            "ok": True, "balanceUsd": "0", "role": "MEMBER", "effect": "no_op",
-            "chargeId": "fixture-charge", "status": "settled", "amountUsd": "1",
-        }).encode())
+        response = io.BytesIO(json.dumps({"data": {
+            "tokens_remaining": 5000, "token_limit": 10000, "tokens_used": 5000, "is_active": True,
+        }}).encode())
         response.status = 200
         return response
     monkeypatch.setattr("urllib.request.urlopen", urlopen)
     try:
         yield SimpleNamespace(server=server, homes={"launch": launch, "secondary": secondary},
-                              calls=calls, expired=request.param)
+                              calls=calls)
     finally:
         secret_scope.set_multiplex_active(previous)
 
@@ -127,41 +90,52 @@ def _call(server, method, params):
     return response["result"]
 
 
-@pytest.mark.parametrize("method", READS)
 @pytest.mark.parametrize("profile", ["launch", "secondary"])
-def test_reads_keep_scope_and_route_every_request(runtime, caplog, monkeypatch, method, profile):
+def test_billing_state_reads_the_profiles_own_thorhub_balance(runtime, caplog, monkeypatch, profile):
     params = {} if profile == "launch" else {"profile": "secondary"}
     # A sibling's later ambient edit must not override the frozen launch scope or the selected profile.
-    monkeypatch.setenv("THOR_PORTAL_BASE_URL", "https://ambient-other.invalid")
-    monkeypatch.setenv("NOUS_INFERENCE_BASE_URL", "https://ambient-other-inference.invalid/v1")
+    monkeypatch.setenv("THORHUB_BASE_URL", "https://ambient-other.invalid")
     ambient = dict(os.environ)
     with caplog.at_level(logging.WARNING):
-        result = _call(runtime.server, method, params)
-    assert result.get("logged_in", result.get("available")) is True, result
+        result = _call(runtime.server, "billing.state", params)
+    assert result.get("logged_in") is True, result
     warnings = [r.getMessage() for r in caplog.records if "no profile secret scope" in r.getMessage()]
     assert not warnings, warnings
     assert runtime.calls
-    assert all(url.startswith(f"https://{profile}-portal.invalid/") for _, url, _ in runtime.calls), runtime.calls
-    assert any(verb == "POST" for verb, _, _ in runtime.calls) is runtime.expired, runtime.calls
+    assert all(url == f"https://{profile}-portal.invalid/portal/member/me"
+               for _, url, _ in runtime.calls), runtime.calls
+    assert all(auth == f"Bearer sk-thor-{profile}" for _, _, auth in runtime.calls), runtime.calls
     assert dict(os.environ) == ambient
 
 
-@pytest.mark.parametrize("method", READS)
-def test_reads_keep_profile_routing_when_switching_homes(runtime, caplog, method):
+@pytest.mark.parametrize("profile", ["launch", "secondary"])
+def test_billing_state_keeps_profile_routing_when_switching_homes(runtime, caplog, profile):
     with caplog.at_level(logging.WARNING):
         for profile in ("launch", "secondary", "launch"):
             runtime.calls.clear()
-            result = _call(runtime.server, method, {} if profile == "launch" else {"profile": profile})
-            assert result.get("logged_in", result.get("available")) is True, result
-            # The third call can be answered from the same-profile account cache.
-            for verb, url, bearer in runtime.calls:
-                assert url.startswith(f"https://{profile}-portal.invalid/"), runtime.calls
-                if verb == "GET":
-                    assert bearer and bearer.startswith("Bearer "), runtime.calls
-                    payload = bearer.removeprefix("Bearer ").split(".")[1]
-                    claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
-                    assert claims["sub"] == ("shared-account" if runtime.expired else profile), runtime.calls
+            result = _call(runtime.server, "billing.state", {} if profile == "launch" else {"profile": profile})
+            assert result.get("logged_in") is True, result
+            assert runtime.calls, runtime.calls
+            for verb, url, auth in runtime.calls:
+                assert url == f"https://{profile}-portal.invalid/portal/member/me", runtime.calls
+                assert auth == f"Bearer sk-thor-{profile}", runtime.calls
     assert not [r for r in caplog.records if "no profile secret scope" in r.getMessage()]
+
+
+@pytest.mark.parametrize("profile", ["launch", "secondary"])
+def test_subscription_state_is_static_thorhub_and_touches_no_portal(runtime, profile):
+    # ThorHub has no subscriptions: the state is static (no plan, top-up deep-link)
+    # and no HTTP leaves for any profile.
+    result = _call(runtime.server, "subscription.state", {} if profile == "launch" else {"profile": profile})
+    assert result.get("logged_in") is True, result
+    assert runtime.calls == []
+
+
+def test_usage_bars_is_unavailable_on_thorhub(runtime):
+    # ThorHub has no dollar usage model (the balance lives on /topup).
+    result = _call(runtime.server, "usage.bars", {})
+    assert result.get("available") is False, result
+    assert runtime.calls == []
 
 
 @pytest.mark.parametrize("method,params", [
@@ -174,33 +148,31 @@ def test_reads_keep_profile_routing_when_switching_homes(runtime, caplog, method
     ("billing.auto_reload", {"threshold": "1", "top_up_amount": "1"}),
 ])
 @pytest.mark.parametrize("profile", ["launch", "secondary"])
-def test_sibling_routes_use_the_same_profile_scope(runtime, caplog, method, params, profile):
-    # These are HTTP-intercepted synthetic calls, including the money routes.
+def test_sibling_writes_are_refused_without_touching_any_portal(runtime, caplog, method, params, profile):
+    # ThorHub has no billing API: every write is refused locally with the top-up
+    # deep-link, identically for both profiles, and no request ever leaves for
+    # any profile's ThorHub host.
     with caplog.at_level(logging.WARNING):
         result = _call(runtime.server, method, params | ({} if profile == "launch" else {"profile": profile}))
-    assert result["ok"] is True, result
-    assert runtime.calls
-    assert all(url.startswith(f"https://{profile}-portal.invalid/") for _, url, _ in runtime.calls), runtime.calls
+    assert result["ok"] is False, result
+    assert result["error"] == "thorhub_no_billing_api", result
+    assert result["portal_url"] == "https://llm.thormarket.site/beli/topup", result
+    assert runtime.calls == []
     assert not [r for r in caplog.records if "no profile secret scope" in r.getMessage()]
 
 
 @pytest.mark.parametrize("profile", ["launch", "secondary"])
-def test_step_up_binds_the_profile_before_starting_the_external_flow(runtime, monkeypatch, profile):
-    from agent.secret_scope import get_secret
-    from thor_cli import auth
-    from thor_constants import get_thor_home
-
-    seen = []
-    def external_device_flow(**kwargs):
-        seen.append((get_thor_home(), get_secret("THOR_PORTAL_BASE_URL")))
-        return True
-    monkeypatch.setattr(auth, "step_up_nous_billing_scope", external_device_flow)
+def test_step_up_is_always_declined_on_thorhub(runtime, profile):
+    """ThorHub has no billing API and no step-up flow: ``billing.step_up`` is always
+    declined in either profile, points at the top-up page, and makes no HTTP call."""
     result = _call(runtime.server, "billing.step_up", {} if profile == "launch" else {"profile": profile})
-    assert result == {"ok": True, "granted": True}, result
-    assert seen == [(runtime.homes[profile], f"https://{profile}-portal.invalid")]
+    assert result["ok"] is True, result
+    assert result["granted"] is False, result
+    assert result["message"] == "ThorHub has no billing step-up. Top up at https://llm.thormarket.site/beli/topup.", result
+    assert runtime.calls == []
 
 
-@pytest.mark.parametrize("method", READS)
+@pytest.mark.parametrize("method", ["billing.state", "subscription.state", "usage.bars"])
 def test_missing_profile_fails_before_any_portal_request(runtime, method):
     wire = Wire()
     response = runtime.server.dispatch({"jsonrpc": "2.0", "id": "probe", "method": method,

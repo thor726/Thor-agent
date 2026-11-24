@@ -1,9 +1,12 @@
-"""Cross-session rate limit guard for Thor Portal.
+"""Cross-session rate limit guard for ThorHub.
 
 Writes rate limit state to a shared file so all sessions (CLI, gateway, cron,
-auxiliary) can check whether Thor Portal is currently rate-limited before making
+auxiliary) can check whether ThorHub is currently rate-limited before making
 requests. Without it each 429 fans out into up to 9 calls per turn (3 SDK
-retries x 3 Thor retries), all counted against RPH.
+retries x 3 Thor retries), all counted against the key quota.
+
+ThorHub has no free/welcome tier: a 429 is an ordinary key rate limit, and
+there is no anonymous allowance to split by.
 """
 
 from __future__ import annotations
@@ -25,25 +28,18 @@ logger = logging.getLogger(__name__)
 # Reset windows shorter than this are transient upstream jitter, not a quota
 # exhaustion worth a cross-session breaker trip.
 _MIN_RESET_FOR_BREAKER_SECONDS = 60.0
-# The welcome tier's structured ``rate_limited`` refusal: a reset at or above this is an exhausted
-# allowance (stop, tell the user when it refreshes and that signing in lifts it); below it the
-# turn simply waits it out. The gateway's fairshare bucket names honest resets from a few seconds
-# up to a minute, so the split sits where a quiet wait stops being quiet.
-WELCOME_LONG_WAIT_SECONDS = 20.0
 
 format_remaining = _fmt_seconds
 
 
-def _state_path(*, anonymous: bool = False) -> str:
-    """Path to the Thor rate limit state file."""
+def _state_path() -> str:
+    """Path to the ThorHub rate limit state file."""
     try:
         from thor_constants import get_thor_home
         base = get_thor_home()
     except ImportError:
         base = os.path.join(os.path.expanduser("~"), ".thor")
-    # Signing in must not inherit the anonymous allowance's cooldown (or clear it for
-    # another anonymous session). Keep the existing named-account file unchanged.
-    return os.path.join(base, "rate_limits", "nous-anonymous.json" if anonymous else "nous.json")
+    return os.path.join(base, "rate_limits", "thorhub.json")
 
 
 def _parse_reset_seconds(headers: Optional[Mapping[str, str]]) -> Optional[float]:
@@ -57,16 +53,15 @@ def _parse_reset_seconds(headers: Optional[Mapping[str, str]]) -> Optional[float
     return retry_after if retry_after else None
 
 
-def record_nous_rate_limit(
+def record_thorhub_rate_limit(
     *, headers: Optional[Mapping[str, str]] = None, error_context: Optional[dict[str, Any]] = None,
     default_cooldown: float = 300.0,
-    anonymous: bool = False,
 ) -> None:
-    """Record that Thor Portal is rate-limited in the shared state file.
+    """Record that ThorHub is rate-limited in the shared state file.
 
     Reset time comes from ``error_context["reset_at"]`` (the 429 body's own wait), then headers, then
-    ``default_cooldown``. The body wins: a welcome-tier refusal says when to retry (410 s), while the
-    hourly bucket's reset header is that window's end (about an hour) even with requests left in it.
+    ``default_cooldown``. The body wins: a refusal says when to retry, while the
+    hourly bucket's reset header is that window's end even with requests left in it.
     """
     now = time.time()
     reset_at = None
@@ -81,15 +76,15 @@ def record_nous_rate_limit(
 
     state = {"reset_at": reset_at, "recorded_at": now, "reset_seconds": reset_at - now}
     try:
-        atomic_write_text(_state_path(anonymous=anonymous), json.dumps(state))
-        logger.info("Thor rate limit recorded: resets in %.0fs (at %.0f)", reset_at - now, reset_at)
+        atomic_write_text(_state_path(), json.dumps(state))
+        logger.info("ThorHub rate limit recorded: resets in %.0fs (at %.0f)", reset_at - now, reset_at)
     except Exception as exc:
-        logger.debug("Failed to write Thor rate limit state: %s", exc)
+        logger.debug("Failed to write ThorHub rate limit state: %s", exc)
 
 
-def nous_rate_limit_remaining(*, anonymous: bool = False) -> Optional[float]:
+def thorhub_rate_limit_remaining() -> Optional[float]:
     """Seconds remaining until reset, or None if not rate-limited (expired state is removed)."""
-    path = _state_path(anonymous=anonymous)
+    path = _state_path()
     try:
         with open(path, encoding="utf-8-sig") as f:
             state = json.load(f)
@@ -103,14 +98,14 @@ def nous_rate_limit_remaining(*, anonymous: bool = False) -> Optional[float]:
         return None
 
 
-def clear_nous_rate_limit(*, anonymous: bool = False) -> None:
-    """Clear the rate limit state (e.g., after a successful Thor request)."""
+def clear_thorhub_rate_limit() -> None:
+    """Clear the rate limit state (e.g., after a successful ThorHub request)."""
     try:
-        os.unlink(_state_path(anonymous=anonymous))
+        os.unlink(_state_path())
     except FileNotFoundError:
         pass
     except OSError as exc:
-        logger.debug("Failed to clear Thor rate limit state: %s", exc)
+        logger.debug("Failed to clear ThorHub rate limit state: %s", exc)
 
 
 def _is_exhausted(remaining: Optional[int], reset: Optional[float]) -> bool:
@@ -123,51 +118,20 @@ def _is_exhausted(remaining: Optional[int], reset: Optional[float]) -> bool:
     )
 
 
-def is_genuine_nous_rate_limit(
+def is_genuine_thorhub_rate_limit(
     *, headers: Optional[Mapping[str, str]] = None, last_known_state: Optional[Any] = None,
 ) -> bool:
-    """Decide whether a 429 from Thor Portal is a real account rate limit.
+    """Decide whether a 429 from ThorHub is a real key rate limit.
 
-    Thor multiplexes upstream providers behind one key, so a 429 may be one
+    ThorHub multiplexes upstream providers behind one key, so a 429 may be one
     upstream model out of capacity (clears in seconds) rather than our quota;
-    tripping the breaker on that would block every Thor model for minutes.
+    tripping the breaker on that would block every ThorHub model for minutes.
     Only an exhausted bucket (remaining == 0 with reset >= 60s) in the 429's
     own headers, or in the last-known-good ``RateLimitState``, is genuine.
     """
     if _has_exhausted_bucket(_parse_buckets_from_headers(headers)):
         return True
     return last_known_state is not None and _has_exhausted_bucket_in_object(last_known_state)
-
-
-def is_long_welcome_rate_limit(error_context: Any) -> bool:
-    """True for a Thor welcome-tier ``rate_limited`` refusal whose reset is long enough to be an
-    exhausted allowance (``WELCOME_LONG_WAIT_SECONDS``), as parsed into ``error_context``
-    (``welcome_refusal`` from ``thor_cli.anon_auth.parse_welcome_refusal``). Capacity refusals
-    (``at_capacity`` / ``admission_closed``) are never this: they are retried in place."""
-    if not isinstance(error_context, dict):
-        return False
-    refusal = error_context.get("welcome_refusal")
-    if not isinstance(refusal, dict) or refusal.get("reason") != "rate_limited":
-        return False
-    return _safe_float(refusal.get("retry_after"), 0.0) >= WELCOME_LONG_WAIT_SECONDS
-
-
-def welcome_refusal_from_headers(
-    headers: Optional[Mapping[str, str]], *, body_wait: Optional[float] = None,
-) -> dict[str, Any]:
-    """A free-tier 429 that carried no structured ``reason``, read from its headers (else the wait
-    its body named) into the ``parse_welcome_refusal`` shape. Long wait or an empty bucket =
-    ``rate_limited``; a short or unexplained one = ``at_capacity``. A missing wait stays 0 so the
-    breaker never trips on a guess."""
-    buckets = _parse_buckets_from_headers(headers).values()
-    # Only an empty bucket's reset is a wait; a healthy bucket's reset is just its window end.
-    exhausted_wait = max((reset for remaining, reset in buckets
-                          if remaining is not None and remaining <= 0 and (reset or 0) > 0), default=None)
-    wait = (exhausted_wait or parse_retry_after_seconds(lower_headers(headers).get("retry-after"))
-            or body_wait or 0.0)
-    empty = any(remaining is not None and remaining <= 0 for remaining, _reset in buckets)
-    reason = "rate_limited" if wait >= WELCOME_LONG_WAIT_SECONDS or empty else "at_capacity"
-    return {"reason": reason, "retry_after": max(0, int(wait)), "alternates": [], "upgrade_url": ""}
 
 
 def _parse_buckets_from_headers(

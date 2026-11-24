@@ -28,7 +28,7 @@ from thor_cli.secret_prompt import masked_secret_prompt
 
 
 # Providers that support OAuth login in addition to API keys.
-_OAUTH_CAPABLE_PROVIDERS = {"anthropic", "nous", "openai-codex", "xai-oauth", "qwen-oauth", "minimax-oauth", "openrouter"}
+_OAUTH_CAPABLE_PROVIDERS = {"anthropic", "openai-codex", "xai-oauth", "qwen-oauth", "minimax-oauth", "openrouter"}
 # ...and default to it when ``--type`` is omitted. OpenRouter stays API-key-first: the documented
 # ``thor auth add openrouter --api-key sk-or-...`` must keep working with no ``--type``.
 _OAUTH_DEFAULT_PROVIDERS = _OAUTH_CAPABLE_PROVIDERS - {"openrouter"}
@@ -310,56 +310,6 @@ def _ask(prompt: str, reader: Callable[[str], str] | None = None) -> str | None:
         return None
 
 
-def _add_nous_oauth_credential(args, provider: str) -> PooledCredential:
-    """``thor auth add nous --type oauth``: shared-credential import, else device-code login."""
-    custom_label = (getattr(args, "label", None) or "").strip() or None
-    timeout = getattr(args, "timeout", None) or 15.0
-
-    def _persist(creds: dict, what: str) -> PooledCredential:
-        # `--label` is embedded into providers.nous so label_from_token doesn't overwrite it on every
-        # subsequent load_pool("nous").
-        from thor_cli.anon_auth import settle_after_upgrade
-        from thor_cli.guest_handoff import drain, result_lines
-        entry = auth_mod.persist_nous_credentials(creds, label=custom_label)
-        handoff = drain()  # a replaced free tier hands its apps over once the save lands
-        settle_after_upgrade(creds)  # a config left on the free tier's route moves to the account
-        shown_label = entry.label if entry is not None else label_from_token(
-            creds.get("access_token", ""), f"{provider}-oauth-1")
-        print(f'{what} {provider} OAuth {"device-code " if what == "Saved" else ""}credentials: "{shown_label}"')
-        for line in (line for view in handoff for line in result_lines(view)):
-            print(f"  {line}")
-        return entry
-
-    # Codex-style auto-import: a shared Nous credential at <thor-root>/shared/nous_auth.json
-    # (written by any previous login) makes `thor --profile <name> auth add nous --type oauth`
-    # a one-tap operation for multi-profile users.
-    from thor_cli.anon_auth import is_guest_state
-
-    if (shared := auth_mod._read_shared_nous_state()) and not is_guest_state(shared):
-        try:
-            found = f"Found existing Thor OAuth credentials at {auth_mod._nous_shared_store_path()}"
-        except RuntimeError:
-            found = "Found existing shared Thor OAuth credentials"
-        print()
-        print(found)
-        do_import = _ask("Import these credentials? [Y/n]: ")
-        if do_import is None or do_import.lower() in {"", "y", "yes"}:
-            print("Rehydrating Thor session from shared credentials...")
-            rehydrated = auth_mod._try_import_shared_nous_state(timeout_seconds=timeout)
-            if rehydrated is not None:
-                return _persist(rehydrated, "Imported")
-            # Expired refresh_token, portal down, etc. — fall through to device-code.
-            print("Could not refresh shared credentials — falling back to device-code login.")
-
-    creds = auth_mod._nous_device_code_login(
-        portal_base_url=getattr(args, "portal_url", None),
-        inference_base_url=getattr(args, "inference_url", None),
-        client_id=getattr(args, "client_id", None), scope=getattr(args, "scope", None),
-        open_browser=not getattr(args, "no_browser", False), timeout_seconds=timeout,
-        insecure=bool(getattr(args, "insecure", False)), ca_bundle=getattr(args, "ca_bundle", None))
-    return _persist(creds, "Saved")
-
-
 def _unsuppress_provider_sources(provider: str) -> None:
     """Clear ALL suppressions for this provider — re-adding a credential is a strong signal the
     user wants auth re-enabled. Covers env:* (shell-exported vars), provider CLI tokens, claude_code,
@@ -431,8 +381,6 @@ def auth_add_command(args) -> None:
 def _add_credential(args, provider: str, pool, requested_type: str) -> PooledCredential:
     if requested_type == AUTH_TYPE_API_KEY:
         return _add_api_key_credential(args, provider, pool)
-    if provider == "nous":
-        return _add_nous_oauth_credential(args, provider)
 
     spec = _OAUTH_ADD_SPECS.get(provider)
     if spec is None:
@@ -539,13 +487,6 @@ def auth_list_command(args) -> None:
         if not entries:
             continue
         current = pool.peek()
-        if provider == "nous" and all(_is_free_tier_entry(e) for e in entries):
-            # The free tier is not a credential the user added; never list it as one.
-            label, hint = _free_tier_lines()
-            print(f"{provider}: {label}")
-            print(f"  {hint}")
-            print()
-            continue
         print(f"{provider} ({len(entries)} credentials):")
         for idx, entry in enumerate(entries, start=1):
             marker = "← " if current is not None and entry.id == current.id else "  "
@@ -655,12 +596,6 @@ def auth_refresh_command(args) -> None:
         raise SystemExit(
             f"{provider} credential #{index} ({matched.label}) is not a refreshable OAuth "
             f"credential.")
-    # Nous's resolver is singleton-bound, not an independent-account refresher.
-    if provider == "nous" and matched.source != "device_code":
-        raise SystemExit(
-            f"nous credential #{index} ({matched.label}) is not a refreshable OAuth "
-            "credential: only the device_code singleton supports refresh. "
-            "Reauthenticate with `thor auth add nous --type oauth`.")
     refreshed = pool.try_refresh_matching(credential_id=matched.id)
     if refreshed is None:
         after = next((e for e in pool.entries() if e.id == matched.id), None)
@@ -688,7 +623,7 @@ def _moved_auth_hint(action: str, provider: str) -> str:
 def auth_status_command(args) -> None:
     provider = _normalize_provider(getattr(args, "provider", "") or "")
     if not provider:
-        raise SystemExit("Provider is required. Example: `thor auth status nous`.")
+        raise SystemExit("Provider is required. Example: `thor auth status thor`.")
     if dispatch_plugin_auth("status", args, provider):
         return
     if moved := _moved_auth_hint("status", provider):
@@ -714,11 +649,7 @@ def auth_status_command(args) -> None:
         value = status.get(key)
         if value:
             print(f"  {key}: {value}")
-    if provider == "nous":
-        from thor_cli.guest_handoff import drain, handoff_status, status_lines
-        drain()   # a move left retrying gets its next try now
-        for line in status_lines(handoff_status()):
-            print(f"  {line}")
+
 
 
 def auth_logout_command(args) -> None:

@@ -1835,10 +1835,10 @@ def _fallback_api_mode_resolved(agent, fb_provider: str, fb_model: str, fb_base_
         # (minimax, qwen) and chat_completions models behind one provider; the primary /model path
         # already re-derives per model — the fallback wire must agree (#102148).
         return opencode_model_api_mode(opencode_family, fb_model)
-    if fb_provider in {"nous", "nous-portal", "nousresearch"}:
-        # Portal is dual-wire: anthropic/* must land on /v1/messages (the swap rebuilds the native client).
-        from thor_cli.providers import nous_api_mode
-        return nous_api_mode(fb_model)
+    if fb_provider in {"thor", "thorhub"}:
+        # ThorHub is chat/completions-only; no Messages swap.
+        from thor_cli.providers import thor_api_mode
+        return thor_api_mode(fb_model)
     if _is_anthropic_wire_url(fb_base_url):
         # Named custom providers (cron-anthropic) resolve base_url from config; the hint pass never saw it.
         return "anthropic_messages"

@@ -224,31 +224,6 @@ def _default_persist_guard(is_cancelled: Callable[[], bool]) -> Callable[[], Con
     return _guard
 
 
-def _account_email(account_state: dict[str, Any], fallback: Optional[str]) -> str:
-    """The signed-in account's email, read from its own access token."""
-    from thor_cli.auth_constants import _decode_jwt_claims
-    email = _decode_jwt_claims(account_state.get("access_token")).get("email")
-    return str(email or fallback or "").strip()
-
-
-def _handoff_lines(results: list[dict[str, Any]]) -> tuple[str, ...]:
-    from thor_cli.guest_handoff import result_lines
-    return tuple(line for view in results for line in result_lines(view))
-
-
-def _handoff_status(results: list[dict[str, Any]], replaced: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
-    """The handoff a completed sign-in reports (``guest_handoff.wire_status`` form): the latest record its
-    own run attempted, else the replaced free tier's saved record (another process held it), else
-    None when it replaced no free tier. Read under the scope."""
-    from thor_cli import anon_auth as _core
-    from thor_cli.guest_handoff import record_status, wire_status
-    if results:
-        return wire_status(results[-1])
-    anon_token = replaced.get("anon_token") if _core.is_guest_state(replaced) else None
-    status = record_status(anon_token) if isinstance(anon_token, str) and anon_token else None
-    return wire_status(status) if status else None
-
-
 def run_sign_in(
     *,
     timeout_seconds: float = 15.0,
@@ -256,116 +231,21 @@ def run_sign_in(
     replace_account: bool = False,
     persist_guard: Optional[Callable[[], ContextManager[bool]]] = None,
     scope: Optional[Callable[[], ContextManager[Any]]] = None,
-    client_factory: Optional[Callable[[float, Any], ContextManager[httpx.Client]]] = None,
+    client_factory: Optional[Callable[[float, Any], ContextManager[Any]]] = None,
 ) -> Iterator[SignInState]:
-    """Sign in with a Thor account: the plain device-code login. Yields :class:`SignInState`s.
+    """Sign in with a Thor account — RETIRED with the Thor Portal (Fase 4 debrand).
 
-    One composition behind every surface: device code, then a cancel-aware token poll on one
-    deadline, then the save. The save is where the guest handoff hooks in (``guest_handoff``): a free
-    tier the account replaces has its apps moved once the surface's lock is released, and the result
-    rides :class:`Completed`. :func:`settle_after_upgrade` runs exactly once per completion. Works
-    with or without a free tier on disk. It always ends by yielding exactly one state whose
-    ``terminal`` is True: a persist or settle failure becomes ``Failed``, never an exception out of
-    ``next()``.
-
-    *cancelled* is polled before the wait, on a <= 1 s tick inside the token poll, and once more
-    under *persist_guard* before the save; a cancel always wins and nothing is saved.
-    *replace_account* lets a signed-in install sign in again (the desktop's "connect another
-    account"); without it a signed-in install yields ``AlreadySignedIn`` before any network.
-    *persist_guard* lets a surface make its own cancel check and the save atomic under its own lock.
-    *scope* is entered around the precondition, the account state and the persist/settle, never
-    across a ``yield`` or the token wait: ``run_in_executor`` does not carry contextvars, so the
-    scope has to be entered inside the generator, on whichever thread is advancing it.
-    *client_factory* is the HTTP client seam, ``client_factory(timeout_seconds, verify)``.
+    The Portal's device-code login is gone, so there is no sign-in to run: an install that already
+    has a ThorHub key yields :class:`AlreadySignedIn`, anything else yields one terminal
+    :class:`Failed` telling the user to add a ThorHub key. The generator contract (exactly one
+    terminal state, never a raise out of ``next()``) is preserved.
     """
-    from thor_cli import anon_auth as _core
-    from thor_cli.auth import PROVIDER_REGISTRY, _resolve_verify
-    from thor_cli.auth_device_flow import DeviceFlowCancelled, _request_device_code
-    from thor_cli.auth_error_copy import is_device_code_expired
-    from thor_cli.auth_nous import _nous_http_client, _nous_portal_base_url
-    from thor_cli.guest_handoff import drain
+    from thor_cli.thorhub_account import thorhub_api_key
 
-    is_cancelled = cancelled or (lambda: False)
-    open_scope = scope or contextlib.nullcontext
-
-    # Yielded outside the scope, because a scope must never be held across a ``yield``.
-    state: Optional[dict[str, Any]] = None
-    try:
-        with open_scope():
-            state = _core.current_nous_state()
-            # Inside the scope: the operator's Portal override is a profile setting, and it wins over
-            # a saved URL the same way it does for every other Nous call.
-            portal = _nous_portal_base_url(state or {})
-    except Exception as exc:  # health: allow BLE001 -- the generator's contract is one terminal state, never a raise
-        yield Failed(reason="", detail=str(exc))
-        return
-    if state and not _core.is_guest_state(state) and not replace_account:
+    if thorhub_api_key() and not replace_account:
         yield AlreadySignedIn()
         return
-
-    try:
-        pconfig = PROVIDER_REGISTRY["nous"]
-        client_id, scope_str = pconfig.client_id, pconfig.scope
-        # A malformed CA bundle raises here, before the wire: inside the try, so it lands on Failed.
-        verify = _resolve_verify(insecure=None, ca_bundle=None, auth_state=None)
-        open_client = client_factory or _nous_http_client
-        with open_client(timeout_seconds, verify) as client:
-            device = _request_device_code(client, portal, client_id, scope_str)
-            expires_in = int(device["expires_in"])
-            interval = int(device.get("interval") or 5)
-            deadline = time.monotonic() + max(1, expires_in)
-            yield Code(link=str(device["verification_uri_complete"]), code=str(device["user_code"]),
-                       expires_in=expires_in, interval=interval)
-            if is_cancelled():
-                yield Cancelled()
-                return
-            yield Waiting()
-            token_data = _core._poll_for_token(
-                client=client, portal_base_url=portal, client_id=client_id,
-                device_code=str(device["device_code"]), expires_in=max(1, int(deadline - time.monotonic())),
-                poll_interval=interval, cancelled=is_cancelled)
-        with open_scope():  # the inference URL allowlist reads the profile's NOUS_INFERENCE_BASE_URL
-            account_state = _core._account_state_from_token(
-                token_data, portal_base_url=portal, client_id=client_id, scope=scope_str,
-                verify=verify, timeout_seconds=timeout_seconds)
-    except DeviceFlowCancelled:
-        yield Cancelled()
-        return
-    except TimeoutError as exc:
-        # The code ran out while the token endpoint kept failing (``_poll_device_token_generic`` sets
-        # the cause): the service was unreachable, not a sign-in left unapproved.
-        outage = exc.__cause__ if isinstance(exc.__cause__, ConnectionError) else None
-        yield _failed_from_exception(outage) if outage else TimedOut(detail=str(exc))
-        return
-    except Exception as exc:
-        # The token endpoint's own ``expired_token`` answer is the same timeout as running out the clock.
-        yield TimedOut(detail=str(exc)) if is_device_code_expired(exc) else _failed_from_exception(exc)
-        return
-
-    guard = persist_guard or _default_persist_guard(is_cancelled)
-    try:
-        with open_scope():
-            with guard() as may_persist:
-                if may_persist:
-                    _core.persist_nous_credentials(account_state)
-            if may_persist:
-                # The handoff runs once the surface's lock is released, never inside it.
-                handoff = drain()
-                settled = _core.settle_after_upgrade(account_state)
-                handoff_status = _handoff_status(handoff, state)
-    except Exception as exc:
-        # persist_nous_credentials takes the auth-store lock, writes auth.json, takes the shared
-        # store's file lock and reseeds the credential pool: a lock timeout or a read-only home
-        # must not escape next(gen).
-        yield Failed(reason="", detail=str(exc))
-        return
-    if not may_persist:                  # yielded outside the scope, never across it
-        yield Cancelled()
-        return
-
-    yield Completed(
-        email=_account_email(account_state, next((v["account_email"] for v in handoff if v["account_email"]), None)),
-        model=str(settled.get("model") or ""),
-        model_changed=bool(settled.get("changed")),
-        handoff=_handoff_lines(handoff),
-        handoff_status=handoff_status)
+    yield Failed(
+        reason="thorhub_no_free_tier",
+        detail="Thor Portal sign-in is retired — add a ThorHub key with `thor auth add thor` "
+               "or set THORHUB_API_KEY.")

@@ -454,9 +454,9 @@ def streaming_enabled(stt_config: dict[str, Any]) -> bool:
 def _openai_credentials() -> Optional[tuple[str, str]]:
     """Direct OpenAI credentials only: the managed Nous gateway proxies the REST audio API, not
     the Realtime socket."""
-    from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_selection
+    from tools.tool_backend_helpers import MANAGED_PROVIDER, read_selection
     from tools.transcription_tools import _resolve_openai_audio_client_config
-    if read_selection("stt") == NOUS_MANAGED_PROVIDER:
+    if read_selection("stt") == MANAGED_PROVIDER:
         return None
     try:
         api_key, base_url = _resolve_openai_audio_client_config()

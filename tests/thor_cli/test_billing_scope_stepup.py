@@ -1,162 +1,63 @@
-"""Tests for the Phase 2b billing:manage scope step-up (auth.py)."""
+"""Tests for the billing:manage scope step-up — retired with the Nous Portal.
+
+ThorHub has no billing API and no step-up flow: a static key cannot gain a
+``billing:manage`` scope, and credits are topped up at the ThorHub store instead.
+Both step-up surfaces therefore decline honestly: the CLI mixin points at the
+top-up page, the TUI ``billing.step_up`` RPC returns ``granted: False``.
+"""
 
 from __future__ import annotations
 
-import pytest
-
-from thor_cli import auth
-from thor_cli import auth_nous
-from thor_cli.auth import (
-    NOUS_BILLING_MANAGE_SCOPE,
-    nous_token_has_billing_scope,
-    step_up_nous_billing_scope,
-)
+from thor_cli.cli_billing_mixin import CLIBillingMixin
+from thor_cli.thorhub_account import THORHUB_TOPUP_URL
 
 
-# ---------------------------------------------------------------------------
-# nous_token_has_billing_scope
-# ---------------------------------------------------------------------------
+class _Cli(CLIBillingMixin):
+    def __init__(self, choice: str = "yes"):
+        self.choice, self.asked = choice, []
+        self._app = object()
+
+    def _modal_choice(self, title, detail, choices):
+        self.asked.append((title, [c[0] for c in choices]))
+        return self.choice
 
 
-class TestNousTokenHasBillingScope:
-    def test_true_when_scope_string_contains_billing_manage(self, monkeypatch):
-        monkeypatch.setattr(
-            auth, "get_provider_auth_state",
-            lambda pid: {"scope": f"openid {NOUS_BILLING_MANAGE_SCOPE} inference"},
-        )
-        assert nous_token_has_billing_scope() is True
-
-    def test_false_when_scope_missing_or_not_a_string(self, monkeypatch):
-        monkeypatch.setattr(auth, "get_provider_auth_state", lambda pid: {"scope": "openid inference"})
-        assert nous_token_has_billing_scope() is False
-        monkeypatch.setattr(auth, "get_provider_auth_state", lambda pid: {"scope": None})
-        assert nous_token_has_billing_scope() is False
-        monkeypatch.setattr(auth, "get_provider_auth_state", lambda pid: None)
-        assert nous_token_has_billing_scope() is False
-
-    def test_false_when_auth_state_lookup_raises(self, monkeypatch):
-        def _boom(pid):
-            raise RuntimeError("auth store unreadable")
-
-        monkeypatch.setattr(auth, "get_provider_auth_state", _boom)
-        assert nous_token_has_billing_scope() is False
-
-
-# ---------------------------------------------------------------------------
-# step_up_nous_billing_scope
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def _stub_persist(monkeypatch):
-    """Neutralize the persistence side-effects so step-up tests are pure."""
-    monkeypatch.setattr(auth, "_auth_store_lock", lambda: _NullCtx())
-    monkeypatch.setattr(auth, "_load_auth_store", dict)
-    monkeypatch.setattr(auth, "_save_provider_state", lambda *a, **kw: None)
-    monkeypatch.setattr(auth, "_save_auth_store", lambda *a, **kw: "auth.json")
-    monkeypatch.setattr(auth, "_write_shared_nous_state", lambda *a, **kw: None)
-    monkeypatch.setattr(auth_nous, "_write_shared_nous_state", lambda *a, **kw: None)
-    monkeypatch.setattr(auth, "_sync_nous_pool_from_auth_store", lambda: None)
-    monkeypatch.setattr(auth_nous, "_sync_nous_pool_from_auth_store", lambda: None)
-
-
-class _NullCtx:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *a):
-        return False
-
-
-def test_step_up_requests_billing_scope_and_reuses_prior_urls(monkeypatch, _stub_persist):
-    monkeypatch.setattr(
-        auth,
-        "get_provider_auth_state",
-        lambda p: {
-            "scope": "inference:invoke",
-            "portal_base_url": "https://preview.example.com",
-            "inference_base_url": "https://inf.example.com",
-            "client_id": "thor-cli",
-        },
-    )
-    captured = {}
-
-    def _fake_login(**kw):
-        captured.update(kw)
-        # Simulate the admin ticking the box → token comes back WITH the scope.
-        return {"scope": "inference:invoke billing:manage", "access_token": "t"}
-
-    monkeypatch.setattr(auth, "_nous_device_code_login", _fake_login)
-    monkeypatch.setattr(auth_nous, "_nous_device_code_login", _fake_login)
-
-    granted = step_up_nous_billing_scope()
-    assert granted is True
-    # Requests the granted inference scope plus billing access.
-    assert captured["scope"] == "inference:invoke billing:manage"
-    # Reuses the prior credential's deployment URLs (so a preview stays a preview).
-    assert captured["portal_base_url"] == "https://preview.example.com"
-    assert captured["client_id"] == "thor-cli"
-
-
-def test_step_up_drops_the_billing_token_cache(monkeypatch, _stub_persist):
-    """The refused action is replayed right after the grant; a still-cached pre-grant token would 403 again
-    (desktop showed "Remote Spending needs approval" straight after approving)."""
-    from thor_cli import nous_billing
-    monkeypatch.setattr(auth, "get_provider_auth_state", lambda p: {"scope": "inference:invoke"})
-    fake_login = lambda **kw: {"scope": "inference:invoke billing:manage", "access_token": "new"}
-    monkeypatch.setattr(auth, "_nous_device_code_login", fake_login)
-    monkeypatch.setattr(auth_nous, "_nous_device_code_login", fake_login)
-    nous_billing._token_cache["home"] = (0.0, "old-unscoped", "https://portal")
-
-    assert step_up_nous_billing_scope() is True
-    assert nous_billing._token_cache == {}
-
-
-# ---------------------------------------------------------------------------
-# on_verification callback plumbing (TUI surfaces the device-flow URL via this)
-# ---------------------------------------------------------------------------
-
-
-
-
-def test_device_login_fires_on_verification_before_polling(monkeypatch):
-    """on_verification(url, code) must fire BEFORE _poll_for_token (so the TUI
-    can render the link while the flow blocks waiting for approval)."""
-    order: list[str] = []
-
-    monkeypatch.setattr(
-        auth,
-        "_request_device_code",
-        lambda **kw: {
-            "verification_uri_complete": "https://portal.example/device?code=ABCD",
-            "user_code": "ABCD-1234",
-            "device_code": "dev",
-            "expires_in": 600,
-            "interval": 5,
-        },
+def _step_up(cli, **kw):
+    return cli._step_up_remote_spending(
+        explain="Remote spending lets Thor buy credits on your behalf.",
+        noninteractive_msg="non-interactive: cannot confirm remote spending",
+        declined_msg="declined",
+        not_granted_msg="not granted",
+        **kw,
     )
 
-    def _fake_poll(**kw):
-        order.append("poll")
-        return {"access_token": "t", "scope": "inference:invoke", "expires_in": 3600}
 
-    monkeypatch.setattr(auth, "_poll_for_token", _fake_poll)
+def test_step_up_noninteractive_declines_without_a_modal(capsys):
+    cli = _Cli("yes")
+    cli._app = None  # non-interactive: the modal can't run
+    assert _step_up(cli) is False
+    assert cli.asked == []
+    assert "non-interactive: cannot confirm remote spending" in capsys.readouterr().out
 
-    seen = {}
 
-    def _cb(url, code):
-        order.append("verify")
-        seen["url"] = url
-        seen["code"] = code
+def test_step_up_yes_points_at_the_topup_page(capsys):
+    cli = _Cli("yes")
+    assert _step_up(cli) is False
+    assert cli.asked != []
+    out = capsys.readouterr().out
+    assert f"Top up at {THORHUB_TOPUP_URL}" in out
 
-    # We only assert the callback fires before polling. Post-poll token
-    # validation (JWT usability checks) is out of scope and may raise on the
-    # synthetic token — swallow it; the ordering assertion is what matters.
-    try:
-        auth._nous_device_code_login(open_browser=False, on_verification=_cb)
-    except Exception:
-        pass
 
-    assert order[:2] == ["verify", "poll"], "callback must fire before polling"
-    assert seen["url"] == "https://portal.example/device?code=ABCD"
-    assert seen["code"] == "ABCD-1234"
+def test_step_up_declined_at_the_modal(capsys):
+    cli = _Cli("cancel")
+    assert _step_up(cli) is False
+    assert "declined" in capsys.readouterr().out
+    assert THORHUB_TOPUP_URL not in capsys.readouterr().out
+
+
+def test_no_billing_token_cache_on_thorhub():
+    """ThorHub keys are static: there is no billing token cache to drop after a grant."""
+    from thor_cli import thorhub_billing
+
+    assert not hasattr(thorhub_billing, "_token_cache")
+    thorhub_billing.invalidate_cached_token()  # no-op, must not raise

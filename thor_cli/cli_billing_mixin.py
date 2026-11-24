@@ -210,13 +210,11 @@ class CLIBillingMixin:
         if choice != "yes":
             print(declined_msg)
             return False
-        print(f"  {t('cli.billing.opening_browser_remote_spending')}")
-        try:
-            from thor_cli.auth import step_up_nous_billing_scope
-            granted = step_up_nous_billing_scope(open_browser=True)
-        except Exception as exc:
-            print(f"  {t('cli.billing.couldnt_allow_remote_spending', error=exc)}")
-            return False
+        # ThorHub has no billing API and no step-up flow: remote spending cannot be enabled
+        # from here. Point the user at the top-up page instead.
+        from thor_cli.thorhub_account import THORHUB_TOPUP_URL
+        print(f"  Top up at {THORHUB_TOPUP_URL} to add ThorHub credits.")
+        return False
         if not granted:
             print(not_granted_msg)
         return bool(granted)
@@ -250,7 +248,7 @@ class CLIBillingMixin:
 
     # ── /usage — Nous balance block ──
 
-    def _print_nous_balance(self, usage, lines: list[str]) -> bool:
+    def _print_thorhub_balance(self, usage, lines: list[str]) -> bool:
         """Thor dollar balance block (two bars) from *usage* (``UsageModel`` or None), else *lines* (the
         usage-window layout, or an owner that sent no model); True if anything printed. Reads nothing."""
         from cli import _cprint, _b, _d
@@ -487,7 +485,7 @@ class CLIBillingMixin:
         """Preview → effect → confirm+apply. ``allow_stepup=False`` (post-grant replay) never re-prompts a step-up."""
         from cli import _cprint, _b, _d
         from agent.subscription_view import is_upgrade, subscription_change_preview_from_payload, subscription_manage_url
-        from thor_cli.nous_billing import BillingError, BillingScopeRequired, post_subscription_preview
+        from thor_cli.thorhub_billing import BillingError, BillingScopeRequired, post_subscription_preview
         self._dim(t("cli.subscription.checking_change"))
         try:
             payload = post_subscription_preview(subscription_type_id=tier_id)
@@ -577,7 +575,7 @@ class CLIBillingMixin:
     def _subscription_apply(self, state, action, idempotency_key=None, *, allow_stepup=True):
         """Run ("upgrade"|"schedule", tier_id) / ("cancel"|"resume", None); scope denial → step-up + ONE replay, same key."""
         from cli import _cprint
-        from thor_cli.nous_billing import (
+        from thor_cli.thorhub_billing import (
             BillingError, BillingTransient, BillingRemoteSpendingRevoked, BillingScopeRequired, BillingSessionRevoked,
             delete_subscription_pending_change, post_subscription_upgrade, put_subscription_pending_change)
         kind, arg = action
@@ -637,7 +635,7 @@ class CLIBillingMixin:
         self._ok(t("cli.billing.remote_spending_allowed"))
         # Bust the 30s token cache (it still holds the pre-grant token; _request only busts on 401).
         try:
-            from thor_cli import nous_billing as _nb
+            from thor_cli import thorhub_billing as _nb
             _nb.invalidate_cached_token()
         except Exception:
             pass
@@ -908,7 +906,7 @@ class CLIBillingMixin:
     def _billing_submit_and_poll(self, state, amount, key, *, missing_msg, status_msg, on_scope=None):
         """POST the charge, then poll. ``on_scope`` handles a scope denial (first submit); else it renders."""
         from cli import _cprint, _d
-        from thor_cli.nous_billing import BillingError, BillingScopeRequired, post_charge
+        from thor_cli.thorhub_billing import BillingError, BillingScopeRequired, post_charge
         try:
             result = post_charge(amount_usd=amount, idempotency_key=key)
         except BillingError as exc:
@@ -928,7 +926,7 @@ class CLIBillingMixin:
         """Poll loop: 2s interval, 5-min cap, cancellable. settled = ledger truth."""
         import time as _time
         from agent.billing_view import format_money, parse_money
-        from thor_cli.nous_billing import BillingError, BillingTransient, get_charge_status
+        from thor_cli.thorhub_billing import BillingError, BillingTransient, get_charge_status
         deadline = _time.time() + 300
         while _time.time() < deadline:
             try:
@@ -961,7 +959,7 @@ class CLIBillingMixin:
 
     def _billing_render_charge_error(self, state, exc):
         """Submit-time BillingError. Order matters: revoked/session before code lookups; Transient before scope."""
-        from thor_cli.nous_billing import BillingTransient, BillingRemoteSpendingRevoked, BillingSessionRevoked
+        from thor_cli.thorhub_billing import BillingTransient, BillingRemoteSpendingRevoked, BillingSessionRevoked
         code = exc.error
         portal_url = exc.portal_url or state.portal_url
         if isinstance(exc, BillingRemoteSpendingRevoked) or code == "remote_spending_revoked":
@@ -1101,11 +1099,11 @@ class CLIBillingMixin:
 
     def _billing_patch_auto_top_up(self, state, **kwargs) -> bool:
         """PATCH auto-top-up; scope denials → step-up, other errors → renderer. True on success."""
-        from thor_cli.nous_billing import patch_auto_top_up
+        from thor_cli.thorhub_billing import patch_auto_top_up
         return self._billing_patch(state, patch_auto_top_up, **kwargs)
 
     def _billing_patch(self, state, call, **kwargs) -> bool:
-        from thor_cli.nous_billing import BillingError, BillingScopeRequired
+        from thor_cli.thorhub_billing import BillingError, BillingScopeRequired
         try:
             call(**kwargs)
         except BillingScopeRequired:
@@ -1138,7 +1136,7 @@ class CLIBillingMixin:
     def _billing_set_keep_going(self, state, turn_on: bool, *, allow_stepup: bool) -> None:
         """PATCH the setting. A scope denial runs the step-up, then sends the same change ONCE (no card or
         org Remote Spending check: the setting is not a charge, and turning it off must always work)."""
-        from thor_cli.nous_billing import BillingError, BillingScopeRequired, patch_keep_going_on_credits
+        from thor_cli.thorhub_billing import BillingError, BillingScopeRequired, patch_keep_going_on_credits
         try:
             patch_keep_going_on_credits(enabled=turn_on)
         except BillingScopeRequired as exc:

@@ -21,8 +21,9 @@ from socketserver import ThreadingMixIn
 from typing import Any, Callable, Dict, FrozenSet, Optional
 from urllib.parse import parse_qs, urlparse
 from thor_cli.auth_constants import (
-    AuthError, DEFAULT_NOUS_PORTAL_URL, DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS,
+    AuthError, DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS,
     DEVICE_CODE_GRANT_TYPE, OAUTH_OVER_SSH_DOCS_URL, httpx)
+from thor_cli.thorhub_account import THORHUB_BASE_URL
 from thor_cli.auth_error_copy import DeviceCodeExpired
 from utils import is_truthy_value
 
@@ -263,7 +264,15 @@ def _resolve_verify(
                 "CA bundle path does not exist: %s — falling back to default certificates",
                 ca_path)
             return _default_verify()
-        return ssl.create_default_context(cafile=ca_path)
+        # An explicit bundle REPLACES trust: build from the un-injected stdlib class
+        # (agent.ssl_verify._stdlib_ssl_context_class), not ssl.create_default_context --
+        # after install_truststore() the latter returns a truststore context that falls
+        # back to the OS verifier whenever the bundle rejects a chain.
+        from agent.ssl_verify import _stdlib_ssl_context_class
+
+        ctx = _stdlib_ssl_context_class()(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.load_verify_locations(cafile=ca_path)
+        return ctx
     return _default_verify()
 
 
@@ -285,14 +294,14 @@ def _request_device_code(
     return data
 
 
-def _nous_device_auth_timeout_message(portal_base_url: str) -> str:
+def _device_auth_timeout_message(portal_base_url: str) -> str:
     """Actionable timeout text: the usual cause is Portal sign-in failing in the browser tab.
 
     A bare "Timed out waiting for device authorization" gives the user nothing to act on. The most common
     cause is Portal sign-in failing in the opened browser tab (including the server-side CAPTCHA loop from
     20605), so point at the Portal login page and the retry command. See #20605.
     """
-    portal = (portal_base_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+    portal = (portal_base_url or THORHUB_BASE_URL).rstrip("/")
     return (
         "Timed out waiting for device authorization.\n"
         "  Portal sign-in is required before the device code can be approved.\n"
@@ -433,8 +442,8 @@ def _poll_for_token(
         on_non_json_error=lambda _r: RuntimeError(
             "Token endpoint returned a non-JSON error response"),
         # Enriched at the SOURCE so the CLI login and the dashboard/desktop poller
-        # (web_server_oauth._nous_sign_in_poller surfaces it to the UI) both inherit the guidance.
-        on_timeout=lambda: DeviceCodeExpired(_nous_device_auth_timeout_message(portal_base_url)),
+        # (the dashboard/desktop poller surfaces it to the UI) both inherit the guidance.
+        on_timeout=lambda: DeviceCodeExpired(_device_auth_timeout_message(portal_base_url)),
         cancelled=cancelled)
 
 

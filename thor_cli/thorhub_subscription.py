@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, Optional, Set
 
 from thor_cli.config import get_env_value, load_config
-from thor_cli.nous_account import (
-    NousPortalAccountInfo, format_nous_portal_entitlement_message, get_nous_portal_account_info,
+from thor_cli.thorhub_account import (
+    ThorHubAccountInfo, format_thorhub_entitlement_message, get_thorhub_account_info,
 )
 from tools.managed_tool_gateway import is_managed_tool_gateway_ready
 from utils import is_truthy_value
@@ -34,7 +34,7 @@ class _FeatureSpec:
     section_field: Optional[tuple[str, str]] = None
     offer_label: str = ""
     direct_label: str = ""
-    # Direct-credential env vars that stop apply_nous_managed_defaults switching the category to
+    # Direct-credential env vars that stop apply_thorhub_managed_defaults switching the category to
     # managed (tts/stt also honour resolve_openai_audio_api_key()).
     default_direct_env: tuple[str, ...] = ()
 
@@ -85,7 +85,7 @@ def _uses_gateway(section: object) -> bool:
 
 def _selected_provider(section: object, name_key: str = "provider") -> Optional[str]:
     """Stored provider for a section (``read_selection`` semantics): ``"nous"`` for the managed
-    selection (stored ``thor`` or legacy ``use_gateway: true``), a vendor name for BYOK, else None."""
+    selection (legacy ``use_gateway: true``), a vendor name for BYOK, else None."""
     if not isinstance(section, dict):
         return None
     if _uses_gateway(section):
@@ -95,13 +95,13 @@ def _selected_provider(section: object, name_key: str = "provider") -> Optional[
 
 
 @dataclass(frozen=True)
-class NousFeatureState:
+class ThorHubFeatureState:
     key: str
     label: str
     included_by_default: bool
     available: bool
     active: bool
-    managed_by_nous: bool
+    managed_by_thorhub: bool
     direct_override: bool
     toolset_enabled: bool
     current_provider: str = ""
@@ -109,19 +109,19 @@ class NousFeatureState:
 
 
 @dataclass(frozen=True)
-class NousSubscriptionFeatures:
+class ThorHubSubscriptionFeatures:
     subscribed: bool
     thor_auth_present: bool
     provider_is_thor: bool
-    features: dict[str, NousFeatureState]
-    account_info: Optional[NousPortalAccountInfo] = None
+    features: dict[str, ThorHubFeatureState]
+    account_info: Optional[ThorHubAccountInfo] = None
 
-    def __getattr__(self, name: str) -> NousFeatureState:  # ``features.web`` -> per-key state
+    def __getattr__(self, name: str) -> ThorHubFeatureState:  # ``features.web`` -> per-key state
         if name in _FEATURE_ORDER:
             return self.features[name]
         raise AttributeError(name)
 
-    def items(self) -> Iterable[NousFeatureState]:
+    def items(self) -> Iterable[ThorHubFeatureState]:
         return (self.features[key] for key in _FEATURE_ORDER)
 
 
@@ -154,7 +154,7 @@ def _norm(value: object, default: str = "") -> str:
 
 
 def _provider_is_thor(config: dict[str, object]) -> bool:
-    return _norm(_section(config, "model").get("provider")) == "nous"
+    return _norm(_section(config, "model").get("provider")) in {"thor", "thorhub"}
 
 
 def _toolset_enabled(config: dict[str, object], toolset_key: str) -> bool:
@@ -243,24 +243,24 @@ def _any_env(*names: str) -> bool:
     return any(get_env_value(name) for name in names)
 
 
-def _account_info_or_none(**kwargs) -> Optional[NousPortalAccountInfo]:
-    """``get_nous_portal_account_info(**kwargs)``, failing closed to ``None`` on any error."""
+def _account_info_or_none(**kwargs) -> Optional[ThorHubAccountInfo]:
+    """``get_thorhub_account_info(**kwargs)``, failing closed to ``None`` on any error."""
     try:
-        return get_nous_portal_account_info(**kwargs)
+        return get_thorhub_account_info(**kwargs)
     except Exception:
         return None
 
 
-def _state(key: str, **fields) -> NousFeatureState:
+def _state(key: str, **fields) -> ThorHubFeatureState:
     spec = _FEATURES[key]
-    fields.setdefault("direct_override", fields["active"] and not fields["managed_by_nous"])
-    return NousFeatureState(key, spec.label, spec.included_by_default, **fields)
+    fields.setdefault("direct_override", fields["active"] and not fields["managed_by_thorhub"])
+    return ThorHubFeatureState(key, spec.label, spec.included_by_default, **fields)
 
 
-def _web_feature(web_cfg: dict[str, object], tool_enabled: bool, managed: bool, web_gw: bool, direct_firecrawl: bool) -> NousFeatureState:
+def _web_feature(web_cfg: dict[str, object], tool_enabled: bool, managed: bool, web_gw: bool, direct_firecrawl: bool) -> ThorHubFeatureState:
     # Per-capability overrides decide the active search/extract backend independently of web.backend.
     backend, search_backend, extract_backend = (_norm(web_cfg.get(k)) for k in ("backend", "search_backend", "extract_backend"))
-    # The "nous" selection is serviced by Firecrawl — normalize so downstream vendor checks hold.
+    # The "nous" (managed) selection is serviced by Firecrawl — normalize so downstream vendor checks hold.
     if backend == "nous" or web_gw:
         backend = "firecrawl"
     # Direct readiness per vendor; a stored managed selection suppresses direct credentials.
@@ -278,33 +278,33 @@ def _web_feature(web_cfg: dict[str, object], tool_enabled: bool, managed: bool, 
     active = web_managed or direct.get(backend) or direct.get(search_backend) or (extract_backend in ("tavily", "perplexity") and direct[extract_backend])
     return _state(
         "web", available=bool(managed or any(direct.values())), active=bool(tool_enabled and active),
-        managed_by_nous=web_managed, toolset_enabled=tool_enabled,
+        managed_by_thorhub=web_managed, toolset_enabled=tool_enabled,
         current_provider=backend or search_backend or extract_backend or "",
         explicit_configured=bool(backend or search_backend or extract_backend),
     )
 
 
 def managed_image_partner(config: dict[str, object]) -> Optional[str]:
-    """Partner the image request is dispatched to (``"FAL"``, ``"Krea"`` or ``"Nous Portal"``);
+    """Partner the image request is dispatched to (``"FAL"``, ``"Krea"`` or ``"ThorHub Portal"``);
     ``None`` when a direct vendor owns it. Reads the stored values the way the runtime dispatcher
     does, so the label and the route cannot disagree."""
     from tools.image_generation_managed import FAL, KREA, PORTAL, managed_route
 
     section = _section(config, "image_gen")
-    return {FAL: "FAL", KREA: "Krea", PORTAL: "Thor Portal"}.get(
+    return {FAL: "FAL", KREA: "Krea", PORTAL: "ThorHub"}.get(
         managed_route(section.get("provider"), section.get("model")))
 
 
-def _fal_feature(key: str, tool_enabled: bool, direct: bool, managed: bool, selected: Optional[str]) -> NousFeatureState:
+def _fal_feature(key: str, tool_enabled: bool, direct: bool, managed: bool, selected: Optional[str]) -> ThorHubFeatureState:
     # image_gen / video_gen: same FAL_KEY, independently gated managed availability.
     fal_managed = tool_enabled and managed and not direct
     if selected not in (None, "nous") or (selected is None and direct):
         label = "FAL"
     else:
-        label = "Thor Subscription" if (fal_managed or selected == "nous") else ""
+        label = "ThorHub" if (fal_managed or selected == "nous") else ""
     return _state(
         key, available=bool(managed or direct), active=bool(tool_enabled and (fal_managed or direct)),
-        managed_by_nous=fal_managed, toolset_enabled=tool_enabled, current_provider=label,
+        managed_by_thorhub=fal_managed, toolset_enabled=tool_enabled, current_provider=label,
         explicit_configured=selected is not None or direct,
     )
 
@@ -317,10 +317,10 @@ def _audio_provider(cfg: dict[str, object], default: str, gw: bool) -> str:
 def _audio_features(
     tts_cfg: dict[str, object], stt_cfg: dict[str, object], tts_tool_enabled: bool,
     managed: dict[str, bool], selected: dict[str, Optional[str]], use_gateway: dict[str, bool],
-) -> tuple[NousFeatureState, NousFeatureState]:
+) -> tuple[ThorHubFeatureState, ThorHubFeatureState]:
     tts_gw, stt_gw = use_gateway["tts"], use_gateway["stt"]
-    # STT default is "local" (faster-whisper, needs a pip install); Thor subscribers are routed to the
-    # managed audio gateway by apply_nous_managed_defaults. The "nous" selection is serviced by OpenAI
+    # STT default is "local" (faster-whisper, needs a pip install); the managed audio gateway is
+    # retired on ThorHub. The "nous" (managed) selection is serviced by OpenAI
     # — normalize so downstream vendor checks hold.
     tts_current = _audio_provider(tts_cfg, "edge", tts_gw)
     stt_current = _audio_provider(stt_cfg, "local", stt_gw)
@@ -333,7 +333,7 @@ def _audio_features(
     }.get(tts_current, False))
     tts = _state(
         "tts", available=tts_available, active=bool(tts_tool_enabled and tts_available),
-        managed_by_nous=tts_tool_enabled and tts_current == "openai" and managed["tts"] and not direct_openai_tts,
+        managed_by_thorhub=tts_tool_enabled and tts_current == "openai" and managed["tts"] and not direct_openai_tts,
         toolset_enabled=tts_tool_enabled, current_provider=_provider_label("tts", tts_current),
         # Mirrors the stored selection so status/picker markers stay in lockstep with dispatch.
         explicit_configured=selected["tts"] is not None and selected["tts"] != "edge",
@@ -347,7 +347,7 @@ def _audio_features(
     }.get(stt_current, False))
     stt = _state(
         "stt", available=stt_available, active=stt_available, toolset_enabled=True,
-        managed_by_nous=stt_current == "openai" and managed["stt"] and not direct_openai_stt,
+        managed_by_thorhub=stt_current == "openai" and managed["stt"] and not direct_openai_stt,
         current_provider=_provider_label("stt", stt_current), explicit_configured=selected["stt"] is not None,
     )
     return tts, stt
@@ -355,7 +355,7 @@ def _audio_features(
 
 def _browser_feature(
     browser_cfg: dict[str, object], tool_enabled: bool, managed: bool, browser_gw: bool, direct_firecrawl: bool,
-) -> NousFeatureState:
+) -> ThorHubFeatureState:
     """Resolve browser availability using the same precedence as runtime."""
     explicit = "cloud_provider" in browser_cfg
     provider = normalize_browser_cloud_provider(browser_cfg.get("cloud_provider") if explicit else None)
@@ -382,12 +382,12 @@ def _browser_feature(
     else:
         current, available, managed_now = "local", bool(local_runnable), False
     return _state(
-        "browser", available=available, active=bool(tool_enabled and available), managed_by_nous=managed_now,
+        "browser", available=available, active=bool(tool_enabled and available), managed_by_thorhub=managed_now,
         toolset_enabled=tool_enabled, current_provider=_provider_label("browser", current), explicit_configured=explicit,
     )
 
 
-def _modal_feature(terminal_cfg: dict[str, object], tool_enabled: bool, managed: bool, managed_tools_flag: bool) -> NousFeatureState:
+def _modal_feature(terminal_cfg: dict[str, object], tool_enabled: bool, managed: bool, managed_tools_flag: bool) -> ThorHubFeatureState:
     terminal_backend = _norm(terminal_cfg.get("backend"), "local")
     modal_mode = coerce_modal_mode(terminal_cfg.get("modal_mode"))
     direct_modal = has_direct_modal_credentials()
@@ -404,13 +404,13 @@ def _modal_feature(terminal_cfg: dict[str, object], tool_enabled: bool, managed:
         managed_now = direct_override = active = False
         available = bool({"managed": managed, "direct": direct_modal}.get(modal_mode, managed or direct_modal))
     return _state(
-        "modal", available=available, active=active, managed_by_nous=managed_now, direct_override=direct_override,
+        "modal", available=available, active=active, managed_by_thorhub=managed_now, direct_override=direct_override,
         toolset_enabled=tool_enabled, current_provider="Modal" if is_modal else terminal_backend or "local",
         explicit_configured=is_modal,
     )
 
 
-def get_nous_subscription_features(config: Optional[dict[str, object]] = None, *, force_fresh: bool = False) -> NousSubscriptionFeatures:
+def get_thorhub_subscription_features(config: Optional[dict[str, object]] = None, *, force_fresh: bool = False) -> ThorHubSubscriptionFeatures:
     if config is None:
         config = load_config() or {}
     provider_is_thor = _provider_is_thor(config)
@@ -420,7 +420,7 @@ def get_nous_subscription_features(config: Optional[dict[str, object]] = None, *
     thor_auth_present = bool(account_info and account_info.logged_in)
     managed_tools_flag = thor_auth_present and account_info.tool_gateway_entitled
     enabled = {key: _toolset_enabled(config, key) for key in ("web", "image_gen", "video_gen", "tts", "browser", "terminal")}
-    # Stored selections (strict model): "nous" = managed gateway; vendor name = that vendor direct;
+    # Stored selections (strict model): "nous" = managed gateway (legacy value); vendor name = that vendor direct;
     # None = never configured (autodetect). Lockstep with tool_backend_helpers.read_selection: a
     # merged ``stt.provider: local`` here means the raw file holds it — a genuine selection.
     selected = {
@@ -443,7 +443,7 @@ def get_nous_subscription_features(config: Optional[dict[str, object]] = None, *
     fal_configured = fal_key_is_configured()
     tts, stt = _audio_features(_section(config, "tts"), _section(config, "stt"), enabled["tts"], managed, selected, use_gateway)
 
-    def _fal(key: str) -> NousFeatureState:
+    def _fal(key: str) -> ThorHubFeatureState:
         return _fal_feature(key, enabled[key], fal_configured and not use_gateway[key], managed[key], selected[key])
 
     features = {  # insertion order == _FEATURE_ORDER
@@ -457,7 +457,7 @@ def get_nous_subscription_features(config: Optional[dict[str, object]] = None, *
         ),
         "modal": _modal_feature(_section(config, "terminal"), enabled["terminal"], managed["modal"], managed_tools_flag),
     }
-    return NousSubscriptionFeatures(
+    return ThorHubSubscriptionFeatures(
         subscribed=provider_is_thor or thor_auth_present, thor_auth_present=thor_auth_present,
         provider_is_thor=provider_is_thor, features=features, account_info=account_info,
     )
@@ -475,8 +475,8 @@ def _krea_image_default(config: dict[str, object], account_info) -> Optional[str
     return MANAGED_IMAGE_DEFAULT_KREA_MODEL
 
 
-def apply_nous_managed_defaults(config: dict[str, object], *, enabled_toolsets: Optional[Iterable[str]] = None, force_fresh: bool = False) -> set[str]:
-    features = get_nous_subscription_features(config, force_fresh=force_fresh)
+def apply_thorhub_managed_defaults(config: dict[str, object], *, enabled_toolsets: Optional[Iterable[str]] = None, force_fresh: bool = False) -> set[str]:
+    features = get_thorhub_subscription_features(config, force_fresh=force_fresh)
     account_info = features.account_info
     if not (account_info and account_info.logged_in and account_info.tool_gateway_entitled and features.provider_is_thor):
         return set()
@@ -630,31 +630,19 @@ def prompt_enable_tool_gateway(config: dict[str, object], *, force_fresh: bool =
     return changed
 
 
-# Inline Thor Portal login for the Tool Gateway picker (`thor tools`)
+# Tool Gateway access check for the picker (`thor tools`): ThorHub has no gateway,
+# so this only prints guidance and returns False (see ensure_thorhub_access).
 
 
-def ensure_nous_portal_access(*, capability: str = "the Thor Tool Gateway", coverage_category: Optional[str] = None) -> bool:
-    """Make sure the user is entitled to the Thor Tool Gateway, logging in if needed.
+def ensure_thorhub_access(*, capability: str = "the Thor Tool Gateway", coverage_category: Optional[str] = None) -> bool:
+    """ThorHub has no managed tool gateway, so there is no gateway entitlement to ensure.
 
-    Only performs the device-code OAuth (when not logged in) and refreshes entitlement — no model
-    or provider switch. Entitlement is paid access OR a live free pool; with ``coverage_category``
-    the pool must cover that category (a pool user selecting ``"fal-video"`` is denied).
+    Always returns ``False`` after printing the ThorHub guidance: vendor tools need the
+    vendor's own API key (``thor tools``). A missing ThorHub key is reported as well,
+    since the entitlement check cannot run without one.
     """
-
-    def _entitled(account) -> bool:
-        if account is None:
-            return False
-        return account.tool_gateway_entitled_for(coverage_category) if coverage_category is not None else account.tool_gateway_entitled
-
     info = _account_info_or_none(force_fresh=True)
-    if not _entitled(info) and (info is None or not info.logged_in):
-        if not _run_thor_portal_login_only(capability=capability):
-            return False
-        info = _account_info_or_none(force_fresh=True)
-    if _entitled(info):
-        return True
-    # Logged in but not entitled for this capability — neutral billing guidance, do not enable.
-    message = format_nous_portal_entitlement_message(info, capability=capability, coverage_category=coverage_category)
+    message = format_thorhub_entitlement_message(info, capability=capability, coverage_category=coverage_category)
     for line in (message or "").splitlines():
         print(f"  {line}")
     return False
@@ -666,62 +654,3 @@ def _confirm(prompt: str) -> Optional[bool]:
         return input(prompt).strip().lower() in {"", "y", "yes"}
     except (EOFError, KeyboardInterrupt):
         return None
-
-
-def _run_thor_portal_login_only(*, capability: str) -> bool:
-    """Run the Thor Portal device-code OAuth and persist credentials only (no model selection, no
-    provider switch, no Tool Gateway bulk prompt). ``False`` if the user declined or the flow failed."""
-    try:
-        from thor_cli import auth
-    except Exception as exc:  # pragma: no cover - defensive
-        print(f"  Could not start Thor Portal login: {exc}")
-        return False
-    print()
-    print(f"  {capability} requires a Thor Portal login.")
-    proceed = _confirm("  Log in to Thor Portal now? [Y/n]: ")
-    if proceed is None:
-        print()
-        return False
-    if not proceed:
-        print("  Skipped Thor Portal login.")
-        return False
-    try:
-        # Snapshot active_provider so a tool-config login never silently switches inference to Thor.
-        with auth._auth_store_lock():
-            prior_active_provider = auth._load_auth_store().get("active_provider")
-        auth_state = None
-        # Interrupting the import question defaults to importing.
-        from thor_cli.anon_auth import is_guest_state
-
-        shared = auth._read_shared_thor_state()
-        if shared and not is_guest_state(shared) and _confirm("  Found existing Thor OAuth credentials. Import them? [Y/n]: ") is not False:
-            auth_state = auth._try_import_shared_thor_state(timeout_seconds=15.0)
-        if auth_state is None:
-            auth_state = auth._thor_device_code_login()
-        from thor_cli.anon_auth import settle_after_upgrade
-        from thor_cli.guest_handoff import drain, result_lines
-        with auth._auth_store_lock():
-            auth_store = auth._load_auth_store()
-            auth._save_provider_state(auth_store, "nous", auth_state)
-            if prior_active_provider:
-                auth_store["active_provider"] = prior_active_provider
-            else:
-                auth_store.pop("active_provider", None)
-            auth._save_auth_store(auth_store)
-        auth._write_shared_thor_state(auth_state, renewal=False)
-        handoff = drain()  # a replaced free tier hands its apps over once both saves land
-        auth._sync_thor_pool_from_auth_store()
-        settle_after_upgrade(auth_state)  # a config left on the free tier's route moves to the account
-        print("  Thor Portal login successful.")
-        for line in (line for view in handoff for line in result_lines(view)):
-            print(f"  {line}")
-        return True
-    except KeyboardInterrupt:
-        print("\n  Login cancelled.")
-        return False
-    except SystemExit:
-        # _thor_device_code_login raises SystemExit on subscription_required (guidance already printed).
-        return False
-    except Exception as exc:
-        print(f"  Thor Portal login failed: {exc}")
-        return False

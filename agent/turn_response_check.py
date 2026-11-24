@@ -209,11 +209,10 @@ def check_api_response(
 
     _retry.has_retried_429 = False
     # Clearing Nous rate-limit state proves the limit reset so other sessions may resume.
-    if agent.provider == "nous":
+    if agent.provider in {"thor", "thorhub"}:
         try:
-            from agent.nous_rate_guard import clear_nous_rate_limit
-            from thor_cli.anon_auth import is_anonymous_agent
-            clear_nous_rate_limit(anonymous=is_anonymous_agent(agent))
+            from agent.thorhub_rate_guard import clear_thorhub_rate_limit
+            clear_thorhub_rate_limit()
         except Exception:
             pass
     from agent import relay_llm

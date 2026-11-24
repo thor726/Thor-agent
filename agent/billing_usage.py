@@ -2,7 +2,7 @@
 
 Terminal surfaces show **dollars**, never "credits"; the plan allowance and top-up
 dollars stay distinctly visible as two SEPARATE bars (a three-segment bar is
-unreadable at terminal widths). Source: ``NousPortalAccountInfo.paid_service_access_info``
+unreadable at terminal widths). Source: ``ThorHubAccountInfo.paid_service_access_info``
 (USD floats despite the legacy ``*_credits`` names) plus ``subscription.monthly_credits``
 (plan bar denominator) and ``current_period_end``. Fail-open: missing/non-finite fields
 degrade to fewer bars; logged-out / unreachable portal yields ``available=False``.

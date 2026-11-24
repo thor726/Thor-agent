@@ -1,5 +1,6 @@
 """Thin HTTP client for the agent -> NAS ``agent-cron`` endpoints (Chronos): arm one-shot / cancel /
-list, authenticated with the existing Nous Portal token.
+list. The Nous Portal NAS is retired, so every call raises an honest error; the class shape is kept
+so Chronos setup fails with that message instead of an import error.
 Wire contract: ``website/docs/developer-guide/chronos-managed-cron-contract.md``."""
 
 from __future__ import annotations
@@ -42,29 +43,10 @@ class NasCronClient:
         self.timeout_seconds = timeout_seconds
 
     def _headers(self) -> dict[str, str]:
-        """Bearer auth with the agent's existing Nous Portal access token (refresh-aware)."""
-        from thor_cli.auth import resolve_nous_access_token
-        return {"Authorization": f"Bearer {resolve_nous_access_token()}",
-                "Content-Type": "application/json"}
-
-    def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
-        """Issue one request; raise NasCronClientError on transport error or non-2xx."""
-        import requests  # lazy: agent already depends on requests
-        try:
-            resp = requests.request(method, f"{self.portal_url}{path}", headers=self._headers(),
-                                    timeout=self.timeout_seconds, **kwargs)
-        except Exception as e:
-            raise NasCronClientError(f"{method} {path} failed: {e}") from e
-        if resp.status_code // 100 != 2:
-            error_code = ""
-            with contextlib.suppress(Exception):
-                error_code = str((resp.json() or {}).get("error") or "")
-            raise NasCronClientError(
-                f"{method} {path} returned {resp.status_code}: {resp.text[:200]}",
-                status=resp.status_code, error_code=error_code)
-        with contextlib.suppress(Exception):
-            return resp.json() if resp.content else {}
-        return {}
+        """The Nous Portal NAS is retired — Chronos managed cron has no backend anymore."""
+        raise NasCronClientError(
+            "Chronos managed cron runs on the Nous Portal NAS, which is retired. "
+            "ThorHub has no cron service.")
 
     def provision(self, *, job_id: str, fire_at: str, agent_callback_url: str,
                   dedup_key: str) -> dict[str, Any]:

@@ -163,10 +163,10 @@ def _setup_backend_modal(config: dict) -> None:
     _setup.print_info("Serverless cloud sandboxes. Each session gets its own container.")
     from tools.managed_tool_gateway import is_managed_tool_gateway_ready
     from tools.tool_backend_helpers import coerce_modal_mode
-    from thor_cli import nous_subscription
+    from thor_cli import thorhub_subscription
     managed_modal_available = bool(
-        tool_backend_helpers.managed_nous_tools_enabled()
-        and nous_subscription.get_nous_subscription_features(config).nous_auth_present
+        tool_backend_helpers.managed_thorhub_tools_enabled()
+        and thorhub_subscription.get_thorhub_subscription_features(config).thor_auth_present
         and is_managed_tool_gateway_ready("modal"))
     modal_mode = coerce_modal_mode(_setup.cfg_get(config, "terminal", "modal_mode"))
     use_managed_modal = False

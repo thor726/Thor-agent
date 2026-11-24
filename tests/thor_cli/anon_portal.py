@@ -113,10 +113,10 @@ class FakePortal:
 
 
 def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> FakePortal:
-    """Route every Nous HTTP client at *fake*, isolate the stores, and reset the per-process memos.
+    """Route every ThorHub HTTP client at *fake* and isolate the stores.
 
-    One transport seam: ``httpx.Client`` itself, which ``auth_nous._nous_http_client`` and
-    ``resolve_nous_access_token`` both construct."""
+    One transport seam: ``httpx.Client`` itself, which ``resolve_thorhub_access_token``
+    constructs."""
     from thor_cli import anon_auth, free_tier_bootstrap
     from thor_cli import auth as auth_mod
 
@@ -139,11 +139,8 @@ def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> Fak
     free_tier_bootstrap.reset_for_tests()
     from thor_cli import anon_challenge
     anon_challenge.reset_for_tests()
-    monkeypatch.setattr(anon_challenge, "_sleep", lambda _seconds: None)
+    # The retired anon_challenge shim has no _sleep seam anymore (no challenge waits).
     monkeypatch.delenv("THOR_DESKTOP", raising=False)
-    # resolve_nous_access_token memoises the last token for 5 s per profile home (dict); a token minted
-    # by an earlier test must not be served to this one.
-    monkeypatch.setattr(auth_mod, "_RESOLVE_TOKEN_CACHE", {})
     return fake
 
 

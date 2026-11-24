@@ -135,8 +135,6 @@ def _external_process_cli_command(provider_id: str, default: str) -> str:
 # ``flow``: ``device_code`` = show code + URL + poll; ``external`` = delegated to a terminal/CLI.
 _OAUTH_PROVIDER_CATALOG: tuple[dict[str, Any], ...] = (
     # status_fn None → dispatched via auth.get_<provider>_auth_status.
-    {"id": "nous", "name": "Thor Portal", "flow": "device_code", "cli_command": "thor auth add nous",
-     "docs_url": "https://portal.thor-agent.local", "status_fn": None},
     {"id": "openai-codex", "name": "ChatGPT or Codex Subscription", "flow": "device_code",
      "cli_command": "thor auth add openai-codex", "docs_url": "https://platform.openai.com/docs",
      "status_fn": None},
@@ -240,27 +238,6 @@ def _record_sign_in_state(sess: dict[str, Any], state: Any) -> None:
         # Whether a later attempt can succeed, and the wait the service named (seconds).
         sess["retryable"] = bool(getattr(state, "retryable", False))
         sess["retry_after"] = int(getattr(state, "retry_after", 0) or 0)
-
-
-@_oauth_poller("nous")
-def _nous_sign_in_poller(session_id: str, sess: dict[str, Any]) -> None:
-    """Drain the sign-in the start route began: the one shared flow, rendered onto the session.
-
-    The generator was created and advanced to its ``Code`` state by ``_start_nous_device_code``, so
-    it is already holding the device code and its HTTP client. Nothing here is wrapped in
-    ``_profile_scope``: that context manager holds a process-global lock across its
-    ``yield``, and this loop can last the sign-in code's whole expiry. The
-    generator scopes its own short config/auth-store sections instead.
-    """
-    gen = sess.get("_sign_in")
-    if gen is None:
-        return
-    try:
-        for state in gen:
-            _record_sign_in_state(sess, state)
-    finally:
-        with contextlib.suppress(Exception):
-            gen.close()     # unwinds the suspended HTTP client if we leave early
 
 
 @_oauth_poller("minimax")

@@ -6,8 +6,8 @@ from unittest.mock import patch
 
 import pytest
 
-from thor_cli.nous_account import NousPortalAccountInfo, NousToolAccessInfo
-from thor_cli.nous_subscription import NousSubscriptionFeatures
+from thor_cli.thorhub_account import ThorHubAccountInfo, ThorHubToolAccessInfo
+from thor_cli.thorhub_subscription import ThorHubSubscriptionFeatures
 from thor_cli.tools_config import (
     _DEFAULT_OFF_TOOLSETS,
     _RECENTLY_SHIPPED_TOOLSETS,
@@ -291,15 +291,15 @@ def test_save_platform_tools_preserves_mcp_server_names():
 
 
 
-def test_first_install_nous_auto_configures_video_gen(monkeypatch):
+def test_first_install_thorhub_does_not_auto_configure_video_gen(monkeypatch):
     """When a Nous subscriber checks video_gen in the toolset checklist,
-    apply_nous_managed_defaults must write video_gen.provider and
+    apply_thorhub_managed_defaults must write video_gen.provider and
     video_gen.use_gateway so the FAL plugin can route through the gateway
     at runtime.  Regression test for the bug where video_gen was marked as
     auto-configured but no config was actually written."""
-    monkeypatch.setattr("tools.tool_backend_helpers.managed_nous_tools_enabled", lambda: True)
+    monkeypatch.setattr("tools.tool_backend_helpers.managed_thorhub_tools_enabled", lambda: True)
     config = {
-        "model": {"provider": "nous"},
+        "model": {"provider": "thor"},
         "platform_toolsets": {"cli": []},
     }
     for env_var in (
@@ -328,10 +328,10 @@ def test_first_install_nous_auto_configures_video_gen(monkeypatch):
         lambda: ["cli"],
     )
     monkeypatch.setattr(
-        "thor_cli.nous_subscription.get_nous_portal_account_info",
-        lambda *args, **kwargs: NousPortalAccountInfo(
+        "thor_cli.thorhub_subscription.get_thorhub_account_info",
+        lambda *args, **kwargs: ThorHubAccountInfo(
             logged_in=True,
-            source="jwt",
+            source="api_key",
             fresh=False,
             paid_service_access=True,
         ),
@@ -345,10 +345,10 @@ def test_first_install_nous_auto_configures_video_gen(monkeypatch):
 
     tools_command(first_install=True, config=config)
 
-    assert config["video_gen"]["provider"] == "nous"
-    assert "use_gateway" not in config["video_gen"]
-    # video_gen should NOT appear in the manual configure list — it's auto-configured
-    assert "video_gen" not in configured
+    # ThorHub has no managed tool gateway, so first install cannot auto-configure
+    # video_gen — it stays a manual step.
+    assert "video_gen" not in config
+    assert "video_gen" in configured
 
 # ── Platform / toolset consistency ────────────────────────────────────────────
 
@@ -664,22 +664,22 @@ def test_vision_picker_custom_endpoint(tmp_path, monkeypatch):
 def test_visible_providers_reuses_logged_out_feature_snapshot(monkeypatch):
     from thor_cli import tools_config
 
-    account = NousPortalAccountInfo(
+    account = ThorHubAccountInfo(
         logged_in=False,
         source="none",
         fresh=False,
         paid_service_access=None,
     )
-    features = NousSubscriptionFeatures(
+    features = ThorHubSubscriptionFeatures(
         subscribed=False,
-        nous_auth_present=False,
+        thor_auth_present=False,
         provider_is_nous=False,
         features={},
         account_info=account,
     )
     monkeypatch.setattr(
         tools_config,
-        "get_nous_subscription_features",
+        "get_thorhub_subscription_features",
         lambda *args, **kwargs: pytest.fail("feature snapshot was resolved again"),
     )
 
@@ -688,7 +688,7 @@ def test_visible_providers_reuses_logged_out_feature_snapshot(monkeypatch):
     )
 
     assert any(
-        provider.get("managed_nous_feature") == "image_gen"
+        provider.get("managed_thorhub_feature") == "image_gen"
         for provider in providers
     )
 
@@ -696,26 +696,26 @@ def test_visible_providers_reuses_logged_out_feature_snapshot(monkeypatch):
 def test_visible_providers_reuses_pool_video_feature_snapshot(monkeypatch):
     from thor_cli import tools_config
 
-    account = NousPortalAccountInfo(
+    account = ThorHubAccountInfo(
         logged_in=True,
         source="jwt",
         fresh=False,
         paid_service_access=False,
-        tool_access=NousToolAccessInfo(
+        tool_access=ThorHubToolAccessInfo(
             enabled=True,
             coverage={"fal-video": False},
         ),
     )
-    features = NousSubscriptionFeatures(
+    features = ThorHubSubscriptionFeatures(
         subscribed=True,
-        nous_auth_present=True,
+        thor_auth_present=True,
         provider_is_nous=False,
         features={},
         account_info=account,
     )
     monkeypatch.setattr(
         tools_config,
-        "get_nous_subscription_features",
+        "get_thorhub_subscription_features",
         lambda *args, **kwargs: pytest.fail("feature snapshot was resolved again"),
     )
 
@@ -724,7 +724,7 @@ def test_visible_providers_reuses_pool_video_feature_snapshot(monkeypatch):
     )
 
     assert not any(
-        provider.get("managed_nous_feature") == "video_gen"
+        provider.get("managed_thorhub_feature") == "video_gen"
         for provider in providers
     )
 
@@ -739,7 +739,7 @@ def test_visible_providers_reuses_pool_video_feature_snapshot(monkeypatch):
 
 
 def _managed_image_row() -> dict:
-    return next(p for p in TOOL_CATEGORIES["image_gen"]["providers"] if p.get("managed_nous_feature") == "image_gen")
+    return next(p for p in TOOL_CATEGORIES["image_gen"]["providers"] if p.get("managed_thorhub_feature") == "image_gen")
 
 
 def test_exactly_one_image_row_is_active_for_a_managed_selection(monkeypatch):
@@ -747,8 +747,8 @@ def test_exactly_one_image_row_is_active_for_a_managed_selection(monkeypatch):
     from thor_cli.tools_config_providers import _plugin_image_gen_providers
 
     monkeypatch.setattr(
-        tools_config, "get_nous_subscription_features",
-        lambda config, **kwargs: SimpleNamespace(features={"image_gen": SimpleNamespace(managed_by_nous=True)}),
+        tools_config, "get_thorhub_subscription_features",
+        lambda config, **kwargs: SimpleNamespace(features={"image_gen": SimpleNamespace(managed_by_thorhub=True)}),
     )
     rows = TOOL_CATEGORIES["image_gen"]["providers"] + _plugin_image_gen_providers()
     for model in ("fal-ai/flux-2/klein/9b", "krea-2-medium", "google/gemini-3-pro-image"):
@@ -763,9 +763,9 @@ def test_gui_model_catalog_for_the_managed_row_spans_every_managed_gateway(monke
     from plugins.image_gen.krea import KREA_MODEL_IDS
     from tools.image_generation_catalog import FAL_MODELS
 
-    paid = NousPortalAccountInfo(logged_in=True, source="jwt", fresh=False, paid_service_access=True)
+    paid = ThorHubAccountInfo(logged_in=True, source="jwt", fresh=False, paid_service_access=True)
     monkeypatch.setattr(
-        tools_config, "get_nous_subscription_features",
+        tools_config, "get_thorhub_subscription_features",
         lambda *args, **kwargs: SimpleNamespace(features={}, account_info=paid))
     plugin = _resolve_toolset_model_plugin("image_gen", _managed_image_row())
     catalog, default_model = _toolset_model_catalog("image_gen", plugin, {})
@@ -779,11 +779,11 @@ def test_pool_only_account_is_offered_fal_models_only(monkeypatch):
     from thor_cli import tools_config
     from thor_cli.tools_config_providers import _managed_image_catalog
 
-    pool = NousPortalAccountInfo(
+    pool = ThorHubAccountInfo(
         logged_in=True, source="jwt", fresh=False, paid_service_access=False,
-        tool_access=NousToolAccessInfo(enabled=True, coverage={"fal": True, "krea": False}))
+        tool_access=ThorHubToolAccessInfo(enabled=True, coverage={"fal": True, "krea": False}))
     monkeypatch.setattr(
-        tools_config, "get_nous_subscription_features",
+        tools_config, "get_thorhub_subscription_features",
         lambda *args, **kwargs: SimpleNamespace(features={}, account_info=pool))
     catalog, _ = _managed_image_catalog({})
 

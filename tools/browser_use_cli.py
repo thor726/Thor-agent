@@ -223,10 +223,10 @@ def _use_gateway(browser_cfg: dict) -> bool:
     if is_truthy_value(browser_cfg.get("use_gateway"), default=False):
         return True
     try:
-        from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER
+        from tools.tool_backend_helpers import MANAGED_PROVIDER
     except Exception:  # pragma: no cover — helper ships with the package
         return False
-    return str(browser_cfg.get("cloud_provider") or "").strip().lower() == NOUS_MANAGED_PROVIDER
+    return str(browser_cfg.get("cloud_provider") or "").strip().lower() == MANAGED_PROVIDER
 
 
 def is_legacy_browser_use_cloud_config(browser_cfg: dict) -> bool:

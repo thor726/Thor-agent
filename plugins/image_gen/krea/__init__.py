@@ -142,7 +142,7 @@ def _resolve_managed_krea_gateway():
     no ``KREA_API_KEY``; an explicit vendor selection pins direct. Never raises (discovery scans)."""
     try:
         from tools.managed_tool_gateway import resolve_managed_tool_gateway
-        from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, read_selection
+        from tools.tool_backend_helpers import MANAGED_PROVIDER, read_selection
     except Exception as exc:
         logger.debug("Managed Krea gateway resolution unavailable: %s", exc)
         return None
@@ -150,7 +150,7 @@ def _resolve_managed_krea_gateway():
         selected = read_selection("image_gen")
     except Exception:
         selected = None
-    if selected is not None and selected != NOUS_MANAGED_PROVIDER:
+    if selected is not None and selected != MANAGED_PROVIDER:
         return None
     if selected is None and get_secret("KREA_API_KEY"):
         return None
@@ -566,7 +566,7 @@ class KreaImageGenProvider(StaticImageGenProvider):
         managed = _resolve_managed_krea_gateway()
         if managed is not None:
             base_url = managed.gateway_origin.rstrip("/")
-            auth_token = managed.nous_user_token
+            auth_token = managed.api_key
         else:
             base_url = BASE_URL
             auth_token = get_secret("KREA_API_KEY")

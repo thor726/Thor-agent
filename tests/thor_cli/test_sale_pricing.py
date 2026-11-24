@@ -98,20 +98,18 @@ def test_fetch_models_with_pricing_copies_billing_mode_for_nous_only(monkeypatch
 
 
 
-def test_resolve_nous_pricing_credentials_normalizes_either_suffix(monkeypatch):
+def test_resolve_thorhub_pricing_credentials_normalizes_either_suffix(monkeypatch):
     """``/v1`` on the override is optional and must not change the result."""
-    monkeypatch.setattr(
-        "thor_cli.auth.resolve_nous_runtime_credentials", lambda: None
-    )
+    monkeypatch.setattr("thor_cli.thorhub_account.thorhub_api_key", lambda: "sk-thor-test")
     for override in (
-        "https://stg-inference-api.thor-agent.local",
-        "https://stg-inference-api.thor-agent.local/",
-        "https://stg-inference-api.thor-agent.local/v1",
-        "https://stg-inference-api.thor-agent.local/v1/",
+        "https://staging.thormarket.site",
+        "https://staging.thormarket.site/",
+        "https://staging.thormarket.site/v1",
+        "https://staging.thormarket.site/v1/",
     ):
-        monkeypatch.setenv("NOUS_INFERENCE_BASE_URL", override)
-        assert models_pricing._resolve_nous_pricing_credentials()[1] == (
-            "https://stg-inference-api.thor-agent.local"
+        monkeypatch.setenv("THORHUB_BASE_URL", override)
+        assert models_pricing._resolve_thorhub_pricing_credentials() == (
+            "sk-thor-test", "https://staging.thormarket.site"
         )
 
 

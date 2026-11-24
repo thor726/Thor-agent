@@ -72,13 +72,12 @@ def gateway_home() -> Path:
     return _gateway_home(get_thor_home())
 
 
-def nous_signed_in() -> bool:
-    """Whether this home holds a Thor account to register sign-in under (a free-tier guest has none).
-    Refresh-free: it reads the auth store and never spends a refresh token."""
-    from thor_cli.auth_nous import get_nous_auth_status_local
+def thorhub_signed_in() -> bool:
+    """Whether this home holds a ThorHub API key to register sign-in under.
+    Refresh-free: it reads the auth store and never touches the network."""
+    from thor_cli.thorhub_account import thorhub_api_key
 
-    status = get_nous_auth_status_local()
-    return bool(status.get("logged_in") and not status.get("free_tier"))
+    return bool(thorhub_api_key())
 
 
 def _registration(home: Path) -> dict:
@@ -115,39 +114,14 @@ def registered_lan_origin(home: Path, port: int) -> Optional[str]:
     return f"http://{parts.hostname}:{port}"
 
 
-def _register_nous_sign_in(callback_url: str) -> None:
-    """Register Web Access's own portal client with *callback_url*, or update it in place, as
-    ``thor dashboard register --redirect-uri`` does for the dashboard's. It never sends the
-    dashboard's client id and writes nothing to ``.env``: the Portal may replace a client's redirect
-    URI on every registration. The same callback for the same client and Portal is never posted
-    twice, so a start with nothing changed asks the Portal nothing."""
-    from thor_cli.auth import resolve_nous_access_token
-    from thor_cli.dashboard_register import (
-        _generate_dashboard_name,
-        _register_self_hosted_client,
-        _resolve_portal_base_url,
-    )
-    from thor_constants import get_thor_home
-    from utils import atomic_write_text
-
-    home = get_thor_home()
-    portal = _resolve_portal_base_url(os.environ.get("THOR_DASHBOARD_PORTAL_URL"))
-    own = sign_in_client(home)
-    existing = own[0] if own and own[1] == portal else None
-    if existing and _registration(home).get("callback") == callback_url:
-        return
-    try:
-        result = _register_self_hosted_client(
-            access_token=resolve_nous_access_token(),
-            portal_base_url=portal,
-            name=None if existing else f"webapp_{_generate_dashboard_name()}",
-            custom_redirect_uri=callback_url, existing_client_id=existing)
-    except Exception as exc:
-        raise WebappAccessError(f"Couldn't register Thor sign-in: {exc}") from exc
-    path = home / _REGISTRATION_PATH
-    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    record = {"own_client": True, "portal": portal, "client_id": str(result["client_id"]), "callback": callback_url}
-    atomic_write_text(path, json.dumps(record) + "\n", mode=0o600)
+def _register_thorhub_sign_in(callback_url: str) -> None:
+    """Web Access sign-in registration is retired with the Thor Portal: there is no OAuth client
+    to register on ThorHub (static keys only), so starting the Webapp with Portal sign-in fails
+    honestly instead of posting to a dead host."""
+    raise WebappAccessError(
+        "Thor Portal sign-in is retired — ThorHub has no OAuth client registration. "
+        "Web Access sign-in via the Portal is unavailable; serve the Webapp without Portal "
+        "sign-in or wait for a ThorHub-native auth flow.")
 
 
 def plan(mode: str, public_url: Optional[str] = None) -> tuple[str, Optional[int], str, str]:
@@ -156,8 +130,8 @@ def plan(mode: str, public_url: Optional[str] = None) -> tuple[str, Optional[int
     pin for :func:`serve`, and the sign-in callback for :func:`register`. Changes nothing but the port
     claim of a standalone profile that has none (:func:`_port_to_serve`), so Start runs it, in the
     config write scope, before any slow or lasting step. A refusal before that claim writes nothing."""
-    if not nous_signed_in():
-        raise WebappAccessError("Sign in to your Thor account under Providers first.")
+    if not thorhub_signed_in():
+        raise WebappAccessError("Add your ThorHub key under Providers first (`thor auth add thor`).")
     if mode == "lan":
         address = lan_address()
         if address is None:
@@ -171,8 +145,8 @@ def plan(mode: str, public_url: Optional[str] = None) -> tuple[str, Optional[int
         port = _port_to_serve(gateway_home(), host)[1]
     else:
         raise WebappAccessError(f"Unknown access mode {mode!r}.")
-    if not nous_signed_in():
-        raise WebappAccessError("Sign in to your Thor account under Providers first.")
+    if not thorhub_signed_in():
+        raise WebappAccessError("Add your ThorHub key under Providers first (`thor auth add thor`).")
     return host, port, pinned, f"{url}/auth/callback"
 
 
@@ -305,10 +279,9 @@ def build_bundle() -> None:
 
 
 def register(callback_url: str) -> None:
-    """Register Thor sign-in for *callback_url* on Web Access's own portal client, unless it already
-    carries that callback on this Portal, so the callback follows a changed LAN address or URL.
-    Writes no config: it waits on the portal, so callers do it before taking the config lock."""
-    _register_nous_sign_in(callback_url)
+    """Register Thor sign-in for *callback_url* — retired with the Thor Portal (see
+    :func:`_register_thorhub_sign_in`)."""
+    _register_thorhub_sign_in(callback_url)
 
 
 def serve(host: str, public_url: str, port: Optional[int] = None) -> None:
@@ -385,7 +358,7 @@ def access_status() -> dict:
         "gateway": _gateway_state(home),
         "lan_address": lan_address(),
         "public_url": settings.public_url,
-        "nous_signed_in": nous_signed_in(),
+        "thorhub_signed_in": thorhub_signed_in(),
     }
 
 

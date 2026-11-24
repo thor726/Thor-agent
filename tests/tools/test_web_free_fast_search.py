@@ -1,11 +1,10 @@
-"""Free managed Perplexity fast search for any Nous identity: anonymous guest, or signed in with no
-usable credits and no tool pool. The gateway serves ``POST /search`` + ``search_type: "fast"`` without
-funding checks, so the local paid-tool gate must not block this one route while every other managed
-vendor keeps it. Real config, real auth store, real selection-to-provider dispatch over local HTTP."""
+"""Free managed Perplexity fast search for a ThorHub identity: the route exists only when an
+explicit ``PERPLEXITY_GATEWAY_URL`` names a gateway and a usable ThorHub key is present. The
+gateway serves ``POST /search`` + ``search_type: "fast"`` without funding checks, so the local
+paid-tool gate must not block this one route while every other managed vendor keeps it. Real
+config, real auth store, real selection-to-provider dispatch over local HTTP."""
 
-import base64
 import json
-import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
@@ -13,25 +12,13 @@ import pytest
 
 from tests.thor_cli.anon_portal import as_local_desktop_backend
 
-# Anonymous guest: NAS tier claim says "anonymous" — no Portal account behind the identity. It claimed
-# the desktop's welcome trial (``_write_home`` reads it on the local desktop backend).
-ANON = {"sub": "anon-1", "account_tier": "anonymous", "paid_access": False}
-# Registered Portal account, signed in, no credits and no tool pool.
-EXHAUSTED = {"sub": "user-1", "paid_access": False, "tool_access": {"enabled": False, "coverage": {}}}
+# A ThorHub identity: a static API key in the auth store. There is no guest or
+# anonymous tier anymore — a legacy Nous JWT entitles nothing.
+THORHUB_KEY = "sk-thor-test"
 
 
-def _nous_state(claims: dict, auth_method: str) -> dict:
-    def seg(obj):
-        return base64.urlsafe_b64encode(json.dumps(obj).encode()).rstrip(b"=").decode()
-    token = f"{seg({'alg': 'none'})}.{seg({**claims, 'exp': int(time.time()) + 3600})}.sig"
-    state = {"auth_method": auth_method, "access_token": token, "expires_at": "2099-01-01T00:00:00Z"}
-    # anon_auth persists the tier alongside the token.
-    if claims.get("account_tier"):
-        state["account_tier"] = claims["account_tier"]
-    if auth_method == "anonymous":
-        from thor_cli.anon_auth import WELCOME_CLAIM_FLAG
-        state[WELCOME_CLAIM_FLAG] = True
-    return state
+def _thorhub_state() -> dict:
+    return {"api_key": THORHUB_KEY}
 
 
 @pytest.fixture
@@ -73,9 +60,9 @@ def gateway_server(monkeypatch):
         thread.join(timeout=2)
 
 
-def _write_home(home, monkeypatch, *, nous_state=None, config=None):
+def _write_home(home, monkeypatch, *, thorhub_state=None, config=None):
     from thor_cli.config import atomic_config_write
-    from thor_cli.nous_account import reset_nous_portal_account_info_cache
+    from thor_cli.thorhub_account import reset_thorhub_account_info_cache
 
     home.mkdir(parents=True)
     monkeypatch.setenv("THOR_HOME", str(home))
@@ -83,9 +70,9 @@ def _write_home(home, monkeypatch, *, nous_state=None, config=None):
     monkeypatch.delenv("PERPLEXITY_API_KEY", raising=False)
     monkeypatch.delenv("TOOL_GATEWAY_USER_TOKEN", raising=False)
     atomic_config_write(home / "config.yaml", {"web": {"keyless_rescue": False}, **(config or {})})
-    if nous_state is not None:
-        (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"nous": nous_state}}))
-    reset_nous_portal_account_info_cache()
+    if thorhub_state is not None:
+        (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"thor": thorhub_state}}))
+    reset_thorhub_account_info_cache()
 
 
 def _search():
@@ -100,33 +87,33 @@ def _calls(log):
     return [(path, headers["Authorization"], body.get("search_type")) for path, headers, body in log]
 
 
-@pytest.mark.parametrize("state", [_nous_state(ANON, "anonymous"), _nous_state(EXHAUSTED, "oauth")])
-def test_unentitled_nous_identity_autodetects_free_fast_search(monkeypatch, tmp_path, gateway_server, state):
-    """Guests are the users this route exists for: an anonymous identity and a zero-credit account
-    both reach the gateway, while the paid gate stays closed for extract and every other vendor."""
-    from thor_cli.nous_account import get_nous_portal_account_info
+def test_thorhub_identity_autodetects_free_fast_search(monkeypatch, tmp_path, gateway_server):
+    """A ThorHub key + an explicit gateway URL reach the gateway, while the paid gate
+    stays closed for extract and every other vendor."""
+    from thor_cli.thorhub_account import get_thorhub_account_info
     from tools import web_tools
-    from tools.tool_backend_helpers import managed_nous_tools_enabled
+    from tools.tool_backend_helpers import managed_thorhub_tools_enabled
 
-    _write_home(tmp_path / "home", monkeypatch, nous_state=state)
-    # Premise: the guest case really reads as the anonymous tier, and the paid-tool gate is closed
-    # for this identity and stays closed for extract.
-    assert get_nous_portal_account_info().is_anonymous_tier is (state["auth_method"] == "anonymous")
-    assert managed_nous_tools_enabled() is False
-    assert web_tools.check_firecrawl_api_key() is False
+    _write_home(tmp_path / "home", monkeypatch, thorhub_state=_thorhub_state())
+    # Premise: ThorHub has no anonymous tier and no default managed gate; the
+    # fixture's explicit FIRECRAWL_GATEWAY_URL makes the firecrawl route
+    # available, while extract stays off Perplexity.
+    assert get_thorhub_account_info().is_anonymous_tier is False
+    assert managed_thorhub_tools_enabled() is False
+    assert web_tools.check_firecrawl_api_key() is True
     assert web_tools._get_extract_backend() != "perplexity"
 
     result = _search()
 
     assert result["success"] is True, result
-    assert _calls(gateway_server) == [("/perplexity/search", f"Bearer {state['access_token']}", "fast")]
+    assert _calls(gateway_server) == [("/perplexity/search", f"Bearer {THORHUB_KEY}", "fast")]
 
 
 def test_free_fast_search_failure_skips_paid_firecrawl_but_keeps_keyless_rescue(monkeypatch, tmp_path, gateway_server):
     from plugins.web import keyless_mcp
 
-    state = _nous_state(ANON, "anonymous")
-    _write_home(tmp_path / "home", monkeypatch, nous_state=state, config={"web": {"keyless_rescue": True}})
+    state = _thorhub_state()
+    _write_home(tmp_path / "home", monkeypatch, thorhub_state=state, config={"web": {"keyless_rescue": True}})
     monkeypatch.setenv("PERPLEXITY_GATEWAY_URL", gateway_server.base + "/down")
     rescued = {"success": True, "data": {"web": [{"title": "ring", "url": "https://ring.test", "description": "", "position": 1}]}}
     monkeypatch.setattr(keyless_mcp, "search_with_failover", lambda *a, **kw: dict(rescued, data=dict(rescued["data"])))
@@ -134,25 +121,24 @@ def test_free_fast_search_failure_skips_paid_firecrawl_but_keeps_keyless_rescue(
     result = _search()
 
     assert result["data"]["rescued_from"] == "perplexity"
-    assert _calls(gateway_server) == [("/down/search", f"Bearer {state['access_token']}", "fast")]
+    assert _calls(gateway_server) == [("/down/search", f"Bearer {THORHUB_KEY}", "fast")]
 
 
 @pytest.mark.parametrize("state,config", [
-    (_nous_state(ANON, "anonymous"), {"nous": {"guest": False}}),
     (None, {}),
-    (_nous_state(EXHAUSTED, "oauth"), {"web": {"search_backend": "exa"}}),
+    (None, {"web": {"search_backend": "exa"}}),
 ])
 def test_free_fast_search_needs_a_usable_identity_and_no_explicit_selection(monkeypatch, tmp_path, gateway_server, state, config):
     from tools import web_tools
 
-    _write_home(tmp_path / "home", monkeypatch, nous_state=state, config=config)
+    _write_home(tmp_path / "home", monkeypatch, thorhub_state=state, config=config)
 
     assert web_tools._managed_web_search() is False
     assert web_tools._get_search_backend() != "perplexity"
 
 
 def test_direct_perplexity_key_beats_free_fast_search(monkeypatch, tmp_path, gateway_server):
-    _write_home(tmp_path / "home", monkeypatch, nous_state=_nous_state(EXHAUSTED, "oauth"))
+    _write_home(tmp_path / "home", monkeypatch, thorhub_state=_thorhub_state())
     monkeypatch.setenv("PERPLEXITY_API_KEY", "direct-key")
 
     assert _search()["success"] is True
@@ -160,15 +146,15 @@ def test_direct_perplexity_key_beats_free_fast_search(monkeypatch, tmp_path, gat
 
 
 def test_free_fast_search_eligibility_follows_the_served_profile(monkeypatch, tmp_path, gateway_server):
-    """Multiplex A→B→A: profile A holds a zero-credit Portal identity, B none; each answers from its own store."""
-    from thor_cli.nous_account import reset_nous_portal_account_info_cache
+    """Multiplex A→B→A: profile A holds a ThorHub key, B none; each answers from its own store."""
+    from thor_cli.thorhub_account import reset_thorhub_account_info_cache
     from agent.secret_scope import set_multiplex_active
     from gateway.run import _profile_runtime_scope
     from tools import web_tools
 
     root = tmp_path / ".thor"
     profile_a, profile_b = root / "profiles" / "a", root / "profiles" / "b"
-    _write_home(profile_a, monkeypatch, nous_state=_nous_state(EXHAUSTED, "oauth"), config={"web": {"keyless_fallback": False}})
+    _write_home(profile_a, monkeypatch, thorhub_state=_thorhub_state(), config={"web": {"keyless_fallback": False}})
     _write_home(profile_b, monkeypatch, config={"web": {"keyless_fallback": False}})
     monkeypatch.setenv("THOR_HOME", str(root))
     (root / "config.yaml").write_text("")
@@ -176,7 +162,7 @@ def test_free_fast_search_eligibility_follows_the_served_profile(monkeypatch, tm
     try:
         seen = []
         for home in (profile_a, profile_b, profile_a):
-            reset_nous_portal_account_info_cache()
+            reset_thorhub_account_info_cache()
             with _profile_runtime_scope(home):
                 seen.append(web_tools._get_search_backend())
     finally:

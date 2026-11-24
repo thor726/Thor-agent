@@ -1722,19 +1722,18 @@ def _opencode_api_mode(provider: str, model: str, api_key: str) -> str:
     return opencode_model_api_mode(provider, model)
 
 
-def _nous_api_mode(provider: str, model: str, api_key: str) -> str:
-    # Portal serves anthropic/* on /v1/messages and everything else on /chat/completions;
-    # re-derive from the FINAL model so alias clears / empty fallbacks cannot leave Claude on the
-    # OpenAI wire.
-    from thor_cli.providers import nous_api_mode
-    return nous_api_mode(model)
+def _thor_api_mode(provider: str, model: str, api_key: str) -> str:
+    # ThorHub serves everything on /chat/completions; re-derive from the FINAL model so alias
+    # clears / empty fallbacks cannot leave a model on a stale wire.
+    from thor_cli.providers import thor_api_mode
+    return thor_api_mode(model)
 
 
 # Per-provider api_mode overrides applied after validation, keyed on the final target provider
 # (the key sets are disjoint, so exactly one — or none — fires).
 _PROVIDER_API_MODE_OVERRIDES: dict[str, Any] = {
     **dict.fromkeys(("opencode-zen", "opencode-go", "opencode"), _opencode_api_mode),
-    **dict.fromkeys(("nous", "nous-portal", "nousresearch"), _nous_api_mode)}
+    **dict.fromkeys(("thor", "thorhub"), _thor_api_mode)}
 
 
 def model_derived_api_mode(provider: str, model: str, api_key: str = "") -> Optional[str]:

@@ -3,9 +3,9 @@
 A browser tab's ``/api/ws`` reaches the gateway through the dashboard mount (``chat_ws.gateway_ws``),
 not the native ticket path (``gateway/run_api.py``) that wraps the socket in ``owner_scope``. The
 authority answers ``-32601`` for ``billing.state``, so the frame falls back to the legacy handler,
-which reads the Nous Portal override through the socket's scope: unbound, a multiplexed gateway
+which reads the ThorHub base URL through the socket's scope: unbound, a multiplexed gateway
 refused the read (``UnscopedSecretError`` -> "no profile secret scope on a multiplexed call") and the
-token went to the default Portal. ``dispatch_legacy`` binds a non-launch ticket's profile; a
+key went to the default ThorHub host. ``dispatch_legacy`` binds a non-launch ticket's profile; a
 launch-profile socket relies on ``gateway_ws``'s own scope.
 
 Real ``gateway_ws``, ``handle_ws``, session authorities, legacy fallback and billing handler; only
@@ -13,36 +13,23 @@ the upgrade gate (which stamps the ticket's identity and home on the socket) and
 """
 
 import asyncio
-import base64
 import io
 import json
 import logging
-import time
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlsplit
 
-import httpx
 import pytest
 from starlette.websockets import WebSocketDisconnect
 
 
-def _jwt(label):
-    def part(value):
-        return base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip("=")
-    return ".".join((part({"alg": "none"}), part({
-        "sub": label, "scope": "inference:invoke", "exp": int(time.time()) + 3600,
-    }), "fixture"))
-
-
 def _home(home, label):
     home.mkdir(parents=True, exist_ok=True)
-    (home / "config.yaml").write_text("model:\n  provider: nous\n  default: fixture-model\n")
-    (home / ".env").write_text(f"THOR_PORTAL_BASE_URL=https://{label}-portal.invalid\n")
-    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"nous": {
-        "access_token": _jwt(label), "refresh_token": f"{label}-refresh",
-        "expires_at": "2999-01-01T00:00:00+00:00", "scope": "inference:invoke", "client_id": "fixture-client",
-        "portal_base_url": "https://portal.thor-agent.local",
-        "inference_base_url": "https://inference-api.thor-agent.local/v1",
+    (home / "config.yaml").write_text("model:\n  provider: thor\n  default: fixture-model\n")
+    (home / ".env").write_text(f"THORHUB_BASE_URL=https://{label}-portal.invalid\n")
+    (home / "auth.json").write_text(json.dumps({"version": 1, "providers": {"thor": {
+        "api_key": f"sk-thor-{label}",
     }}}))
 
 
@@ -53,7 +40,7 @@ def gateway(tmp_path, monkeypatch):
     from gateway.config import GatewayConfig
     from gateway.session import SessionStore
     from gateway.session_authority import SessionAuthority
-    from thor_cli import auth, nous_account, nous_billing
+    from thor_cli import auth, thorhub_account, thorhub_billing
     from thor_state import SessionDB
     from thor_state_runtime import begin_runtime_epoch
     from tui_gateway import launch_profile_policy, server
@@ -64,15 +51,13 @@ def gateway(tmp_path, monkeypatch):
     monkeypatch.setenv("THOR_HOME", str(launch))
     monkeypatch.setenv("THOR_SHARED_AUTH_DIR", str(tmp_path / "shared-auth"))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    for key in ("THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL",
+    for key in ("THORHUB_BASE_URL", "THOR_PORTAL_BASE_URL", "NOUS_PORTAL_BASE_URL", "NOUS_INFERENCE_BASE_URL",
                 "THOR_DEV_BILLING_FIXTURE", "THOR_DEV_SUBSCRIPTION_FIXTURE", "THOR_DEV_CREDITS_FIXTURE"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(launch_profile_policy, "_snapshot", None)
     monkeypatch.setattr(server, "_thor_home", str(launch))
     monkeypatch.setattr(server, "_served_profile_homes", set())
-    monkeypatch.setattr(auth, "_RESOLVE_TOKEN_CACHE", {})
-    monkeypatch.setattr(nous_billing, "_token_cache", {})
-    nous_account.reset_nous_portal_account_info_cache()
+    thorhub_account.reset_thorhub_account_info_cache()
     previous = secret_scope.is_multiplex_active()
     launch_profile_policy.activate_multi_profile_hosting()
 
@@ -91,16 +76,11 @@ def gateway(tmp_path, monkeypatch):
 
     portal_hits = []
 
-    def http_edge(request):
-        portal_hits.append(request.url.host)
-        return httpx.Response(200, json={"paid_service_access": True})
-
-    real_client = httpx.Client
-    monkeypatch.setattr(httpx, "Client", lambda *a, **k: real_client(*a, **{**k, "transport": httpx.MockTransport(http_edge)}))
-
     def urlopen(request, *args, **kwargs):
-        portal_hits.append(httpx.URL(request.full_url).host)
-        response = io.BytesIO(json.dumps({"ok": True, "balanceUsd": "0", "role": "MEMBER"}).encode())
+        portal_hits.append(urlsplit(request.full_url).hostname)
+        response = io.BytesIO(json.dumps({"data": {
+            "tokens_remaining": 5000, "token_limit": 10000, "tokens_used": 5000, "is_active": True,
+        }}).encode())
         response.status = 200
         return response
     monkeypatch.setattr("urllib.request.urlopen", urlopen)

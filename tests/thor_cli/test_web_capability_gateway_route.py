@@ -31,7 +31,7 @@ def test_web_capability_picks_choose_own_key_or_nous_gateway(client, monkeypatch
 
     monkeypatch.setenv("FIRECRAWL_API_KEY", "fc-own-key")
     monkeypatch.setattr(fc._gateway, "resolve_managed_tool_gateway", lambda *a, **k: types.SimpleNamespace(
-        nous_user_token="nous-tok", gateway_origin="https://firecrawl-gateway.example"))
+        api_key="nous-tok", gateway_origin="https://firecrawl-gateway.example.test"))
     monkeypatch.setattr(fc, "Firecrawl", lambda **kw: types.SimpleNamespace(kwargs=kw), raising=False)
     monkeypatch.setattr(wt, "_firecrawl_client", None, raising=False)
 
@@ -40,12 +40,12 @@ def test_web_capability_picks_choose_own_key_or_nous_gateway(client, monkeypatch
         return client.get("/api/tools/toolsets/web/config").json()
 
     put(provider="Firecrawl", capability="search")
-    data = put(provider="Nous Subscription", capability="extract")
-    assert (data["search_via_nous"], data["extract_via_nous"]) == (False, True)
+    data = put(provider="Thor Subscription", capability="extract")
+    assert (data["search_via_thorhub"], data["extract_via_thorhub"]) == (False, True)
     assert fc._get_firecrawl_client("search").kwargs["api_key"] == "fc-own-key"
     assert fc._get_firecrawl_client("extract").kwargs["api_key"] == "nous-tok"
 
-    data = put(provider="Nous Subscription")
+    data = put(provider="Thor Subscription")
     web = load_config()["web"]
     assert not web.get("search_backend") and not web.get("extract_backend")
-    assert (data["search_via_nous"], data["extract_via_nous"]) == (True, True)
+    assert (data["search_via_thorhub"], data["extract_via_thorhub"]) == (True, True)

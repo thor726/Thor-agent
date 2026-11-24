@@ -282,7 +282,7 @@ class TestAuthJsonSiblingReaders:
     def test_managed_tool_gateway_reads_non_ascii_nous_state(
         self, thor_home, windows_default_encoding
     ):
-        """tools.managed_tool_gateway._read_nous_provider_state reads auth.json.
+        """tools.managed_tool_gateway._read_thorhub_provider_state reads auth.json.
 
         The Nous provider entry can carry a non-ASCII label. Under the
         Windows-default-encoding fixture a no-encoding read raises and the
@@ -301,9 +301,9 @@ class TestAuthJsonSiblingReaders:
         }
         _write_utf8(thor_home / "auth.json", store)
 
-        from tools.managed_tool_gateway import _read_nous_provider_state
+        from tools.managed_tool_gateway import _read_thorhub_provider_state
 
-        nous = _read_nous_provider_state()
+        nous = _read_thorhub_provider_state()
         assert nous is not None
         assert nous.get("agent_key") == "k"
         # The non-ASCII label round-trips intact.

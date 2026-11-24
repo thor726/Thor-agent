@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import subprocess
 from typing import Dict, List, Optional
-from thor_cli.auth_constants import DEFAULT_NOUS_PORTAL_URL
+from thor_cli.thorhub_account import THORHUB_BASE_URL
 
 logger = logging.getLogger("thor_cli.auth")
 
@@ -303,7 +303,7 @@ def _prompt_model_selection(
     _RESET = "\033[0m"
 
     menu_title = rows.menu_title(title)
-    _upgrade_url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+    _upgrade_url = (portal_url or THORHUB_BASE_URL).rstrip("/")
     n = len(ordered)
 
     # Try arrow-key menu first, fall back to number input.

@@ -378,14 +378,14 @@ def test_catalog_parse_keeps_the_top_tier_mark_for_nous_only(monkeypatch):
 
 
 def test_account_payload_parses_featured_ids():
-    from thor_cli import nous_account as na
-    info = na._coerced_dataclass(na.NousUsageWindowInfo, usage_window(featured_model_ids=["a/b", "c/d"]))
+    from thor_cli import thorhub_account as na
+    info = na._coerced_dataclass(na.ThorHubUsageWindowInfo, usage_window(featured_model_ids=["a/b", "c/d"]))
     assert info.featured_model_ids == ("a/b", "c/d")
 
 
 def _stub_account_cache(monkeypatch, stale, fetched):
     """Fresh cache empty, last snapshot ``stale``; a fetch records its force_fresh and fills the cache."""
-    from thor_cli import nous_account as na
+    from thor_cli import thorhub_account as na
     calls, fresh = [], {}
 
     def cached(*, any_age=False):
@@ -397,27 +397,27 @@ def _stub_account_cache(monkeypatch, stale, fetched):
             fresh["info"] = fetched
         return fetched
 
-    monkeypatch.setattr(na, "cached_nous_portal_account_info", cached)
-    monkeypatch.setattr(na, "get_nous_portal_account_info", get)
+    monkeypatch.setattr(na, "cached_thorhub_account_info", cached)
+    monkeypatch.setattr(na, "get_thorhub_account_info", get)
     return calls
 
 
 def test_warm_picker_refetches_a_known_window_plan_past_the_cache_ttl(monkeypatch):
-    from thor_cli.model_picker_usage import nous_picker_usage
+    from thor_cli.model_picker_usage import thorhub_picker_usage
     window = SimpleNamespace(logged_in=True, subscription=SimpleNamespace(plan="Window Plan"),
                              usage_window=SimpleNamespace(**usage_window(day_used_bp=100, week_used_bp=200)))
     calls = _stub_account_cache(monkeypatch, stale=window, fetched=window)
-    usage = nous_picker_usage(warm=True)
+    usage = thorhub_picker_usage(warm=True)
     assert calls == [True]
     assert usage is not None and usage.gauge(GAUGE_TODAY) is not None
 
 
 def test_warm_picker_never_forces_a_fetch_for_a_non_window_account(monkeypatch):
-    from thor_cli.model_picker_usage import nous_picker_usage
+    from thor_cli.model_picker_usage import thorhub_picker_usage
     credit = SimpleNamespace(logged_in=True, subscription=SimpleNamespace(plan="Credit Plan"), usage_window=None)
     for stale in (credit, None):
         calls = _stub_account_cache(monkeypatch, stale=stale, fetched=credit)
-        assert nous_picker_usage(warm=True) is None
+        assert thorhub_picker_usage(warm=True) is None
         assert calls == [False]
 
 
@@ -426,20 +426,20 @@ def test_warm_picker_never_forces_a_fetch_for_a_non_window_account(monkeypatch):
 def test_the_in_chat_cli_picker_says_the_limit_once_on_nous_only(monkeypatch):
     from thor_cli import model_picker_usage as mpu
 
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: _window_usage(day_used_bp=10_000))
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage(day_used_bp=10_000))
     rows, line = mpu.annotate_window_plan_rows({"slug": "nous"}, ["paid/m", "gift/m:free"])
     # Rows stay the bare ids; the limit is said once, above the list.
     assert rows == ["paid/m", "gift/m:free"] and line.startswith("Daily limit reached")
     # Any other provider, or no fresh snapshot: the bare ids and no line.
     assert mpu.annotate_window_plan_rows({"slug": "example"}, ["paid/m"]) == (["paid/m"], None)
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     assert mpu.annotate_window_plan_rows({"slug": "nous"}, ["paid/m"]) == (["paid/m"], None)
 
 
 def test_the_in_chat_cli_picker_tags_large_and_free_rows_on_window_plans_only(monkeypatch):
     from thor_cli import model_picker_usage as mpu
 
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     window = {"slug": "nous", "plan_usage": {"kind": "usage_window"},
               "usage_levels": {"example/model-b": "top_tier", "example/model-a": "low", "example/model-free:free": "free"}}
     ids = ["example/model-b", "example/model-a", "example/model-free:free"]
@@ -458,7 +458,7 @@ def test_messaging_pickers_get_large_free_labels_and_the_limit_line(monkeypatch)
     from thor_cli import model_switch_providers as msp
     from agent import plan_limits as pl
 
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: _window_usage(top_tier_used_bp=10_000))
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage(top_tier_used_bp=10_000))
     monkeypatch.setattr(pl, "cached_pricing", lambda base_url="": dict(_LEVELS))
     providers = [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b", "example/model-a"]},
                  {"slug": "example", "models": ["example/model-b"]}]
@@ -473,12 +473,12 @@ def test_messaging_pickers_get_large_free_labels_and_the_limit_line(monkeypatch)
     assert not {"model_labels", "plan_line"} & set(providers[1])
     # Nothing spent: labels only. Not a window plan: no field at all (pickers unchanged).
     quiet = [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b"]}]
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: _window_usage())
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage())
     msp._attach_window_model_notes(quiet)
     assert quiet[0].get("model_labels") == {"example/model-b": "Large"}
     assert "plan_line" not in quiet[0]
     plain = [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b"]}]
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     msp._attach_window_model_notes(plain)
     assert plain == [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b"]}]
     assert mpu.picker_row_suffix(plain[0], "example/model-b") == ""
@@ -487,22 +487,22 @@ def test_messaging_pickers_get_large_free_labels_and_the_limit_line(monkeypatch)
 def test_large_model_notice_window_plans_only(monkeypatch):
     from dataclasses import replace as _replace
     from thor_cli import model_picker_usage as mpu
-    monkeypatch.setattr(mpu, "_nous_catalog", lambda fetch=False: dict(_LEVELS))
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: _window_usage())
+    monkeypatch.setattr(mpu, "_thorhub_catalog", lambda fetch=False: dict(_LEVELS))
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage())
     note = mpu.large_model_notice("example/model-b", "nous")
     assert note.startswith("Large model: uses more of your plan's usage per message.") and "Monthly large-model limit:" in note
     assert mpu.large_model_notice("example/model-a", "nous") is None  # not Large
     assert mpu.large_model_notice("example/model-b", "example") is None  # not Nous
     # Pay as you go past the large-model limit: the credits wording.
-    monkeypatch.setattr(mpu, "nous_picker_usage",
+    monkeypatch.setattr(mpu, "thorhub_picker_usage",
                         lambda **kw: _replace(_window_usage(top_tier_used_bp=10_000), credits_pay=True))
     assert mpu.large_model_notice("example/model-b", "nous") == "Large model: uses more credits per message (pay as you go)."
     # No plan snapshot yet (cold CLI): a Large mark in the resident catalog alone proves a window plan.
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     assert mpu.large_model_notice("example/model-b", "nous") == "Large model: uses more of your plan's usage per message."
     # Any other account: its catalog carries no marks (None), and it is never fetched.
     seen = []
-    monkeypatch.setattr(mpu, "_nous_catalog",
+    monkeypatch.setattr(mpu, "_thorhub_catalog",
                         lambda fetch=False: seen.append(fetch) or {"example/model-b": {"prompt": "0.000001"}})
     assert mpu.large_model_notice("example/model-b", "nous", fetch=True) is None
     assert seen == [False]
@@ -516,7 +516,7 @@ def test_catalog_reads_never_answer_from_another_profiles_cache(monkeypatch):
     from thor_cli import model_picker_usage as mpu
     monkeypatch.setattr(mp, "peek_cached_pricing", lambda base_url: dict(_LEVELS))  # another profile's catalog
     monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider, **kw: {})  # this profile: cold
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)  # this profile: no window plan
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)  # this profile: no window plan
     assert pl.cached_pricing("https://inference-api.thor-agent.local/v1") == {}
     assert mpu.large_model_notice("example/model-b", "nous") is None
 
@@ -549,7 +549,7 @@ def test_window_plan_feeds_the_existing_usage_chip(monkeypatch):
     from thor_cli import inventory
     from thor_cli import model_picker_usage as mpu
     usage = _window_usage(day_used_bp=8_500)
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: usage)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: usage)
     row: dict = {"slug": "nous"}
     inventory._attach_nous_plan_usage(row, warm=False)
     windows = row["usage"]["windows"]
@@ -557,14 +557,14 @@ def test_window_plan_feeds_the_existing_usage_chip(monkeypatch):
     assert all(w["resets_at"] for w in windows)
     # A full allowance: the picker's limit line says it, so no chip repeats it.
     full: dict = {"slug": "nous"}
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: _window_usage(day_used_bp=10_000))
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage(day_used_bp=10_000))
     inventory._attach_nous_plan_usage(full, warm=False)
     assert "plan_usage" in full and "usage" not in full
     paused: dict = {"slug": "nous"}
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: replace(usage, paused_reason="renewal_unpaid"))
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: replace(usage, paused_reason="renewal_unpaid"))
     inventory._attach_nous_plan_usage(paused, warm=False)
     assert "plan_usage" in paused and "usage" not in paused
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     other: dict = {"slug": "nous"}
     inventory._attach_nous_plan_usage(other, warm=False)
     assert other == {"slug": "nous"}
@@ -610,7 +610,7 @@ def test_window_picker_rows_leave_subscription_billed_rows_untagged():
 def test_the_in_chat_cli_picker_leaves_subscription_billed_rows_untagged(monkeypatch):
     from thor_cli import model_picker_usage as mpu
 
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: None)
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     row = {"slug": "nous",
            "plan_usage": {"kind": "usage_window", "subscription_model_ids": ["example/model-sub"]},
            "usage_levels": {"example/model-sub": "free", "gift/m:free": "free"}}
@@ -627,7 +627,7 @@ def test_messaging_pickers_leave_subscription_billed_rows_untagged(monkeypatch):
     from thor_cli import model_switch_providers as msp
     from agent import plan_limits as pl
 
-    monkeypatch.setattr(mpu, "nous_picker_usage", lambda **kw: _window_usage())
+    monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage())
     monkeypatch.setattr(pl, "cached_pricing", lambda base_url="": dict(_SUBSCRIPTION_BILLED))
     providers = [{"slug": "nous", "api_url": "https://x/v1", "models": list(_SUBSCRIPTION_BILLED)}]
     msp._attach_window_model_notes(providers)

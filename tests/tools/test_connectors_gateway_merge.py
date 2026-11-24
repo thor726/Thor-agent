@@ -287,31 +287,20 @@ def test_connectors_available_requires_both_legs_and_fails_closed():
     assert connectors_available(config_loader=boom, entitlement_check=lambda: True) is False
 
 
-@pytest.mark.parametrize(
-    "claims, rolled_out",
-    [
-        # Paid access alone does not enable connectors: the gateway 404s this account.
-        ({"paid_access": True, "tool_access": {"enabled": True, "coverage": {}}}, False),
-        ({"paid_access": True, "managed_tools": True}, True),
-        ({"paid_access": False, "managed_tools": True}, True),
-        ({"managed_tools": False}, False),
-        ({"managed_tools": "true"}, False),  # only a literal boolean counts
-    ],
-)
-def test_account_gate_reads_the_portal_claim_not_entitlement(monkeypatch, claims, rolled_out):
-    """The account leg mirrors the gateway's own gate: the ``managed_tools`` claim the portal
-    mints. A token without it is not enabled however entitled it is."""
-    import time
-
-    from thor_cli import nous_account
+def test_account_gate_is_always_closed_on_thorhub(monkeypatch):
+    """ThorHub has no managed connectors and no Portal claim that could enable them:
+    the rollout gate is always False — for a logged-in account with balance, and
+    with no key at all."""
+    from thor_cli import thorhub_account
     from tools.connectors.gateway.config import managed_tools_rolled_out
 
-    monkeypatch.setattr(
-        "thor_cli.auth._decode_jwt_claims", lambda token: {"exp": time.time() + 3600, **claims})
-    account = nous_account._info_from_valid_jwt("tok", {}, None, 60)
-    assert account is not None and account.logged_in
-
-    monkeypatch.setattr(nous_account, "get_nous_portal_account_info", lambda **kw: account)
-    assert managed_tools_rolled_out() is rolled_out
+    monkeypatch.setattr(thorhub_account, "thorhub_api_key", lambda: "sk-thor-test")
+    monkeypatch.setattr(thorhub_account, "fetch_thorhub_balance",
+                        lambda key=None, base_url=None: {"ok": True, "tokens_remaining": 5000})
+    assert managed_tools_rolled_out() is False
     assert connectors_available(config_loader=lambda: ConnectorConfig(enabled=True),
-                                entitlement_check=managed_tools_rolled_out) is rolled_out
+                                entitlement_check=managed_tools_rolled_out) is False
+    monkeypatch.setattr(thorhub_account, "thorhub_api_key", lambda: None)
+    assert managed_tools_rolled_out() is False
+
+

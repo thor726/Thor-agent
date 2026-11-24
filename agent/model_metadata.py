@@ -454,7 +454,7 @@ _URL_TO_PROVIDER: dict[str, str] = {
     "api.minimax.io": "minimax", "api.minimaxi.com": "minimax", "api.minimax.chat": "minimax",
     "dashscope.aliyuncs.com": "alibaba", "dashscope-intl.aliyuncs.com": "alibaba", "portal.qwen.ai": "qwen-oauth",
     "openrouter.ai": "openrouter", "generativelanguage.googleapis.com": "gemini",
-    "inference-api.thor-agent.local": "nous", "api.deepseek.com": "deepseek",
+    "inference-api.thor-agent.local": "thor", "api.deepseek.com": "deepseek",  # retired host: legacy ThorHub id
     "api.fireworks.ai": "fireworks", "opencode.ai": "opencode-go", "api.x.ai": "xai",
     "integrate.api.nvidia.com": "nvidia", "api.xiaomimimo.com": "xiaomi", "xiaomimimo.com": "xiaomi",
     "api.gmi-serving.com": "gmi", "api.novita.ai": "novita",
@@ -1924,10 +1924,10 @@ def _resolve_codex_oauth_context_length_with_source(model: str, access_token: st
     return _apply_verified_bump(hit[1], "fallback", catalog_max) if hit else (None, "")
 
 
-def _resolve_nous_context_length(model: str, base_url: str = "", api_key: str = "") -> tuple[Optional[int], str]:
-    """``(context_length, source)`` for a Thor Portal model: portal /v1/models is authoritative
-    ("portal"). Fallback matches OR's prefixed ids against the bare Thor id with dot/dash
-    normalisation ("openrouter" — callers must NOT persist it, or a portal blip freezes the wrong value)."""
+def _resolve_thorhub_context_length(model: str, base_url: str = "", api_key: str = "") -> tuple[Optional[int], str]:
+    """``(context_length, source)`` for a ThorHub model: ThorHub /v1/models is authoritative
+    ("thorhub"). Fallback matches OR's prefixed ids against the bare Thor id with dot/dash
+    normalisation ("openrouter" — callers must NOT persist it, or a ThorHub blip freezes the wrong value)."""
     if base_url:
         portal_ctx = _resolve_endpoint_context_length(model, base_url, api_key=api_key)
         if portal_ctx is not None:
@@ -1979,7 +1979,7 @@ def _validate_cached_context_length(model: str, base_url: str, cached: int, *, a
             return None
     # Nous Portal: /v1/models is authoritative. Bypass (don't drop) the cache so step
     # 5b reconciles OR-seeded entries without touching disk when the portal is down.
-    if _infer_provider_from_url(base_url) == "nous":
+    if _infer_provider_from_url(base_url) == "thor":
         logger.debug("Bypassing persistent cache for %s@%s (Thor portal authoritative)", model, base_url)
         return None
 
@@ -2158,10 +2158,10 @@ def _resolve_provider_aware_context_length(model: str, base_url: str, api_key: s
         if profile is not None and (ctx := profile.live_context_length(model, api_key=api_key or "", base_url=base_url or "")):
             return ctx
     # 5b/5c. Nous portal and Codex OAuth (lower limits than the direct API for the same slug; its
-    # own /models is authoritative). Persist ONLY the authoritative source ("portal" / "live"): an
+    # own /models is authoritative). Persist ONLY the authoritative source ("thorhub" / "live"): an
     # OR-fallback or static-table value cached on a blip would be frozen in by step 1 forever.
     sourced = {
-        "nous": lambda: _resolve_nous_context_length(model, base_url=base_url or "", api_key=api_key or "") + ("portal",),
+        "thor": lambda: _resolve_thorhub_context_length(model, base_url=base_url or "", api_key=api_key or "") + ("thorhub",),
         "openai-codex": lambda: _resolve_codex_oauth_context_length_with_source(model, access_token=api_key or "", base_url=base_url or "") + ("live",),
     }.get(effective_provider)
     if sourced is not None:

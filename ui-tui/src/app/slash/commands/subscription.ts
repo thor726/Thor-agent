@@ -15,44 +15,28 @@ import type { SlashCommand, SlashRunCtx } from '../types.js'
 type Sys = (text: string) => void
 
 /**
- * Build the manage-subscription URL locally from the loaded subscription state.
+ * Build the manage URL locally from the loaded subscription state.
  *
- * Uses `portal_url` (the resolved portal base URL carried in the state) and
- * `org_id` to construct `{portal_base}/manage-subscription?org_id=<id>`.
- * `org_id` pins the page to the correct account in multi-org situations.
- * Falls back to bare `/manage-subscription` if org_id is absent.
+ * ThorHub has no subscription plans and no `/manage-subscription` page: the
+ * `portal_url` carried in the state (the ThorHub member portal,
+ * e.g. https://llm.thormarket.site/portal) IS the manage URL — it opens the
+ * member portal, where the user tops up and manages their balance.
+ * `tierId` is accepted for call-site shape and ignored.
  */
-function buildManageUrl(s: SubscriptionStateResponse, tierId?: string): string | null {
-  // portal_url is already an absolute URL resolved by resolve_portal_base_url()
-  // on the Python side (e.g. https://portal.thor-agent.local/billing). Strip any
-  // path so we can attach /manage-subscription cleanly.
-  let base: string | null = null
-
-  if (s.portal_url) {
-    try {
-      base = new URL(s.portal_url).origin
-    } catch {
-      // A malformed portal_url must not throw out of the Ink key handler
-      // (it would crash the overlay) — treat it as "no manage URL".
-      return null
-    }
-  }
-
-  if (!base) {
+function buildManageUrl(s: SubscriptionStateResponse, _tierId?: string): string | null {
+  // portal_url is already an absolute URL resolved on the Python side
+  // (thorhub_billing.get_subscription_state, e.g. https://llm.thormarket.site/portal).
+  if (!s.portal_url) {
     return null
   }
 
-  const url = new URL('/manage-subscription', base)
-
-  if (s.org_id) {
-    url.searchParams.set('org_id', s.org_id)
+  try {
+    return new URL(s.portal_url).toString()
+  } catch {
+    // A malformed portal_url must not throw out of the Ink key handler
+    // (it would crash the overlay) — treat it as "no manage URL".
+    return null
   }
-
-  if (tierId) {
-    url.searchParams.set('plan', tierId)
-  }
-
-  return url.toString()
 }
 
 /**
@@ -144,12 +128,12 @@ const buildSubscriptionCtx = (
 
 export const subscriptionCommands: SlashCommand[] = [
   {
-    help: 'View or change your Nous subscription plan',
+    help: 'View your ThorHub balance and top up',
     name: 'subscription',
     aliases: ['upgrade'],
     // ZERO sub-commands: bare `/subscription` fetches state and opens the
-    // overlay's in-terminal change flow (only /upgrade's charge_now confirm
-    // moves money, via the V3 upgrade route).
+    // overlay. ThorHub has no plans to change and no upgrade route: the
+    // overlay renders the balance and points at the top-up page instead.
     run: (_arg, ctx) => {
       const sys: Sys = ctx.transcript.sys
 

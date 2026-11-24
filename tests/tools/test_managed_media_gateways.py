@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from thor_cli.nous_account import NousPortalAccountInfo
+from thor_cli.thorhub_account import ThorHubAccountInfo
 
 
 TOOLS_DIR = Path(__file__).resolve().parents[2] / "tools"
@@ -48,11 +48,11 @@ def _restore_tool_and_agent_modules():
 
 @pytest.fixture(autouse=True)
 def _enable_managed_nous_tools(monkeypatch):
-    """Patch the source modules so managed_nous_tools_enabled() returns True
+    """Patch the source modules so managed_thorhub_tools_enabled() returns True
     even after tool modules are dynamically reloaded."""
     monkeypatch.setattr(
-        "thor_cli.nous_account.get_nous_portal_account_info",
-        lambda: NousPortalAccountInfo(
+        "thor_cli.thorhub_account.get_thorhub_account_info",
+        lambda: ThorHubAccountInfo(
             logged_in=True,
             source="jwt",
             fresh=False,
@@ -226,7 +226,7 @@ def test_openai_tts_uses_managed_audio_gateway_when_direct_key_absent(monkeypatc
     _install_fake_openai_module(captured)
     monkeypatch.delenv("VOICE_TOOLS_OPENAI_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.setenv("TOOL_GATEWAY_DOMAIN", "thor-agent.local")
+    monkeypatch.setenv("OPENAI_AUDIO_GATEWAY_URL", "https://openai-audio-gateway.thor-agent.local")
     monkeypatch.setenv("TOOL_GATEWAY_USER_TOKEN", "nous-token")
 
     tts_tool = _load_tool_module("tools.tts_tool", "tts_tool.py")
@@ -270,7 +270,7 @@ def test_transcription_uses_model_specific_response_formats(monkeypatch, tmp_pat
     (tmp_path / "config.yaml").write_text("stt:\n  provider: nous\n")
     monkeypatch.delenv("VOICE_TOOLS_OPENAI_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.setenv("TOOL_GATEWAY_DOMAIN", "thor-agent.local")
+    monkeypatch.setenv("OPENAI_AUDIO_GATEWAY_URL", "https://openai-audio-gateway.thor-agent.local")
     monkeypatch.setenv("TOOL_GATEWAY_USER_TOKEN", "nous-token")
 
     transcription_tools = _load_tool_module(

@@ -7,12 +7,12 @@ import pytest
 def test_web_selection_reports_the_backend_it_writes(monkeypatch, managed, backend):
     import thor_cli.tools_config_providers as providers
 
-    monkeypatch.setattr(providers, "_nous_provider_gate", lambda *a, **kw: True)
+    monkeypatch.setattr(providers, "_thorhub_provider_gate", lambda *a, **kw: True)
     messages = []
     monkeypatch.setattr(providers, "_print_success", messages.append)
     row = {"name": "Test provider", "web_backend": backend, "env_vars": []}
     if managed:
-        row["managed_nous_feature"] = "web"
+        row["managed_thorhub_feature"] = "web"
     config = {}
     providers._configure_provider(row, config)
     selected = config["web"]["backend"]

@@ -15,7 +15,7 @@ from agent.usage_gauges import SCOPE_ALL, SCOPE_TOP_TIER, WindowGauge
 
 RESET = 4_000_000_000_000
 _REAL_FITS_CONTEXT = pl._fits_context
-_REAL_PORTAL_FREE_MODELS = pl._portal_free_models
+_REAL_THORHUB_FREE_MODELS = pl._thorhub_free_models
 
 PRICING = {
     "example/model-a": {"prompt": "0.00000001", "completion": "0.0000001", "name": "Model A"},
@@ -38,7 +38,7 @@ HEALTHY = (_g("day", 3_000), _g("week", 2_000), _g("top_tier", 2_000, scope=SCOP
 @pytest.fixture(autouse=True)
 def _no_caches(monkeypatch):
     """Every test names its own catalog and plan; nothing reads the user's disk caches."""
-    monkeypatch.setattr(pl, "_portal_free_models", list)
+    monkeypatch.setattr(pl, "_thorhub_free_models", list)
     monkeypatch.setattr(pl, "_plan_usage", lambda: SimpleNamespace(featured_model_ids=FEATURED))
     monkeypatch.setattr(pl, "cached_pricing", lambda base_url: PRICING)
     monkeypatch.setattr(pl, "_fits_context", lambda model, needed, base_url: True)
@@ -102,7 +102,7 @@ class TestSuggestions:
         assert [(s.model, s.note) for s in out] == [("example/model-free:free", pl.NOTE_FREE)]
 
     def test_the_portal_free_picks_follow_the_plan_list(self, monkeypatch):
-        monkeypatch.setattr(pl, "_portal_free_models", lambda: ["example/model-free:free", "other/y:free"])
+        monkeypatch.setattr(pl, "_thorhub_free_models", lambda: ["example/model-free:free", "other/y:free"])
         out = pl.suggest_models("example/model-b", DAY_FULL, pricing=PRICING, featured=FEATURED)
         assert [s.model for s in out] == ["example/model-free:free", "other/y:free"]
 
@@ -246,17 +246,9 @@ class TestNextSteps:
         assert text == "Pick another model with /model."
 
 
-def test_free_picks_come_from_this_profiles_own_portal_entry(monkeypatch):
-    """One process holds several profiles' recommended lists side by side: a limit card offers only the
-    calling profile's own Portal picks, else its own disk copy; another profile's entry never answers."""
-    from thor_cli import models as m
-    portal = "https://portal.example.test"
-    monkeypatch.setattr(m, "_resolve_nous_portal_url", lambda: portal)
-    other = {"freeRecommendedModels": [{"modelName": "other/profile:free"}]}
-    mine = {"freeRecommendedModels": [{"modelName": "mine/model:free"}]}
-    monkeypatch.setattr(m, "_nous_recommended_cache", {})
-    m._nous_recommended_cache[("other-profile", portal)] = (other, 0.0)
-    assert _REAL_PORTAL_FREE_MODELS() == []  # this profile holds nothing, in memory or on disk
-    m._nous_recommended_cache[(m._pricing_profile_key(), portal)] = (mine, 0.0)
-    m._nous_recommended_cache[("other-profile", "https://other-portal.test")] = (other, 0.0)
-    assert _REAL_PORTAL_FREE_MODELS() == ["mine/model:free"]
+def test_free_picks_are_always_empty_on_thorhub(monkeypatch):
+    """ThorHub has no free tier and no recommended-models feed, so the free-picks
+    list is always empty — no per-profile Portal entry can answer it."""
+    assert pl._thorhub_free_models() == []
+
+

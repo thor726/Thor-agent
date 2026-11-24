@@ -51,9 +51,9 @@ def test_managed_row_active_for_a_nous_capability_pin(monkeypatch):
     extract and must be active alongside the BYOK row serving search; a vendor-only config leaves it off."""
     from thor_cli import tools_config
 
-    monkeypatch.setattr(tools_config, "get_nous_subscription_features", lambda *a, **k: types.SimpleNamespace(
-        features={"web": types.SimpleNamespace(managed_by_nous=True)}))
-    nous = _row("firecrawl", managed_nous_feature="web")
+    monkeypatch.setattr(tools_config, "get_thorhub_subscription_features", lambda *a, **k: types.SimpleNamespace(
+        features={"web": types.SimpleNamespace(managed_by_thorhub=True)}))
+    nous = _row("firecrawl", managed_thorhub_feature="web")
     split = {"web": {"search_backend": "firecrawl", "extract_backend": "nous"}}
     assert _is_provider_active(nous, split) is True
     assert _is_provider_active(_row("firecrawl"), split) is True

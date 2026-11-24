@@ -240,12 +240,12 @@ def _resolve_managed_fal_video_gateway():
     """Resolve the FAL video route from the stored ``video_gen`` selection: ``"nous"`` → managed only (unentitled ⇒
     selection-naming error); other stored provider → direct only (missing FAL_KEY ⇒ error); never-configured → autodetect."""
     from tools.managed_tool_gateway import resolve_managed_tool_gateway
-    from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER, fal_key_is_configured, read_selection, selection_error
+    from tools.tool_backend_helpers import MANAGED_PROVIDER, fal_key_is_configured, read_selection, selection_error
     selected = read_selection("video_gen")
-    if selected == NOUS_MANAGED_PROVIDER:
+    if selected == MANAGED_PROVIDER:
         gateway = resolve_managed_tool_gateway("fal-queue")
         if gateway is None:
-            raise ValueError(selection_error("video_gen", NOUS_MANAGED_PROVIDER, "the Nous Tool Gateway is not available (not entitled or unreachable)"))
+            raise ValueError(selection_error("video_gen", MANAGED_PROVIDER, "the managed tool gateway is not available on ThorHub"))
         return gateway
     if selected is not None:
         if not fal_key_is_configured():
@@ -264,10 +264,10 @@ def _get_managed_fal_video_client(managed_gateway):
     """Reuse the managed FAL client so its internal httpx.Client is not leaked per call."""
     global _managed_fal_video_client, _managed_fal_video_client_config
     from tools.fal_common import _ManagedFalSyncClient
-    client_config = (managed_gateway.gateway_origin.rstrip("/"), managed_gateway.nous_user_token)
+    client_config = (managed_gateway.gateway_origin.rstrip("/"), managed_gateway.api_key)
     with _managed_fal_video_client_lock:
         if _managed_fal_video_client is None or _managed_fal_video_client_config != client_config:
-            _managed_fal_video_client = _ManagedFalSyncClient(_load_fal_client(), key=managed_gateway.nous_user_token,
+            _managed_fal_video_client = _ManagedFalSyncClient(_load_fal_client(), key=managed_gateway.api_key,
                                                               queue_run_origin=managed_gateway.gateway_origin)
             _managed_fal_video_client_config = client_config
         return _managed_fal_video_client

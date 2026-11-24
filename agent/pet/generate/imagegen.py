@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent.image_gen_provider import ImageGenProvider
-from tools.tool_backend_helpers import NOUS_MANAGED_PROVIDER
+from tools.tool_backend_helpers import MANAGED_PROVIDER
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ def _candidate(name: str) -> SpriteProvider | None:
     """
     if (provider := _available(name)) is None:
         return None
-    if name == NOUS_MANAGED_PROVIDER and (model := _managed_krea_model()):
+    if name == MANAGED_PROVIDER and (model := _managed_krea_model()):
         krea = _available("krea")
         return None if krea is None else SpriteProvider(name=name, provider=krea, supports_references=True, model=model)
     return SpriteProvider(name=name, provider=provider, supports_references=True)
@@ -116,7 +116,7 @@ def resolve_provider(*, require_references: bool = True, prefer: str | None = No
     # The scan above found Nous unable to serve; when it is configured, that means its Krea model
     # lacks the Krea backend. Raised before the prompt-only fallback, which would send the Krea id
     # to another backend (FAL swaps in its default model; the Portal 404s on it).
-    if _available(NOUS_MANAGED_PROVIDER) is not None:
+    if _available(MANAGED_PROVIDER) is not None:
         raise GenerationError(
             "The selected Thor image model needs the Krea gateway, but that backend is "
             "unavailable. Check Thor Subscription under `thor tools` → Image Generation."

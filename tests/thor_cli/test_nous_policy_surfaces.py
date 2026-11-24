@@ -1,7 +1,7 @@
-"""Every Nous model list is narrowed to the org's policy before it is shown.
+"""Every ThorHub model list is narrowed to the org's policy before it is shown.
 
 Four surfaces build their list from the curated manifest unioned with the
-Portal's ``recommended-models`` endpoint; neither source is authenticated.
+ThorHub catalog; neither source is authenticated.
 """
 
 from __future__ import annotations
@@ -19,50 +19,27 @@ ALLOWED = {"vendor/allowed"}
 @pytest.fixture
 def policy(monkeypatch):
     """An org whose policy admits only ``vendor/allowed``."""
-    monkeypatch.setattr(models_pricing, "nous_policy_allowed_ids", lambda **_k: ALLOWED)
+    monkeypatch.setattr(models_pricing, "thorhub_policy_allowed_ids", lambda **_k: ALLOWED)
     return ALLOWED
 
 @pytest.fixture
 def no_policy(monkeypatch):
     """An unrestricted org — lists must come through untouched."""
-    monkeypatch.setattr(models_pricing, "nous_policy_allowed_ids", lambda **_k: None)
+    monkeypatch.setattr(models_pricing, "thorhub_policy_allowed_ids", lambda **_k: None)
 
-class TestLoginNous:
+class TestLoginThorhub:
 
     def _run(self, monkeypatch, tmp_path):
         import thor_cli.auth as auth_mod
-        from thor_cli import auth_nous
-        import thor_cli.nous_subscription as ns
+        import thor_cli.model_setup_flows as msf
+        import thor_cli.thorhub_subscription as ns
 
         seen: dict = {}
         monkeypatch.setenv("THOR_HOME", str(tmp_path))
-        monkeypatch.setattr(
-            auth_mod,
-            "_nous_device_code_login",
-            lambda **_k: {
-                "access_token": "tok",
-                "agent_key": "key",
-                "inference_base_url": "https://inference.example.com",
-                "portal_base_url": "https://portal.example.com",
-                "refresh_token": "r",
-                "token_expires_at": 9999999999,
-            },
-        )
-        monkeypatch.setattr(
-            auth_nous,
-            "_nous_device_code_login",
-            lambda **_k: {
-                "access_token": "tok",
-                "agent_key": "key",
-                "inference_base_url": "https://inference.example.com",
-                "portal_base_url": "https://portal.example.com",
-                "refresh_token": "r",
-                "token_expires_at": 9999999999,
-            },
-        )
-        monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: list(CURATED))
+        monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-x")
+        monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda: list(CURATED))
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda **_k: None)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
             models_mod,
             "union_with_portal_paid_recommendations",
@@ -74,12 +51,7 @@ class TestLoginNous:
             seen["model_ids"] = list(model_ids)
 
         monkeypatch.setattr(auth_mod, "_prompt_model_selection", _capture)
-
-        args = argparse.Namespace(
-            portal_url=None, inference_url=None, client_id=None, scope=None,
-            no_browser=True, timeout=15.0, ca_bundle=None, insecure=False,
-        )
-        auth_mod._login_nous(args, auth_mod.PROVIDER_REGISTRY["nous"])
+        msf._model_flow_thorhub({}, "", None)
         return seen
 
     def test_hidden_model_is_not_offered(self, monkeypatch, tmp_path, policy):
@@ -91,7 +63,7 @@ class TestLoginNous:
         assert self._run(monkeypatch, tmp_path).get("model_ids") == CURATED
 
 class TestModelSwitchPicker:
-    """The ``/model`` picker's nous branch (``list_authenticated_providers``)."""
+    """The ``/model`` picker's thor branch (``list_authenticated_providers``)."""
 
     def _rows(self, monkeypatch):
         import thor_cli.auth as auth_mod
@@ -100,22 +72,22 @@ class TestModelSwitchPicker:
         monkeypatch.setattr(
             auth_mod,
             "_load_auth_store",
-            lambda *a, **k: {"providers": {"nous": {"access_token": "tok"}}},
+            lambda *a, **k: {"providers": {"thor": {"api_key": "sk-thor-x"}}},
         )
-        monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: list(CURATED))
+        monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda: list(CURATED))
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda **_k: None)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
             models_mod,
             "union_with_portal_paid_recommendations",
             lambda ids, pricing, _portal: (list(ids), pricing),
         )
         rows = ms.list_authenticated_providers(max_models=10)
-        return next((r for r in rows if r["slug"] == "nous"), None)
+        return next((r for r in rows if r["slug"] == "thor"), None)
 
     def test_hidden_model_is_filtered(self, monkeypatch, policy):
         row = self._rows(monkeypatch)
-        assert row is not None, "nous row should be listed"
+        assert row is not None, "thor row should be listed"
         assert "vendor/blocked" not in row["models"]
         assert "vendor/allowed" in row["models"]
 
@@ -145,18 +117,18 @@ class TestRecommendedDefaultEndpoint:
         # Blocked first, so an unfiltered list would make it the silent
         # default — otherwise this passes whether or not the filter runs.
         monkeypatch.setattr(
-            models_mod, "get_curated_nous_model_ids",
+            models_mod, "get_curated_thorhub_model_ids",
             lambda: ["vendor/blocked", "vendor/allowed"],
         )
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
-        monkeypatch.setattr(models_mod, "check_nous_free_tier", lambda **_k: None)
+        monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
             models_mod,
             "union_with_portal_paid_recommendations",
             lambda ids, pricing, _portal: (list(ids), pricing),
         )
         monkeypatch.setattr(auth_mod, "get_provider_auth_state", lambda _p: {})
-        return get_recommended_default_model(provider="nous")
+        return get_recommended_default_model(provider="thor")
 
     def test_hidden_model_is_never_the_silent_default(self, monkeypatch, policy):
         assert self._call(monkeypatch)["model"] == "vendor/allowed"
@@ -177,18 +149,18 @@ class TestAuxiliaryFastModel:
             return {mid: {} for mid in catalog}
 
         monkeypatch.setattr(
-            models_pricing, "_resolve_nous_pricing_credentials",
-            lambda: ("sk-nous", "https://inference.example.com"),
+            models_pricing, "_resolve_thorhub_pricing_credentials",
+            lambda: ("sk-thor", "https://inference.example.com"),
         )
         monkeypatch.setattr(models_pricing, "fetch_models_with_pricing", _fake_fetch)
-        picked = aux._fast_model_from_catalog("nous")
+        picked = aux._fast_model_from_catalog("thor")
         return picked, seen
 
     def test_hidden_model_is_not_selected(self, monkeypatch, policy):
         import agent.auxiliary_client as aux
 
         monkeypatch.setattr(
-            models_pricing, "nous_policy_allowed_ids", lambda **_k: {"vendor/allowed"}
+            models_pricing, "thorhub_policy_allowed_ids", lambda **_k: {"vendor/allowed"}
         )
         monkeypatch.setattr(aux, "_FAST_MODEL_FAMILIES", ("vendor/",))
         monkeypatch.setattr(aux, "_FAST_MODEL_EXCLUDE", ())
@@ -197,18 +169,18 @@ class TestAuxiliaryFastModel:
         )
         assert picked == "vendor/allowed"
 
-class TestNousPrefetch:
-    """The nous disk-cache entry is write-only, so prefetching it is a round
+class TestThorhubPrefetch:
+    """The thor disk-cache entry is write-only, so prefetching it is a round
     trip for nothing."""
 
 class TestPolicyNoticeIsShown:
 
     def test_login_prints_it(self, monkeypatch, tmp_path, policy, capsys):
-        import thor_cli.nous_account as account_mod
+        import thor_cli.thorhub_account as account_mod
 
-        monkeypatch.setattr(account_mod, "nous_policy_present", lambda: True)
-        TestLoginNous()._run(monkeypatch, tmp_path)
-        assert account_mod.nous_policy_notice(removed=True) in capsys.readouterr().out
+        monkeypatch.setattr(account_mod, "thorhub_policy_present", lambda: True)
+        TestLoginThorhub()._run(monkeypatch, tmp_path)
+        assert account_mod.thorhub_policy_notice(removed=True) in capsys.readouterr().out
 
 class TestAuxFallbackRespectsPolicy:
     """Steps 2-4 of the aux ladder are policy-blind: `resolve_aux_model` queries
@@ -218,9 +190,9 @@ class TestAuxFallbackRespectsPolicy:
         import agent.auxiliary_client as aux
         import providers
 
-        monkeypatch.setattr(models_pricing, "nous_policy_allowed_ids", lambda **_k: allowed)
+        monkeypatch.setattr(models_pricing, "thorhub_policy_allowed_ids", lambda **_k: allowed)
         monkeypatch.setattr(
-            models_pricing, "_resolve_nous_pricing_credentials",
+            models_pricing, "_resolve_thorhub_pricing_credentials",
             lambda: ("sk", "https://inference.example.com"),
         )
         # No fast-family match, so the catalog step yields nothing.
@@ -243,7 +215,7 @@ class TestAuxFallbackRespectsPolicy:
             monkeypatch, allowed={"vendor/allowed-large"},
             recommended="vendor/blocked-haiku",
         )
-        assert aux._get_aux_model_for_provider("nous", prefer_fast=True) == ""
+        assert aux._get_aux_model_for_provider("thor", prefer_fast=True) == ""
 
     def test_allowed_recommendation_still_used(self, monkeypatch):
         aux = self._patch(
@@ -251,7 +223,7 @@ class TestAuxFallbackRespectsPolicy:
             recommended="vendor/ok-haiku",
         )
         assert (
-            aux._get_aux_model_for_provider("nous", prefer_fast=True)
+            aux._get_aux_model_for_provider("thor", prefer_fast=True)
             == "vendor/ok-haiku"
         )
 
@@ -260,6 +232,6 @@ class TestAuxFallbackRespectsPolicy:
             monkeypatch, allowed=None, recommended="vendor/anything"
         )
         assert (
-            aux._get_aux_model_for_provider("nous", prefer_fast=True)
+            aux._get_aux_model_for_provider("thor", prefer_fast=True)
             == "vendor/anything"
         )

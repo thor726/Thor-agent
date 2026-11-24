@@ -1,8 +1,9 @@
 """Who counts as the Desktop app on this machine, on the unified gateway.
 
-The welcome trial and first-run onboarding are offered only to the local Desktop. The proof is per
-connection: the Desktop says it is local (``client.capabilities
-{desktop_local}``), and that counts only on a connection that redeemed a native ticket.
+First-run onboarding is offered only to the local Desktop (the welcome trial is retired: a fresh
+install needs a configured provider to be eligible). The proof is per connection: the Desktop says
+it is local (``client.capabilities {desktop_local}``), and that counts only on a connection that
+redeemed a native ticket.
 """
 from __future__ import annotations
 
@@ -76,7 +77,10 @@ async def _request(conn, rid, method, params):
 
 @pytest.mark.asyncio
 async def test_a_fresh_install_is_offered_onboarding_once_the_desktop_says_it_is_local(tmp_path, monkeypatch):
-    conn = await _connect(tmp_path, monkeypatch)
+    # A ThorHub key is configured, so the first chat has something to run on (the trial is retired).
+    monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-test")
+    conn = await _connect(tmp_path, monkeypatch,
+                          config="model:\n  provider: thor\n  default: deepseek-v4-pro\n")
     try:
         before = await _request(conn, 1, "onboarding.state", {"assume_fresh": True})
         assert before["result"]["eligible"] is False
@@ -108,8 +112,9 @@ async def test_the_declaration_counts_only_on_a_native_ticket(tmp_path, monkeypa
 
 @pytest.mark.asyncio
 async def test_a_desktop_chat_runs_its_turns_as_work_for_the_local_desktop(tmp_path, monkeypatch):
-    """The trial's free inference is resolved inside the turn, away from any request: the chat carries
-    the fact from its creation, and only a Desktop chat created on a declared connection does."""
+    """Whether a turn runs as work for the local desktop is resolved inside the turn, away from
+    any request: the chat carries the fact from its creation, and only a Desktop chat created on
+    a declared connection does."""
     from contextlib import nullcontext
     from gateway.session_local_recovery import local_source
     from gateway.session_policy import local_desktop_turn
@@ -136,47 +141,14 @@ async def test_a_desktop_chat_runs_its_turns_as_work_for_the_local_desktop(tmp_p
 
 
 
-@pytest.mark.asyncio
-async def test_a_trial_users_desktop_chat_runs_on_the_free_model(tmp_path, monkeypatch):
-    """A claimed welcome trial and no configured model: the chat freezes the free model instead of
-    no model at all (a launch policy with no model can never be restored)."""
-    from thor_cli import anon_auth
-    guest = {"auth_method": anon_auth.ANON_AUTH_METHOD, anon_auth.WELCOME_CLAIM_FLAG: True}
-    monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: guest)
-    conn = await _connect(tmp_path, monkeypatch)
-    try:
-        await _request(conn, 1, "client.capabilities", {"desktop_local": True})
-        created = await _request(conn, 2, "session.create", {"source": "gui", "request_id": "a"})
-        assert "result" in created, created
-        from thor_state_local import local_receipt
-        receipt = local_receipt(conn.authority.db, created["result"]["stored_session_id"])
-        assert receipt["policy"]["model"] == anon_auth.GUEST_MODEL
-
-        conn.transport.desktop_local = False
-        other = await _request(conn, 3, "session.create", {"source": "gui", "request_id": "b"})
-        assert "result" in other, other
-        assert local_receipt(conn.authority.db, other["result"]["stored_session_id"])["policy"]["model"] == anon_auth.GUEST_MODEL
-    finally:
-        await conn.connection.close()
-
 
 @pytest.mark.asyncio
-async def test_a_fresh_launch_claims_the_trial_and_opens_onboarding_on_it(tmp_path, monkeypatch):
-    """The whole first launch: the claim mints the guest, and the chat it opens runs on the free model."""
-    from thor_cli import anon_auth, welcome_trial
-    state = {}
-    guest = {"auth_method": anon_auth.ANON_AUTH_METHOD, anon_auth.WELCOME_CLAIM_FLAG: True}
-
-    def claim(**kwargs):
-        if welcome_trial.claim_blocker(assume_fresh=kwargs.get("assume_fresh", False)):
-            return None
-        state.update(guest)
-        return dict(guest)
-
-    monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: dict(state) if state else None)
-    monkeypatch.setattr(welcome_trial, "claim_desktop_free_tier", claim)
-    monkeypatch.setattr(welcome_trial, "_has_nous_identity", lambda: bool(state))
-    conn = await _connect(tmp_path, monkeypatch)
+async def test_a_fresh_launch_with_a_thorhub_key_opens_onboarding_on_it(tmp_path, monkeypatch):
+    """The whole first launch with a ThorHub key: no trial to claim, and the chat it opens
+    runs on the configured provider."""
+    monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-test")
+    conn = await _connect(tmp_path, monkeypatch,
+                          config="model:\n  provider: thor\n  default: deepseek-v4-pro\n")
     try:
         await _request(conn, 1, "client.capabilities", {"desktop_local": True})
         started = await _request(conn, 2, "onboarding.start",
@@ -266,31 +238,6 @@ async def test_an_exact_create_retry_from_a_socket_not_yet_declared_local_resume
     finally:
         await conn.connection.close()
 
-
-@pytest.mark.asyncio
-async def test_a_chat_opened_on_the_trial_moves_to_the_provider_the_user_connects(tmp_path, monkeypatch):
-    """A trial-only chat runs on the free model; once the user connects a real provider, the same
-    chat's next turn runs on that provider's model instead of asking a paid route for nous/welcome."""
-    from thor_cli import anon_auth
-    from thor_state_local import local_receipt
-    from gateway.session_policy import restore_policy
-    guest = {"auth_method": anon_auth.ANON_AUTH_METHOD, anon_auth.WELCOME_CLAIM_FLAG: True}
-    monkeypatch.setattr(anon_auth, "current_nous_state", lambda *a, **k: guest)
-    conn = await _connect(tmp_path, monkeypatch)
-    try:
-        await _request(conn, 1, "client.capabilities", {"desktop_local": True})
-        created = await _request(conn, 2, "session.create", {"source": "gui", "request_id": "a"})
-        stored = created["result"]["stored_session_id"]
-
-        def next_model():
-            return restore_policy(local_receipt(conn.authority.db, stored)["policy"]).current_model(conn.authority)
-
-        assert next_model() == anon_auth.GUEST_MODEL
-        (Path(conn.authority.db.db_path).parent / "config.yaml").write_text(  # the owning profile's
-            "model:\n  provider: openrouter\n  default: anthropic/claude-sonnet-4\n", encoding="utf-8")
-        assert next_model() == "anthropic/claude-sonnet-4"
-    finally:
-        await conn.connection.close()
 
 
 @pytest.mark.asyncio

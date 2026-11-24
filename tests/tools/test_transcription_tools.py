@@ -1656,7 +1656,7 @@ class TestExplicitOpenaiSelectionError:
         hint."""
         self._no_openai_credentials(monkeypatch)
         monkeypatch.setattr(
-            "tools.tool_backend_helpers.managed_nous_tools_enabled", lambda: True
+            "tools.tool_backend_helpers.managed_thorhub_tools_enabled", lambda: True
         )
         monkeypatch.setattr(
             "tools.transcription_tools._load_stt_config", dict
@@ -1664,7 +1664,7 @@ class TestExplicitOpenaiSelectionError:
         with patch("tools.transcription_tools._HAS_OPENAI", True), \
              patch("tools.transcription_tools._HAS_FASTER_WHISPER", False), \
              patch(
-                 "tools.tool_backend_helpers.nous_tool_gateway_unavailable_message",
+                 "tools.tool_backend_helpers.thorhub_tool_gateway_unavailable_message",
                  lambda what: f"managed route down for {what}; run `thor tools`",
              ):
             from tools.transcription_tools import _dispatch_stt_provider

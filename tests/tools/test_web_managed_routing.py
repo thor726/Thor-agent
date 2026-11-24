@@ -44,7 +44,7 @@ def local_gateway(monkeypatch):
     monkeypatch.setenv("FIRECRAWL_GATEWAY_URL", base)
     monkeypatch.setenv("PERPLEXITY_BASE_URL", base + "/direct")
     # Only entitlement is stubbed: route and credential resolution remain real.
-    monkeypatch.setattr(managed_tool_gateway, "managed_nous_tools_enabled", lambda **kw: True)
+    monkeypatch.setattr(managed_tool_gateway, "managed_thorhub_tools_enabled", lambda **kw: True)
 
     # CI omits the firecrawl extra; stand in for the SDK, still over real HTTP.
     class FirecrawlSDK:
@@ -128,7 +128,7 @@ def test_managed_search_without_identity_names_the_gateway(monkeypatch, tmp_path
     atomic_config_write(tmp_path / "config.yaml", {"web": {"backend": "nous", "keyless_rescue": False}})
     monkeypatch.delenv("PERPLEXITY_API_KEY", raising=False)
     monkeypatch.delenv("TOOL_GATEWAY_USER_TOKEN", raising=False)
-    monkeypatch.setattr(managed_tool_gateway, "managed_nous_tools_enabled", lambda **kw: False)
+    monkeypatch.setattr(managed_tool_gateway, "managed_thorhub_tools_enabled", lambda **kw: False)
     register_all_web_providers()
 
     error = json.loads(web_tools.web_search_tool("local fixture", limit=3))["error"]
@@ -145,7 +145,7 @@ def test_unentitled_managed_search_gets_fast_search_but_no_billed_fallback(monke
     monkeypatch.setenv("THOR_HOME", str(tmp_path))
     atomic_config_write(tmp_path / "config.yaml", {"web": {"backend": "nous", "keyless_rescue": False}})
     monkeypatch.delenv("PERPLEXITY_API_KEY", raising=False)
-    monkeypatch.setattr(managed_tool_gateway, "managed_nous_tools_enabled", lambda **kw: False)
+    monkeypatch.setattr(managed_tool_gateway, "managed_thorhub_tools_enabled", lambda **kw: False)
     register_all_web_providers()
 
     # The fixture 503s the Perplexity route; an entitled caller would then be served by /v2/search.
