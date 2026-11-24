@@ -17,6 +17,7 @@ import psutil
 import pytest
 
 import thor_state_common
+import process_identity
 import thor_state_pidns
 from agent.conversation_compression import _compression_lock_holder
 from thor_state import SessionDB
@@ -27,7 +28,7 @@ _OURS, _SIBLING = "111", "222"
 
 @pytest.fixture(autouse=True)
 def _pinned_namespace(monkeypatch):
-    monkeypatch.setattr(thor_state_pidns, "_LOCAL_PID_NS", LocalPidNamespace(_OURS, True))
+    monkeypatch.setattr(process_identity, "_LOCAL_PID_NS", LocalPidNamespace(_OURS, True))
 
 
 def _dead_pid() -> int:
@@ -79,11 +80,11 @@ def test_flock_holder_record_qualifies_pid_namespaces(monkeypatch, tmp_path) -> 
 
     # Our own namespace lookup failed: a stamped record is unverifiable, but an
     # unstamped one still breaks (#100108 orphan-lock cleanup must not regress).
-    monkeypatch.setattr(thor_state_pidns, "_LOCAL_PID_NS", None)
-    monkeypatch.setattr(thor_state_pidns, "_resolve_local_pid_namespace", lambda: LocalPidNamespace(None, True))
+    monkeypatch.setattr(process_identity, "_LOCAL_PID_NS", None)
+    monkeypatch.setattr(process_identity, "_resolve_local_pid_namespace", lambda: LocalPidNamespace(None, True))
     assert provably_dead({"pid": dead, "pidns": _OURS, "start_ticks": 1, "acquired_at": 0.0}) is False
     assert provably_dead({"pid": dead, "start_ticks": 1, "acquired_at": 0.0}) is True
 
     # The failed lookup was not cached: once it resolves, a stamped record breaks.
-    monkeypatch.setattr(thor_state_pidns, "_resolve_local_pid_namespace", lambda: LocalPidNamespace(_OURS, True))
+    monkeypatch.setattr(process_identity, "_resolve_local_pid_namespace", lambda: LocalPidNamespace(_OURS, True))
     assert provably_dead({"pid": dead, "pidns": _OURS, "start_ticks": 1, "acquired_at": 0.0}) is True
