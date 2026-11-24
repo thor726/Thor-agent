@@ -20,6 +20,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import process_identity
 import thor_state
 from thor_state import SessionDB
 
@@ -110,7 +111,7 @@ def test_non_expired_lock_from_dead_pid_is_reclaimed(
         return False
 
     monkeypatch.setattr(
-        thor_state, "psutil", SimpleNamespace(pid_exists=process_is_gone)
+        process_identity, "psutil", SimpleNamespace(pid_exists=process_is_gone)
     )
 
     assert db.try_acquire_compression_lock(
@@ -138,7 +139,7 @@ def test_probe_doubt_keeps_lease_until_ttl(
         raise RuntimeError("transient probe failure")
 
     monkeypatch.setattr(
-        thor_state, "psutil", SimpleNamespace(pid_exists=probe_blows_up)
+        process_identity, "psutil", SimpleNamespace(pid_exists=probe_blows_up)
     )
 
     assert db.try_acquire_compression_lock(

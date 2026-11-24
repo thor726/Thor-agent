@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import process_identity
 import thor_state
 from thor_state import SessionDB
 from thor_state_errors import SessionTurnLeaseLostError
@@ -459,7 +460,7 @@ def test_non_expired_turn_lease_from_dead_pid_is_reclaimed(
         return False
 
     monkeypatch.setattr(
-        thor_state, "psutil", SimpleNamespace(pid_exists=pid_exists)
+        process_identity, "psutil", SimpleNamespace(pid_exists=pid_exists)
     )
 
     fresh_holder = "pid=525252:turn=fresh:platform=test"

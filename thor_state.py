@@ -144,31 +144,14 @@ class SessionExportTooLargeError(ValueError):
 
 def _compression_lock_holder_process_is_dead(holder: str) -> bool:
     """True only when a ``pid=<n>`` lock holder's local PID is provably gone.
-    Reclaim on kernel proof only: unstructured/same-process holders (another
-    thread's live lease) and any probe doubt keep the lease until TTL expiry
-    (PID reuse must never steal a live lease; a wrongly-kept one self-heals).
-    Foreign/unstamped PID namespaces defer to TTL: see ``thor_state_pidns``."""
-    match = re.search(r"(?:^|:)pid=(\d+)(?::|$)", holder or "")
-    pid = int(match.group(1)) if match else 0
-    if pid <= 0 or pid == os.getpid():
-        return False
-    if not holder_pid_checkable(holder):
-        return False  # foreign / unknown namespace: defer to TTL
-    if psutil is not None:
-        try:
-            return not psutil.pid_exists(pid)  # recycled PIDs read as alive (conservative)
-        except Exception:
-            return False
-    # psutil-less fallback is POSIX-only: on Windows os.kill(pid, 0) maps sig=0 to
-    # CTRL_C_EVENT and can kill the target's console group.
-    if os.name == "nt":
-        return False
-    try:
-        os.kill(pid, 0)  # windows-footgun: ok — nt early-returns just above
-    except ProcessLookupError:
-        return True
-    except (OSError, OverflowError):  # PermissionError is an OSError: alive but foreign
-        return False
+
+    Canonical implementation lives in :mod:`process_identity` (Fase 7
+    persistence refactor); this stays as the ``thor_state``-private alias so
+    existing callers keep working.
+    """
+    from process_identity import holder_process_is_dead
+
+    return holder_process_is_dead(holder)
     return False
 
 
