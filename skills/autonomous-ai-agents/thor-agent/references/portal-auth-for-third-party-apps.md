@@ -1,5 +1,8 @@
 # Nous Portal — authenticating third-party apps against the subscription
 
+
+> **Note — Nous Portal removed:** Nous Portal and `inference-api.thor-agent.local` no longer exist (see [official domains](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/official-domains.md)). The layers below describe the old Portal architecture and are kept as reference only. For a third-party app today, give it a ThorHub sub-key (`https://llm.thormarket.site/v1`, OpenAI-compatible) or point it at the local [subscription proxy](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/subscription-proxy.md).
+
 Recurring user question: "Can app X (Karakeep, OpenWebUI, LibreChat, OpenViking,
 LangChain pipeline, n8n flow, etc.) use my Nous Portal subscription without me
 copy-pasting an API key — ideally via the Portal login I already have?"

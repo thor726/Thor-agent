@@ -26,10 +26,8 @@ Thor Agent 通过 FAL.ai 根据文字提示生成图像。默认内置 8 个模�
 
 ## 配置
 
-:::tip Nous 订阅用户
-若你持有付费 [Nous Portal](https://portal.thor-agent.local) 订阅，可通过 **[Tool Gateway](tool-gateway.md)** 使用文生图，**无需** `FAL_KEY`。模型选择在「直连 FAL」与「订阅网关」两条路径下保持一致。
-
-若托管网关对某一模型返回 `HTTP 4xx`，通常表示该模型尚未在 Portal 侧代理——智能体会给出处理建议（例如配置 `FAL_KEY` 直连，或换用其他模型）。
+:::tip 文生图需要你自己的 Key
+文生图需要你自己的 Key——例如 FAL API Key，在 `thor tools` 中设置。旧的 Nous Portal / Tool Gateway 托管文生图已从 Thor Agent 中移除。
 :::
 
 ### 获取 FAL API Key

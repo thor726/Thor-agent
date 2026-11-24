@@ -697,7 +697,7 @@ same auth gate as the rest of `/api/`.
 When the dashboard is bound to a public or non-loopback address — anything other than `127.0.0.1` / `localhost` — Thor Agent engages an auth gate. Every request must carry a verified session cookie or it's bounced to the login page. Three providers ship in the box:
 
 - **[Username/password](#usernamepassword-provider-no-oauth-idp)** — the simplest way to put auth on a self-hosted / on-prem / homelab dashboard. No external identity provider. **Use it only on a trusted network or behind a VPN — not for public-internet exposure.**
-- **[OAuth (Nous Portal)](#default-provider-nous-research)** — for hosted deployments and any dashboard reachable over the public internet, and the recommended path for a [remote Thor Desktop connection](#connecting-thor-desktop-to-a-remote-backend). Every login is verified against your Nous account, so this is the provider suitable for internet-facing use.
+- **[OAuth (Thor Labs)](#default-provider-thor-labs)** — for hosted deployments and any dashboard reachable over the public internet, and the recommended path for a [remote Thor Desktop connection](#connecting-thor-desktop-to-a-remote-backend). Every login is verified against your Thor Labs account, so this is the provider suitable for internet-facing use.
 - **[Self-hosted OIDC](#self-hosted-oidc-provider)** — for bringing your own identity provider via standard OpenID Connect (Keycloak, Auth0, Okta, Google, GitHub via an OIDC bridge, etc.). No Nous Portal involved; suitable for public-internet exposure when fronted by a conformant OIDC server.
 
 Operator-owned dashboards bound to loopback are unaffected — no auth, no login page.
@@ -739,7 +739,7 @@ To use the Nous provider you need an OAuth client ID (shape `agent:{id}`). There
   # …writes THOR_DASHBOARD_OAUTH_CLIENT_ID to ~/.thor/.env
   ```
 
-- **GUI — the Local Dashboards page.** Open [`/local-dashboards`](https://portal.thor-agent.local/local-dashboards) in the Nous Portal to register, name, manage, and revoke self-hosted dashboards from the browser. Copy the resulting `agent:{id}` client ID into `THOR_DASHBOARD_OAUTH_CLIENT_ID` (env) or `dashboard.oauth.client_id` (config.yaml). This is also where you revoke a dashboard registered via the CLI.
+- **CLI only.** Register with `thor dashboard register` (above) — the old Portal Local Dashboards web page no longer exists, so there is no browser UI for registering dashboards. Copy the resulting `agent:{id}` client ID into `THOR_DASHBOARD_OAUTH_CLIENT_ID` (env) or `dashboard.oauth.client_id` (config.yaml).
 
 #### Configuration
 

@@ -6,6 +6,12 @@ description: "Connect Thor Agent to the Nous Portal MCP server so your local age
 
 # Manage Thor Cloud with MCP
 
+
+:::danger Thor Cloud / Nous Portal removed
+
+Thor Cloud ran on Nous Portal, which has been **removed from Thor Agent** — there is no Portal account, no hosted Thor Cloud instances, and no `portal.thor-agent.local/mcp` endpoint anymore. The steps below are retained for reference only; run Thor on your own machine or VPS instead.
+:::
+
 Python dependency commands on this page use a
 [PM-prepared source checkout](../reference/package-management.md#developer-workflow).
 After a dependency change, reactivate the checkout and restart Thor.

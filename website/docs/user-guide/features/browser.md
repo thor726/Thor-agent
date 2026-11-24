@@ -180,8 +180,8 @@ unaffected.
 
 ## Cloud browsers
 
-:::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.thor-agent.local) subscription, you can use a cloud browser through the **[Tool Gateway](tool-gateway.md)** without any separate API keys. New installs can run `thor setup --portal` to log in and turn on every gateway tool at once; existing installs can pick **Nous Subscription** as the browser provider via `thor model` or `thor tools`.
+:::tip Cloud browsers need your own key
+Use a cloud browser with your own Browser Use / Browserbase key — pick it in `thor tools` → Browser Automation. The old Nous Portal subscription route ([Tool Gateway](tool-gateway.md)) has been removed.
 :::
 
 Pick a provider in `thor tools` → Browser Automation. `browser_exec` then

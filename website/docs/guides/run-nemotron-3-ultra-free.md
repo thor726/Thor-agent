@@ -1,12 +1,17 @@
 ---
 sidebar_position: 0
 title: "Run Nemotron 3 Ultra free in Thor Agent"
-description: "Try NVIDIA Nemotron 3 Ultra on Nous Portal — free June 4–18 — with day 0 support in Thor Agent"
+description: "Try NVIDIA Nemotron 3 Ultra free via NVIDIA NIM, with day 0 support in Thor Agent"
 ---
 
 # Run Nemotron 3 Ultra free in Thor Agent
 
-Thor Labs has been inducted into the **Nemotron Coalition** of leading AI labs working with **NVIDIA** to advance open frontier foundation models. In honor of this, we've partnered with **Nebius** to provide **Nemotron 3 Ultra** free on [Nous Portal](https://portal.thor-agent.local) for two weeks (**June 4th – June 18th**). Follow the instructions below to try the model in your Thor Agent today.
+Thor Labs has been inducted into the **Nemotron Coalition** of leading AI labs working with **NVIDIA** to advance open frontier foundation models. In honor of this, **Nemotron 3 Ultra** was free for two weeks (**June 4th – June 18th**). Follow the instructions below to try the model in your Thor Agent today.
+
+:::danger Offer ended — Nous Portal removed
+
+The free June 4–18 offer on Nous Portal has ended, and Nous Portal itself has been **removed from Thor Agent**. The steps below now use NVIDIA NIM instead: get a free API key at [build.nvidia.com](https://build.nvidia.com/settings/api-keys) and run the model as the `nvidia` provider.
+:::
 
 :::info Limited-time offer
 The `nvidia/nemotron-3-ultra:free` tier is available from **June 4th to June 18th**. The `:free` tag is what keeps it on the no-cost plan — pick that exact variant.
@@ -22,9 +27,9 @@ The simplest path: a one-click installer with a guided, point-and-click setup. N
 
 [Download the Thor Desktop installer](https://github.com/thor726/Thor-agent/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
 
-### 2. Connect Nous Portal
+### 2. Connect NVIDIA NIM
 
-When the app opens, you'll see a "Let's get you set up" screen. Click **Nous Portal** (marked **Recommended**). Your browser opens — create a [Nous Portal](https://portal.thor-agent.local) account (or sign in), choose the **Free** plan, and authorize Thor. The app connects automatically.
+When the app opens, you'll see a "Let's get you set up" screen. Choose **NVIDIA NIM** and enter a free API key from [build.nvidia.com](https://build.nvidia.com/settings/api-keys). The app connects automatically.
 
 ### 3. Pick the free Nemotron 3 Ultra model
 
@@ -74,13 +79,17 @@ thor setup
 
 Select **Quick Setup**. Thor opens a browser tab and waits for you to finish the next steps.
 
-### 3. Create a Nous Portal account
+### 3. Get a free NVIDIA NIM key
 
-In the browser, create a [Nous Portal](https://portal.thor-agent.local) account (or sign in) and choose the **Free** plan.
+Create an account and a free API key at [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys), and add it to `~/.thor/.env`:
 
-### 4. Connect your account
+```bash
+NVIDIA_API_KEY=<redacted>
+```
 
-When prompted to connect your account to Thor Agent, click **Connect**. You'll see a confirmation once it's linked.
+### 4. Connect the NVIDIA provider
+
+When prompted, pick the **NVIDIA NIM** provider. You'll see a confirmation once it's linked.
 
 ### 5. Select the free Nemotron 3 Ultra model
 
@@ -111,13 +120,12 @@ Already set up with another model?
 
 ## Troubleshooting
 
-- **Don't see the model in the list?** Make sure you finished the Nous Portal connection and that you're on the **Free** plan. In the CLI, `thor portal info` confirms you're logged in and routing through Nous.
+- **Don't see the model in the list?** Make sure you finished the NVIDIA NIM setup above and picked the `:free` variant. In the CLI, `thor model` shows your current provider.
 - **Picked the wrong variant?** Re-select `nvidia/nemotron-3-ultra:free` — the `:free` suffix is required to stay on the no-cost tier.
 - **Browser didn't open / you're on a remote host (CLI)?** See [OAuth over SSH / Remote Hosts](./oauth-over-ssh.md) for port-forwarding workarounds.
 
 ## See also
 
 - **[Desktop App](../user-guide/desktop.md)** — The native one-click app (macOS, Windows, Linux)
-- **[Run Thor Agent with Nous Portal](./run-thor-with-nous-portal.md)** — Full Portal walkthrough: models, Tool Gateway, and verification
-- **[Nous Portal integration](../integrations/nous-portal.md)** — What's in the subscription
+- **[NVIDIA NIM](../integrations/providers.md#nvidia-nim)** — Free API key setup for Nemotron models
 - **[Quickstart](../getting-started/quickstart.md)** — Install-to-chat in under 5 minutes

@@ -182,10 +182,10 @@ this beyond your trusted network.
 
 ## Rate limits
 
-Your Portal tier's RPM/TPM limits apply across the whole proxy. The
-proxy doesn't fan out or pool — it's a single bearer with your full
-subscription quota. Monitor usage at
-[portal.thor-agent.local](https://portal.thor-agent.local).
+Your provider's RPM/TPM limits apply across the whole proxy. The
+proxy doesn't fan out or pool — it's a single bearer using your full
+provider quota. Monitor usage with your provider — for ThorHub, `/topup`
+shows the remaining balance.
 
 ## Architecture
 

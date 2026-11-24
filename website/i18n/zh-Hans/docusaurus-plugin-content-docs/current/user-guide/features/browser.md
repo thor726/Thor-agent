@@ -119,8 +119,8 @@ browser:
 
 ## 云端浏览器
 
-:::tip Nous 订阅用户
-如果您拥有付费 [Nous Portal](https://portal.thor-agent.local) 订阅，可通过 **[Tool Gateway](tool-gateway.md)** 使用云端浏览器，无需单独的 API 密钥。新安装可运行 `thor setup --portal` 登录并一次性开启所有 gateway 工具；已有安装可通过 `thor model` 或 `thor tools` 选择 **Nous Subscription** 作为浏览器提供商。
+:::tip 云端浏览器需要你自己的 Key
+使用你自己的 Browser Use / Browserbase Key 来使用云端浏览器——在 `thor tools` → Browser Automation 中选择。旧的 Nous Portal 订阅路线（[Tool Gateway](tool-gateway.md)）已移除。
 :::
 
 在 `thor tools` → Browser Automation 中选择提供商。之后 `browser_exec` 驱动该提供商的浏览器，方式与驱动本地 Chromium 完全相同。

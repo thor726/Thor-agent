@@ -118,7 +118,7 @@ thor proxy start
 openviking-server
 ```
 
-OpenViking 的 VLM 调用现在将通过你的 Portal 订阅进行。Embedding 模型侧仍需要自己的提供商——Portal 确实提供 `/v1/embeddings`，但模型选择取决于你的套餐所支持的内容；请查看 `portal.thor-agent.local/models`。
+OpenViking 的 VLM 调用现在将通过你登录的服务商订阅进行。Embedding 模型侧仍需要自己的提供商。
 
 ## 配置 Karakeep（或任何书签/摘要应用）
 
@@ -145,7 +145,7 @@ thor proxy start --host 0.0.0.0 --port 8645
 
 ## 速率限制
 
-你的 Portal 套餐的 RPM/TPM 限制适用于整个代理。代理不进行扇出或连接池——它是单个 bearer，使用你的完整订阅配额。请在 [portal.thor-agent.local](https://portal.thor-agent.local) 监控使用情况。
+你的服务商的 RPM/TPM 限制适用于整个代理。代理不进行扇出或连接池——它是单个 bearer，使用你的完整服务商配额。监控用量请查看你的服务商——ThorHub 用户可用 `/topup` 查看剩余余额。
 
 ## 架构
 
