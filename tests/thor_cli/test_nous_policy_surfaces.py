@@ -399,3 +399,35 @@ class TestThorhubLiveListMatchesDocs:
             ah, "fetch_thorhub_models", lambda **k: ["auto", "deepseek-v4-flash"])
         assert msp._live_thorhub_model_ids() == ["auto", "deepseek-v4-flash"]
         assert msp._live_thorhub_model_ids(non_blocking=True) == ["auto", "deepseek-v4-flash"]
+
+    # --- Fix #4: the picker catalog itself is the live list, not the curated manifest ---
+    def test_thorhub_catalog_returns_live_active_models(self, monkeypatch):
+        # The /model picker reads its Thor row through provider_model_ids ->
+        # _thorhub_catalog; that fetcher used to return the curated manifest, so a
+        # fresh reinstall still showed vendor-prefixed ids (deepseek/..., z-ai/...)
+        # that validation then rejected. It must return the live list instead.
+        import thor_cli.auth_thorhub as ah
+        from thor_cli.models import _thorhub_catalog
+
+        monkeypatch.setattr(
+            ah, "fetch_thorhub_models", lambda **k: ["auto", "deepseek-v4-flash"])
+        assert _thorhub_catalog("thor", False) == ["auto", "deepseek-v4-flash"]
+
+    def test_thorhub_catalog_falls_back_when_fetch_fails(self, monkeypatch):
+        # No key / gateway down: None, so the caller falls through to the curated
+        # manifest instead of an empty picker.
+        import thor_cli.auth_thorhub as ah
+        from thor_cli.models import _thorhub_catalog
+
+        def _raise(**kwargs):
+            raise RuntimeError("ThorHub key not configured")
+
+        monkeypatch.setattr(ah, "fetch_thorhub_models", _raise)
+        assert _thorhub_catalog("thor", False) is None
+
+    def test_thorhub_catalog_falls_back_when_fetch_empty(self, monkeypatch):
+        import thor_cli.auth_thorhub as ah
+        from thor_cli.models import _thorhub_catalog
+
+        monkeypatch.setattr(ah, "fetch_thorhub_models", lambda **k: [])
+        assert _thorhub_catalog("thor", False) is None

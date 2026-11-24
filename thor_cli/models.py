@@ -1209,9 +1209,9 @@ def _codex_catalog(normalized: str, force_refresh: bool) -> list[str]:
 
 
 def _thorhub_catalog(normalized: str, force_refresh: bool) -> Optional[list[str]]:
-    """ThorHub picker catalog: the curated manifest list (no live Portal fetch — ThorHub auth is a
-    static key, and the live /v1/models rows come through pricing)."""
-    return get_curated_thorhub_model_ids() or None
+    """Live /v1/models (active only — the docs' 23), else None for the curated fallback."""
+    from thor_cli.model_switch_providers import _live_thorhub_model_ids
+    return _live_thorhub_model_ids() or None
 
 
 def _api_key_credentials(normalized: str) -> tuple[str, str]:
