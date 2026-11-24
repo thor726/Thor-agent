@@ -29,15 +29,20 @@ def no_policy(monkeypatch):
 
 class TestLoginThorhub:
 
-    def _run(self, monkeypatch, tmp_path):
+    def _run(self, monkeypatch, tmp_path, live=None):
         import thor_cli.auth as auth_mod
         import thor_cli.model_setup_flows as msf
+        import thor_cli.model_switch_providers as msp
         import thor_cli.thorhub_subscription as ns
 
         seen: dict = {}
         monkeypatch.setenv("THOR_HOME", str(tmp_path))
         monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-x")
         monkeypatch.setattr(models_mod, "get_curated_thorhub_model_ids", lambda: list(CURATED))
+        # The live gateway list is the picker's first choice; stub it so the
+        # test never touches the network. Default [] keeps the old curated
+        # behaviour for the policy tests below.
+        monkeypatch.setattr(msp, "_live_thorhub_model_ids", lambda **kw: list(live or []))
         monkeypatch.setattr(models_pricing, "get_pricing_for_provider", lambda _p: {})
         monkeypatch.setattr(models_mod, "check_thorhub_free_tier", lambda **_k: None)
         monkeypatch.setattr(
@@ -61,6 +66,24 @@ class TestLoginThorhub:
         self, monkeypatch, tmp_path, no_policy
     ):
         assert self._run(monkeypatch, tmp_path).get("model_ids") == CURATED
+
+    def test_picker_shows_live_list_right_after_login(
+        self, monkeypatch, tmp_path, no_policy
+    ):
+        """Right after entering the key, the buyer sees the gateway's live ids.
+
+        A curated id the gateway does not serve triggers its penalty guard
+        (a flat token charge on the buyer's key), so the live list must win
+        over the curated snapshot whenever the fetch succeeds.
+        """
+        live = ["live/a", "live/b"]
+        assert self._run(monkeypatch, tmp_path, live=live).get("model_ids") == live
+
+    def test_picker_falls_back_to_curated_list_when_live_unavailable(
+        self, monkeypatch, tmp_path, no_policy
+    ):
+        """Offline (live fetch fails): the curated list is the fallback."""
+        assert self._run(monkeypatch, tmp_path, live=[]).get("model_ids") == CURATED
 
 class TestModelSwitchPicker:
     """The ``/model`` picker's thor branch (``list_authenticated_providers``)."""

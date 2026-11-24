@@ -286,13 +286,17 @@ def _model_flow_thorhub(config, current_model="", args=None):
         if not thorhub_api_key():
             return
 
-    # Already logged in — the curated list (agentic models users know from OpenRouter)
-    # instead of the hundreds returned by the live /models endpoint.
+    # Live gateway list first: the curated snapshot drifts from the gateway's
+    # catalog, and picking an id the gateway does not serve triggers its
+    # penalty guard (a flat token charge on the buyer's key). The curated list
+    # is only the offline fallback when the live fetch fails.
+    from thor_cli.model_switch_providers import _live_thorhub_model_ids
     from thor_cli.models import check_thorhub_free_tier, get_curated_thorhub_model_ids
     from thor_cli.models_pricing import get_pricing_for_provider
-    model_ids = get_curated_thorhub_model_ids()
+    live_ids = _live_thorhub_model_ids()
+    model_ids = live_ids or get_curated_thorhub_model_ids()
     if not model_ids:
-        print("No curated models available for ThorHub.")
+        print("No models available for ThorHub.")
         return
 
     # Verify credentials are still valid (catches a missing/revoked key early)
@@ -329,7 +333,8 @@ def _model_flow_thorhub(config, current_model="", args=None):
     # Window plans: every model is usable; the plan's featured picks lead the list.
     if _usage is not None:
         model_ids = featured_first(model_ids, _usage.featured_model_ids)
-    print(f'Showing {len(model_ids)} curated models — use "Enter custom model name" for others.')
+    _source = "live ThorHub" if live_ids else "curated"
+    print(f'Showing {len(model_ids)} {_source} models — use "Enter custom model name" for others.')
 
     selected = _prompt_model_selection(
         model_ids, current_model=current_model, pricing=pricing, unavailable_models=unavailable_models,
