@@ -673,6 +673,16 @@ contextBridge.exposeInMainWorld('thorDesktop', {
 
     return () => ipcRenderer.removeListener('thor:power-battery', listener)
   },
+  // Whether the user is at this computer, by the OS idle clock where one is trustworthy.
+  presence: {
+    get: () => ipcRenderer.invoke('thor:presence:get'),
+    onChange: callback => {
+      const listener = (_event, snapshot) => callback(snapshot)
+      ipcRenderer.on('thor:presence', listener)
+
+      return () => ipcRenderer.removeListener('thor:presence', listener)
+    }
+  },
   onBootProgress: callback => {
     const listener = (_event, payload) => callback(payload)
     ipcRenderer.on('thor:boot-progress', listener)

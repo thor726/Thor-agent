@@ -444,6 +444,7 @@ import {
 import { createPortalSession, resolvePortalBaseUrl } from './portal-session'
 import { readPreUpdateBackupEnabled } from './pre-update-backup-config'
 import { registerPreparedSubmissions } from './prepared-submissions'
+import { attachPresenceSource, sendToEveryWindow } from './presence'
 import { capturePreviewContents } from './preview-capture'
 import { onPreviewWatchOwnerDestroyed, sendPreviewFileChangedToOwner } from './preview-file-watch'
 import { hasClosePreviewFlag, previewGuestInputAction } from './preview-guest-escape'
@@ -6201,14 +6202,7 @@ function broadcastBatteryState(next: boolean) {
   }
 
   onBatteryPower = next
-
-  for (const win of BrowserWindow.getAllWindows()) {
-    const { webContents } = win
-
-    if (webContents && !webContents.isDestroyed()) {
-      webContents.send('thor:power-battery', next)
-    }
-  }
+  sendToEveryWindow(BrowserWindow.getAllWindows(), 'thor:power-battery', next)
 }
 
 function registerPowerResumeListeners() {
@@ -6219,6 +6213,7 @@ function registerPowerResumeListeners() {
   powerResumeRegistered = true
 
   try {
+    attachPresenceSource({ app, ipc: ipcMain, monitor: powerMonitor, windows: BrowserWindow.getAllWindows() })
     // 'resume' covers sleep/wake; 'unlock-screen' covers lock/unlock without a
     // full suspend. Either can drop an idle socket.
     powerMonitor.on('resume', sendPowerResume)
