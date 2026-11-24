@@ -2,6 +2,7 @@
 import { defineFieldCopy } from '@/app/settings/field-copy'
 
 import { defineLocale, type TranslationOverrides } from './define-locale'
+import { esApproval } from './es_approval'
 import { esBoot } from './es_boot'
 import { esClarify } from './es_clarify'
 import { esConnectorAccounts } from './es_connector_accounts'
@@ -502,6 +503,12 @@ export const esOverrides = {
       approvalTitleNamed: session => `Se necesita aprobación — ${session}`,
       approveAction: 'Aprobar',
       rejectAction: 'Rechazar',
+      accessTitle: 'Se necesita acceso a una carpeta',
+      accessTitleNamed: session => `Se necesita acceso a una carpeta — ${session}`,
+      networkTitle: 'Se necesita acceso a un sitio web',
+      networkTitleNamed: session => `Se necesita acceso a un sitio web — ${session}`,
+      allowAction: 'Permitir',
+      denyAction: 'Denegar',
       inputTitle: 'Se necesita información',
       inputTitleNamed: session => `Se necesita una respuesta — ${session}`,
       inputBody: 'Thor espera tu respuesta.',
@@ -3770,7 +3777,10 @@ export const esOverrides = {
   },
   composer: {
     message: 'Mensaje',
-    wakingProfile: profile => `Despertando ${profile}…`,
+    switchingProfile: profile => `Cambiando a ${profile}…`,
+    switchingProfileSlow: 'Aún conectando. Los mensajes que envíes ahora esperarán y llegarán a este agente.',
+    switchProfileFailed: profile => `No se pudo cambiar a ${profile}`,
+    willSendTo: profile => `Se enviará a ${profile}`,
     placeholderStarting: 'Iniciando Thor...',
     placeholderReconnecting: 'Reconectando con Thor…',
     placeholderFollowUp: 'Enviar seguimiento',
@@ -5144,26 +5154,7 @@ export const esOverrides = {
       sendEdited: 'Enviar edición',
       attachingFile: 'Adjuntando…'
     },
-    approval: {
-      gatewayDisconnected:
-        'Thor está sin conexión ahora mismo. El comando sigue esperando tu respuesta (hasta que se agote el tiempo de aprobación). Reconéctate y vuelve a enviarla.',
-      sendFailed: 'No se pudo enviar tu respuesta',
-      reconnect: 'Reconectar',
-      timedOutSystemLine:
-        'Se agotó el tiempo de aprobación: el comando no se ejecutó. Pide a Thor que lo intente de nuevo o sube el límite en Configuración → Seguridad → Tiempo de aprobación.',
-      openSafetySettings: 'Abrir configuración de seguridad',
-      run: 'Ejecutar',
-      command: 'Comando',
-      moreOptions: 'Más opciones de aprobación',
-      allowSession: 'Permitir esta sesión',
-      alwaysAllowMenu: 'Permitir siempre…',
-      jumpToApproval: 'Aprobación necesaria',
-      reject: 'Rechazar',
-      alwaysTitle: '¿Permitir siempre este comando?',
-      alwaysDescription: pattern =>
-        `Esto añade el patrón “${pattern}” a tu allowlist permanente (~/.thor/config.yaml). Thor no volverá a preguntar por comandos como este, ni en esta sesión ni en futuras.`,
-      alwaysAllow: 'Permitir siempre'
-    },
+    approval: esApproval,
     clarify: esClarify,
     themePicker: esThemePicker,
     catalogInstall: {

@@ -85,6 +85,7 @@ import {
   setTileSessionFocusStartedAt,
   setTurnStartedAt
 } from './session'
+import { $sessionsWaitingOnCard, sessionNeedsInput } from './session-card-wait'
 import { secondaryProfileOwnerForEvent } from './session-event-provenance'
 import { $focusedStoredSessionId, TILE_PANE_PREFIX } from './session-focus'
 import { turnHasReply, withNoReplyNotice } from './session-no-reply'
@@ -96,6 +97,7 @@ import {
   type SessionOwnerScope,
   type SessionProfileRoute
 } from './session-request-router'
+import { mergeSessionTile, sameSessionOwner, tilesShareOwner } from './session-tile-identity'
 import { orderTilesByTree } from './session-tile-order'
 import { ackStoredSessionId, isMessagingCompletion, markSessionUnreadFinished } from './session-unread'
 import { migrateTranscriptTailsForProfile } from './transcript-tail-cache'
@@ -206,7 +208,7 @@ export function liveSessionScopes(): Set<string> {
   const scopes = new Set<string>()
 
   for (const [runtimeId, state] of Object.entries($sessionStates.get())) {
-    if (!state || (!state.busy && !state.needsInput)) {
+    if (!state || (!state.busy && !sessionNeedsInput(state, runtimeId))) {
       continue
     }
 
@@ -1079,12 +1081,12 @@ export function reconcileBusyStatesOnReconnect(scope?: string) {
 const storedIds = (
   states: Record<string, ClientSessionState>,
   sessions: readonly SessionInfo[],
-  pred: (s: ClientSessionState) => boolean
+  pred: (s: ClientSessionState, runtimeId: string) => boolean
 ) => {
   const ids = new Set<string>()
 
   for (const [runtimeId, state] of Object.entries(states)) {
-    if (!pred(state)) {
+    if (!pred(state, runtimeId)) {
       continue
     }
 
@@ -1108,12 +1110,8 @@ export const $workingSessionIds = computed(
 
 let attentionIds: readonly string[] = []
 export const $attentionSessionIds = computed(
-  [$sessionStates, $sessions],
-  (states, sessions) =>
-    (attentionIds = stableArray(
-      attentionIds,
-      storedIds(states, sessions, s => s.needsInput)
-    ))
+  [$sessionStates, $sessions, $sessionsWaitingOnCard],
+  (states, sessions) => (attentionIds = stableArray(attentionIds, storedIds(states, sessions, sessionNeedsInput)))
 )
 
 // An open session nothing has ever been sent to — the ⌘T tab whose backend
@@ -1476,51 +1474,8 @@ export function patchSessionTile(storedSessionId: string, patch: Partial<Session
   saveTiles($sessionTiles.get().map(t => (t.storedSessionId === storedSessionId ? { ...t, ...patch } : t)))
 }
 
-function sameSessionOwner(left: SessionOwnerScope, right: SessionOwnerScope): boolean {
-  if (isSessionOwnerRoute(left) && isSessionOwnerRoute(right)) {
-    return (
-      left.connectionId.trim() === right.connectionId.trim() &&
-      normalizeProfileKey(left.profile) === normalizeProfileKey(right.profile) &&
-      normalizeProfileKey(left.targetProfile ?? left.profile) ===
-        normalizeProfileKey(right.targetProfile ?? right.profile)
-    )
-  }
-
-  if (typeof left === 'string' && typeof right === 'string') {
-    return normalizeProfileKey(left) === normalizeProfileKey(right)
-  }
-
-  return false
-}
-
 function tileWorkspaceMode(tile: SessionTile): WorkspaceMode {
   return tile.workspaceMode ?? 'sessions'
-}
-
-function tilesShareOwner(left: SessionTile, right: SessionTile): boolean {
-  if (left.workspaceMode && right.workspaceMode && left.workspaceMode !== right.workspaceMode) {
-    return false
-  }
-
-  const workspaceMode = left.workspaceMode ?? right.workspaceMode ?? 'sessions'
-
-  if (workspaceMode === 'bots') {
-    if (left.workspaceOwnerKey && right.workspaceOwnerKey) {
-      return left.workspaceOwnerKey === right.workspaceOwnerKey
-    }
-
-    if (left.ownerRoute && right.ownerRoute) {
-      return sameSessionOwner(left.ownerRoute, right.ownerRoute)
-    }
-
-    return true
-  }
-
-  if (left.ownerRoute && right.ownerRoute) {
-    return sameSessionOwner(left.ownerRoute, right.ownerRoute)
-  }
-
-  return true
 }
 
 function tileBelongsToMain(tile: SessionTile, selectedStoredSessionId: string, tileProfile = profileKey()): boolean {
@@ -1535,48 +1490,6 @@ function tileBelongsToMain(tile: SessionTile, selectedStoredSessionId: string, t
   }
 
   return typeof mainOwner === 'string' && normalizeProfileKey(mainOwner) === normalizeProfileKey(tileProfile)
-}
-
-function mergeSessionTile(previous: SessionTile, next: SessionTile, storedSessionId: string): SessionTile {
-  const merged: SessionTile = { ...previous, storedSessionId }
-
-  if (next.anchor !== undefined) {
-    merged.anchor = next.anchor
-  }
-
-  if (next.before !== undefined) {
-    merged.before = next.before
-  }
-
-  if (next.dir !== undefined) {
-    merged.dir = next.dir
-  }
-
-  if (next.error !== undefined) {
-    merged.error = next.error
-  }
-
-  if (next.ownerRoute !== undefined) {
-    merged.ownerRoute = next.ownerRoute
-  }
-
-  if (next.runtimeId !== undefined) {
-    merged.runtimeId = next.runtimeId
-  }
-
-  if (next.workspaceMode !== undefined) {
-    merged.workspaceMode = next.workspaceMode
-  }
-
-  if (next.workspaceOwnerKey !== undefined) {
-    merged.workspaceOwnerKey = next.workspaceOwnerKey
-  }
-
-  if (next.workspaceTabTitle !== undefined) {
-    merged.workspaceTabTitle = next.workspaceTabTitle
-  }
-
-  return merged
 }
 
 function rekeyTileList(
