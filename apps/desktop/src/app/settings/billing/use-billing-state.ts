@@ -22,7 +22,7 @@ import type {
 import { $stepUpInFlight } from './use-step-up'
 
 export const EMPTY_BILLING_VALUE = '—'
-export const FALLBACK_PORTAL_BILLING_URL = 'https://portal.thor-agent.local/billing'
+export const FALLBACK_PORTAL_BILLING_URL = 'https://llm.thormarket.site/beli'
 export const FALLBACK_PORTAL_URL = 'https://portal.thor-agent.local'
 
 // The billing endpoint is the authoritative source of truth for balance / cap /
