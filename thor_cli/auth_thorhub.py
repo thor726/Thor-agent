@@ -185,6 +185,15 @@ def fetch_thorhub_models(
     for item in data:
         model_id = item.get("id") if isinstance(item, dict) else None
         if isinstance(model_id, str) and model_id.strip():
+            # Hanya model yang gateway-nya benar-benar layani (enabled + available).
+            # Entri nonaktif ada di listing tapi tidak bisa dipakai — dan dokumentasi
+            # di llm.thormarket.site pun hanya menampilkan yang aktif. Flag yang
+            # tidak ada berarti gateway lama: anggap tersedia agar tidak ada yang
+            # hilang diam-diam.
+            if isinstance(item, dict) and (
+                not item.get("enabled", True) or not item.get("available", True)
+            ):
+                continue
             model_ids.append(model_id.strip())
     return sorted(set(model_ids))
 

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import http.client
+import json
 import os
 import time
 import threading as _threading
@@ -15,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional
 from agent.command_token_source import build_command_token_provider, materialize_probe_api_key
 from thor_cli.providers import custom_provider_aliases, custom_provider_slug, get_label
+from thor_constants import get_thor_home
 from utils import base_url_host_matches, same_base_url_origin
 
 # Log-record parity with the origin module.
@@ -1187,20 +1189,59 @@ def _lap_custom_provider_rows(b: _PickerBuild, custom_providers: list) -> None:
         section4_slugs.add(slug.lower())
 
 
+_THORHUB_MODELS_CACHE_TTL_SECONDS = 24 * 60 * 60  # 1 hari
+
+
+def _thorhub_models_cache_path():
+    """Disk cache daftar live ThorHub (``<home>/cache/thorhub_models.json``)."""
+    return get_thor_home() / "cache" / "thorhub_models.json"
+
+
+def _read_thorhub_models_cache() -> list[str]:
+    """Daftar live ThorHub terakhir dari disk, atau ``[]`` (tidak ada / basi / rusak)."""
+    try:
+        payload = json.loads(_thorhub_models_cache_path().read_text(encoding="utf-8-sig"))
+        if not isinstance(payload, dict):
+            return []
+        if time.time() - float(payload.get("fetched_at", 0)) > _THORHUB_MODELS_CACHE_TTL_SECONDS:
+            return []
+        ids = payload.get("models", [])
+        return [m for m in ids if isinstance(m, str) and m.strip()]
+    except (OSError, ValueError, TypeError):
+        return []
+
+
+def _write_thorhub_models_cache(ids: list[str]) -> None:
+    """Simpan daftar live ThorHub hasil fetch. Best-effort; tidak pernah raise."""
+    try:
+        cache_path = _thorhub_models_cache_path()
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(
+            json.dumps({"fetched_at": time.time(), "models": list(ids)}, indent=2),
+            encoding="utf-8",
+        )
+    except (OSError, TypeError, ValueError) as exc:
+        logger.debug("thorhub models cache write failed: %s", exc)
+
+
 def _live_thorhub_model_ids(*, non_blocking: bool = False) -> list[str]:
     """Live ``/v1/models`` ids dari gateway ThorHub yang terkonfigurasi, atau ``[]``.
 
-    Tidak pernah melempar; jalur GUI non-blocking tidak melakukan fetch
-    (lantai katalog statis tetap dipakai). Key dibaca lewat
+    Tidak pernah melempar. Jalur GUI non-blocking tidak melakukan fetch — ia membaca
+    cache disk yang ditulis fetch blocking terakhir (maks. 24 jam); tanpa cache segar,
+    lantai katalog statis tetap dipakai. Key dibaca lewat
     :func:`thor_cli.thorhub_account.thorhub_api_key`, jadi key provider
     custom ThorHub ikut terpakai di sini.
     """
     if non_blocking:
-        return []
+        return _read_thorhub_models_cache()
     try:
         from thor_cli.auth_thorhub import fetch_thorhub_models
 
-        return list(fetch_thorhub_models(timeout_seconds=5.0) or [])
+        ids = list(fetch_thorhub_models(timeout_seconds=5.0) or [])
+        if ids:
+            _write_thorhub_models_cache(ids)
+        return ids
     except Exception:
         return []
 

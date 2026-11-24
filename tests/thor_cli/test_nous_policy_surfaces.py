@@ -258,3 +258,144 @@ class TestAuxFallbackRespectsPolicy:
             aux._get_aux_model_for_provider("thor", prefer_fast=True)
             == "vendor/anything"
         )
+
+
+class TestThorhubLiveListMatchesDocs:
+    """Fix #3: ThorHub picker + validation follow the live list (docs).
+
+    The gateway bills an unregistered model id back as an abuse penalty, so the
+    picker shows only the models the gateway actually serves (the active ones,
+    exactly the list at llm.thormarket.site/docs) and switching to an id outside
+    the live list is rejected, never soft-accepted from the curated catalog.
+    """
+
+    # Representative live /v1/models listing: active ids + one registered but
+    # disabled id (in the listing, so the gateway will not penalise it).
+    LIVE = ["auto", "deepseek-v4-flash", "deepseek-v4-pro", "claude-opus-5"]
+    BAD_CURATED = "deepseek/deepseek-v4.1-flash"
+    THORHUB_URL = "https://llm.thormarket.site/v1"
+
+    @pytest.fixture(autouse=True)
+    def _live_listing(self, monkeypatch):
+        monkeypatch.setattr(
+            "thor_cli.models.fetch_api_models", lambda *a, **k: list(self.LIVE))
+        monkeypatch.setattr(
+            "thor_cli.models.probe_api_models",
+            lambda *a, **k: {
+                "models": list(self.LIVE),
+                "probed_url": self.THORHUB_URL + "/models",
+                "resolved_base_url": self.THORHUB_URL,
+                "used_fallback": False,
+            })
+        yield
+
+    # --- Fix A: validation rejects ids outside the live ThorHub list ---
+    def test_thorhub_rejects_curated_id_not_in_live_list(self):
+        from thor_cli.models_validate import validate_requested_model
+
+        result = validate_requested_model(
+            self.BAD_CURATED, "thor", api_key="sk-thor-x", base_url=self.THORHUB_URL)
+        assert result["accepted"] is False
+        assert "live" in (result["message"] or "").lower()
+
+    def test_thorhub_accepts_live_active_id(self):
+        from thor_cli.models_validate import validate_requested_model
+
+        result = validate_requested_model(
+            "deepseek-v4-flash", "thor", api_key="sk-thor-x", base_url=self.THORHUB_URL)
+        assert result["accepted"] is True
+
+    def test_thorhub_accepts_registered_but_disabled_id(self):
+        # In the live listing, so the gateway will not penalise it (it fails with
+        # model_disabled instead). Validation only guards the penalty boundary.
+        from thor_cli.models_validate import validate_requested_model
+
+        result = validate_requested_model(
+            "claude-opus-5", "thor", api_key="sk-thor-x", base_url=self.THORHUB_URL)
+        assert result["accepted"] is True
+
+    def test_custom_thorhub_endpoint_rejects_curated_id(self):
+        from thor_cli.models_validate import validate_requested_model
+
+        result = validate_requested_model(
+            self.BAD_CURATED, "custom", api_key="sk-thor-x", base_url=self.THORHUB_URL)
+        assert result["accepted"] is False
+
+    def test_other_provider_still_soft_accepts_curated_id(self):
+        # Other providers keep the old behaviour: a curated id missing from the
+        # live listing is accepted with a note (their listings omit valid models).
+        from thor_cli.models import OPENROUTER_MODELS
+        from thor_cli.models_validate import validate_requested_model
+
+        curated_id = next(mid for mid, _ in OPENROUTER_MODELS if mid not in self.LIVE)
+        result = validate_requested_model(curated_id, "openrouter", api_key="sk-or-x")
+        assert result["accepted"] is True
+
+    # --- Fix B: only active models come back from the ThorHub fetch ---
+    def test_fetch_returns_only_active_models(self, monkeypatch):
+        import thor_cli.auth_thorhub as ah
+
+        payload = {"data": [
+            {"id": "auto", "enabled": True, "available": True},
+            {"id": "deepseek-v4-pro", "enabled": True, "available": True},
+            {"id": "claude-opus-5", "enabled": False, "available": False},
+            {"id": "glm-5", "enabled": True, "available": False},
+            {"id": "legacy-model"},
+        ]}
+
+        class _Resp:
+            status_code = 200
+
+            def json(self):
+                return payload
+
+        class _Client:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+            def get(self, url, headers=None):
+                return _Resp()
+
+        monkeypatch.setattr(ah, "_thorhub_http_client", lambda *a, **k: _Client())
+        monkeypatch.setattr("thor_cli.thorhub_account.thorhub_api_key", lambda: "sk-thor-x")
+        monkeypatch.setattr(
+            "thor_cli.thorhub_account.resolve_thorhub_base_url",
+            lambda: self.THORHUB_URL)
+        assert ah.fetch_thorhub_models() == ["auto", "deepseek-v4-pro", "legacy-model"]
+
+    # --- Fix C: non-blocking picker reads the cached live list ---
+    def test_non_blocking_picker_reads_live_cache(self, monkeypatch, tmp_path):
+        import thor_cli.model_switch_providers as msp
+
+        monkeypatch.setenv("THOR_HOME", str(tmp_path))
+        assert msp._live_thorhub_model_ids(non_blocking=True) == []
+        msp._write_thorhub_models_cache(["auto", "deepseek-v4-flash"])
+        assert msp._live_thorhub_model_ids(non_blocking=True) == ["auto", "deepseek-v4-flash"]
+
+    def test_stale_cache_is_ignored(self, monkeypatch, tmp_path):
+        import json
+        import time
+
+        import thor_cli.model_switch_providers as msp
+
+        monkeypatch.setenv("THOR_HOME", str(tmp_path))
+        cache_path = msp._thorhub_models_cache_path()
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(json.dumps({
+            "fetched_at": time.time() - 25 * 60 * 60,
+            "models": ["auto", "deepseek-v4-flash"],
+        }), encoding="utf-8")
+        assert msp._live_thorhub_model_ids(non_blocking=True) == []
+
+    def test_blocking_fetch_writes_cache(self, monkeypatch, tmp_path):
+        import thor_cli.auth_thorhub as ah
+        import thor_cli.model_switch_providers as msp
+
+        monkeypatch.setenv("THOR_HOME", str(tmp_path))
+        monkeypatch.setattr(
+            ah, "fetch_thorhub_models", lambda **k: ["auto", "deepseek-v4-flash"])
+        assert msp._live_thorhub_model_ids() == ["auto", "deepseek-v4-flash"]
+        assert msp._live_thorhub_model_ids(non_blocking=True) == ["auto", "deepseek-v4-flash"]

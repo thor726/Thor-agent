@@ -368,6 +368,12 @@ def _validate_custom(req: _Request) -> dict[str, Any]:
         verdict = match.verdict(req)
         if verdict is not None:
             return verdict
+        if _is_thorhub_endpoint(req):
+            # Endpoint custom yang ternyata gateway ThorHub: miss di listing-nya yang
+            # terjangkau adalah reject, bukan soft-accept (penalti abuse menanti).
+            return _reject(
+                f"Model `{req.requested}` is not served by this ThorHub gateway — it is not in the "
+                f"live /v1/models listing. Pick a model from the live ThorHub list.{match.suggestion_text}")
         message = (
             f"Note: `{req.requested}` was not found in this custom endpoint's model listing "
             f"({probe.get('probed_url')}). It may still work if the server supports hidden or aliased models."
@@ -600,6 +606,22 @@ def _profile_catalog(normalized: str, base_url: Optional[str] = None) -> tuple[l
     return catalog, own_endpoint and bool(catalog)
 
 
+def _is_thorhub_endpoint(req: _Request) -> bool:
+    """True bila request ini menarget gateway ThorHub (provider bawaan ``thor`` atau
+    custom endpoint yang URL-nya ThorHub). Gateway ThorHub menagih model id yang tidak
+    terdaftar sebagai penalti abuse, jadi live /v1/models listing-nya otoritatif: id yang
+    tidak ada di daftar itu harus DITOLAK, bukan di-soft-accept dari katalog curated."""
+    if req.normalized in ("thor", "thorhub"):
+        return True
+    if req.base_url:
+        # _is_thorhub_url sudah menangani sendiri kegagalan parse dan mengembalikan
+        # False, jadi pemanggilan ini tidak perlu try/except lagi.
+        from thor_cli.thorhub_account import _is_thorhub_url
+
+        return _is_thorhub_url(req.base_url)
+    return False
+
+
 def _validate_live_listing(req: _Request) -> Optional[dict[str, Any]]:
     """Generic live /v1/models probe. Returns None when the API was unreachable (the caller then
     tries Bedrock discovery / the curated catalog). A profile that owns its catalog is validated
@@ -644,6 +666,13 @@ def _validate_live_listing(req: _Request) -> Optional[dict[str, Any]]:
         from thor_cli.providers import is_official_openai_host
 
         listing_authoritative = is_official_openai_host(req.base_url)
+    if _is_thorhub_endpoint(req):
+        # ThorHub menagih model id tak terdaftar sebagai penalti abuse, jadi daftar
+        # live-nya otoritatif — jangan pernah soft-accept id curated yang tidak ada
+        # di sana (dulu: "accepted" lalu penalti 1 jt token di pemakaian pertama).
+        return _reject(
+            f"Model `{req.requested}` is not served by this ThorHub gateway — it is not in the "
+            f"live /v1/models listing. Pick a model from the live ThorHub list.{match.suggestion_text}")
     if not listing_authoritative and _m._model_in_provider_catalog(
         (variant_base or req.lookup).lower(), _m._provider_keys(req.normalized)
     ):
