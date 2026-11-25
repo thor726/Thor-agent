@@ -37,7 +37,7 @@ const tuiInputs = [
 // The browser renderer compiles Desktop and its shared package in a prepared
 // workspace. Release metadata (pyproject.toml, uv.lock, icons) is not its input.
 const webappInputs = [
-  'apps/desktop', 'apps/shared', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', 'pm/lock.json',
+  'apps/desktop', 'apps/shared', 'packages/thor-ui', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', 'pm/lock.json',
   'scripts/build/webapp.mjs', 'scripts/build/node-deps.mjs', 'scripts/build/node-deps-lock.mjs',
   'scripts/build/node-deps-heartbeat.mjs', 'scripts/build/node-deps-watcher.mjs', 'scripts/build/node-deps-relay.mjs',
   'scripts/build/frontend-common.mjs', 'scripts/build/freshness.mjs',
@@ -60,6 +60,9 @@ function productInputs(product) {
 
 function skipInput(product) {
   return name => {
+    // @thor/ui ships a committed prebuilt dist/ (tracked in git): it is an
+    // input to the webapp build, not a generated output.
+    if (name === 'packages/thor-ui/dist' || name.startsWith('packages/thor-ui/dist/')) return false
     // Build scripts are inputs; workspace build directories are outputs.
     const parts = name.split('/')
     return (!name.startsWith('scripts/') && parts.some(part => generated.has(part)))

@@ -14,6 +14,10 @@ dist/
 build/
 !scripts/build/
 !scripts/build/**
+# @thor/ui ships a committed prebuilt dist/ (tracked in git); the Docker
+# webapp/web builds consume it as an input, so keep it in the context.
+!packages/thor-ui/dist/
+!packages/thor-ui/dist/**
 
 # Virtual environments
 venv/

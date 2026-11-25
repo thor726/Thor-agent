@@ -324,6 +324,7 @@ COPY web/package.json web/
 COPY ui-tui/package.json ui-tui/
 COPY ui-tui/packages/thor-ink/ ui-tui/packages/thor-ink/
 COPY apps/shared/ apps/shared/
+COPY packages/thor-ui/ packages/thor-ui/
 COPY scripts/build/node-deps*.mjs scripts/build/electron-runtime.mjs scripts/build/pnpm-lock.mjs scripts/build/
 # Root node_modules/typescript is a link into pnpm's virtual store, which never
 # reaches the runtime image: stage a dereferenced copy for it.
@@ -351,6 +352,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/desktop/package.json apps/desktop/
 COPY apps/desktop/scripts/build-webapp.mjs apps/desktop/scripts/
 COPY apps/shared/package.json apps/shared/
+COPY packages/thor-ui/ packages/thor-ui/
 COPY scripts/build/*.mjs scripts/build/
 # Dependencies first, keyed only by the manifests and the recipe, so a source
 # change reuses this layer and the build below reuses its install.

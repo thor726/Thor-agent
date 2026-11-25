@@ -62,3 +62,29 @@ test('OS file-manager metadata landing in hashed trees never invalidates a recor
     rmSync(out, { recursive: true, force: true })
   }
 })
+
+// The Docker webapp build stages a private workspace from sourceEntries, and
+// the renderer imports @thor/ui from its committed prebuilt dist/ (tracked in
+// git, not generated). The webapp inputs must therefore mirror the package
+// INCLUDING dist/, or the staged node_modules/@thor/ui link dangles and the
+// Vite build dies on the first @thor/ui import (the Collapse font).
+test('the webapp product mirrors @thor/ui including its committed dist', async () => {
+  const { sourceEntries } = await import('../scripts/build/freshness.mjs')
+  const source = mkdtempSync(path.join(tmpdir(), 'freshness-thor-ui-'))
+  try {
+    mkdirSync(path.join(source, 'packages/thor-ui/dist/fonts'), { recursive: true })
+    mkdirSync(path.join(source, 'packages/thor-ui/dist/ui/components'), { recursive: true })
+    mkdirSync(path.join(source, 'packages/thor-ui/src'), { recursive: true })
+    writeFileSync(path.join(source, 'packages/thor-ui/package.json'), '{"name":"@thor/ui","version":"0.0.0"}')
+    writeFileSync(path.join(source, 'packages/thor-ui/dist/fonts/Collapse-Bold.woff2'), 'fake woff2')
+    writeFileSync(path.join(source, 'packages/thor-ui/dist/ui/components/badge.js'), 'export {}')
+    writeFileSync(path.join(source, 'packages/thor-ui/src/index.ts'), 'export {}')
+    const entries = sourceEntries(source, 'webapp')
+    const names = new Set(entries.map(({ name }) => name))
+    expect(names.has('packages/thor-ui/dist/fonts/Collapse-Bold.woff2')).toBe(true)
+    expect(names.has('packages/thor-ui/dist/ui/components/badge.js')).toBe(true)
+    expect(names.has('packages/thor-ui/package.json')).toBe(true)
+  } finally {
+    rmSync(source, { recursive: true, force: true })
+  }
+})
