@@ -139,6 +139,7 @@ const usable = (channel: null | PresenceChannel | undefined): channel is Presenc
 export function createPresenceReporter(deps: PresenceReporterDeps): PresenceReporter {
   const now = deps.now ?? (() => performance.now())
   const startedAt = now()
+
   let snapshot: PresenceSnapshot = {
     system: false,
     idleSeconds: null,
@@ -147,6 +148,7 @@ export function createPresenceReporter(deps: PresenceReporterDeps): PresenceRepo
     seq: -1,
     sampledAt: 0
   }
+
   // Idle seconds as of `snapshotAt`, after the delivery delay.
   let snapshotIdle: null | number = null
   let snapshotAt = startedAt
