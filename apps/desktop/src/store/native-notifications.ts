@@ -226,7 +226,11 @@ export interface NativeNotificationInput {
 
 /** Every guard dispatch applies before its throttle: the preference and kind, the post-connect quiet
  *  interval and the focus/active-session condition. Reads only, so it can be asked ahead of time. */
-function nativeNotificationPasses({ global, kind, sessionId }: Pick<NativeNotificationInput, 'global' | 'kind' | 'sessionId'>) {
+function nativeNotificationPasses({
+  global,
+  kind,
+  sessionId
+}: Pick<NativeNotificationInput, 'global' | 'kind' | 'sessionId'>) {
   const prefs = $nativeNotifyPrefs.get()
 
   return prefs.enabled && prefs.kinds[kind] && !withinNativeNotifyBaseline() && shouldFire(kind, sessionId, global)
@@ -237,7 +241,8 @@ function nativeNotificationPasses({ global, kind, sessionId }: Pick<NativeNotifi
  *  The throttle is not predicted (asking must not spend it). */
 export function turnDoneNotificationWouldFire(sessionId: string): boolean {
   return (
-    nativeNotificationPasses({ kind: 'turnDone', sessionId }) && (!isBrowserHostedDesktop() || browserNotificationsAllowed())
+    nativeNotificationPasses({ kind: 'turnDone', sessionId }) &&
+    (!isBrowserHostedDesktop() || browserNotificationsAllowed())
   )
 }
 

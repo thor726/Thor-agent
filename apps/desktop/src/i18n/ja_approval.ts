@@ -30,7 +30,6 @@ export const jaApproval: Partial<ApprovalCopy> = {
   network: {
     title: 'サイトへのアクセス',
     alwaysTitle: 'このサイトを常に許可しますか？',
-    alwaysDescription:
-      'サイトがこのプロファイルの許可済みサイトに追加されます。Thor はどのチャットでも再度尋ねません。'
+    alwaysDescription: 'サイトがこのプロファイルの許可済みサイトに追加されます。Thor はどのチャットでも再度尋ねません。'
   }
 }

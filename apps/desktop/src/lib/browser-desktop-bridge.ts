@@ -64,6 +64,7 @@ export function installBrowserDesktopBridge(): boolean {
   const relays: BrowserSavedConnections | null = savedConnectionsServed()
     ? createBrowserSavedConnections({ api, bootstrap })
     : null
+
   const bootstrapFor = (connectionId?: null | string) => relays?.bootstrapFor(connectionId) ?? bootstrap
   const activeConnectionId = () => $connection.get()?.connectionId ?? LOCAL_CONNECTION_ID
 
@@ -176,7 +177,14 @@ export function installBrowserDesktopBridge(): boolean {
     notify: async payload => showBrowserNotification(payload),
     // A browser has no idle clock that counts other apps; the reporter falls back to input in this tab.
     presence: {
-      get: async () => ({ system: false, idleSeconds: null, locked: false, suspended: false, seq: 0, sampledAt: Date.now() }),
+      get: async () => ({
+        system: false,
+        idleSeconds: null,
+        locked: false,
+        suspended: false,
+        seq: 0,
+        sampledAt: Date.now()
+      }),
       onChange: () => () => undefined
     },
     onFocusSession: onBrowserFocusSession,

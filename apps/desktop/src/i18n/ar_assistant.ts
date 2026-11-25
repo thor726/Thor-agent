@@ -306,8 +306,7 @@ export const arAssistant = {
         readOnly: 'قراءة فقط',
         readWrite: 'قراءة وكتابة',
         alwaysTitle: 'السماح دائمًا بهذا المجلد؟',
-        alwaysDescription:
-          'تتم إضافة المجلد إلى بيئة العزل لهذا الملف الشخصي. لن يسأل Thor عنه مرة أخرى في أي محادثة.'
+        alwaysDescription: 'تتم إضافة المجلد إلى بيئة العزل لهذا الملف الشخصي. لن يسأل Thor عنه مرة أخرى في أي محادثة.'
       },
       network: {
         title: 'الوصول إلى موقع',

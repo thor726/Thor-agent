@@ -118,9 +118,11 @@ describe('useComposerQueue park integration', () => {
   it('admits native Queue through submit and retains an uncertain draft without a local replay', async () => {
     $connection.set({ mode: 'local', wsUrl: 'ws://localhost/api/ws?native_dial=unminted' } as ThorConnection)
     const draftRef = { current: 'durable queue' }
+
     const clearDraft = vi.fn(() => {
       draftRef.current = ''
     })
+
     const onSubmit = vi.fn<ChatBarProps['onSubmit']>().mockResolvedValue(false)
 
     const hook = renderHook(
@@ -748,6 +750,7 @@ describe('useComposerQueue scope', () => {
       { admission_id: 'adm-1', status: 'queued', user: 'old words', controls: ['steer', 'replace'] }
     ])
     const reply = deferred()
+
     const { draftRef, hook } = renderQueueHook({
       busy: true,
       draft: 'my draft',
@@ -844,6 +847,7 @@ describe('useComposerQueue scope', () => {
       { admission_id: 'adm-1', status: 'queued', user: 'old words', controls: ['steer', 'replace'] }
     ])
     const reply = deferred()
+
     const { draftRef, hook } = renderQueueHook({
       busy: true,
       draft: 'my draft',

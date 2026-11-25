@@ -1,10 +1,10 @@
 import { translateNow } from '@/i18n'
 import { dispatchNativeNotification } from '@/store/native-notifications'
 import {
-  type ApprovalRequest,
   accessTarget,
   approvalKindFields,
   approvalNamesNothing,
+  type ApprovalRequest,
   isCommandApproval,
   networkTarget,
   networkTargetName,

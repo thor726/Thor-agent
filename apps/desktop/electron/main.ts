@@ -11110,7 +11110,10 @@ async function dialPoolBackend(profile, entry, opts: { forceLocal?: boolean; poo
     directoryExists(path.join(THOR_HOME, 'profiles', key))
   )
 
-  const connection = await launchedProfiles.startLocally(profile, ensureLocalGateway, async () => {
+  const connection = await launchedProfiles.startLocally(
+    profile,
+    ensureLocalGateway,
+    async () => {
       const backend = await ensureRuntime(
         await resolveThorBackend(['--profile', profile, 'gateway', 'ensure', '--json']),
         () => assertPoolEntryStillOwned(poolKey, entry)
@@ -15281,9 +15284,11 @@ registerPreviewSignins({
   log: rememberLog,
   resolveRoute: async (sender, profile, connectionId) => {
     const source = windowConnectionRoutes.get(sender.id) ?? null
+
     const route = connectionId
       ? { connectionId, profile: profile || 'default' }
       : resolveDesktopConnectionRequest(profile, source, primaryProfileKey())
+
     const connection = await connectDesktopProfileRoute(
       route,
       sender,

@@ -1672,9 +1672,7 @@ function ProfileSquare({
               </ContextMenuTrigger>
             </PopoverAnchor>
             <TooltipContent>
-              {[runsWhere ? `${label} · ${runsWhere}` : label, statusText, failedText]
-                .filter(Boolean)
-                .join(' · ')}
+              {[runsWhere ? `${label} · ${runsWhere}` : label, statusText, failedText].filter(Boolean).join(' · ')}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

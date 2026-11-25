@@ -102,6 +102,7 @@ it.each(discardCases)(
             if (response.error) {
               throw jsonRpcErrorFromFrame(response.error)
             }
+
             snapshot = frame(state === 'beforeClose' ? 'afterClose' : 'afterDiscard').result
 
             return response.result
@@ -126,6 +127,7 @@ it.each(discardCases)(
     if (refusal === 'stopPending') {
       expect(alert.textContent).toContain(recoveryAdvice[language][0])
     }
+
     // A retry of Discard keeps the exact turn; only a confirmed result and refreshed state remove it.
     fireEvent.click(discard)
     fireEvent.click(screen.getByRole('button', { name: labels.confirmDiscard }))

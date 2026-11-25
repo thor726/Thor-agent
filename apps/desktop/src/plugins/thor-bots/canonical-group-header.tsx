@@ -55,14 +55,17 @@ export function CanonicalGroupHeader({
   working
 }: CanonicalGroupHeaderProps) {
   const labels = useCanonicalGroupLabels()
+
   const badges: Record<string, string> = {
     missing: labels.peerNotJoinedBadge,
     unavailable: labels.peerOfflineBadge,
     needs_reauthorization: labels.peerRejoinBadge
   }
+
   const peerBadges = new Map(
     peerMemberStates(room?.members, driver?.peer_routes).map(({ member, status }) => [member.member_id, badges[status]])
   )
+
   const [renaming, setRenaming] = useState<null | string>(null)
   const [ending, setEnding] = useState(false)
 

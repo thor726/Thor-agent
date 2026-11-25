@@ -213,6 +213,7 @@ it.each([null, false, '', '1792152000', Number.NaN, Number.POSITIVE_INFINITY, 1e
       created_at: createdAt,
       payload: { text: 'Still readable' }
     } as unknown as CanonicalGroupEvent
+
     const { container } = render(<CanonicalGroupHistory binding={binding} events={[event]} />)
 
     expect(screen.getByText('Still readable')).toBeTruthy()
