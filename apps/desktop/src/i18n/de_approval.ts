@@ -28,8 +28,7 @@ export const deApproval: Partial<ApprovalCopy> = {
     readOnly: 'Nur lesen',
     readWrite: 'Lesen und schreiben',
     alwaysTitle: 'Diesen Ordner immer erlauben?',
-    alwaysDescription:
-      'Der Ordner wird der Sandbox dieses Profils hinzugefügt. Thor fragt in keinem Chat mehr danach.'
+    alwaysDescription: 'Der Ordner wird der Sandbox dieses Profils hinzugefügt. Thor fragt in keinem Chat mehr danach.'
   },
   network: {
     title: 'Website-Zugriff',

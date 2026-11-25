@@ -731,7 +731,11 @@ function rearmSecondary(entry: Secondary, priority: SpawnPriority = 'foreground'
   entry.stalledDials = 0
 }
 
-function recordDialFailure(entry: Pick<Secondary, 'connectionId' | 'scope'>, error?: unknown, ownerProbe = false): void {
+function recordDialFailure(
+  entry: Pick<Secondary, 'connectionId' | 'scope'>,
+  error?: unknown,
+  ownerProbe = false
+): void {
   // Auth rejection has its own ledger (reauthFailures) that already fails background callers fast.
   if (error !== undefined && isGatewayReauthRequired(error)) {
     return
@@ -905,6 +909,7 @@ function createSecondary(profile: string, connectionId: null | string = null): S
     if (event.type === 'gateway.ready') {
       recordSecondaryWire(connectionId, entry.connection, gateway.sessionWire)
     }
+
     const scopedEvent = stampSecondaryProfileOwner(
       { ...event, ...(connectionId ? { connectionId } : {}) },
       canonicalOwnerProfile(event) ?? profile

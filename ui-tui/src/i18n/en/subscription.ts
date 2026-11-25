@@ -30,8 +30,7 @@ export const subscriptionEn = {
       upgraded: (plan: string) => `Upgraded to ${plan}. Your new monthly credits land in a moment.`,
       requiresAction: 'This change needs extra verification (3DS). Finish it on ThorHub.',
       paymentFailed: 'Your card was declined. Update your payment method on ThorHub and try again.',
-      scopeStillDenied:
-        'Remote Spending is not available on ThorHub — top up your balance instead.',
+      scopeStillDenied: 'Remote Spending is not available on ThorHub — top up your balance instead.',
       couldNotPreview: 'Could not preview that change.',
       cancellationScheduled:
         'Scheduled — your plan stays active until the end of the billing period, then it cancels. Nothing changes today.',
@@ -44,8 +43,7 @@ export const subscriptionEn = {
       sessionRevoked: 'Your session expired — run /portal to log in again, then top up on ThorHub.',
       remoteSpendingRevoked: 'Remote spending is not available on ThorHub — top up your balance instead.',
       rateLimited: 'Too many attempts — wait a moment, then try again.',
-      notAllowed:
-        'Remote Spending was not allowed — top up your balance on ThorHub instead.'
+      notAllowed: 'Remote Spending was not allowed — top up your balance on ThorHub instead.'
     },
     // The one-line plan status at the top of the overview.
     status: {

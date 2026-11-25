@@ -502,7 +502,17 @@ export function useComposerQueue({
 
       return true
     },
-    [activeQueueSessionKey, attachments, clearDraft, draftRef, scope.attachments, onSubmit, replyPaused, sessionId, t.composer]
+    [
+      activeQueueSessionKey,
+      attachments,
+      clearDraft,
+      draftRef,
+      scope.attachments,
+      onSubmit,
+      replyPaused,
+      sessionId,
+      t.composer
+    ]
   )
 
   // All queue drain paths share one lock + send-then-remove sequence.

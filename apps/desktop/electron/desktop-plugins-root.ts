@@ -152,10 +152,7 @@ export async function localHomes(
 ): Promise<string[]> {
   const profiles = (await listDirs(path.join(thorHome, 'profiles'))).filter(name => !isLaunched(name.toLowerCase()))
 
-  return [
-    ...(isLaunched('default') ? [] : [thorHome]),
-    ...profiles.map(name => path.join(thorHome, 'profiles', name))
-  ]
+  return [...(isLaunched('default') ? [] : [thorHome]), ...profiles.map(name => path.join(thorHome, 'profiles', name))]
 }
 
 /** Move every `profiles/<name>/desktop-plugins/<id>` folder into the app-level

@@ -617,6 +617,7 @@ export function GroupChatWorkspace(props: GroupChatWorkspaceProps) {
   const profile = useValue(host.state.profile)
   const record: GroupChatRoom | undefined = useValue($groupChats)[props.group]
   const owner = canonicalGroupKeyRoute(props.group, props.origin ?? 'name') ?? gatewayGroupEngine(record).engine
+
   const binding = canonicalGroupBindingFor(
     bindings,
     owner ?? { connectionId: connectionId ?? '', profile },
@@ -757,6 +758,7 @@ function groupGatePlan({
   if (!classicRoom) {
     return { ...plan, message: open.missing, retry: 'lookup' }
   }
+
   const checked = canonicalGroupRoster(route, props.members)
 
   if (!('problem' in checked)) {
@@ -821,11 +823,13 @@ function GroupExecutionGate(props: GroupChatWorkspaceProps) {
   const gateway = connectionId === foreground ? foregroundGateway : 'open'
   const activationEpoch = useGatewayActivationEpoch()
   const source = JSON.stringify([connectionId, profile, gateway, activationEpoch])
+
   const [capability, setCapability] = useState<{
     source: string
     mode: GroupExecutionMode
     unavailable: GateUnavailable
   } | null>(null)
+
   const current = capability?.source === source ? capability : null
   const mode = current ? current.mode : 'checking'
   const [error, setError] = useState('')
@@ -841,14 +845,17 @@ function GroupExecutionGate(props: GroupChatWorkspaceProps) {
     if (mode !== 'canonical') {
       return
     }
+
     let cancelled = false
     setLookup({ source, status: 'pending' })
     setError('')
     const route = { connectionId: connectionId ?? '', profile }
     const origin = props.origin ?? 'name'
+
     const lookupKey = props.owner
       ? `canonical:${encodeURIComponent(connectionId ?? '')}:${encodeURIComponent(profile)}:${props.owner.roomId}`
       : props.group
+
     void resolveCanonicalGroup(route, lookupKey, props.owner ? 'key' : origin)
       .then(resolved => {
         if (cancelled) {
@@ -925,6 +932,7 @@ function GroupExecutionGate(props: GroupChatWorkspaceProps) {
   if (plan.classic) {
     return <LegacyGroupChatWorkspace {...props} />
   }
+
   const { canCreate } = plan
 
   return (

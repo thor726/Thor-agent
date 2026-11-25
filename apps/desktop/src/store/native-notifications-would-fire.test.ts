@@ -5,7 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type BrowserNotifyPayload, showBrowserNotification } from '@/lib/browser-notifications'
 
-import { dispatchNativeNotification, setNativeNotifyEnabled, setNativeNotifyKind, turnDoneNotificationWouldFire } from './native-notifications'
+import {
+  dispatchNativeNotification,
+  setNativeNotifyEnabled,
+  setNativeNotifyKind,
+  turnDoneNotificationWouldFire
+} from './native-notifications'
 import { __resetNativeNotifyBaselineForTests, markNativeNotifyBaseline } from './notify-baseline'
 import { setActiveSessionId } from './session'
 
@@ -76,18 +81,23 @@ describe('turnDoneNotificationWouldFire', () => {
     }
   )
 
-  it.each(['granted', 'denied', 'default'] as const)('Webapp: live permission %s agrees with what the browser shows', permission => {
-    document.documentElement.dataset.thorDesktopHost = 'browser'
-    desktopWindow.thorDesktop = { notify: async (payload: BrowserNotifyPayload) => showBrowserNotification(payload) } as unknown as Window['thorDesktop']
-    FakeNotification.permission = permission
-    const sessionId = `session-${(counter += 1)}`
-    setActiveSessionId(sessionId)
-    setWindow({ focused: false, hidden: true })
+  it.each(['granted', 'denied', 'default'] as const)(
+    'Webapp: live permission %s agrees with what the browser shows',
+    permission => {
+      document.documentElement.dataset.thorDesktopHost = 'browser'
+      desktopWindow.thorDesktop = {
+        notify: async (payload: BrowserNotifyPayload) => showBrowserNotification(payload)
+      } as unknown as Window['thorDesktop']
+      FakeNotification.permission = permission
+      const sessionId = `session-${(counter += 1)}`
+      setActiveSessionId(sessionId)
+      setWindow({ focused: false, hidden: true })
 
-    const predicted = turnDoneNotificationWouldFire(sessionId)
-    dispatchNativeNotification({ kind: 'turnDone', sessionId, title: 'done' })
+      const predicted = turnDoneNotificationWouldFire(sessionId)
+      dispatchNativeNotification({ kind: 'turnDone', sessionId, title: 'done' })
 
-    expect(predicted).toBe(permission === 'granted')
-    expect(shown.length > 0).toBe(predicted)
-  })
+      expect(predicted).toBe(permission === 'granted')
+      expect(shown.length > 0).toBe(predicted)
+    }
+  )
 })

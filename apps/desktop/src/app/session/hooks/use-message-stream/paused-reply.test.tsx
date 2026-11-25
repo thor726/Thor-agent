@@ -1,4 +1,3 @@
-import type { GatewayEvent } from '@thor/shared'
 // A reply its interrupter will continue (a host plugin stopped the turn to apply
 // a grant: session.interrupt with `resume`) ends with message.complete
 // {status: interrupted, paused: true}. Until the continuation's turn completes,
@@ -7,6 +6,7 @@ import type { GatewayEvent } from '@thor/shared'
 // (store/paused-replies.ts). A sandbox restart in between gives the chat a new
 // runtime session, so the pause belongs to the stored chat.
 import { act, cleanup } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { ClientSessionState } from '@/app/types'
@@ -35,7 +35,10 @@ function mountRunningTurn() {
     ])
   })
   emit(BEFORE, { payload: {}, type: 'message.start' })
-  emit(BEFORE, { payload: { args: { path: 'DELIVERY-PLAN.md' }, name: 'read_file', tool_id: 'call-1' }, type: 'tool.start' })
+  emit(BEFORE, {
+    payload: { args: { path: 'DELIVERY-PLAN.md' }, name: 'read_file', tool_id: 'call-1' },
+    type: 'tool.start'
+  })
 }
 
 describe('a reply paused for an automatic continuation', () => {

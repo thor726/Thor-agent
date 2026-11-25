@@ -1,7 +1,7 @@
 import { AssistantRuntimeProvider, type ThreadMessage, useExternalStoreRuntime } from '@assistant-ui/react'
-import type { GatewayEvent } from '@thor/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { type ReactNode, useRef } from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -9,7 +9,6 @@ import { rehydrateLiveSessionStatuses } from '@/app/contrib/hooks/use-background
 import { useMessageStream } from '@/app/session/hooks/use-message-stream'
 import { useSessionStateCache } from '@/app/session/hooks/use-session-state-cache'
 import { PendingApprovalStack } from '@/components/assistant-ui/tool/approval'
-import type { ThorGateway } from '@/thor'
 import { $gateway } from '@/store/gateway'
 import { respondToApprovalAction } from '@/store/native-notifications'
 import { $profileDotStateByScope, profileDotSummaryFor } from '@/store/profile-dot-state'
@@ -25,6 +24,7 @@ import {
   recordSessionEventScope
 } from '@/store/session-states'
 import { stubMenuDomApis, stubResizeObserver } from '@/test/jsdom'
+import type { ThorGateway } from '@/thor'
 import type { SessionInfo } from '@/types/thor'
 
 // A folder or site card outlives the turn that raised it. The chat it belongs to is marked as
