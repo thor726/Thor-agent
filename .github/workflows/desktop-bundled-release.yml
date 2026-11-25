@@ -236,7 +236,8 @@ jobs:
     # standalone archive job it replaced.
     timeout-minutes: 60
     permissions:
-      contents: read
+      contents: write
+      actions: read
     outputs:
       # Resolve the build source once. Every privileged job uses this SHA,
       # not a mutable tag or the dispatch branch.
