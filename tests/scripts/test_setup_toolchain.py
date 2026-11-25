@@ -114,6 +114,52 @@ def test_stdlib_bootstrap_exports_the_pm_lock(toolchain, names, tmp_path):
     assert not Path(exported["THOR_RUNTIME_DIR"]).exists(), "prepare must not provision before cache restore"
 
 
+def _run_archive_inputs_phase(monkeypatch, tmp_path, *, archive_release, credentials):
+    """Drive the archive-inputs phase with staging stubbed out; return its Archive."""
+    from types import SimpleNamespace
+
+    from scripts.ci import archive_inputs as archive_module
+    from scripts.ci import setup_toolchain
+    from scripts.releases import r2
+
+    captured = {}
+    monkeypatch.setattr(r2, "credentials", credentials)
+    monkeypatch.setattr(archive_module, "pinned_inputs", lambda repo, *, target=None, packages=None: [])
+    monkeypatch.setattr(archive_module, "stage_inputs",
+                        lambda pins, *, archive, store=None, payload=None: captured.update(archive=archive))
+    monkeypatch.setattr(setup_toolchain, "packages", lambda *args, **kwargs: ["python"])
+    if archive_release:
+        monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    else:
+        monkeypatch.delenv("THOR_ARCHIVE_RELEASE", raising=False)
+    setup_toolchain.archive_inputs(SimpleNamespace(toolchain="python", packages=[], home=tmp_path))
+    return captured["archive"]
+
+
+def test_archive_inputs_phase_needs_no_r2_credentials_with_archive_release(monkeypatch, tmp_path):
+    # Regression: termux-verify run #15 failed in setup-pm with "missing env
+    # CLOUDFLARE_R2_ACCESS_KEY_ID" because the phase demanded R2 credentials
+    # even though THOR_ARCHIVE_RELEASE selects the GitHub-assets transport.
+    def forbidden_credentials():
+        raise AssertionError("r2.credentials() must not run when THOR_ARCHIVE_RELEASE is set")
+
+    archive = _run_archive_inputs_phase(monkeypatch, tmp_path, archive_release=True,
+                                        credentials=forbidden_credentials)
+
+    assert archive.creds is None
+    assert archive.base is None
+    assert archive.bucket is None
+
+
+def test_archive_inputs_phase_keeps_r2_credentials_without_archive_release(monkeypatch, tmp_path):
+    fake = ({"access_key_id": "ak", "secret_key": "sk"}, "https://r2.example", "bucket")
+
+    archive = _run_archive_inputs_phase(monkeypatch, tmp_path, archive_release=False,
+                                        credentials=lambda: fake)
+
+    assert (archive.creds, archive.base, archive.bucket) == fake
+
+
 @pytest.mark.parametrize("extras", ['"dev"', '{}', '[1]', '["dev\\nTHOR_HOME=bad"]', '["--all"]'])
 def test_invalid_extras_do_not_export_or_install(extras, tmp_path):
     root = Path(__file__).resolve().parents[2]
