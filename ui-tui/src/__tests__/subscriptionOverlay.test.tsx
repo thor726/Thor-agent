@@ -281,7 +281,7 @@ describe('SubscriptionOverlay — overview', () => {
     )
 
     expect(out).toContain('view only')
-    expect(out).toContain('Manage on portal')
+    expect(out).toContain('Manage on ThorHub')
   })
 
   it('downgrade-pending: leads with a Pro ──▶ Free banner + status echo', () => {
@@ -386,11 +386,13 @@ describe('SubscriptionOverlay — overview actions', () => {
 })
 
 describe('SubscriptionOverlay — step-up', () => {
-  it('prompts to allow Remote Spending (never leaks the raw scope)', () => {
+  it('no Remote Spending on ThorHub: offers top-up instead (never leaks the raw scope)', () => {
     const out = render(at('stepup', subscriber(), { stepUpRetry: { kind: 'preview', tierId: 'ultra' } }))
 
     expect(out).toContain('Remote Spending')
-    expect(out).toContain('Allow Remote Spending')
+    expect(out).toContain('ThorHub has no Remote Spending')
+    expect(out).toContain('Top up on ThorHub')
+    expect(out).not.toContain('Allow Remote Spending')
     expect(out).not.toContain('billing:manage')
   })
 
@@ -499,7 +501,7 @@ describe('SubscriptionOverlay — confirm', () => {
     )
 
     expect(out).toContain('Retract the cancellation')
-    expect(out).toContain('Manage on portal')
+    expect(out).toContain('Manage on ThorHub')
   })
 })
 
@@ -517,7 +519,7 @@ describe('SubscriptionOverlay — result', () => {
 
     expect(out).toContain('Could not complete')
     expect(out).toContain('3DS')
-    expect(out).toContain('Open the portal to finish')
+    expect(out).toContain('Open ThorHub to finish')
   })
 })
 
@@ -560,7 +562,7 @@ describe('SubscriptionOverlay — upgrade response mapping', () => {
 
     expect(patch.screen).toBe('result')
     expect(patch.result?.ok).toBe(false)
-    expect(patch.result?.message).toContain('verify your card in the portal')
+    expect(patch.result?.message).toContain('verify your payment on ThorHub')
     expect(patch.result?.recoveryUrl).toBe('https://portal.example/verify')
   })
 
@@ -572,7 +574,7 @@ describe('SubscriptionOverlay — upgrade response mapping', () => {
       status: 'requires_action'
     })
 
-    expect(patch.result?.message).toContain('try a different card on the portal')
+    expect(patch.result?.message).toContain('try a different card on ThorHub')
     expect(patch.result?.recoveryUrl).toBe('https://portal.example/card')
   })
 
