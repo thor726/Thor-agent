@@ -97,11 +97,12 @@ jobs:
           pnpm --dir ui-tui run build
 
   # A job-level `if` cannot read `secrets`, so the gate is a job that exports
-  # whether the release-signing environment is provisioned. Without R2 the
-  # bionic verification below cannot fetch its pinned inputs; skipping it
-  # keeps a fork or an unprovisioned main green instead of red.
-  r2-provisioned:
-    name: Detect R2 credentials
+  # whether the release-signing environment is provisioned. Without the Pages
+  # publisher token the bionic verification below cannot fetch its pinned
+  # inputs from the GitHub Release asset archive; skipping it keeps a fork or
+  # an unprovisioned main green instead of red.
+  pages-provisioned:
+    name: Detect Pages credentials
     if: github.event_name != 'pull_request' && github.event_name != 'pull_request_target'
     runs-on: ubuntu-latest
     environment: release-signing
@@ -111,25 +112,24 @@ jobs:
     steps:
       - id: check
         env:
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
+          PAGES_REPO_TOKEN: ${{ secrets.PAGES_REPO_TOKEN }}
         run: |
-          echo "configured=${CLOUDFLARE_R2_ACCOUNT_ID:+true}" >> "$GITHUB_OUTPUT"
-          [ -n "$CLOUDFLARE_R2_ACCOUNT_ID" ] || echo "::notice::CLOUDFLARE_R2_* secrets are not configured; the bionic runtime verification is skipped."
+          echo "configured=${PAGES_REPO_TOKEN:+true}" >> "$GITHUB_OUTPUT"
+          [ -n "$PAGES_REPO_TOKEN" ] || echo "::notice::PAGES_REPO_TOKEN secret is not configured; the bionic runtime verification is skipped."
 
   native-runtime:
     name: Verify bionic runtime tools
-    needs: r2-provisioned
-    # A stable-release candidate run still fails loudly on missing R2: the
-    # release must not pass on a skipped verification.
-    if: needs.r2-provisioned.outputs.configured == 'true' || inputs.release == true
+    needs: pages-provisioned
+    # A stable-release candidate run still fails loudly on a missing Pages
+    # token: the release must not pass on a skipped verification.
+    if: needs.pages-provisioned.outputs.configured == 'true' || inputs.release == true
     runs-on: ubuntu-24.04-arm
     environment: release-signing
     timeout-minutes: 45
     env:
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
+      GH_TOKEN: ${{ github.token }}
+      THOR_ARCHIVE_RELEASE: ci-archive
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -158,3 +158,11 @@ jobs:
               test -s "$PREFIX/tmp/ffmpeg-proof.wav"
               printf "FFMPEG_BARE_RUNTIME_OK\n"
             '
+
+      - name: Verify the Pages APT repository answers
+        run: |
+          base="${THOR_PAGES_PUBLIC_URL%/}/releases/termux/stable"
+          curl --fail --silent --show-error "$base/dists/thor-stable/Release" -o /tmp/apt-release
+          grep -q '^Suite: thor-stable$' /tmp/apt-release
+          curl --fail --silent --show-error "$base/dists/thor-stable/main/binary-aarch64/Packages" -o /tmp/apt-packages
+          printf 'PAGES_APT_OK\n'
