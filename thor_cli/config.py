@@ -328,7 +328,7 @@ def is_nix_install_method(method: str) -> bool:
 
 
 _UPDATE_COMMAND_BY_METHOD = {
-    "docker": "docker pull nousresearch/thor-agent:latest",
+    "docker": "docker pull thorlabs29/thor-agent:latest",
     "apt": "pkg upgrade thor-agent",  # "apt" == Termux APT by contract; uses Termux's `pkg`.
 }
 
@@ -354,23 +354,23 @@ def recommended_update_command() -> str:
 _DOCKER_UPDATE_MESSAGE = """\
 ✗ ``thor update`` doesn't apply inside the Docker container.
 
-Thor Agent runs as a published image (nousresearch/thor-agent), not a
+Thor Agent runs as a published image (thorlabs29/thor-agent), not a
 git checkout — the container has no working tree to pull into.  Update by
 pulling a fresh image and restarting your container instead:
 
-  docker pull nousresearch/thor-agent:latest
+  docker pull thorlabs29/thor-agent:latest
   # then restart whatever started the container, e.g.:
   docker compose up -d --force-recreate thor-agent
   # or, for ad-hoc runs, exit the current container and `docker run` again
 
 Verify the new version after restart:
-  docker run --rm nousresearch/thor-agent:latest --version
+  docker run --rm thorlabs29/thor-agent:latest --version
 
 Notes:
   • If you pinned a specific tag (e.g. ``:v0.14.0``) the ``:latest`` tag
     won't move your container — pull the newer tag you actually want, or
     switch to ``:latest`` / ``:main`` for rolling updates.  See available
-    tags at https://hub.docker.com/r/nousresearch/thor-agent/tags
+    tags at https://hub.docker.com/r/thorlabs29/thor-agent/tags
   • On a ``-desktop`` tag (the one carrying Bot Screen)?  Keep the suffix:
     the unsuffixed image has no Xvnc/Xfce and no sudo to add them, so
     pulling it stops the bots' screens from starting.

@@ -22,7 +22,7 @@ Thor Labs operates `thor-agent.local` and its subdomains. The ones Thor Agent us
 Outside `thor-agent.local`:
 
 - **GitHub:** the [thor726 organization](https://github.com/thor726) and its [thor-agent repository](https://github.com/thor726/thor-agent) (source, releases, the Nix flake). Raw files from that repository are served from `raw.githubusercontent.com/thor726/Thor-agent/...`; that is the same repository, not a separate source. Any other account or repository is not ours.
-- **Docker Hub:** the [`nousresearch/thor-agent`](https://hub.docker.com/r/nousresearch/thor-agent) image, published by the repository's release workflow (see [Docker](../user-guide/docker.md)). Only the `nousresearch` namespace is official; images under other names or registries are not.
+- **Docker Hub:** the [`thorlabs29/thor-agent`](https://hub.docker.com/r/thorlabs29/thor-agent) image, published by the repository's release workflow (see [Docker](../user-guide/docker.md)). Only the `thorlabs29` namespace is official; images under other names or registries are not.
 - **X (Twitter):** [@thor726](https://x.com/thor726)
 - **Discord:** [discord.gg/thor726](https://discord.gg/thor726)
 
@@ -40,7 +40,7 @@ curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/ins
 iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1)
 ```
 
-The other supported routes also stay on official sources: Desktop packages download from the [Thor website](https://github.com/thor726/Thor-agent/), Termux uses the signed APT repository on `thor-assets.thor-agent.local` (see the [Termux guide](./termux.md), not the script above), Nix builds from the GitHub repository (see [Nix & NixOS](./nix-setup.md)), and Docker pulls `nousresearch/thor-agent` from Docker Hub. Some guides fetch `install.ps1` straight from the repository at `raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1`; it is the same script.
+The other supported routes also stay on official sources: Desktop packages download from the [Thor website](https://github.com/thor726/Thor-agent/), Termux uses the signed APT repository on `thor-assets.thor-agent.local` (see the [Termux guide](./termux.md), not the script above), Nix builds from the GitHub repository (see [Nix & NixOS](./nix-setup.md)), and Docker pulls `thorlabs29/thor-agent` from Docker Hub. Some guides fetch `install.ps1` straight from the repository at `raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1`; it is the same script.
 
 If an installer, download, image, or "portal" is hosted anywhere other than the sources listed on this page, treat it as untrusted.
 

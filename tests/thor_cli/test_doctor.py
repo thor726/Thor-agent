@@ -88,7 +88,7 @@ class TestDoctorPlatformHints:
 
         hint = doctor_platform._sqlite_upgrade_hint()
 
-        assert "docker pull nousresearch/thor-agent:latest" in hint
+        assert "docker pull thorlabs29/thor-agent:latest" in hint
         assert "thor update" not in hint
 
 
