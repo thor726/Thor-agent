@@ -1,4 +1,10 @@
-"""Transfer immutable release files through R2 without publishing a feed."""
+"""Transfer immutable release files through the GitHub archive without publishing a feed.
+
+Fase 3: the transport is GitHub Release assets (scripts.releases.gh_assets)
+when THOR_ARCHIVE_RELEASE is configured; receipts, keys and validation are
+unchanged from the R2 era. Without it, the legacy R2 transport remains as
+the transitional fallback for unmigrated workflows and tests.
+"""
 from __future__ import annotations
 
 import argparse
@@ -9,7 +15,7 @@ import re
 import tempfile
 from pathlib import Path, PurePosixPath
 
-from scripts.releases import r2
+from scripts.releases import gh_assets, pages, r2
 from scripts.releases.semver import is_release_version
 
 
@@ -31,7 +37,7 @@ def validate_identity(tag: str, commit: str, name: str) -> None:
 
 def validate_commit_identity(commit: str, name: str) -> None:
     """Identity for commit-only handoffs: no tag, an exact full SHA."""
-    if (not r2.is_full_sha(commit)
+    if (not pages.is_full_sha(commit)
             or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name or "")):
         raise ValueError("Invalid commit handoff identity")
 
@@ -45,7 +51,7 @@ def validate_receipt_files(receipt: dict) -> list[dict]:
     for row in files:
         if not isinstance(row, dict):
             raise ValueError("Invalid release file receipt")
-        path = r2.relative_artifact_path(row.get("path"))
+        path = pages.relative_artifact_path(row.get("path"))
         if path.casefold() in seen:
             raise ValueError("Duplicate release artifact path")
         seen.add(path.casefold())
@@ -93,7 +99,7 @@ def _select_files(root: Path, includes: list[str]) -> dict[str, Path]:
 
 
 def _receipt_file_rows(selected: dict[str, Path]) -> list[dict]:
-    return [{"path": r2.relative_artifact_path(path), "size": file.stat().st_size, "sha256": r2.file_sha256(file)}
+    return [{"path": pages.relative_artifact_path(path), "size": file.stat().st_size, "sha256": pages.file_sha256(file)}
             for path, file in sorted(selected.items())]
 
 
@@ -116,8 +122,27 @@ def validate_channel_receipt(receipt: dict, request: dict, name: str) -> list[di
 def _prefix(receipt: dict) -> str:
     if "request" in receipt:
         return channel_prefix(receipt["request"])
-    return (r2.staging_key_for(receipt["tag"], "") if "tag" in receipt
-            else r2.commit_prefix_for(receipt["commit"]))
+    return (pages.staging_key_for(receipt["tag"], "") if "tag" in receipt
+            else pages.commit_prefix_for(receipt["commit"]))
+
+
+def _use_archive() -> bool:
+    return bool(os.environ.get("THOR_ARCHIVE_RELEASE"))
+
+
+def _put(key: str, file: str, tag: str) -> None:
+    if _use_archive():
+        gh_assets.put(key, file, immutable=True)
+    else:
+        r2.put(tag=tag, key=key, file=file, key_is_full=True, immutable=True)
+
+
+def _get_receipt_body(key: str) -> bytes | None:
+    if _use_archive():
+        return gh_assets.get_bytes(key)
+    creds, base, bucket = r2.credentials()
+    text = r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
+    return text.encode() if text is not None else None
 
 
 def stage_channel_build(request: dict, name: str, root: Path, includes: list[str]) -> dict:
@@ -135,17 +160,16 @@ def read_channel_receipt(request: dict, name: str, *, public_base: str | None = 
     key = channel_prefix(request) + receipt_name(name)
     try:
         if public_base is not None:
-            receipt = r2.read_public_receipt(public_base, key)
+            receipt = pages.read_public_receipt(public_base, key)
         else:
-            creds, base, bucket = r2.credentials()
-            text = r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
-            if text is None:
+            body = _get_receipt_body(key)
+            if body is None:
                 raise MissingReceipt(f"Missing channel handoff: {name}")
-            receipt = json.loads(text)
-    except r2.R2RequestError as err:
-        if err.status == 404:
-            raise MissingReceipt(f"Missing channel handoff: {name}") from err
-        raise
+            receipt = json.loads(body)
+    except (gh_assets.ArchiveError, r2.R2RequestError) as err:
+        if isinstance(err, r2.R2RequestError) and err.status != 404:
+            raise
+        raise MissingReceipt(f"Missing channel handoff: {name}") from err
     validate_channel_receipt(receipt, request, name)
     return receipt
 
@@ -160,13 +184,11 @@ def _stage(receipt: dict, selected: dict[str, Path]) -> dict:
     """Publish completion only after every immutable artifact upload succeeds."""
     prefix = _prefix(receipt)
     for row in receipt["files"]:
-        r2.put(tag=receipt.get("tag", ""), key=prefix + row["path"],
-               file=str(selected[row["path"]]), key_is_full=True, immutable=True)
+        _put(prefix + row["path"], str(selected[row["path"]]), receipt.get("tag", ""))
     with tempfile.TemporaryDirectory() as directory:
         file = Path(directory) / receipt_name(receipt["name"])
         file.write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-        r2.put(tag=receipt.get("tag", ""), key=prefix + file.name,
-               file=str(file), key_is_full=True, immutable=True)
+        _put(prefix + file.name, str(file), receipt.get("tag", ""))
     return receipt
 
 
@@ -191,35 +213,33 @@ def stage_commit_build(commit: str, name: str, root: Path, includes: list[str]) 
 
 def read_receipt(tag: str, commit: str, name: str, *, public_base: str | None = None) -> dict:
     validate_identity(tag, commit, name)
-    key = r2.staging_key_for(tag, receipt_name(name))
+    key = pages.staging_key_for(tag, receipt_name(name))
     if public_base is not None:
-        receipt = r2.read_public_receipt(public_base, key)
+        receipt = pages.read_public_receipt(public_base, key)
     else:
-        creds, base, bucket = r2.credentials()
-        text = r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
-        if text is None:
+        body = _get_receipt_body(key)
+        if body is None:
             raise ValueError(f"Missing release handoff: {name}")
-        receipt = json.loads(text)
+        receipt = json.loads(body)
     validate_receipt(receipt, tag, commit, name)
     return receipt
 
 
 def read_commit_receipt(commit: str, name: str, *, public_base: str | None = None) -> dict:
     validate_commit_identity(commit, name)
-    key = r2.commit_key_for(commit, receipt_name(name))
+    key = pages.commit_key_for(commit, receipt_name(name))
     try:
         if public_base is not None:
-            receipt = r2.read_public_receipt(public_base, key)
+            receipt = pages.read_public_receipt(public_base, key)
         else:
-            creds, base, bucket = r2.credentials()
-            text = r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
-            if text is None:
+            body = _get_receipt_body(key)
+            if body is None:
                 raise MissingReceipt(f"Missing commit handoff: {name}")
-            receipt = json.loads(text)
-    except r2.R2RequestError as err:
-        if err.status == 404:
-            raise MissingReceipt(f"Missing commit handoff: {name}") from err
-        raise
+            receipt = json.loads(body)
+    except (gh_assets.ArchiveError, r2.R2RequestError) as err:
+        if isinstance(err, r2.R2RequestError) and err.status != 404:
+            raise
+        raise MissingReceipt(f"Missing commit handoff: {name}") from err
     validate_commit_receipt(receipt, commit, name)
     return receipt
 
@@ -261,21 +281,24 @@ def _fetch_receipts(receipts: list[dict], root: Path,
     if not selected and require_files:
         raise ValueError("No files selected from release handoff")
     root.mkdir(parents=True, exist_ok=True)
-    credentials = r2.credentials() if public_base is None else None
+    use_archive = public_base is None
     from scripts.releases.progress import log
 
     total = sum(row["size"] for row, _key in selected.values())
     log(f"Downloading {len(selected)} receipt-bound files ({total / 1e9:.1f} GB)")
     for number, (row, key) in enumerate(selected.values(), start=1):
         log(f"  [{number}/{len(selected)}] {key} ({row['size'] / 1e6:.0f} MB)")
-        if credentials is not None:
-            creds, base, bucket = credentials
+        if use_archive and _use_archive():
+            gh_assets.download(key, root / row["path"],
+                               expected_size=row["size"], expected_sha256=row["sha256"])
+        elif use_archive:
+            creds, base, bucket = r2.credentials()
             r2.download_object(creds, base, bucket, key,
                                root / row["path"], r2.amz_timestamp(),
                                expected_size=row["size"], expected_sha256=row["sha256"])
         else:
             assert public_base is not None
-            r2.download_public_object(public_base, key, root / row["path"],
+            pages.download_public_object(public_base, key, root / row["path"],
                                       expected_size=row["size"], expected_sha256=row["sha256"])
     for receipt in receipts:
         (root / receipt_name(receipt["name"])).write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n", encoding="utf-8")
@@ -295,7 +318,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--name", action="append", required=True)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--include", action="append")
-    parser.add_argument("--public-base", help="Fetch from the public archive without R2 credentials")
+    parser.add_argument("--public-base", help="Fetch from the public archive without archive credentials")
     args = parser.parse_args(argv)
     if args.public_base is not None and args.command != 'fetch':
         parser.error('--public-base is only supported for fetch')

@@ -27,13 +27,16 @@ import subprocess
 from scripts.releases.r2 import (
     cache_control_for,
     channel_page_key_for,
+    commit_key_for,
     commit_page_key_for,
     commit_prefix_for,
     download_public_object,
     feed_dir_for,
     file_sha256,
+    is_full_sha,
     public_artifact_url,
     public_url_for,
+    read_public_receipt,
     relative_artifact_path,
     staging_key_for,
 )
@@ -45,17 +48,20 @@ __all__ = [
     "cache_control_for",
     "channel_page_key_for",
     "channel_public_base",
+    "commit_key_for",
     "commit_page_key_for",
     "commit_prefix_for",
     "download_public_object",
     "feed_dir_for",
     "file_sha256",
+    "is_full_sha",
     "public_artifact_url",
     "public_base_url",
     "public_root_url",
     "public_url_for",
     "publish_worktree",
     "put",
+    "read_public_receipt",
     "relative_artifact_path",
     "repo_dir_from_env",
     "require_run",
@@ -323,7 +329,16 @@ def main(argv: list[str] | None = None) -> None:
     publish_parser = sub.add_parser("publish")
     publish_parser.add_argument("--message", required=True)
     publish_parser.add_argument("--push", action="store_true")
+    finalize_parser = sub.add_parser("finalize")
+    finalize_parser.add_argument("--tag", required=True)
+    finalize_parser.add_argument("--dir", required=True)
+    finalize_parser.add_argument("--variant", default=None)
     args = parser.parse_args(argv)
+    if args.command == "finalize":
+        from scripts.releases import darwin as darwin_module
+
+        darwin_module.finalize(tag=args.tag, dir=args.dir, variant=args.variant)
+        return
     if args.command == "put":
         put(tag=args.tag, key=args.key, file=args.file,
             key_is_full=args.key_is_full, immutable=args.immutable)

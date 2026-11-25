@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 from typing import Any, Callable
 
+from . import gh_assets, pages
 from . import r2 as r2_module
 from .semver import compare, is_release_version
 from thor_cli.update_channel import canary_timestamp, is_canary_tag
@@ -171,6 +172,94 @@ def publish_mac_feed(
 # ---------------------------------------------------------------------------
 
 def finalize(tag: str, dir: str, variant: str | None = None, archive: str | None = None,
+             verify_bytes: bool = True) -> None:
+    """Validate the native legs, verify their archived bytes, then replace
+    the feed pointer in the Pages worktree (hash-CAS write, then readback).
+
+    Fase 3 transport split: the feed yml is a small public file and lives
+    in the thor-agent-releases Pages worktree (``PAGES_REPO_DIR``); the
+    dmg/zip artifacts it points at live in the GitHub archive release
+    (``THOR_ARCHIVE_RELEASE``) and are verified through ``gh_assets``.
+    ``verify_bytes=False`` (stable promotion of an accepted candidate,
+    whose artifacts are already bound by receipt sha256) checks each
+    artifact's archived size instead of streaming multi-GB packages back.
+    """
+    if variant and variant != "light":
+        raise ValueError("Unknown macOS variant")
+    import os
+
+    if not os.environ.get("PAGES_REPO_DIR"):
+        # Transitional fallback for unmigrated workflows (Fase 3 draft).
+        _finalize_legacy_r2(tag=tag, dir=dir, variant=variant, archive=archive,
+                            verify_bytes=verify_bytes)
+        return
+    import hashlib
+    import tempfile
+    from pathlib import Path
+
+    worktree = pages.repo_dir_from_env()
+    if worktree is None:
+        raise ValueError("macOS feed publication requires PAGES_REPO_DIR")
+
+    legs = {
+        name: open(os.path.join(dir, name), encoding="utf-8-sig").read()
+        for name in sorted(os.listdir(dir))
+        if name.endswith("-mac.yml")
+    }
+    plan = merge_mac_feeds(legs, tag, variant == "light", archive=archive)
+
+    def feed_path(key: str) -> Path:
+        scoped = pages.PagesScope.configured().key(key)
+        return worktree.joinpath(*scoped.split("/"))
+
+    def read(key: str) -> dict[str, str] | None:
+        path = feed_path(key)
+        if not path.is_file():
+            return None  # first publish: no live feed yet
+        body = path.read_bytes()
+        return {"text": body.decode("utf-8"), "etag": hashlib.sha256(body).hexdigest()}
+
+    def verify(key: str, file_entry: dict[str, Any]) -> None:
+        if not verify_bytes:
+            info = gh_assets.asset_info(key)
+            if info is None or str(info["size"]) != str(file_entry["size"]):
+                raise ValueError(f"Artifact size mismatch: {key}")
+            return
+        with tempfile.TemporaryDirectory() as directory:
+            local = Path(directory) / "artifact"
+            info = gh_assets.asset_info(key)
+            if info is None or not info["sha256"]:
+                raise ValueError(f"Artifact missing from archive: {key}")
+            gh_assets.download(key, local, expected_size=file_entry["size"],
+                               expected_sha256=info["sha256"])
+            digest = hashlib.sha512(local.read_bytes()).hexdigest()
+            import base64
+
+            if base64.b64encode(bytes.fromhex(digest)).decode() != file_entry["sha512"]:
+                raise ValueError(f"Artifact sha512 mismatch: {key}")
+
+    def write(key: str, text: str, etag: str | None) -> None:
+        path = feed_path(key)
+        current = read(key)
+        if etag is not None:
+            if current is None or current["etag"] != etag:
+                raise ValueError(f"macOS feed changed before write: {key}")
+        elif current is not None:
+            raise ValueError(f"macOS feed already exists: {key}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        if (worktree / ".git").exists():
+            import subprocess
+
+            subprocess.run(["git", "-C", str(worktree), "add", "--",
+                            path.relative_to(worktree).as_posix()],
+                           check=True, capture_output=True, text=True)
+
+    publish_mac_feed(plan, {"read": read, "verify": verify, "write": write})
+    print(f"OK pages: finalized {tag} -> {plan['key']}")
+
+
+def _finalize_legacy_r2(tag: str, dir: str, variant: str | None = None, archive: str | None = None,
              verify_bytes: bool = True) -> None:
     """Validate the native legs, verify their streamed bytes, then replace
     the feed pointer (conditional write, then readback).

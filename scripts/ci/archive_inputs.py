@@ -1,4 +1,10 @@
-"""Archive pinned binary inputs in R2 and seed existing CI consumers."""
+"""Archive pinned binary inputs in the GitHub archive release and seed CI consumers.
+
+Fase 3: pinned inputs are content-addressed by sha256, so they map
+cleanly onto GitHub Release assets (scripts.releases.gh_assets) under
+the ``ci-archive`` release; only a missing asset permits an upstream
+download, and every result is read back and digest-verified.
+"""
 from __future__ import annotations
 
 import argparse
@@ -20,7 +26,7 @@ from pm.artifact_mirror import object_key
 from pm.downloader import Download, DownloadError, DownloadTransportError, Source
 from pm.lock import SCHEMA
 from pm.store import ALL_TARGETS, Store
-from scripts.releases import r2
+from scripts.releases import gh_assets, r2
 
 TERMUX_TARGET = "linux-arm64-bionic"
 
@@ -97,38 +103,59 @@ def pinned_inputs(repo: Path, *, target: str | None = None, packages: set[str] |
 
 @dataclass(frozen=True)
 class Archive:
-    creds: dict[str, str]
-    base: str
-    bucket: str
+    """Pinned-input archive: GitHub Release assets when THOR_ARCHIVE_RELEASE
+    is configured (Fase 3), legacy R2 otherwise (transitional fallback)."""
+
+    creds: dict | None = None
+    base: str | None = None
+    bucket: str | None = None
+    tag: str = "ci-archive"
 
     def fetch(self, pin: InputPin, destination: Path) -> str:
-        """Only R2 404 permits upstream download; every result is read back."""
+        """Only a missing object permits upstream download; every result is read back."""
+        import os
+
         key = object_key(pin.sha256)
-        url = f"{self.base}/{self.bucket}/{r2.encode_key_path(key)}"
-        try:
-            head = r2.signed_request("HEAD", url, creds=self.creds, now=r2.amz_timestamp())
-        except r2.R2RequestError as exc:
-            if exc.status != 404:
-                raise
-            head = None
         destination.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix=".input-archive-", dir=destination.parent) as temporary:
             work = Path(temporary)
             local = work / "input"
-            origin = "R2"
-            if head is None:
-                origin = _download_upstream(pin, local)
-                size = local.stat().st_size
-                r2.put_object(self.creds, self.base, self.bucket, key, str(local), r2.amz_timestamp(),
-                              "application/octet-stream", conditions={"If-None-Match": "*"})
-            else:
-                length = head.header("content-length")
-                if length is None:
-                    raise ValueError(f"R2 did not report the input size: {url}")
-                size = int(length)
             verified = work / "verified"
-            r2.download_object(self.creds, self.base, self.bucket, key, verified, r2.amz_timestamp(),
-                               expected_size=size, expected_sha256=pin.sha256)
+            if os.environ.get("THOR_ARCHIVE_RELEASE"):
+                info = gh_assets.asset_info(key, tag=self.tag)
+                origin = "archive"
+                if info is None:
+                    origin = _download_upstream(pin, local)
+                    size = local.stat().st_size
+                    gh_assets.put(key, str(local), immutable=True, tag=self.tag)
+                else:
+                    if info["size"] is None:
+                        raise ValueError(f"Archive did not report the input size: {key}")
+                    size = int(info["size"])
+                gh_assets.download(key, verified, expected_size=size,
+                                   expected_sha256=pin.sha256, tag=self.tag)
+            else:
+                creds, base, bucket = (self.creds, self.base, self.bucket) if self.creds else r2.credentials()
+                url = f"{base}/{bucket}/{r2.encode_key_path(key)}"
+                try:
+                    head = r2.signed_request("HEAD", url, creds=creds, now=r2.amz_timestamp())
+                except r2.R2RequestError as exc:
+                    if exc.status != 404:
+                        raise
+                    head = None
+                origin = "R2"
+                if head is None:
+                    origin = _download_upstream(pin, local)
+                    size = local.stat().st_size
+                    r2.put_object(creds, base, bucket, key, str(local), r2.amz_timestamp(),
+                                  "application/octet-stream", conditions={"If-None-Match": "*"})
+                else:
+                    length = head.header("content-length")
+                    if length is None:
+                        raise ValueError(f"R2 did not report the input size: {url}")
+                    size = int(length)
+                r2.download_object(creds, base, bucket, key, verified, r2.amz_timestamp(),
+                                   expected_size=size, expected_sha256=pin.sha256)
             verified.replace(destination)
         return origin
 
@@ -199,10 +226,10 @@ def main(argv=None) -> int:
     parser.add_argument("--store", type=Path, help="seed this PM store's disposable input cache")
     args = parser.parse_args(argv)
     pins = pinned_inputs(paths.repo_root(), target=args.target)
-    count = stage_inputs(pins, archive=Archive(*r2.credentials()),
+    count = stage_inputs(pins, archive=Archive(),
                          store=Store(args.store.resolve()) if args.store else None,
                          payload=args.payload.resolve() if args.payload else None)
-    print(f"Verified {count} unique pinned inputs in R2.", flush=True)
+    print(f"Verified {count} unique pinned inputs in the GitHub archive.", flush=True)
     return 0
 
 

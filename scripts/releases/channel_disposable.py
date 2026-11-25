@@ -3,7 +3,7 @@
 The workflow's allocation step runs here for BOTH the disposable test path
 (``disposable_channel`` input, scoped to a ``ci-disposable/`` namespace) and the
 production preview path (``channel`` input, unscoped production namespace). The
-local ``release.py --channel`` command no longer touches R2: it only dispatches
+local ``release.py --channel`` command no longer touches storage: it only dispatches
 this workflow, and this privileged step creates the channel and mints the
 immutable build request that the build legs consume via job outputs.
 """
@@ -15,10 +15,10 @@ import os
 from pathlib import Path
 
 from thor_cli.release_channels import canonical_json, channel_key, validate_name
-from scripts.releases import commit_build, r2
-from scripts.releases.channels import ChannelConflict, ChannelPublisher, R2ChannelStore
+from scripts.releases import commit_build, pages
+from scripts.releases.channels import ChannelConflict, ChannelPublisher
 from scripts.releases.job_groups import selects_all
-from scripts.releases.r2_scope import R2Scope, channel_public_base, require_run
+from scripts.releases.pages import PagesChannelStore, PagesScope, channel_public_base, require_run
 
 
 def probe(publisher: ChannelPublisher, commit: str, version: str, controller: str) -> None:
@@ -39,7 +39,7 @@ def probe(publisher: ChannelPublisher, commit: str, version: str, controller: st
     except ChannelConflict:
         pass
     else:
-        raise ValueError("R2 accepted a stale conditional channel write")
+        raise ValueError("Pages store accepted a stale conditional channel write")
     if (second["sequence"] <= first["sequence"]
             or publisher.request(second["buildId"]) != second
             or name not in {record["name"] for record in publisher.list()}):
@@ -51,7 +51,7 @@ def probe(publisher: ChannelPublisher, commit: str, version: str, controller: st
 
 def require_receiver_scope(publisher) -> None:
     scope = getattr(publisher.store, "scope", None)
-    if not isinstance(scope, R2Scope) or not scope.prefix or not publisher.public_base.endswith("/" + scope.prefix.rstrip("/")):
+    if not isinstance(scope, PagesScope) or not scope.prefix or not publisher.public_base.endswith("/" + scope.prefix.rstrip("/")):
         raise ValueError("Receiver candidates require physically disposable storage")
 
 
@@ -108,8 +108,8 @@ def allocate(env: dict[str, str]) -> dict:
     admitted = commit_build.admit(env)
     controller = commit_build.require_commit(env.get("GITHUB_SHA", ""))
     if disposable:
-        os.environ["R2_DISPOSABLE_RUN"] = run
-    scope = R2Scope.configured()
+        os.environ["PAGES_DISPOSABLE_RUN"] = run
+    scope = PagesScope.configured()
     base = channel_public_base()
     repository = env["GITHUB_REPOSITORY"]
 
@@ -118,7 +118,10 @@ def allocate(env: dict[str, str]) -> dict:
             raise ValueError("Controller only creates and allocates previews")
         commit_build.admit(env)
 
-    publisher = ChannelPublisher(R2ChannelStore(*r2.credentials(), scope=scope), repository,
+    worktree = pages.repo_dir_from_env()
+    if worktree is None:
+        raise ValueError("Channel allocation requires PAGES_REPO_DIR")
+    publisher = ChannelPublisher(PagesChannelStore(worktree, scope=scope), repository,
                                  base, authorize=authorize)
     if disposable:
         probe(publisher, admitted["sha"], admitted["payload-version"], controller)
