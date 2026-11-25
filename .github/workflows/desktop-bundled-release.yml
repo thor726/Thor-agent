@@ -302,7 +302,6 @@ jobs:
         # Same checkout contract the standalone archive job had: the tag ref
         # for tag builds, the dispatch head for commit builds.
         if: inputs.disposable_run == '' && inputs.disposable_channel == '' && (inputs.release-phase == '' || inputs.release-phase == 'candidate')
-        env:
         run: python3 -m scripts.ci.archive_inputs
 
       - name: Set up native identity reader
