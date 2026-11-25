@@ -242,14 +242,14 @@ class Python(_BionicDebArm, BinaryPackage, DebPackage):
     def main_rel(self, target: str) -> str:
         return self.main_bin_rel
 
-    # termux-main (official termux repo) python deb. It lags python-build-
-    # standalone by one patch (3.14.6-1 vs 3.14.7), so the bionic row is a
-    # manual pin -- never derived from the node version, and pm update leaves
-    # it alone (no bionic resolver).
+    # termux-main (official termux repo) python deb. It does not track
+    # python-build-standalone patch-for-patch (3.14.10 vs 3.14.9), so the
+    # bionic row is a manual pin -- never derived from the node version, and
+    # pm update leaves it alone (no bionic resolver).
     deb_package = "python"
     _BIONIC_URL = (
         "https://packages.termux.dev/apt/termux-main/pool/main/p/python/"
-        "python_3.14.6-1_aarch64.deb"
+        "python_3.14.10_aarch64.deb"
     )
 
     def stage(self, store: Store, staged: Path, version: str, target: str) -> None:
@@ -608,8 +608,9 @@ class Nodejs(_BionicDebArm, BinaryPackage, DebPackage):
 
     def fetch_url(self, version: str, target: str) -> str:
         if target == "linux-arm64-bionic":
-            # termux's deb carries a -1 revision after the upstream version
-            return f"https://packages.termux.dev/apt/termux-main/pool/main/n/nodejs/nodejs_{version}-1_aarch64.deb"
+            # the pinned version is the deb's full Debian version, recovered
+            # from the lock row's URL (termux may append a -N revision)
+            return f"https://packages.termux.dev/apt/termux-main/pool/main/n/nodejs/nodejs_{version}_aarch64.deb"
         plat = _NODE_PLAT[target]
         ext = "zip" if target.startswith("win32") else "tar.xz"
         base = (

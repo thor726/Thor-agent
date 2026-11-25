@@ -66,6 +66,11 @@
       "url": "https://packages.termux.dev/apt/termux-main/pool/main/h/highway/highway_1.4.0-1_aarch64.deb",
       "version": "1.4.0-1"
     },
+    "libandroid-execinfo": {
+      "sha256": "725dd2c6da7fc96e860fcc928e18aa9fb0e85e0bdcaf4f8ce0f0654ca6860fc2",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/liba/libandroid-execinfo/libandroid-execinfo_0.1-3_aarch64.deb",
+      "version": "0.1-3"
+    },
     "libandroid-glob": {
       "sha256": "2276ae8adedf0db76c2f4ffc94cc4cceb2f4f5d78e021b54e2e046d1233e7826",
       "url": "https://packages.termux.dev/apt/termux-main/pool/main/liba/libandroid-glob/libandroid-glob_0.6-3_aarch64.deb",
@@ -120,6 +125,11 @@
       "sha256": "6c283eed576b98cc3568f99638156f8588f77d979579d03bef8683d6eb8601e1",
       "url": "https://packages.termux.dev/apt/termux-main/pool/main/libc/libcrypt/libcrypt_0.2-6_aarch64.deb",
       "version": "0.2-6"
+    },
+    "libcurl": {
+      "sha256": "2011bb9709261bb3d5ecaa6672faa333be14cf48ad4af37031e3e365309557ac",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/libc/libcurl/libcurl_8.23.0_aarch64.deb",
+      "version": "8.23.0"
     },
     "libdav1d": {
       "sha256": "18716edc2e9caf2e71a6be7702e66517fbc069b8e24d6a7b6fa00bda6e6d241b",
@@ -201,6 +211,21 @@
       "url": "https://packages.termux.dev/apt/termux-main/pool/main/libm/libmysofa/libmysofa_1.3.5_aarch64.deb",
       "version": "1.3.5"
     },
+    "libnghttp2": {
+      "sha256": "ae33e7b21e0636be8686b9b13a20e31267f047f69cb26b4befd70c9a9bae221e",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/libn/libnghttp2/libnghttp2_1.71.0_aarch64.deb",
+      "version": "1.71.0"
+    },
+    "libnghttp3": {
+      "sha256": "8bb6fa31f9281cd48047ec9a571cadf153538f5b38f0203ad7a4e221344b14a6",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/libn/libnghttp3/libnghttp3_1.19.0_aarch64.deb",
+      "version": "1.19.0"
+    },
+    "libngtcp2": {
+      "sha256": "8225ecde58104ef5aa234fa54a1bea5051a8a9ef2937e5ba996b3e8dda68c8eb",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/libn/libngtcp2/libngtcp2_1.26.0_aarch64.deb",
+      "version": "1.26.0"
+    },
     "libogg": {
       "sha256": "4f1700a532f251ad3600f44f88cd764f1f6b0542d3343391117944b47a92802d",
       "url": "https://packages.termux.dev/apt/termux-main/pool/main/libo/libogg/libogg_1.3.6-1_aarch64.deb",
@@ -265,6 +290,11 @@
       "sha256": "05cfb1d6f70e9b316f1eac7a5ec9139f884e644d6d91e668e9ca49716aad8ff0",
       "url": "https://packages.termux.dev/apt/termux-main/pool/main/libs/libssh/libssh_0.12.2_aarch64.deb",
       "version": "0.12.2"
+    },
+    "libssh2": {
+      "sha256": "1add4e0a926b848814e7e2f1817ea28b123c54cabd5bbc4e5cfd65291cbad84e",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/libs/libssh2/libssh2_1.11.1-2_aarch64.deb",
+      "version": "1.11.1-2"
     },
     "libtheora": {
       "sha256": "9d4582f14f71df7a48101ee05297a57a898654ead55ef10ca4d73e254151b1e8",
