@@ -126,6 +126,8 @@ jobs:
     runs-on: ubuntu-24.04-arm
     environment: release-signing
     timeout-minutes: 45
+    permissions:
+      contents: write
     env:
       GH_TOKEN: ${{ github.token }}
       THOR_ARCHIVE_RELEASE: ci-archive
