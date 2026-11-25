@@ -1763,7 +1763,7 @@ jobs:
     name: Build + publish the termux .deb (aarch64)
     needs: [validate]
     if: inputs.channel == '' && inputs.disposable_channel == '' && needs.validate.outputs.termux == 'true' && (inputs.upload_release == true || inputs.release-phase == 'candidate' || inputs.build_commit != '')
-    runs-on: ubuntu-latest-arm
+    runs-on: ubuntu-24.04-arm
     environment: release-signing
     timeout-minutes: 90
     env:
