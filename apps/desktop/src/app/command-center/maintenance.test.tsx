@@ -112,6 +112,7 @@ describe('MaintenancePanel debug share', () => {
   // logs of the profile the user confirmed for, not whichever is active later.
   it('uploads the profile that was active when the confirmation opened', async () => {
     const actual = await vi.importActual<typeof ThorApi>('@/thor')
+
     const api = vi.fn(async (_request: { connectionId?: string; path: string; profile?: string }) => ({
       auto_delete_seconds: 21600,
       failures: [],
@@ -119,6 +120,7 @@ describe('MaintenancePanel debug share', () => {
       redacted: true,
       urls: {}
     }))
+
     vi.stubGlobal('thorDesktop', { api })
     vi.mocked(runDebugShare).mockImplementationOnce(actual.runDebugShare)
     setApiRequestConnection('gw-a')

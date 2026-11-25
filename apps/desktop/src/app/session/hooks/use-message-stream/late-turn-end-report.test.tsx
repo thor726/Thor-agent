@@ -1,4 +1,3 @@
-import type { GatewayEvent } from '@thor/shared'
 // Every turn ends with two frames: message.complete, then the turn worker's
 // end-of-turn session.info (running=false), which core sends after it has
 // released the session. A turn the desktop starts right after a completion (a
@@ -8,6 +7,7 @@ import type { GatewayEvent } from '@thor/shared'
 // cleared the turn clock and un-pended the reply while the agent was still
 // working, and every later write of the cached state put that settle back.
 import { act, cleanup } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { finalizeStoppedMessages } from '@/app/session/hooks/use-prompt-actions/rewind'
@@ -23,7 +23,8 @@ const RUNTIME = 'late-turn-end-runtime'
 
 let stream: MessageStreamHarness
 
-const emit = (event: Omit<GatewayEvent, 'session_id'>) => act(() => stream.handleEvent({ ...event, session_id: RUNTIME }))
+const emit = (event: Omit<GatewayEvent, 'session_id'>) =>
+  act(() => stream.handleEvent({ ...event, session_id: RUNTIME }))
 
 const turnEndReport = () => emit({ payload: { running: false, stored_session_id: CHAT }, type: 'session.info' })
 
@@ -71,7 +72,11 @@ const stop = () =>
     })
   })
 
-const reply = () => stream.state(RUNTIME).messages.filter(message => message.role === 'assistant').at(-1)
+const reply = () =>
+  stream
+    .state(RUNTIME)
+    .messages.filter(message => message.role === 'assistant')
+    .at(-1)
 
 function mount() {
   vi.useFakeTimers()

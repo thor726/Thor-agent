@@ -1,9 +1,9 @@
 import { atom } from 'nanostores'
 
-import type { ThorGateway } from '@/thor'
 import { initialGatewayProfile } from '@/lib/platform'
 import type { RegistryConfig } from '@/store/gateway-registry-config'
 import type { Secondary } from '@/store/gateway-socket-entry'
+import type { ThorGateway } from '@/thor'
 
 // ── HMR-stable module state ─────────────────────────────────────────────────
 // All mutable singletons (live sockets, active-profile routing, the event

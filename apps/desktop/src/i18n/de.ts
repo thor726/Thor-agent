@@ -3792,7 +3792,8 @@ export const deOverrides = {
   composer: {
     message: 'Nachricht',
     switchingProfile: profile => `Wechsel zu ${profile}…`,
-    switchingProfileSlow: 'Verbindung wird noch hergestellt. Nachrichten, die du jetzt sendest, warten und gehen an diesen Agenten.',
+    switchingProfileSlow:
+      'Verbindung wird noch hergestellt. Nachrichten, die du jetzt sendest, warten und gehen an diesen Agenten.',
     switchProfileFailed: profile => `Wechsel zu ${profile} fehlgeschlagen`,
     willSendTo: profile => `Wird an ${profile} gesendet`,
     placeholderStarting: 'Thor wird gestartet…',

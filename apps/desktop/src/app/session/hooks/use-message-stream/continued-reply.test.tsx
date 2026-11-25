@@ -1,4 +1,3 @@
-import type { GatewayEvent } from '@thor/shared'
 // A stopped mark says the reply ended there. A host plugin can pause a running
 // turn (session.interrupt) to apply a grant and then continue the same reply
 // with a hidden prompt: the stored read after the interrupted completion lends
@@ -6,6 +5,7 @@ import type { GatewayEvent } from '@thor/shared'
 // it with no prompt on screen. That reply was not stopped for the reader. A
 // prompt the user writes next keeps the mark, and so does a real Stop.
 import { act, cleanup } from '@testing-library/react'
+import type { GatewayEvent } from '@thor/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { finalizeStoppedMessages } from '@/app/session/hooks/use-prompt-actions/rewind'

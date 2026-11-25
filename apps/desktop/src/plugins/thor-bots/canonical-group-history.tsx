@@ -100,6 +100,7 @@ function eventTimeMs(timestamp?: number) {
   if (typeof timestamp !== 'number') {
     return undefined
   }
+
   const at = timestamp * 1000
 
   return Number.isFinite(new Date(at).getTime()) ? at : undefined
@@ -172,6 +173,7 @@ function queuePreview(
   const queue = previewQueues.get(connectionId) ?? { slots: 2, waiters: [] }
   previewQueues.set(connectionId, queue)
   let cancelled = false
+
   const deliver = (download: Promise<Preview>) =>
     void download.then(
       preview => {
@@ -246,9 +248,11 @@ function ImagePreview({
     if (src || disabled || !el) {
       return
     }
+
     const observer = new IntersectionObserver(entries => setNear(entries[entries.length - 1].isIntersecting), {
       rootMargin: '200px'
     })
+
     observer.observe(el)
 
     return () => observer.disconnect()
@@ -258,6 +262,7 @@ function ImagePreview({
     if (disabled || !near || !attachmentId || !previewable) {
       return
     }
+
     let url = ''
     const key = JSON.stringify([connectionId, profile, roomId, eventId, attachmentId])
 
@@ -301,6 +306,7 @@ export function CanonicalGroupHistory({
   const labels = useCanonicalGroupLabels()
   const roster = new Map(members.map(member => [member.member_id, member]))
   const maxContinues = pause?.maxContinues
+
   const pauses = useMemo(
     () => (typeof maxContinues === 'number' ? pausedDiscussions(events, maxContinues) : undefined),
     [events, maxContinues]
@@ -389,15 +395,18 @@ interface HistoryRowProps extends Pick<CanonicalGroupHistoryProps, 'avatarFor' |
 
 function HistoryRow({ avatarFor, binding, disabled, event, notices, onReply, roster }: HistoryRowProps) {
   const labels = useCanonicalGroupLabels()
+
   const notice =
     event.kind === 'room.activity' && event.payload.status === 'bounded'
       ? labels.workLimitReached
       : notices.get(event.kind)
+
   const isMessage = MESSAGE_KINDS.has(event.kind)
 
   if (!notice && !isMessage) {
     return null
   }
+
   const author = eventAuthor(event, roster, isMessage, labels.you)
   const memberId = isMessage ? (event.actor?.kind === 'member' ? event.actor.id : undefined) : event.payload.member_id
   const member = roster.get(memberId ?? '')
@@ -445,6 +454,7 @@ function MessageRow({
   const isUser = event.actor?.kind !== 'member'
   const text = event.payload.text || event.payload.content || ''
   const canReply = !!onReply && !!text && (!!member || typeof event.payload.thread_id === 'string')
+
   const face = isUser
     ? undefined
     : avatarFor?.(member?.profile || member?.handle || memberId || author || 'bot', ROOM_AVATAR_SIZE)

@@ -165,6 +165,7 @@ export function createAgentHarness(mocks: CreateAgentMocks) {
     const dialog = (
       <CreateAgentDialog onClose={() => undefined} onConfigureModel={onConfigureModel} open roster={roster} />
     )
+
     const view = render(withQueryClient(dialog))
 
     fireEvent.change(screen.getByPlaceholderText('inbox-triage'), { target: { value: 'inbox-triage' } })
