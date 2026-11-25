@@ -82,6 +82,7 @@ let
     dirs = [
       "apps/desktop"
       "apps/shared"
+      "packages/thor-ui"
       "scripts/build/desktop.mjs"
       "scripts/build/freshness.mjs"
       "scripts/build/frontend-common.mjs"

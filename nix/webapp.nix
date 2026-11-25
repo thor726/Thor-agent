@@ -7,6 +7,7 @@ thorNpmLib.buildPnpmPackage {
   dirs = [
     "apps/desktop"
     "apps/shared"
+    "packages/thor-ui"
     "scripts/build/webapp.mjs"
     "scripts/build/node-deps.mjs"
     "scripts/build/node-deps-lock.mjs"
