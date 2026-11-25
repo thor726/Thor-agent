@@ -24,7 +24,7 @@ def published_channel_identity(repository: str, channel: str, *, base_url: str |
                                reader_type=None) -> tuple[str, str] | None:
     """Resolve one validated protected channel's payload version and commit."""
     from thor_cli.release_channels import ChannelNotFound, ChannelReader
-    from scripts.releases.r2 import public_base_url
+    from scripts.releases.pages import public_base_url
 
     if channel not in {"stable", "canary"}:
         raise ValueError("Expected a protected release channel")
@@ -82,9 +82,9 @@ def published_stable_identity(repository: str, *, base_url: str | None = None,
             repository, "stable", base_url=base_url, reader_type=reader_type,
         )
     except ChannelError:
-        # The R2 channel record is unreadable (R2 not provisioned, the public
-        # URL not configured, or a transient network failure). Fall through to
-        # the GitHub releases below instead of failing the release.
+        # The channel record is unreadable (the Pages host not provisioned,
+        # the public URL not configured, or a transient network failure).
+        # Fall through to the GitHub releases below instead of failing.
         found = None
     if found is not None and version_from_tag("v" + found[0]) is None:
         raise ValueError("Stable channel has an invalid source version")

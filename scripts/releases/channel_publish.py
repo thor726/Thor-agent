@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 
 from thor_cli.release_channels import ChannelReader, build_prefix, canonical_json, decode_json, require_sha256, validate_request
-from scripts.releases import commit_build, handoff, r2
+from scripts.releases import commit_build, handoff, pages
 from scripts.releases.desktop_targets import MANIFEST_PLATFORM, NATIVE_LEGS, TARGETS
 REQUIRED_JOBS = ("validate", "build-darwin-arm64",
                  "build-win32-arm64", "build-win32-x64", "assemble-win32-bundle",
@@ -42,8 +42,8 @@ def receiver_request(request: dict) -> bool:
     if not request.get("receiverCandidate"):
         return False
     from scripts.releases.channel_releases import product_identity
-    from scripts.releases.r2_scope import R2Scope, channel_public_base
-    scope = R2Scope.configured()
+    from scripts.releases.pages import PagesScope, channel_public_base
+    scope = PagesScope.configured()
     if (request["receiverCandidate"] is not True or not scope.prefix
             or request["publicBase"] != channel_public_base()
             or request["identity"] != product_identity(request.get("releaseTag", ""))
@@ -125,7 +125,7 @@ def assemble(request: dict, root: Path, *, needs: dict) -> tuple[dict, list[Path
             if row["path"] in files and files[row["path"]] != row:
                 raise ValueError("Channel handoffs disagree on artifact receipts")
             file = root / row["path"]
-            if file.stat().st_size != row["size"] or r2.file_sha256(file) != row["sha256"]:
+            if file.stat().st_size != row["size"] or pages.file_sha256(file) != row["sha256"]:
                 raise ValueError("Channel artifact differs from its receipt")
             files[row["path"]] = row
     rows = [_metadata(root, request, platform, arch) for platform, arch in TARGETS]
@@ -150,7 +150,7 @@ def publish_receiver(request: dict, root: Path, *, needs: dict, publisher) -> di
         raise ValueError("Candidate packages have no retirement receiver")
     for file in feeds:
         key = prefix + file.relative_to(root).as_posix()
-        r2.put(tag="", key=key, file=str(file), key_is_full=True, immutable=True)
+        pages.put(tag="", key=key, file=str(file), key_is_full=True, immutable=True)
         if publisher.reader.read_bytes(key) != file.read_bytes():
             raise ValueError("Receiver feed readback mismatch")
     publisher._write(prefix + "build.json", manifest)
@@ -178,9 +178,9 @@ def publish(request: dict, root: Path, *, needs: dict, publisher) -> dict:
     prefix = build_prefix(request["buildId"])
     for file in feeds:
         key = prefix + file.relative_to(root).as_posix()
-        r2.put(tag="", key=key, file=str(file), key_is_full=True, immutable=True)
-        r2.download_public_object(request["publicBase"], key, root / "verified" / file.name,
-                                  expected_size=file.stat().st_size, expected_sha256=r2.file_sha256(file))
+        pages.put(tag="", key=key, file=str(file), key_is_full=True, immutable=True)
+        pages.download_public_object(request["publicBase"], key, root / "verified" / file.name,
+                                  expected_size=file.stat().st_size, expected_sha256=pages.file_sha256(file))
     publisher.store.put(prefix + "build.json", canonical_json(manifest))
     return publisher.promote(request["buildId"])
 
@@ -191,24 +191,28 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--build-id", default=os.environ.get("CHANNEL_BUILD", ""))
     parser.add_argument("--request-sha256", default=os.environ.get("CHANNEL_REQUEST_SHA256", ""))
     parser.add_argument("--public-base", help="Expected public authority (not an override in disposable CI)")
-    parser.add_argument("--disposable-run", help="Controller run ID; propagated to R2 object scope")
+    parser.add_argument("--disposable-run", help="Controller run ID; propagated to Pages object scope")
     parser.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY", ""))
     parser.add_argument("--out", type=Path)
     parser.add_argument("--root", type=Path)
     args = parser.parse_args(argv)
-    from scripts.releases.r2_scope import R2Scope, channel_public_base, require_run
+    from scripts.releases.pages import PagesScope, channel_public_base, require_run
     if args.disposable_run is not None:
-        os.environ["R2_DISPOSABLE_RUN"] = require_run(args.disposable_run)
+        os.environ["PAGES_DISPOSABLE_RUN"] = require_run(args.disposable_run)
+        # Transitional: handoff/commit_build disposable scoping still reads
+        # the legacy name until Fase 3 migrates those modules and workflows.
+        os.environ["R2_DISPOSABLE_RUN"] = os.environ["PAGES_DISPOSABLE_RUN"]
     args.public_base = channel_public_base(args.public_base)
     request = read_request(args.build_id, args.request_sha256, args.public_base, args.repository)
     if args.command == "admit":
         values = admit(request, dict(os.environ))
-        values["public-root"] = os.environ["CLOUDFLARE_R2_PUBLIC_URL"]
+        values["public-root"] = pages.public_root_url()
         values["public-base"] = args.public_base
         with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as stream:
             stream.write("".join(f"{key}={value}\n" for key, value in values.items()))
     elif args.command in {"publish", "receiver-publish"}:
-        from scripts.releases.channels import ChannelPublisher, R2ChannelStore
+        from scripts.releases.channels import ChannelPublisher
+        from scripts.releases.pages import PagesChannelStore
         needs = json.loads(os.environ.get("RELEASE_NEEDS", "{}"))
         require_success(needs)
         # Repeat maintainer/default-controller admission on promotion, including reruns.
@@ -223,7 +227,18 @@ def main(argv: list[str] | None = None) -> None:
             expected, _feeds = assemble(pinned, root, needs=needs)
             return pinned == request and manifest == expected
 
-        publisher = ChannelPublisher(R2ChannelStore(*r2.credentials()), args.repository, args.public_base,
+        worktree = pages.repo_dir_from_env()
+        if worktree is not None:
+            store = PagesChannelStore(worktree)
+        else:
+            # Transitional fallback (see pages.put): unmigrated CI/tests
+            # without a Pages worktree keep the R2-backed store until
+            # Fase 3 sets PAGES_REPO_DIR in the workflows.
+            from scripts.releases import r2
+            from scripts.releases.channels import R2ChannelStore
+
+            store = R2ChannelStore(*r2.credentials())
+        publisher = ChannelPublisher(store, args.repository, args.public_base,
                                      authorize=authorize, verify_build=qualified)
         if args.command.startswith("receiver-"):
             if args.root is None:
@@ -236,7 +251,7 @@ def main(argv: list[str] | None = None) -> None:
             with tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 result = publish(request, root, needs=needs, publisher=publisher)
-        if args.command == "publish" and not R2Scope.configured().prefix:
+        if args.command == "publish" and not PagesScope.configured().prefix:
             commit_build.publish_receipt(
                 "channel", dict(os.environ), version=request["version"],
                 commit=request["commit"], details={

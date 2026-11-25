@@ -38,6 +38,20 @@ SMOKE_TARGETS = {"smoke-darwin-arm64": "macos/arm64",
 RELEASE_LINE_BRANCHES = ("main", "release/*")
 
 
+def _public_base(env: dict) -> str:
+    """The public release origin from the caller's env mapping.
+
+    THOR_PAGES_PUBLIC_URL wins; the legacy CLOUDFLARE_R2_PUBLIC_URL is still
+    honored during the transition so unmigrated workflows and tests keep
+    naming the origin they actually serve. Fase 3 drops the fallback.
+    """
+    from scripts.releases.pages import public_base_url
+
+    return public_base_url(
+        env.get("THOR_PAGES_PUBLIC_URL") or env.get("CLOUDFLARE_R2_PUBLIC_URL")
+    )
+
+
 def release_line_refspecs(remote_prefix: str) -> list[str]:
     """Fetch refspecs that mirror every release-line branch under ``refs/remotes/<remote_prefix>/``."""
     return [f"+refs/heads/{branch}:refs/remotes/{remote_prefix}/{branch}"
@@ -336,7 +350,7 @@ def _receipt_manifest(root: Path, receipt: str, tag: str, commit: str, archive: 
                       public_base: str, release_epoch: int) -> dict:
     """Rebuild one group's manifest rows from its staged, digest-verified handoffs."""
     from scripts.releases.handoff import fetch, receipt_name
-    from scripts.releases.r2 import staging_key_for
+    from scripts.releases.pages import staging_key_for
 
     names = RECEIPT_HANDOFFS.get(receipt)
     if names is None:
@@ -381,10 +395,10 @@ def stage_receipt(env: dict, receipt: str) -> None:
     before the group's smokes run, so it carries no smoke results, while
     acceptance still blocks publication.
     """
-    from scripts.releases.r2 import put
+    from scripts.releases.pages import put
 
     tag, commit, claim = stable_context(env)
-    base = env["CLOUDFLARE_R2_PUBLIC_URL"].rstrip("/")
+    base = _public_base(env)
     archive = claim["claim_tag"]
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -703,7 +717,7 @@ def verify(env: dict) -> None:
 
 
 def _stage_transition(env: dict, archive: str, base: str, row: dict) -> dict:
-    from scripts.releases.r2 import put
+    from scripts.releases.pages import put
 
     transition = row["transition"]
     name = f"acceptance-{row['target']}.json"
@@ -757,7 +771,7 @@ def transitions(env: dict) -> None:
     if receipt not in RECEIPT_TARGETS:
         raise ValueError(f"Unknown receipt: {receipt}")
     _tag, _commit, claim = stable_context(env)
-    base = env["CLOUDFLARE_R2_PUBLIC_URL"].rstrip("/")
+    base = _public_base(env)
     archive = claim["claim_tag"]
     previous = _published_baseline(env, base)
     receipt_manifest = _receipt_from_env(env, receipt, "RECEIPT", base)
@@ -818,7 +832,7 @@ def candidate_manifest(env: dict) -> None:
     # for a smoke, but a failed or missing one leaves no manifest. A claim that builds a bundle
     # runs at least one call, so this list is never empty.
     require_success(needs, [call for call in lane_set.CANDIDATE_CALLS if runs[call]])
-    base = env["CLOUDFLARE_R2_PUBLIC_URL"].rstrip("/")
+    base = _public_base(env)
     archive = claim["claim_tag"]
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -1001,7 +1015,7 @@ def complete(env: dict) -> None:
     tag, commit, claim = stable_context(env)
     if not lane_set.has_bundles(claim["lanes"]):
         raise ValueError("A claim that builds no bundle has no candidate archive to validate")
-    base = env["CLOUDFLARE_R2_PUBLIC_URL"].rstrip("/")
+    base = _public_base(env)
     candidate = read_candidate(env)
     validate_candidates(candidate, tag, commit, base, claim["claim_epoch"], archive=claim["claim_tag"])
     require_smokes_match_claim(candidate, claim["lanes"])

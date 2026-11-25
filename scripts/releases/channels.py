@@ -5,7 +5,11 @@ from copy import deepcopy
 import hashlib
 import http.client
 import secrets
+from typing import TYPE_CHECKING
 import uuid
+
+if TYPE_CHECKING:
+    from scripts.releases.pages import PagesChannelStore
 
 from thor_cli.release_channels import (
     ChannelError, ChannelNotFound, ChannelReader, artifact_key, build_prefix,
@@ -102,8 +106,8 @@ def preview_identity(name: str, token: str) -> dict:
 
 
 class ChannelPublisher:
-    def __init__(self, store: R2ChannelStore, repository: str, public_base: str,
-                 authorize, verify_build=None):
+    def __init__(self, store: "R2ChannelStore | PagesChannelStore", repository: str,
+                 public_base: str, authorize, verify_build=None):
         self.store = store
         self.repository = validate_repository(repository)
         self.public_base = validate_public_base(public_base)
