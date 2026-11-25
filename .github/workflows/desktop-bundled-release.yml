@@ -4,18 +4,18 @@ name: Desktop Bundled Release
 #
 #   tag admission (shape + pyproject lockstep + ancestry on origin/main,
 #   resolved to an IMMUTABLE full SHA) → per-OS builder jobs → stage
-#   files + receipts to R2 (releases/tag/<tag>/) → gated publish jobs write
+#   files + receipts to the GitHub archive release (releases/tag/<tag>/ keys) → gated publish jobs write
 #   feeds → builds table. Stable candidates stop before feed publication.
 #
 # Per-OS topology (canary feeds follow their own platform builds; stable
 # publication and Store submission require the accepted cross-platform candidate):
 #
-#   build-win32 (win32-x64 + win32-arm64)   → stage packages + receipts to R2
+#   build-win32 (win32-x64 + win32-arm64)   → stage packages + receipts to the archive release
 #     Stable runs pick which Windows packages these build: `skip-signed` builds
 #     only the unsigned Store variant (no Azure signing), `skip-store` only the
 #     signed bundled one.
 #   build-darwin (darwin-arm64 only; there is no Intel macOS build)
-#     → sign + notarize + stage dmg/zip/blockmap + the feed input to the R2 tag archive
+#     → sign + notarize + stage dmg/zip/blockmap + the feed input to the tag archive
 #   build-linux                              → DISABLED for now (dummy skips)
 #   assemble-win32-bundle                   → native universal bundles
 #     (needs build-win32): all downloadable builds stage without touching feeds.
@@ -28,7 +28,7 @@ name: Desktop Bundled Release
 #     and upload it via the MSStore CLI without rebuilding; the publication
 #     pass commits it with auto-publish on.
 #   publish-darwin-updater                  → macOS electron-updater feed
-#     (needs the darwin leg): scripts.releases.r2 finalize turns the arm64
+#     (needs the darwin leg): scripts.releases.pages finalize turns the arm64
 #     yml into releases/darwin/<channel>/<channel>-mac.yml — the feed
 #     pointer is written LAST, and the job's concurrency group serializes
 #     same-channel publications.
@@ -67,11 +67,16 @@ name: Desktop Bundled Release
 # deployment and exposes `vars` but NOT that environment's secrets
 # (actions/runner#1490).
 #
-# R2 secrets (repo-level or the release-signing environment): the R2
-# account id + an R2 API token (S3-compatible) with read/write on the
-# release bucket; CLOUDFLARE_R2_BUCKET and CLOUDFLARE_R2_PUBLIC_URL are
-# non-secret vars. scripts/releases/r2.py derives the S3 endpoint from
-# the account id. Upload/list operations need only Python; feed operations use ruamel.yaml.
+# Storage (Fase 3, R2 retired): large archive objects (installers, bundles,
+# receipts) are GitHub Release assets on this repo, written/read with the
+# job token via scripts/releases/gh_assets.py (THOR_ARCHIVE_RELEASE names
+# the archive release). Small public files (feeds, channel records, the
+# Termux APT repo) are committed to thor726/thor-agent-releases and served
+# by GitHub Pages; jobs that publish them check that repo out with the
+# PAGES_REPO_TOKEN secret (fine-grained PAT, Contents read/write on
+# thor-agent-releases only) into pages-host/ and set PAGES_REPO_DIR.
+# THOR_PAGES_PUBLIC_URL is a non-secret var defaulting to the Pages origin.
+# Feed operations use ruamel.yaml.
 #
 # Windows Store submission (stable-store): MSStore CLI via
 # microsoft/microsoft-store-apppublisher. Credentials live in the
@@ -181,12 +186,12 @@ on:
         type: string
         default: 'darwin-arm64,win32-arm64,win32-x64,win32-bundle,linux-x64,linux-arm64,termux'
       termux_upgrade_from_tag:
-        description: 'Published release tag whose R2 Termux package must upgrade to this build'
+        description: 'Published release tag whose Termux package must upgrade to this build'
         required: false
         type: string
         default: ''
       upload_release:
-        description: 'Upload artifacts to the R2 release bucket (staging + feeds)'
+        description: 'Upload artifacts to the GitHub archive + Pages host (staging + feeds)'
         required: false
         type: boolean
         default: false
@@ -206,7 +211,10 @@ concurrency:
 env:
   # One dispatch: a disposable-mode run leases its namespace by run id alone
   # (no attempt suffix) so "re-run failed jobs" re-enters the same namespace.
-  R2_DISPOSABLE_RUN: ${{ inputs.disposable_run || (inputs.disposable_channel != '' && github.run_id) || '' }}
+  PAGES_DISPOSABLE_RUN: ${{ inputs.disposable_run || (inputs.disposable_channel != '' && github.run_id) || '' }}
+  # Archive release holding installer/bundle/receipt assets for this run.
+  THOR_ARCHIVE_RELEASE: ${{ (inputs.claim-tag != '' && format('archive-{0}', inputs.claim-tag)) || (inputs.tag != '' && format('archive-{0}', inputs.tag)) || 'ci-archive' }}
+  GH_TOKEN: ${{ github.token }}
   RELEASE_CLAIM_TAG: ${{ inputs.claim-tag }}
   RELEASE_CLAIM_OBJECT: ${{ inputs.claim-object }}
 
@@ -220,9 +228,9 @@ jobs:
     # Public root is an environment variable, not a repository variable. No
     # secret is injected into admission; downstream jobs consume its outputs.
     environment: release-signing
-    # The archive step re-downloads every pinned input from R2 to verify its
+    # The archive step re-downloads every pinned input from the archive release to verify its
     # sha256 (several GB: Chromium, llama.cpp CUDA builds). ~3 min on a normal
-    # day; v0.22.4 rc.1 hit slow R2 reads and the old 5-minute cap cancelled
+    # day; v0.22.4 rc.1 hit slow archive reads and the old 5-minute cap cancelled
     # both Windows chains, and v0.23.1 rc.1 took 28 min on x64 and was
     # cancelled at 30 on arm64 (single files stalling 5-8 min). 60 matches the
     # standalone archive job it replaced.
@@ -295,10 +303,6 @@ jobs:
         # for tag builds, the dispatch head for commit builds.
         if: inputs.disposable_run == '' && inputs.disposable_channel == '' && (inputs.release-phase == '' || inputs.release-phase == 'candidate')
         env:
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
         run: python3 -m scripts.ci.archive_inputs
 
       - name: Set up native identity reader
@@ -311,6 +315,16 @@ jobs:
           toolchain: node
           cache-python: false
           archive-inputs: false
+      - name: Check out the Pages release host
+        if: inputs.disposable_channel != '' || inputs.channel != ''
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        if: inputs.disposable_channel != '' || inputs.channel != ''
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Allocate the channel and build its immutable request
         id: allocate
         if: inputs.disposable_channel != '' || inputs.channel != ''
@@ -328,11 +342,7 @@ jobs:
           BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GH_TOKEN: ${{ github.token }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
         run: python -m scripts.releases.channel_disposable
 
       - name: Validate tag shape, pyproject lockstep, and ancestry on origin/main
@@ -345,7 +355,7 @@ jobs:
           BUILD_COMMIT: ${{ inputs.build_commit }}
           CHANNEL_BUILD: ${{ steps.allocate.outputs.channel_build || '' }}
           CHANNEL_REQUEST_SHA256: ${{ steps.allocate.outputs.channel_request_sha256 || '' }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
           JOBS: ${{ inputs.jobs }}
           BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
           RELEASE_PHASE: ${{ inputs.release-phase }}
@@ -354,12 +364,12 @@ jobs:
           TERMUX_UPGRADE_FROM_TAG: ${{ inputs.termux_upgrade_from_tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -n "${R2_DISPOSABLE_RUN:-}" ] && [ -z "${CHANNEL_BUILD:-}" ]; then
+          if [ -n "${PAGES_DISPOSABLE_RUN:-}" ] && [ -z "${CHANNEL_BUILD:-}" ]; then
             echo '::error::disposable_run requires a pinned channel build'; exit 1
           fi
           # The one parser for the `jobs` input; every job gates on these outputs.
           python -m scripts.releases.job_groups >> "$GITHUB_OUTPUT"
-          printf 'public-root=%s\npublic-base=%s\n' "$CLOUDFLARE_R2_PUBLIC_URL" "$CLOUDFLARE_R2_PUBLIC_URL" >> "$GITHUB_OUTPUT"
+          printf 'public-root=%s\npublic-base=%s\n' "$THOR_PAGES_PUBLIC_URL" "$THOR_PAGES_PUBLIC_URL" >> "$GITHUB_OUTPUT"
           printf 'archive-tag=%s\n' "${RELEASE_CLAIM_TAG:-$RELEASE_TAG}" >> "$GITHUB_OUTPUT"
           if [ -n "${CHANNEL_BUILD:-}" ]; then
             if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] || [ -z "$DEFAULT_BRANCH" ] || [ "$GITHUB_REF" != "refs/heads/$DEFAULT_BRANCH" ] || [ "$GITHUB_WORKFLOW_REF" != "$GITHUB_REPOSITORY/.github/workflows/desktop-bundled-release.yml@refs/heads/$DEFAULT_BRANCH" ]; then
@@ -483,8 +493,7 @@ jobs:
       THOR_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
       # Signature outputs are separate from the prepared dependency snapshot.
       ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
+      THOR_PAGES_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
     steps: &win32-steps
       - name: Exclude build write paths from Defender scanning
         shell: powershell
@@ -695,9 +704,6 @@ jobs:
         env:
           TARGET: ${{ matrix.target.label }}
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
         run: |
           root="$GITHUB_WORKSPACE/apps/desktop/release"
           python -m scripts.bundles.release_artifacts record --platform windows --arch "${TARGET##*-}" \
@@ -706,7 +712,7 @@ jobs:
           python -m scripts.releases.handoff stage --channel-request "$RUNNER_TEMP/channel-request.json" \
             --name "$TARGET" --root "$root" --include '*.msix' --include 'metadata-*.json'
 
-      - name: Stage Windows packages to R2
+      - name: Stage Windows packages to the archive release
         # A channel dispatch carries build_commit as provenance, not as the
         # receipt mode: its packages are staged by the pinned channel request
         # step above, and THOR_PAYLOAD_TAG/THOR_BUILD_COMMIT are both
@@ -715,9 +721,6 @@ jobs:
         if: needs.validate.outputs.channel-build == '' && (inputs.upload_release == true || inputs.release-phase == 'candidate' || inputs.build_commit != '')
         shell: bash
         env:
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
           TARGET: ${{ matrix.target.label }}
           RELEASE_PHASE: ${{ inputs.release-phase }}
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
@@ -879,8 +882,7 @@ jobs:
       THOR_BUILD_COMMIT: ${{ inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha || '' }}
       THOR_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
       THOR_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
+      THOR_PAGES_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
     steps: &darwin-steps
       - name: Disable Spotlight indexing for DMG staging
         # Spotlight indexes the freshly-mounted dmg staging image past
@@ -964,6 +966,7 @@ jobs:
           APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          PAGES_REPO_TOKEN: ${{ secrets.PAGES_REPO_TOKEN }}
         run: |
           missing=()
           [ -z "$CSC_LINK" ] && missing+=(CSC_LINK)
@@ -971,8 +974,7 @@ jobs:
           [ -z "$APPLE_API_KEY_P8" ] && missing+=(APPLE_API_KEY_P8)
           [ -z "$APPLE_API_KEY_ID" ] && missing+=(APPLE_API_KEY_ID)
           [ -z "$APPLE_API_ISSUER" ] && missing+=(APPLE_API_ISSUER)
-          [ -z "$CLOUDFLARE_R2_PUBLIC_URL" ] && missing+=(CLOUDFLARE_R2_PUBLIC_URL)
-          [ -z "$CLOUDFLARE_R2_BUCKET" ] && missing+=(CLOUDFLARE_R2_BUCKET)
+          [ -z "$PAGES_REPO_TOKEN" ] && missing+=(PAGES_REPO_TOKEN)
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::required signing/notarization credentials are missing from release-signing: ${missing[*]}"
             exit 1
@@ -1123,9 +1125,6 @@ jobs:
         env:
           TARGET: ${{ matrix.target.label }}
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
         run: |
           root="$GITHUB_WORKSPACE/apps/desktop/release"
           python -m scripts.bundles.release_artifacts record --platform macos --arch "${TARGET##*-}" \
@@ -1134,15 +1133,12 @@ jobs:
           python -m scripts.releases.handoff stage --channel-request "$RUNNER_TEMP/channel-request.json" \
             --name "$TARGET" --root "$root" --include '*.dmg' --include '*.zip' --include '*.blockmap' --include 'metadata-*.json'
 
-      - name: Stage macOS packages and feed inputs to R2
+      - name: Stage macOS packages and feed inputs to the archive release
         # Channel dispatches stage through the pinned request step above; see
         # the Windows leg for the empty-tag fallthrough this gate prevents.
         if: needs.validate.outputs.channel-build == '' && (inputs.upload_release == true || inputs.release-phase == 'candidate' || inputs.build_commit != '')
         shell: bash
         env:
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
           TARGET: ${{ matrix.target.label }}
           RELEASE_PHASE: ${{ inputs.release-phase }}
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
@@ -1244,11 +1240,7 @@ jobs:
       receipt-sha256: ${{ steps.receipt.outputs.receipt-sha256 }}
     env:
       RELEASE_TAG: ${{ inputs.tag }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
+      THOR_PAGES_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -1367,7 +1359,7 @@ jobs:
   # A build leg selected in this same call must succeed. One that is not
   # selected (stable's `jobs: win32-bundle` call runs after the per-arch
   # candidate calls) is skipped here, and its signed .msix is fetched from the
-  # R2 handoff instead; the caller's `needs` already guarantees it was staged.
+  # archive handoff instead; the caller's `needs` already guarantees it was staged.
   assemble-win32-bundle:
     name: Assemble and stage the Windows universal bundle
     needs: [validate, build-win32-x64, build-win32-arm64]
@@ -1395,11 +1387,7 @@ jobs:
       THOR_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
       # The paths build-win32-x64 saves its bundle-assembly caches from.
       ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/desktop-inputs/packager/builder
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
+      THOR_PAGES_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
       AZURE_SIGN_ENDPOINT: ${{ vars.AZURE_SIGN_ENDPOINT }}
       AZURE_SIGN_ACCOUNT: ${{ vars.AZURE_SIGN_ACCOUNT }}
       AZURE_SIGN_PROFILE: ${{ vars.AZURE_SIGN_PROFILE }}
@@ -1457,7 +1445,7 @@ jobs:
           # No Electron/native postinstalls: only the builder's SDK downloader.
           command: pnpm install --frozen-lockfile --filter "{./apps/desktop}..." --ignore-scripts
 
-      - name: Retrieve Windows packages from R2
+      - name: Retrieve Windows packages from the archive release
         shell: bash
         env:
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
@@ -1525,7 +1513,7 @@ jobs:
             node scripts/bundle-store-msixbundle.mjs --tag "$THOR_PAYLOAD_TAG"
           fi
 
-      - name: Stage universal bundles to R2
+      - name: Stage universal bundles to the archive release
         shell: bash
         env:
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
@@ -1550,7 +1538,7 @@ jobs:
         id: receipt
         env:
           RELEASE_TAG: ${{ inputs.tag }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
+          THOR_PAGES_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
         run: python -m scripts.releases.stable stage-receipt --receipt win32-bundle
 
   publish-channel:
@@ -1589,11 +1577,7 @@ jobs:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_TOKEN: ${{ github.token }}
       RELEASE_NEEDS: ${{ toJSON(needs) }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
+      THOR_PAGES_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -1602,6 +1586,14 @@ jobs:
           # a shallow clone fails after main advances past the built SHA.
           fetch-depth: 0
           filter: blob:none
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Publish tested disposable receiver without promoting T
         if: needs.validate.outputs.receiver-candidate == 'true'
         run: python -m scripts.releases.channel_publish receiver-publish --root "$RUNNER_TEMP/channel-publish"
@@ -1612,9 +1604,12 @@ jobs:
           python -m scripts.releases.channel_publish publish --root "$RUNNER_TEMP/channel-publish"
           python scripts/render-builds-table.py --channel-build "$CHANNEL_BUILD" \
             --channel-request-sha256 "$CHANNEL_REQUEST_SHA256" --repo "$GITHUB_REPOSITORY" \
-            --r2-base-url "$(python -c 'from scripts.releases.r2_scope import channel_public_base; print(channel_public_base())')" \
+            --r2-base-url "$(python -c 'from scripts.releases.pages import channel_public_base; print(channel_public_base())')" \
             --summary-out "$GITHUB_STEP_SUMMARY"
 
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "channel publish tested channel build" --push
   publish-win32-updater:
     name: Publish the tested Windows canary bundle
     needs: [validate, assemble-win32-bundle, smoke-win32-arm64, smoke-win32-x64]
@@ -1636,15 +1631,19 @@ jobs:
       THOR_PAYLOAD_TAG: ${{ inputs.tag }}
       THOR_DESKTOP_VARIANT: bundled
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
           ref: ${{ needs.validate.outputs.sha }}
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - uses: ./.github/actions/setup-pm
         with:
           toolchain: all
@@ -1689,13 +1688,16 @@ jobs:
   # ── macOS updater channel (REAL) ───────────────────────────────────────────
   # Turns the arm64 feed yml (arm64-stable-mac.yml / arm64-canary-mac.yml)
   # into releases/darwin/<channel>/<channel>-mac.yml via
-  # scripts/releases/r2.py finalize. The binaries were staged by the build
+  # scripts/releases/pages.py finalize. The binaries were staged by the build
   # leg (releases/tag/<tag>/); the feed POINTER is written here, last, only
   # after the darwin leg and its smoke are green — a failed leg can never
   # publish the channel. The concurrency group is scoped to the channel so two
-  # dispatches for the same channel serialize their feed writes (r2-release
+  # dispatches for the same channel serialize their feed writes (pages-release
   # finalize also refuses backward publication); stable and canary still
   # publish in parallel by design (distinct feed files).
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "win32 publish canary updater feed" --push
   publish-darwin-updater:
     name: Publish the macOS updater feed
     needs: [validate, build-darwin-arm64, smoke-darwin-arm64]
@@ -1714,22 +1716,26 @@ jobs:
       cancel-in-progress: false
     env:
       THOR_PAYLOAD_TAG: ${{ inputs.tag }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
           # Privileged job: pin to the SHA validate admitted, not the tag.
           ref: ${{ needs.validate.outputs.sha }}
 
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - uses: ./.github/actions/setup-pm
         with:
           cache-python: false
 
-      - name: Retrieve macOS feed inputs from R2
+      - name: Retrieve macOS feed inputs from the archive release
         shell: bash
         env:
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
@@ -1757,8 +1763,11 @@ jobs:
         # (feed-side); the pointer upload is the last write of the run.
         shell: bash
         run: |
-          python -m scripts.ci.python_packages ruamel.yaml==0.18.17 -- -m scripts.releases.r2 finalize --tag "$THOR_PAYLOAD_TAG" --dir staged
+          python -m scripts.ci.python_packages ruamel.yaml==0.18.17 -- -m scripts.releases.pages finalize --tag "$THOR_PAYLOAD_TAG" --dir staged
 
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "darwin publish updater feed" --push
   termux-deb:
     name: Build + publish the termux .deb (aarch64)
     needs: [validate]
@@ -1776,11 +1785,7 @@ jobs:
       # before the release exists); gh needs GH_TOKEN or it errors out and
       # the gate misreads that as "release not found".
       GH_TOKEN: ${{ github.token }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
     steps:
       # Use the admitted commit, not a tag that can move after validation.
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
@@ -1791,6 +1796,14 @@ jobs:
           filter: blob:none
           fetch-tags: ${{ inputs.build_commit == '' }}
 
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Set up the locked build toolchain
         id: pm
         uses: ./.github/actions/setup-pm
@@ -1996,7 +2009,7 @@ jobs:
               --out termux-build/deb
           fi
 
-      - name: Retrieve the previous published Termux package from R2
+      - name: Retrieve the previous published Termux package from the archive release
         if: inputs.termux_upgrade_from_tag != ''
         env:
           PREVIOUS_TAG: ${{ inputs.termux_upgrade_from_tag }}
@@ -2021,7 +2034,7 @@ jobs:
           fetch(tag, commit, ['termux'], Path('termux-build/previous'), ['deb/*.deb'])
           PY
 
-      - name: Stage the commit-build deb to R2
+      - name: Stage the commit-build deb to the archive release
         if: inputs.build_commit != ''
         shell: bash
         run: |
@@ -2040,7 +2053,7 @@ jobs:
           fi
           printf '%s\n' "$TERMUX_APT_GPG_KEY" > "$RUNNER_TEMP/termux-apt-gpg.asc"
 
-      - name: Stage the APT repo and publish to R2
+      - name: Stage the APT repo and publish to Pages
         if: inputs.build_commit == ''
         shell: bash
         env:
@@ -2096,13 +2109,13 @@ jobs:
             --name termux --root termux-build "${args[@]}"
           if [ "$RELEASE_PHASE" = candidate ]; then exit 0; fi
           # --key-is-full is MANDATORY on every feed-dir upload: without it
-          # scripts.releases.r2 re-prefixes the key into the tag archive
+          # the publisher re-prefixes the key into the tag archive
           # (releases/tag/<tag>/) and the APT feed never lands at
           # releases/termux/<channel>/.
           shopt -s globstar nullglob
-          # cd into the staged repo for the glob, but resolve the r2 client
-          # absolutely first -- after the cd, scripts/ is no longer in the
-          # cwd and a bare `python -m scripts.releases.r2` would ENOENT.
+          # cd into the staged repo for the glob, but resolve the pages
+          # client absolutely first -- after the cd, scripts/ is no longer
+          # in the cwd and a bare `python -m scripts.releases.pages` would ENOENT.
           export PYTHONPATH="$GITHUB_WORKSPACE"
           cd termux-build/apt
           files=(pool/**/*.deb "dists/thor-$CHANNEL"/main/binary-aarch64/by-hash/*/* key.asc
@@ -2111,21 +2124,30 @@ jobs:
                  "dists/thor-$CHANNEL/Release"
                  "dists/thor-$CHANNEL/Release.gpg"
                  "dists/thor-$CHANNEL/InRelease")
-          # APT reads InRelease first. Publish it only after every referenced
-          # index and package has been uploaded and read back successfully.
+          # APT reads InRelease first. Stage every referenced index and
+          # package into the Pages worktree, then commit+push once.
           for f in "${files[@]}"; do
             test -f "$f"
-            python3 -m scripts.releases.r2 put \
+            python3 -m scripts.releases.pages put \
               --tag "$THOR_PAYLOAD_TAG" \
               --key "releases/termux/$CHANNEL/$f" \
               --file "$f" \
               --key-is-full
           done
+          python3 -m scripts.releases.pages publish \
+            --message "termux publish $CHANNEL APT repo for $THOR_PAYLOAD_TAG" --push
 
-          # Verify the public CDN path, not only the object-store origin.
-          public_repo="${CLOUDFLARE_R2_PUBLIC_URL%/}/releases/termux/$CHANNEL"
-          curl --fail --silent --show-error "$public_repo/key.asc" -o "$RUNNER_TEMP/termux-public-key.asc"
-          cmp key.asc "$RUNNER_TEMP/termux-public-key.asc"
+          # Verify the public Pages path. Pages deploys lag the push, so
+          # retry until the new key.asc is served (bounded).
+          public_repo="${THOR_PAGES_PUBLIC_URL%/}/releases/termux/$CHANNEL"
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error "$public_repo/key.asc" -o "$RUNNER_TEMP/termux-public-key.asc" \
+               && cmp -s key.asc "$RUNNER_TEMP/termux-public-key.asc"; then
+              break
+            fi
+            [ "$attempt" = 30 ] && { echo "::error::Pages did not serve the new key.asc in time"; exit 1; }
+            sleep 20
+          done
           docker run --rm --platform linux/arm64 --user 1000:1000 \
             -v "$PWD:/apt:ro" \
             -v "$GITHUB_WORKSPACE/scripts/termux/check_apt.sh:/tmp/check-apt.sh:ro" \
@@ -2188,17 +2210,21 @@ jobs:
           # Privileged job: pin to the SHA validate admitted. A bare checkout
           # here would land on the dispatch branch, not the release bytes.
           ref: ${{ needs.validate.outputs.sha }}
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Render
         env:
           GH_TOKEN: ${{ github.token }}
           THOR_PAYLOAD_TAG: ${{ inputs.tag }}
           RELEASE_NEEDS: ${{ toJSON(needs) }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
         run: |
           python3 scripts/render-builds-table.py \
             --tag "$THOR_PAYLOAD_TAG" --repo "$GITHUB_REPOSITORY" --run-url "$RUN_URL"
@@ -2216,8 +2242,11 @@ jobs:
           require_success(needs, list(needs))
           PY
 
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "builds render release builds table" --push
   commit-builds-summary:
-    name: Upload status page to R2
+    name: Upload status page to Pages
     needs:
       [
         validate,
@@ -2248,14 +2277,18 @@ jobs:
           ref: ${{ needs.validate.outputs.sha }}
           fetch-depth: 0
           filter: blob:none
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Render the full expected-binary matrix
         env:
           THOR_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
           RELEASE_NEEDS: ${{ toJSON(needs) }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -2294,6 +2327,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.releases.commit_build receipt
 
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "builds publish commit-build status page" --push
   stable-publish:
     name: Verify published candidate files
     needs: validate
@@ -2306,11 +2342,7 @@ jobs:
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
       THOR_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       CANDIDATE_MANIFEST_SHA256: ${{ inputs.manifest-sha256 }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -2340,7 +2372,7 @@ jobs:
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
       THOR_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       CANDIDATE_MANIFEST_SHA256: ${{ inputs.manifest-sha256 }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
       MS_STORE_TENANT_ID: ${{ secrets.MS_STORE_TENANT_ID }}
       MS_STORE_SELLER_ID: ${{ secrets.MS_STORE_SELLER_ID }}
       MS_STORE_CLIENT_ID: ${{ secrets.MS_STORE_CLIENT_ID }}
@@ -2373,8 +2405,9 @@ jobs:
         shell: bash
         run: |
           name=$(cd verified 2>/dev/null && ls Store-*.msixbundle 2>/dev/null | head -1)
-          base="${CLOUDFLARE_R2_PUBLIC_URL%/}/releases/tag/$THOR_ARCHIVE_TAG"
-          url="$base/${name:-handoff-windows-universal.json}"
+          # The Store bundle lives in the archive release; name its asset.
+          asset="releases__tag__${THOR_ARCHIVE_TAG}__${name:-handoff-windows-universal.json}"
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/archive-$THOR_ARCHIVE_TAG/$asset"
           msg="Store submission failed; the release is still publishable. Upload this package in Partner Center: $url"
           echo "::warning title=Microsoft Store::$msg"
           { echo "## Microsoft Store: manual upload needed"; echo; echo "$msg"; } >> "$GITHUB_STEP_SUMMARY"
@@ -2475,7 +2508,7 @@ jobs:
           toolchain: node
           cache-python: false
       # The controller rechecks native job results and exact remote tag custody,
-      # publishes and reads back the prerelease, then advances R2.
+      # publishes and reads back the prerelease, then advances the channel.
       - name: Publish the admitted canary and advance its protected head
         env:
           GH_TOKEN: ${{ github.token }}
@@ -2483,9 +2516,5 @@ jobs:
           RELEASE_TAG_OBJECT: ${{ needs.validate.outputs.tag-object }}
           RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
           RELEASE_NEEDS: ${{ toJSON(needs) }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
         run: python -m scripts.releases.channel_releases canary
