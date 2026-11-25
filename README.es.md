@@ -7,8 +7,7 @@
   <a href="https://github.com/thor726/Thor-agent/">Thor Agent</a> | <a href="https://github.com/thor726/Thor-agent/">Thor Desktop</a>
 </p>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentación"></a>
-  <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentación"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge" alt="Licencia: MIT"></a>
   <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Creado%20por-Thor%20Labs-blueviolet?style=for-the-badge" alt="Creado por Thor Labs"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-blue?style=for-the-badge" alt="English"></a>
@@ -55,7 +54,7 @@ ripgrep, FFmpeg y las dependencias de Python. Si falta Git, descarga el archivo
 verificado de Git for Windows en el almacén de Thor, sin reemplazar el Git
 del sistema. MSIX/App Installer es una distribución separada.
 
-> **Android / Termux:** Hay un paquete APT en pruebas para dispositivos aarch64. Incluye Python, Node.js y la TUI. Sigue la [guía de Termux](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/termux), no el script de instalación para escritorio y servidor.
+> **Android / Termux:** Hay un paquete APT en pruebas para dispositivos aarch64. Incluye Python, Node.js y la TUI. Sigue la [guía de Termux](https://thor726.github.io/Thor-agent/docs/getting-started/termux), no el script de instalación para escritorio y servidor.
 >
 > **Windows:** Windows nativo es totalmente compatible — el comando de PowerShell de arriba instala todo. Si prefieres usar WSL2, el comando de Linux también funciona allí. La instalación nativa de Windows se encuentra en `%LOCALAPPDATA%\thor`; WSL2 instala en `~/.thor` como en Linux.
 
@@ -82,7 +81,7 @@ thor update       # Actualiza a la última versión
 thor doctor       # Diagnostica cualquier problema
 ```
 
-📖 **[Documentación completa →](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**
+📖 **[Documentación completa →](https://thor726.github.io/Thor-agent/docs/)**
 
 ---
 
@@ -90,7 +89,7 @@ thor doctor       # Diagnostica cualquier problema
 
 Thor funciona con cualquier proveedor que quieras — eso no cambiará. Ejecuta `thor setup` y elige tu propio proveedor y modelo; cada proveedor tiene su propia clave API y facturación. Esa es la forma normal de usar Thor.
 
-Si prefieres comprar tokens en lugar de gestionar una cuenta de proveedor, **[ThorHub](https://llm.thormarket.site)** es la tienda de tokens propia de Thor: compra un paquete de tokens en https://llm.thormarket.site/beli (QRIS), recibe una subclave (`sk-thor-...`) y añádela en Thor como proveedor personalizado. Consulta tu saldo cuando quieras con `/topup` (cuando hay una clave ThorHub configurada) o `/skill saldo`, y recarga en https://llm.thormarket.site/beli/topup. Detalles completos en la [página de documentación de ThorHub](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub).
+Si prefieres comprar tokens en lugar de gestionar una cuenta de proveedor, **[ThorHub](https://llm.thormarket.site)** es la tienda de tokens propia de Thor: compra un paquete de tokens en https://llm.thormarket.site/beli (QRIS), recibe una subclave (`sk-thor-...`) y añádela en Thor como proveedor personalizado. Consulta tu saldo cuando quieras con `/topup` (cuando hay una clave ThorHub configurada) y recarga en https://llm.thormarket.site/beli/topup. Detalles completos en la [página de documentación de ThorHub](https://thor726.github.io/Thor-agent/docs/integrations/thorhub).
 
 ThorHub es una tienda de tokens de pago, no un plan gratuito — y solo cubre tokens de modelo, no la búsqueda web, la generación de imágenes, el TTS ni un navegador en la nube. Esas herramientas necesitan su propia clave, que se añade con `thor tools`.
 
@@ -114,31 +113,31 @@ Thor tiene dos puntos de entrada: inicia la interfaz de terminal con `thor`, o e
 | Interrumpir trabajo actual          | `Ctrl+C` o enviar un nuevo mensaje            | `/stop` o enviar un nuevo mensaje                                                 |
 | Estado específico de plataforma     | `/platforms`                                  | `/status`, `/sethome`                                                             |
 
-Para las listas de comandos completas, consulta la [guía de CLI](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli) y la [guía del Gateway de Mensajería](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging).
+Para las listas de comandos completas, consulta la [guía de CLI](https://thor726.github.io/Thor-agent/docs/user-guide/cli) y la [guía del Gateway de Mensajería](https://thor726.github.io/Thor-agent/docs/user-guide/messaging).
 
 ---
 
 ## Documentación
 
-Toda la documentación está en **[thor-agent.thor-agent.local/docs](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**:
+Toda la documentación está en **[thor-agent.thor-agent.local/docs](https://thor726.github.io/Thor-agent/docs/)**:
 
 | Sección                                                                                             | Contenido                                                    |
 | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [Inicio rápido](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/quickstart)              | Instalar → configurar → primera conversación en 2 minutos   |
-| [Uso de CLI](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli)                             | Comandos, atajos de teclado, personalidades, sesiones        |
-| [Configuración](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/configuration)               | Archivo de configuración, proveedores, modelos, todas las opciones |
-| [Gateway de Mensajería](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging)           | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant   |
-| [Seguridad](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/security)                        | Aprobación de comandos, emparejamiento por DM, aislamiento en contenedor |
-| [Herramientas y Toolsets](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tools)   | Más de 40 herramientas, sistema de toolsets, backends de terminal |
-| [Sistema de Habilidades](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/skills)   | Memoria procedimental, Skills Hub, creación de habilidades   |
-| [Memoria](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/memory)                   | Memoria persistente, perfiles de usuario, mejores prácticas  |
-| [Integración MCP](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/mcp)              | Conecta cualquier servidor MCP para capacidades extendidas   |
-| [Programación Cron](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/cron)           | Tareas programadas con entrega a plataforma                  |
-| [Archivos de Contexto](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/context-files) | Contexto de proyecto que da forma a cada conversación      |
-| [Arquitectura](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/architecture)            | Estructura del proyecto, bucle del agente, clases principales |
-| [Contribuir](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing)              | Configuración de desarrollo, proceso de PR, estilo de código |
-| [Referencia de CLI](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/cli-commands)             | Todos los comandos y flags                                   |
-| [Variables de Entorno](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/environment-variables) | Referencia completa de variables de entorno                  |
+| [Inicio rápido](https://thor726.github.io/Thor-agent/docs/getting-started/quickstart)              | Instalar → configurar → primera conversación en 2 minutos   |
+| [Uso de CLI](https://thor726.github.io/Thor-agent/docs/user-guide/cli)                             | Comandos, atajos de teclado, personalidades, sesiones        |
+| [Configuración](https://thor726.github.io/Thor-agent/docs/user-guide/configuration)               | Archivo de configuración, proveedores, modelos, todas las opciones |
+| [Gateway de Mensajería](https://thor726.github.io/Thor-agent/docs/user-guide/messaging)           | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant   |
+| [Seguridad](https://thor726.github.io/Thor-agent/docs/user-guide/security)                        | Aprobación de comandos, emparejamiento por DM, aislamiento en contenedor |
+| [Herramientas y Toolsets](https://thor726.github.io/Thor-agent/docs/user-guide/features/tools)   | Más de 40 herramientas, sistema de toolsets, backends de terminal |
+| [Sistema de Habilidades](https://thor726.github.io/Thor-agent/docs/user-guide/features/skills)   | Memoria procedimental, Skills Hub, creación de habilidades   |
+| [Memoria](https://thor726.github.io/Thor-agent/docs/user-guide/features/memory)                   | Memoria persistente, perfiles de usuario, mejores prácticas  |
+| [Integración MCP](https://thor726.github.io/Thor-agent/docs/user-guide/features/mcp)              | Conecta cualquier servidor MCP para capacidades extendidas   |
+| [Programación Cron](https://thor726.github.io/Thor-agent/docs/user-guide/features/cron)           | Tareas programadas con entrega a plataforma                  |
+| [Archivos de Contexto](https://thor726.github.io/Thor-agent/docs/user-guide/features/context-files) | Contexto de proyecto que da forma a cada conversación      |
+| [Arquitectura](https://thor726.github.io/Thor-agent/docs/developer-guide/architecture)            | Estructura del proyecto, bucle del agente, clases principales |
+| [Contribuir](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing)              | Configuración de desarrollo, proceso de PR, estilo de código |
+| [Referencia de CLI](https://thor726.github.io/Thor-agent/docs/reference/cli-commands)             | Todos los comandos y flags                                   |
+| [Variables de Entorno](https://thor726.github.io/Thor-agent/docs/reference/environment-variables) | Referencia completa de variables de entorno                  |
 
 ---
 
@@ -184,7 +183,6 @@ de verificación están en [Development Setup](CONTRIBUTING.md#development-setup
 
 ## Comunidad
 
-- 💬 [Discord](https://discord.gg/thor726)
 - 📚 [Skills Hub](https://agentskills.io)
 - 🐛 [Issues](https://github.com/thor726/thor-agent/issues)
 - 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Servidor MCP de control de escritorio Linux para Thor y otros hosts MCP, con árboles de accesibilidad AT-SPI, entrada Wayland/X11, capturas de pantalla y targeting de ventanas del compositor.

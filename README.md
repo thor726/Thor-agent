@@ -7,8 +7,7 @@
   <a href="https://github.com/thor726/Thor-agent/">Thor Agent</a> | <a href="https://github.com/thor726/Thor-agent/">Thor Desktop</a>
 </p>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-GitHub-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-GitHub-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
   <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Built%20by-Thor%20Labs-blueviolet?style=for-the-badge" alt="Built by Thor Labs"></a>
   <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Lang-中文-red?style=for-the-badge" alt="中文"></a>
@@ -18,7 +17,7 @@
 
 **The self-improving AI agent by [Thor Labs](https://github.com/thor726/Thor-agent).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.
 
-Use any model you want — [ThorHub](https://llm.thormarket.site), OpenRouter, OpenAI, your own endpoint, and [many others](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/providers). Switch with `thor model` — no code changes, no lock-in.
+Use any model you want — [ThorHub](https://llm.thormarket.site), OpenRouter, OpenAI, your own endpoint, and [many others](https://thor726.github.io/Thor-agent/docs/integrations/providers). Switch with `thor model` — no code changes, no lock-in.
 
 <table>
 <tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>
@@ -57,10 +56,10 @@ iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts
 The source installer delegates Python 3.14, Node.js, npm, pnpm, ripgrep, FFmpeg,
 and Python dependencies to PM. If Git is absent, it stages the verified Git
 for Windows archive in Thor' tool store. It does not replace your system Git.
-See [installation methods](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/installation)
+See [installation methods](https://thor726.github.io/Thor-agent/docs/getting-started/installation)
 for the separate MSIX/App Installer package and its update ownership.
 
-> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Use the [Termux guide](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/termux), not the desktop/server installer script.
+> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Note: the Termux package is currently broken — a fix is in progress; see the Termux guide for the current status. Use the [Termux guide](https://thor726.github.io/Thor-agent/docs/getting-started/termux), not the desktop/server installer script.
 >
 > **Windows:** Native Windows is fully supported — the PowerShell one-liner above installs everything. If you'd rather use WSL2, the Linux command works there too. Native Windows install lives under `%LOCALAPPDATA%\thor`; WSL2 installs under `~/.thor` as on Linux.
 
@@ -122,7 +121,7 @@ thor update       # Update to the latest version
 thor doctor       # Diagnose any issues
 ```
 
-📖 **[Full documentation →](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**
+📖 **[Full documentation →](https://thor726.github.io/Thor-agent/docs/)**
 
 ---
 
@@ -130,7 +129,7 @@ thor doctor       # Diagnose any issues
 
 Thor works with whatever provider you want — that's not changing. Run `thor setup` and pick your own provider and model; each provider has its own API key and billing. That is the normal way to run Thor.
 
-If you would rather buy tokens than manage a provider account, **[ThorHub](https://llm.thormarket.site)** is Thor's own token store: buy a token package at https://llm.thormarket.site/beli (QRIS), get a sub-key (`sk-thor-...`), and add it in Thor as a custom provider. Check your balance any time with `/topup` (when a ThorHub key is configured) or `/skill saldo`, and top up at https://llm.thormarket.site/beli/topup. Full details on the [ThorHub docs page](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub).
+If you would rather buy tokens than manage a provider account, **[ThorHub](https://llm.thormarket.site)** is Thor's own token store: buy a token package at https://llm.thormarket.site/beli (QRIS), get a sub-key (`sk-thor-...`), and add it in Thor as a custom provider. Check your balance any time with `/topup` (when a ThorHub key is configured) and top up at https://llm.thormarket.site/beli/topup. Full details on the [ThorHub docs page](https://thor726.github.io/Thor-agent/docs/integrations/thorhub).
 
 ThorHub is a paid token store, not a free tier — and it only covers model tokens, not web search, image generation, TTS, or a cloud browser. Those tools each need their own key, which you add with `thor tools`.
 
@@ -154,31 +153,31 @@ Thor has two entry points: start the terminal UI with `thor`, or run the gateway
 | Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                    |
 | Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                            |
 
-For the full command lists, see the [CLI guide](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli) and the [Messaging Gateway guide](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging).
+For the full command lists, see the [CLI guide](https://thor726.github.io/Thor-agent/docs/user-guide/cli) and the [Messaging Gateway guide](https://thor726.github.io/Thor-agent/docs/user-guide/messaging).
 
 ---
 
 ## Documentation
 
-All documentation lives at **[docs on GitHub](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**:
+All documentation lives at **[the documentation site](https://thor726.github.io/Thor-agent/docs/)**:
 
 | Section                                                                                             | What's Covered                                             |
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Quickstart](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |
-| [CLI Usage](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |
-| [Configuration](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/configuration)                | Config file, providers, models, all options                |
-| [Messaging Gateway](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
-| [Security](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/security)                          | Command approval, DM pairing, container isolation          |
-| [Tools & Toolsets](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |
-| [Skills System](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |
-| [Memory](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |
-| [MCP Integration](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |
-| [Cron Scheduling](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |
-| [Context Files](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |
-| [Architecture](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |
-| [Contributing](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |
-| [CLI Reference](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/cli-commands)                  | All commands and flags                                     |
-| [Environment Variables](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/environment-variables) | Complete env var reference                                 |
+| [Quickstart](https://thor726.github.io/Thor-agent/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |
+| [CLI Usage](https://thor726.github.io/Thor-agent/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |
+| [Configuration](https://thor726.github.io/Thor-agent/docs/user-guide/configuration)                | Config file, providers, models, all options                |
+| [Messaging Gateway](https://thor726.github.io/Thor-agent/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
+| [Security](https://thor726.github.io/Thor-agent/docs/user-guide/security)                          | Command approval, DM pairing, container isolation          |
+| [Tools & Toolsets](https://thor726.github.io/Thor-agent/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |
+| [Skills System](https://thor726.github.io/Thor-agent/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |
+| [Memory](https://thor726.github.io/Thor-agent/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |
+| [MCP Integration](https://thor726.github.io/Thor-agent/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |
+| [Cron Scheduling](https://thor726.github.io/Thor-agent/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |
+| [Context Files](https://thor726.github.io/Thor-agent/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |
+| [Architecture](https://thor726.github.io/Thor-agent/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |
+| [Contributing](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |
+| [CLI Reference](https://thor726.github.io/Thor-agent/docs/reference/cli-commands)                  | All commands and flags                                     |
+| [Environment Variables](https://thor726.github.io/Thor-agent/docs/reference/environment-variables) | Complete env var reference                                 |
 
 ---
 
@@ -209,13 +208,13 @@ What gets imported from OpenClaw:
 - **TTS assets** — workspace audio files
 - **Workspace instructions** — AGENTS.md (with `--workspace-target`)
 
-`thor claw migrate` still works as the older spelling. See the [OpenClaw migration guide](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/guides/migrate-from-openclaw) and [Import from Other Agents](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/import-from-other-agents).
+`thor claw migrate` still works as the older spelling. See the [OpenClaw migration guide](https://thor726.github.io/Thor-agent/docs/guides/migrate-from-openclaw) and [Import from Other Agents](https://thor726.github.io/Thor-agent/docs/user-guide/import-from-other-agents).
 
 ---
 
 ## Contributing
 
-We welcome contributions! See the [Contributing Guide](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing) for development setup, code style, and PR process.
+We welcome contributions! See the [Contributing Guide](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing) for development setup, code style, and PR process.
 
 Start with the [PM developer workflow](website/docs/reference/package-management.md#developer-workflow)
 for activation, daily use, dependency changes, and leaving the environment.
@@ -225,7 +224,6 @@ for activation, daily use, dependency changes, and leaving the environment.
 
 ## Community
 
-- 💬 [Discord](https://discord.gg/thor726)
 - 📚 [Skills Hub](https://agentskills.io)
 - 🐛 [Issues](https://github.com/thor726/thor-agent/issues)
 - 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Linux desktop-control MCP server for Thor and other MCP hosts, with AT-SPI accessibility trees, Wayland/X11 input, screenshots, and compositor window targeting.

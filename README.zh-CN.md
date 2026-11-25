@@ -5,8 +5,7 @@
 # Thor Agent ☤
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
   <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Built%20by-Thor%20Labs-blueviolet?style=for-the-badge" alt="Built by Thor Labs"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-lightgrey?style=for-the-badge" alt="English"></a>
@@ -37,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/ins
 
 支持 Linux、macOS 和 WSL2。安装程序会自动处理平台特定的配置。
 
-> **Android / Termux：** aarch64 设备可使用预发布的 APT 软件包，其中包含 Python、Node.js 和 TUI。请按照 [Termux 指南](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/termux)安装，不要使用桌面和服务器的安装脚本。
+> **Android / Termux：** aarch64 设备可使用预发布的 APT 软件包，其中包含 Python、Node.js 和 TUI。请按照 [Termux 指南](https://thor726.github.io/Thor-agent/docs/getting-started/termux)安装，不要使用桌面和服务器的安装脚本。
 >
 > **Windows：** 在 PowerShell 中运行：
 > ```powershell
@@ -68,7 +67,7 @@ thor update       # 更新到最新版本
 thor doctor       # 诊断问题
 ```
 
-📖 **[完整文档 →](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**
+📖 **[完整文档 →](https://thor726.github.io/Thor-agent/docs/)**
 
 ---
 
@@ -76,7 +75,7 @@ thor doctor       # 诊断问题
 
 Thor 始终允许你使用任意服务商，这点不会改变。运行 `thor setup`，选择自己的服务商和模型；每个服务商都有自己的 API Key 和计费方式。这才是使用 Thor 的常规方式。
 
-如果你不想管理服务商账户、而是想直接购买 Token，**[ThorHub](https://llm.thormarket.site)** 是 Thor 自己的 Token 商店：在 https://llm.thormarket.site/beli 购买 Token 套餐（QRIS 支付），获得子 Key（`sk-thor-...`），再以自定义服务商的方式添加到 Thor 中。随时用 `/topup`（已配置 ThorHub Key 时）或 `/skill saldo` 查看余额，在 https://llm.thormarket.site/beli/topup 充值。完整说明见 [ThorHub 文档](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub)。
+如果你不想管理服务商账户、而是想直接购买 Token，**[ThorHub](https://llm.thormarket.site)** 是 Thor 自己的 Token 商店：在 https://llm.thormarket.site/beli 购买 Token 套餐（QRIS 支付），获得子 Key（`sk-thor-...`），再以自定义服务商的方式添加到 Thor 中。随时用 `/topup`（已配置 ThorHub Key 时） 查看余额，在 https://llm.thormarket.site/beli/topup 充值。完整说明见 [ThorHub 文档](https://thor726.github.io/Thor-agent/docs/integrations/thorhub)。
 
 ThorHub 是付费 Token 商店，不是免费套餐——它只覆盖模型 Token，不包括网页搜索、图像生成、TTS 或云浏览器。这些工具各自需要自己的 Key，用 `thor tools` 添加。
 
@@ -100,31 +99,31 @@ Thor 有两种入口：用 `thor` 启动终端 UI，或运行网关从 Telegram�
 | 中断当前工作 | `Ctrl+C` 或发送新消息 | `/stop` 或发送新消息 |
 | 平台特定状态 | `/platforms` | `/status`、`/sethome` |
 
-完整命令列表请参阅 [CLI 指南](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli) 和 [消息网关指南](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging)。
+完整命令列表请参阅 [CLI 指南](https://thor726.github.io/Thor-agent/docs/user-guide/cli) 和 [消息网关指南](https://thor726.github.io/Thor-agent/docs/user-guide/messaging)。
 
 ---
 
 ## 文档
 
-所有文档位于 **[thor-agent.thor-agent.local/docs](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**：
+所有文档位于 **[thor-agent.thor-agent.local/docs](https://thor726.github.io/Thor-agent/docs/)**：
 
 | 章节 | 内容 |
 |------|------|
-| [快速开始](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/quickstart) | 安装 → 设置 → 2 分钟内开始首次对话 |
-| [CLI 使用](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli) | 命令、快捷键、人格、会话 |
-| [配置](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/configuration) | 配置文件、提供商、模型、所有选项 |
-| [消息网关](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging) | Telegram、Discord、Slack、WhatsApp、Signal、Home Assistant |
-| [安全](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/security) | 命令审批、DM 配对、容器隔离 |
-| [工具与工具集](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tools) | 40+ 工具、工具集系统、终端后端 |
-| [技能系统](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/skills) | 过程记忆、技能中心、创建技能 |
-| [记忆](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/memory) | 持久记忆、用户画像、最佳实践 |
-| [MCP 集成](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/mcp) | 连接任意 MCP 服务器扩展能力 |
-| [定时调度](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/cron) | 定时任务与平台投递 |
-| [上下文文件](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/context-files) | 影响每次对话的项目上下文 |
-| [架构](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/architecture) | 项目结构、代理循环、关键类 |
-| [贡献](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing) | 开发设置、PR 流程、代码风格 |
-| [CLI 参考](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/cli-commands) | 所有命令和标志 |
-| [环境变量](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/environment-variables) | 完整环境变量参考 |
+| [快速开始](https://thor726.github.io/Thor-agent/docs/getting-started/quickstart) | 安装 → 设置 → 2 分钟内开始首次对话 |
+| [CLI 使用](https://thor726.github.io/Thor-agent/docs/user-guide/cli) | 命令、快捷键、人格、会话 |
+| [配置](https://thor726.github.io/Thor-agent/docs/user-guide/configuration) | 配置文件、提供商、模型、所有选项 |
+| [消息网关](https://thor726.github.io/Thor-agent/docs/user-guide/messaging) | Telegram、Discord、Slack、WhatsApp、Signal、Home Assistant |
+| [安全](https://thor726.github.io/Thor-agent/docs/user-guide/security) | 命令审批、DM 配对、容器隔离 |
+| [工具与工具集](https://thor726.github.io/Thor-agent/docs/user-guide/features/tools) | 40+ 工具、工具集系统、终端后端 |
+| [技能系统](https://thor726.github.io/Thor-agent/docs/user-guide/features/skills) | 过程记忆、技能中心、创建技能 |
+| [记忆](https://thor726.github.io/Thor-agent/docs/user-guide/features/memory) | 持久记忆、用户画像、最佳实践 |
+| [MCP 集成](https://thor726.github.io/Thor-agent/docs/user-guide/features/mcp) | 连接任意 MCP 服务器扩展能力 |
+| [定时调度](https://thor726.github.io/Thor-agent/docs/user-guide/features/cron) | 定时任务与平台投递 |
+| [上下文文件](https://thor726.github.io/Thor-agent/docs/user-guide/features/context-files) | 影响每次对话的项目上下文 |
+| [架构](https://thor726.github.io/Thor-agent/docs/developer-guide/architecture) | 项目结构、代理循环、关键类 |
+| [贡献](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing) | 开发设置、PR 流程、代码风格 |
+| [CLI 参考](https://thor726.github.io/Thor-agent/docs/reference/cli-commands) | 所有命令和标志 |
+| [环境变量](https://thor726.github.io/Thor-agent/docs/reference/environment-variables) | 完整环境变量参考 |
 
 ---
 
@@ -160,7 +159,7 @@ thor claw migrate --overwrite  # 覆盖已有冲突
 
 ## 贡献
 
-欢迎贡献！请参阅 [贡献指南](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing) 了解开发设置、代码风格和 PR 流程。
+欢迎贡献！请参阅 [贡献指南](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing) 了解开发设置、代码风格和 PR 流程。
 
 PM 引导、Python 3.14 测试环境和规范验证命令见
 [开发环境配置](CONTRIBUTING.md#development-setup)。
@@ -169,7 +168,6 @@ PM 引导、Python 3.14 测试环境和规范验证命令见
 
 ## 社区
 
-- 💬 [Discord](https://discord.gg/thor726)
 - 📚 [技能中心](https://agentskills.io)
 - 🐛 [问题反馈](https://github.com/thor726/thor-agent/issues)
 - 💡 [讨论区](https://github.com/thor726/thor-agent/discussions)

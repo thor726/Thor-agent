@@ -7,8 +7,7 @@
 # تھور ایجنٹ ☤ (Thor Agent)
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
   <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Built%20by-Thor%20Labs-blueviolet?style=for-the-badge" alt="Built by Thor Labs"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-lightgrey?style=for-the-badge" alt="English"></a>
@@ -62,9 +61,9 @@ iex (irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/insta
 کا تصدیق شدہ آرکائیو تھور کے ٹول اسٹور میں نصب کرتا ہے۔ سسٹم کا Git تبدیل نہیں
 ہوتا۔ MSIX/App Installer ایک الگ پیکیج ہے۔
 
-> **اینڈرائیڈ / ٹرمکس (Android / Termux):** aarch64 آلات کے لیے آزمائشی APT پیکیج دستیاب ہے۔ اس میں Python، Node.js اور TUI شامل ہیں۔ ڈیسک ٹاپ اور سرور کے انسٹالیشن اسکرپٹ کے بجائے [Termux گائیڈ](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/termux) استعمال کریں۔
+> **اینڈرائیڈ / ٹرمکس (Android / Termux):** aarch64 آلات کے لیے آزمائشی APT پیکیج دستیاب ہے۔ اس میں Python، Node.js اور TUI شامل ہیں۔ ڈیسک ٹاپ اور سرور کے انسٹالیشن اسکرپٹ کے بجائے [Termux گائیڈ](https://thor726.github.io/Thor-agent/docs/getting-started/termux) استعمال کریں۔
 >
-> **ونڈوز (Windows):** مقامی سورس انسٹال کے لیے اوپر دیا گیا PowerShell کمانڈ استعمال کریں۔ WSL2 میں لینکس کمانڈ استعمال ہوتا ہے۔ مقامی ڈیٹا `%LOCALAPPDATA%\thor` میں اور WSL2 کا ڈیٹا `~/.thor` میں ہوتا ہے۔ ڈیش بورڈ چیٹ مقامی Windows پر pywinpty/ConPTY استعمال کرتا ہے؛ پلیٹ فارم کی حدود [Windows گائیڈ](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/windows-native) میں درج ہیں۔
+> **ونڈوز (Windows):** مقامی سورس انسٹال کے لیے اوپر دیا گیا PowerShell کمانڈ استعمال کریں۔ WSL2 میں لینکس کمانڈ استعمال ہوتا ہے۔ مقامی ڈیٹا `%LOCALAPPDATA%\thor` میں اور WSL2 کا ڈیٹا `~/.thor` میں ہوتا ہے۔ ڈیش بورڈ چیٹ مقامی Windows پر pywinpty/ConPTY استعمال کرتا ہے؛ پلیٹ فارم کی حدود [Windows گائیڈ](https://thor726.github.io/Thor-agent/docs/user-guide/windows-native) میں درج ہیں۔
 
 انسٹالیشن کے بعد:
 
@@ -97,7 +96,7 @@ thor doctor       # کسی بھی مسئلے کی تشخیص کریں
 
 </div>
 
-📖 **[مکمل دستاویزات →](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)**
+📖 **[مکمل دستاویزات →](https://thor726.github.io/Thor-agent/docs/)**
 
 ---
 
@@ -105,7 +104,7 @@ thor doctor       # کسی بھی مسئلے کی تشخیص کریں
 
 Thor آپ کے پسندیدہ پرووائیڈر کے ساتھ کام کرتا ہے — یہ چیز تبدیل نہیں ہو رہی۔ `thor setup` چلائیں اور اپنا پرووائیڈر اور ماڈل خود منتخب کریں؛ ہر پرووائیڈر کی اپنی API کی اور بلنگ ہوتی ہے۔ Thor چلانے کا یہی معمول کا طریقہ ہے۔
 
-اگر آپ پرووائیڈر اکاؤنٹ سنبھالنے کے بجائے ٹوکن خریدنا چاہتے ہیں، تو **[ThorHub](https://llm.thormarket.site)** Thor کی اپنی ٹوکن دکان ہے: https://llm.thormarket.site/beli پر ٹوکن پیکج خریدیں (QRIS)، سب کی (`sk-thor-...`) حاصل کریں، اور اسے Thor میں حسب ضرورت پرووائیڈر کے طور پر شامل کریں۔ اپنا بیلنس کسی بھی وقت `/topup` (جب ThorHub key ترتیب شدہ ہو) یا `/skill saldo` سے چیک کریں، اور https://llm.thormarket.site/beli/topup پر ٹاپ اپ کریں۔ مکمل تفصیلات [ThorHub دستاویزات کے صفحے](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/integrations/thorhub) پر موجود ہیں۔
+اگر آپ پرووائیڈر اکاؤنٹ سنبھالنے کے بجائے ٹوکن خریدنا چاہتے ہیں، تو **[ThorHub](https://llm.thormarket.site)** Thor کی اپنی ٹوکن دکان ہے: https://llm.thormarket.site/beli پر ٹوکن پیکج خریدیں (QRIS)، سب کی (`sk-thor-...`) حاصل کریں، اور اسے Thor میں حسب ضرورت پرووائیڈر کے طور پر شامل کریں۔ اپنا بیلنس کسی بھی وقت `/topup` (جب ThorHub key ترتیب شدہ ہو) سے چیک کریں، اور https://llm.thormarket.site/beli/topup پر ٹاپ اپ کریں۔ مکمل تفصیلات [ThorHub دستاویزات کے صفحے](https://thor726.github.io/Thor-agent/docs/integrations/thorhub) پر موجود ہیں۔
 
 ThorHub ایک بامعاوضہ ٹوکن دکان ہے، مفت درجہ نہیں — اور یہ صرف ماڈل ٹوکنز کا احاطہ کرتی ہے، ویب سرچ، امیج جنریشن، TTS، یا کلاؤڈ براؤزر کا نہیں۔ ان ٹولز میں سے ہر ایک کو اپنی کی چاہیے، جسے آپ `thor tools` سے شامل کرتے ہیں۔
 
@@ -133,33 +132,33 @@ ThorHub ایک بامعاوضہ ٹوکن دکان ہے، مفت درجہ نہی�
 
 </div>
 
-مکمل کمانڈ لسٹ کے لیے، [CLI گائیڈ](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli) اور [میسجنگ گیٹ وے گائیڈ](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging) دیکھیں۔
+مکمل کمانڈ لسٹ کے لیے، [CLI گائیڈ](https://thor726.github.io/Thor-agent/docs/user-guide/cli) اور [میسجنگ گیٹ وے گائیڈ](https://thor726.github.io/Thor-agent/docs/user-guide/messaging) دیکھیں۔
 
 ---
 
 ## دستاویزات (Documentation)
 
-تمام دستاویزات **[thor-agent.thor-agent.local/docs](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)** پر موجود ہیں:
+تمام دستاویزات **[thor-agent.thor-agent.local/docs](https://thor726.github.io/Thor-agent/docs/)** پر موجود ہیں:
 
 <div dir="ltr">
 
 | سیکشن (Section)                                                                                     | تفصیل (What's Covered)                                     |
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [فوری آغاز (Quickstart)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/getting-started/quickstart)     | انسٹالیشن → سیٹ اپ → 2 منٹ میں پہلی بات چیت شروع کریں       |
-| [CLI کا استعمال](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/cli)                         | کمانڈز، کی بائنڈنگز (keybindings)، پرسنلٹیز (personalities)، سیشنز |
-| [کنفیگریشن (Configuration)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/configuration)    | کنفگ فائل، پرووائیڈرز، ماڈلز، اور تمام آپشنز               |
-| [میسجنگ گیٹ وے](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/messaging)                    | ٹیلی گرام، ڈسکارڈ، سلیک، واٹس ایپ، سگنل، ہوم اسسٹنٹ         |
-| [سیکیورٹی (Security)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/security)              | کمانڈ کی منظوری، DM پیئرنگ (pairing)، کنٹینر آئسولیشن       |
-| [ٹولز اور ٹول سیٹس](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/tools)          | 40 سے زائد ٹولز، ٹول سیٹ سسٹم، ٹرمینل بیک اینڈز             |
-| [مہارتوں کا سسٹم (Skills System)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/skills)| پروسیجرل (Procedural) میموری، سکلز ہب، نئی مہارتیں بنانا    |
-| [میموری (Memory)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/memory)            | مستقل میموری، یوزر پروفائلز، بہترین طریقہ کار              |
-| [MCP انضمام (Integration)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/mcp)      | صلاحیتوں کو بڑھانے کے لیے کسی بھی MCP سرور کو جوڑیں        |
-| [کرون (Cron) شیڈیولنگ](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/cron)         | پلیٹ فارم ڈیلیوری کے ساتھ شیڈول کیے گئے کام                 |
-| [کانٹیکسٹ (Context) فائلز](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/user-guide/features/context-files)| پروجیکٹ کا سیاق و سباق (context) جو ہر بات چیت پر اثر انداز ہوتا ہے |
-| [آرکیٹیکچر (Architecture)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/architecture) | پروجیکٹ کا ڈھانچہ، ایجنٹ لوپ، اہم کلاسز                    |
-| [تعاون (Contributing)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing)     | ڈیویلپمنٹ سیٹ اپ، PR کا طریقہ کار، کوڈنگ کا انداز          |
-| [CLI حوالہ جات (Reference)](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/cli-commands)      | تمام کمانڈز اور فلیگز (flags)                              |
-| [انوائرمنٹ ویری ایبلز](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/reference/environment-variables)  | مکمل انوائرمنٹ ویری ایبل حوالہ جات                         |
+| [فوری آغاز (Quickstart)](https://thor726.github.io/Thor-agent/docs/getting-started/quickstart)     | انسٹالیشن → سیٹ اپ → 2 منٹ میں پہلی بات چیت شروع کریں       |
+| [CLI کا استعمال](https://thor726.github.io/Thor-agent/docs/user-guide/cli)                         | کمانڈز، کی بائنڈنگز (keybindings)، پرسنلٹیز (personalities)، سیشنز |
+| [کنفیگریشن (Configuration)](https://thor726.github.io/Thor-agent/docs/user-guide/configuration)    | کنفگ فائل، پرووائیڈرز، ماڈلز، اور تمام آپشنز               |
+| [میسجنگ گیٹ وے](https://thor726.github.io/Thor-agent/docs/user-guide/messaging)                    | ٹیلی گرام، ڈسکارڈ، سلیک، واٹس ایپ، سگنل، ہوم اسسٹنٹ         |
+| [سیکیورٹی (Security)](https://thor726.github.io/Thor-agent/docs/user-guide/security)              | کمانڈ کی منظوری، DM پیئرنگ (pairing)، کنٹینر آئسولیشن       |
+| [ٹولز اور ٹول سیٹس](https://thor726.github.io/Thor-agent/docs/user-guide/features/tools)          | 40 سے زائد ٹولز، ٹول سیٹ سسٹم، ٹرمینل بیک اینڈز             |
+| [مہارتوں کا سسٹم (Skills System)](https://thor726.github.io/Thor-agent/docs/user-guide/features/skills)| پروسیجرل (Procedural) میموری، سکلز ہب، نئی مہارتیں بنانا    |
+| [میموری (Memory)](https://thor726.github.io/Thor-agent/docs/user-guide/features/memory)            | مستقل میموری، یوزر پروفائلز، بہترین طریقہ کار              |
+| [MCP انضمام (Integration)](https://thor726.github.io/Thor-agent/docs/user-guide/features/mcp)      | صلاحیتوں کو بڑھانے کے لیے کسی بھی MCP سرور کو جوڑیں        |
+| [کرون (Cron) شیڈیولنگ](https://thor726.github.io/Thor-agent/docs/user-guide/features/cron)         | پلیٹ فارم ڈیلیوری کے ساتھ شیڈول کیے گئے کام                 |
+| [کانٹیکسٹ (Context) فائلز](https://thor726.github.io/Thor-agent/docs/user-guide/features/context-files)| پروجیکٹ کا سیاق و سباق (context) جو ہر بات چیت پر اثر انداز ہوتا ہے |
+| [آرکیٹیکچر (Architecture)](https://thor726.github.io/Thor-agent/docs/developer-guide/architecture) | پروجیکٹ کا ڈھانچہ، ایجنٹ لوپ، اہم کلاسز                    |
+| [تعاون (Contributing)](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing)     | ڈیویلپمنٹ سیٹ اپ، PR کا طریقہ کار، کوڈنگ کا انداز          |
+| [CLI حوالہ جات (Reference)](https://thor726.github.io/Thor-agent/docs/reference/cli-commands)      | تمام کمانڈز اور فلیگز (flags)                              |
+| [انوائرمنٹ ویری ایبلز](https://thor726.github.io/Thor-agent/docs/reference/environment-variables)  | مکمل انوائرمنٹ ویری ایبل حوالہ جات                         |
 
 </div>
 
@@ -202,7 +201,7 @@ thor claw migrate --overwrite  # موجودہ متصادم فائلوں کو ا�
 
 ## تعاون کریں (Contributing)
 
-ہم آپ کے تعاون کا خیرمقدم کرتے ہیں! ڈیویلپمنٹ سیٹ اپ، کوڈ کے انداز اور PR کے طریقہ کار کے لیے براہ کرم ہماری [Contributing گائیڈ](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/developer-guide/contributing) دیکھیں۔
+ہم آپ کے تعاون کا خیرمقدم کرتے ہیں! ڈیویلپمنٹ سیٹ اپ، کوڈ کے انداز اور PR کے طریقہ کار کے لیے براہ کرم ہماری [Contributing گائیڈ](https://thor726.github.io/Thor-agent/docs/developer-guide/contributing) دیکھیں۔
 
 PM اور Python 3.14 کے ٹیسٹ ماحول اور تصدیقی کمانڈز کے لیے
 [Development Setup](CONTRIBUTING.md#development-setup) دیکھیں۔
@@ -211,7 +210,6 @@ PM اور Python 3.14 کے ٹیسٹ ماحول اور تصدیقی کمانڈز 
 
 ## کمیونٹی (Community)
 
-- 💬 [ڈسکارڈ (Discord)](https://discord.gg/thor726)
 - 📚 [سکلز ہب (Skills Hub)](https://agentskills.io)
 - 🐛 [مسائل (Issues)](https://github.com/thor726/thor-agent/issues)
 - 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — تھور اور دیگر MCP ہوسٹس کے لیے لینکس (Linux) ڈیسک ٹاپ کنٹرول MCP سرور، جس میں AT-SPI ایکسیسیبلٹی ٹریز، Wayland/X11 ان پٹ، سکرین شاٹس، اور کمپوزیٹر ونڈو ٹارگیٹنگ شامل ہے۔
