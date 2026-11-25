@@ -1,6 +1,7 @@
 """GitHub archive transport: keys, immutability, digest-bound downloads."""
 import hashlib
 import json
+from pathlib import Path
 import subprocess
 
 import pytest
@@ -44,6 +45,70 @@ class FakeGh:
                       for name, data in self.releases.get(tag, {}).items()]
             return subprocess.CompletedProcess(args, 0, json.dumps(assets), "")
         raise AssertionError(f"unexpected gh call: {cmd}")
+
+
+class RecordingGh:
+    """Fake `gh` modelling real CLI naming: an uploaded asset takes the
+    basename of the file argument; the part after `#` is only its label."""
+
+    def __init__(self):
+        self.calls = []
+        self.releases = {}  # tag -> {asset name: bytes}
+
+    def __call__(self, args, capture_output=True, text=True):
+        assert args[0] == "gh"
+        self.calls.append(list(args))
+        cmd = args[1:]
+        if cmd[:2] == ["release", "view"]:
+            ok = cmd[2] in self.releases
+            return subprocess.CompletedProcess(args, 0 if ok else 1, "", "" if ok else "not found")
+        if cmd[:2] == ["release", "create"]:
+            self.releases.setdefault(cmd[2], {})
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if cmd[:2] == ["release", "upload"]:
+            tag, spec = cmd[2], cmd[3]
+            path = spec.partition("#")[0]
+            self.releases.setdefault(tag, {})[Path(path).name] = open(path, "rb").read()
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if cmd[:1] == ["api"]:
+            tag = cmd[1].rsplit("/", 1)[-1]
+            assets = [{"name": name, "size": len(data),
+                       "digest": "sha256:" + hashlib.sha256(data).hexdigest()}
+                      for name, data in self.releases.get(tag, {}).items()]
+            return subprocess.CompletedProcess(args, 0, json.dumps(assets), "")
+        raise AssertionError(f"unexpected gh call: {cmd}")
+
+    def upload_specs(self):
+        return [c[4] for c in self.calls if c[1:3] == ["release", "upload"]]
+
+
+def test_put_uploads_under_key_encoded_name_not_source_basename(tmp_path, monkeypatch):
+    # Regression (termux-verify run #17): archive_inputs stages every input
+    # to a local file named "input", so uploads named after the source file
+    # all collided on the asset name "input".
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RecordingGh()
+    source = tmp_path / "input"
+    source.write_bytes(b"toolchain bytes")
+    key = "upstream/sha256/23871b1702bfd550fb5f901778fd4290ecf2ee034a45a889fbe96d89b188086d"
+    gh_assets.put(key, str(source), immutable=True, runner=gh)
+    (spec,) = gh.upload_specs()
+    assert Path(spec.partition("#")[0]).name == gh_assets.asset_name_for(key)
+    assert list(gh.releases["ci-archive"]) == [gh_assets.asset_name_for(key)]
+
+
+def test_put_two_keys_same_source_name_do_not_collide(tmp_path, monkeypatch):
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RecordingGh()
+    keys = ["upstream/sha256/aaaa", "upstream/sha256/bbbb"]
+    for i, key in enumerate(keys):
+        source = tmp_path / f"stage{i}" / "input"
+        source.parent.mkdir()
+        source.write_bytes(f"bytes {i}".encode())
+        gh_assets.put(key, str(source), immutable=True, runner=gh)
+    names = [Path(spec.partition("#")[0]).name for spec in gh.upload_specs()]
+    assert names == [gh_assets.asset_name_for(k) for k in keys]
+    assert set(gh.releases["ci-archive"]) == set(names)
 
 
 def test_asset_name_roundtrip_and_rejects_ambiguous_keys():

@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 from typing import Callable
@@ -122,7 +123,15 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
         if immutable:
             raise ArchiveError(f"Refusing to replace immutable archive object: {key}")
     ensure_release(name, runner=runner)
-    _run(runner, ["release", "upload", name, f"{source}#{asset}", "--clobber"])
+    # `gh release upload` names the asset after the uploaded file's basename
+    # (the part after `#` is only a label), so stage the bytes under the
+    # key-encoded asset name first: callers may hand us any local filename
+    # (archive_inputs stages every input as "input"), and same-named assets
+    # collide under --clobber.
+    with tempfile.TemporaryDirectory() as directory:
+        staged = Path(directory) / asset
+        shutil.copyfile(source, staged)
+        _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
     print(f"OK gh-archive: {key} ({source.stat().st_size} bytes)")
 
 
