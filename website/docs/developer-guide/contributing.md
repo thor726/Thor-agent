@@ -285,7 +285,7 @@ or npm does not satisfy, where it would only warn outside the checkout.
 Use a Node version accepted by the corresponding `package.json` engines.
 Native desktop dependencies can also require the platform build toolchain.
 
-Logos and icons are generated from `assets/nous-girl-*.svg` and
+Logos and icons are generated from `assets/thor-girl-*.svg` and
 `assets/backgrounds/`. `node scripts/generate-icons.mjs` (`just icons`) renders them with the
 Thor runtime Python (`THOR_PYTHON`, else `python` on PATH): Pillow and
 resvg-py are core dependencies. Do not commit generated PNG/ICO/ICNS outputs.
