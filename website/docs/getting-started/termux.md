@@ -6,12 +6,6 @@ description: "Install Thor Agent on Android from its signed Termux APT repositor
 
 # Thor on Android with Termux
 
-:::danger Termux is currently broken
-The Termux package does not work right now. A fix is in progress and will
-ship soon. Until then, the steps below may fail or install a package that
-does not run.
-:::
-
 The Termux package runs Thor on **aarch64 (arm64-v8a)** Android devices.
 Two APT channels are published under
 `https://thor726.github.io/thor-agent-releases/releases/termux/<channel>`:
