@@ -67,7 +67,7 @@ if (!/^\d+\.\d+\.\d+$/.test(electronVersion)) {
 }
 
 const macFeed = channelRequest ? null : feedContract.darwinFeed(channel === 'canary' || channel === 'light-canary' ? 'canary' : 'stable', light)
-const publicUrl = feedContract.feedBaseUrl(process.env.CLOUDFLARE_R2_PUBLIC_URL)
+const publicUrl = feedContract.feedBaseUrl(process.env.THOR_PAGES_PUBLIC_URL)
 
 /** @satisfies {Configuration} */
 module.exports = {
@@ -86,11 +86,11 @@ module.exports = {
   // the release pipeline can keep the two apart.
   artifactName: `${store ? 'Store-' : ''}${artifactNamePascal}-\${version}-\${os}-\${arch}.\${ext}`,
   icon: 'assets/icon',
-  // The electron-updater feed. CI builds set CLOUDFLARE_R2_PUBLIC_URL (the R2
-  // public bucket / custom domain) and publish there — the feed yml, blockmaps
-  // and installers all live in the same flat R2 bucket, and electron-updater
+  // The electron-updater feed. CI builds set THOR_PAGES_PUBLIC_URL (the
+  // GitHub Pages release host) and publish there — the feed yml, blockmaps
+  // and installers all live under the same Pages base, and electron-updater
   // resolves the yml's relative artifact paths against it. Builds without the
-  // var (local, or a fork without the R2 vars) keep the github provider, which
+  // var (local, or a fork without the Pages var) keep the github provider, which
   // is exactly today's behavior. The store build has no feed at all (the Store
   // owns its distribution and updates).
   publish: channelRequest ? null : !channel

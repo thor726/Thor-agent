@@ -169,7 +169,7 @@ function buildManifest(
       windowsVersion: `0.0.${sequence}.0`,
       identity,
       bundleEnv: {},
-      publicBase: 'https://thor-assets.thor-agent.local'
+      publicBase: 'https://thor726.github.io/thor-agent-releases'
     },
     packages: [
       {
@@ -298,7 +298,7 @@ def install():
     passthrough = original_build().open
     def local(request, *args, **kwargs):
         parsed = urlsplit(request.full_url if isinstance(request, urllib.request.Request) else request)
-        assert parsed.hostname in ('thor-assets.thor-agent.local', 'api.github.com')
+        assert parsed.hostname in ('thor726.github.io', 'api.github.com')
         url = 'http://127.0.0.1:${address.port}' + parsed.path + ('?' + parsed.query if parsed.query else '')
         # ChannelReader compares response.geturl() against the ORIGINAL request url:
         # wrap so the redirect detector still sees the un-rewritten authority.

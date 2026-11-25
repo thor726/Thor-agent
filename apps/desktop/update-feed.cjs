@@ -28,11 +28,11 @@ function feedBaseUrl(raw) {
   try {
     url = new URL(raw)
   } catch {
-    throw new TypeError(`CLOUDFLARE_R2_PUBLIC_URL is not a URL: ${raw}`)
+    throw new TypeError(`THOR_PAGES_PUBLIC_URL is not a URL: ${raw}`)
   }
   const canonical = url.origin + url.pathname.replace(/\/+$/, '')
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || canonical !== raw.replace(/\/+$/, '')) {
-    throw new TypeError(`CLOUDFLARE_R2_PUBLIC_URL must be a canonical https base (got ${raw}, expected ${canonical})`)
+    throw new TypeError(`THOR_PAGES_PUBLIC_URL must be a canonical https base (got ${raw}, expected ${canonical})`)
   }
   return canonical
 }
