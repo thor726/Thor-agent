@@ -158,3 +158,18 @@ def test_bottom_node_drag_preserves_upper_geometry_and_path_transform(monkeypatc
     assert path.get("d") == "M 0 0 C 0 90 10 102.48 20 105 L 0 105 z"
     with pytest.raises(ValueError, match="absolute M/L/C"):
         module.drag_bottom_nodes(ET.fromstring('<path d="m 0 0 l 1 1"/>'), cutoff=0, band=1, distance=1)
+
+
+def test_icon_art_builds_masters_from_the_committed_girl_svgs():
+    """The generator's girl sources are the SVGs the repo actually ships; a
+    stale source name crashes the Nix thor-icons build in girl_bbox, where
+    resvg receives an empty/invalid SVG for a path that does not exist."""
+    source = Path(__file__).resolve().parents[2]
+    spec = importlib.util.spec_from_file_location("icon_art_sources_under_test", source / "scripts/generate_icons.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    art = module.IconArt(source)
+    assert art.girls["black"].exists() and art.girls["white"].exists()
+    assert art.master.startswith("<svg") and art.master_dark.startswith("<svg")
+    assert art.master_mac.startswith("<svg") and art.master_mac_dark.startswith("<svg")
