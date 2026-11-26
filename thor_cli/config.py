@@ -2431,33 +2431,27 @@ def _env_write_lock(env_path: Path):
         yield
 
 
-def _write_env_lines(env_path: Path, lines: list, *, preserve_mode: bool) -> None:
-    """Atomically replace ``.env`` (tmp file + fsync + rename).
+def _write_env_lines(env_path: Path, lines: list, *, preserve_mode: bool, newline: Optional[str] = None) -> None:
+    """Atomically replace ``.env`` (tmp file + fsync + rename); ``newline=""`` keeps the lines' own endings.
     ``preserve_mode`` keeps the original file mode (e.g. 0640 for Docker volume mounts) instead of
     letting ``_secure_file`` tighten to 0600; a new file is always secured."""
     original_mode = None
-    try:
+    with suppress(OSError):
         original_mode = stat.S_IMODE(env_path.stat().st_mode) if preserve_mode else None
-    except OSError:
-        pass
     fd, tmp_path = mkstemp_beside(env_path, suffix=".tmp", prefix=".env_")
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
+        with os.fdopen(fd, "w", encoding="utf-8", newline=newline) as f:
             f.writelines(lines)
             f.flush()
             os.fsync(f.fileno())
         atomic_replace(tmp_path, env_path)
     except BaseException:
-        try:
+        with suppress(OSError):
             os.unlink(tmp_path)
-        except OSError:
-            pass
         raise
     if original_mode is not None:
-        try:
+        with suppress(OSError):
             os.chmod(env_path, original_mode)
-        except OSError:
-            pass
     else:
         _secure_file(env_path)
 
@@ -2609,12 +2603,15 @@ def remove_env_value(key: str) -> bool:
         _publish_env_value(key, None)
         return False
 
-    with _env_write_lock(env_path):
-        lines = _read_env_lines(env_path)
-        new_lines = [line for line in lines if not _env_line_defines_key(line, key)]
-        found = len(new_lines) < len(lines)
-        if found:
-            _write_env_lines(env_path, new_lines, preserve_mode=True)
+    from thor_cli.env_loader import remove_whole_dotenv_assignments
+    with _env_write_lock(env_path):  # a quoted value over several lines: whole assignments, as dotenv reads them
+        found = remove_whole_dotenv_assignments(env_path, key, _write_env_lines)
+        if found is None:
+            lines = _read_env_lines(env_path)
+            new_lines = [line for line in lines if not _env_line_defines_key(line, key)]
+            found = len(new_lines) < len(lines)
+            if found:
+                _write_env_lines(env_path, new_lines, preserve_mode=True)
     _publish_env_value(key, None)
     invalidate_env_cache()
     return found

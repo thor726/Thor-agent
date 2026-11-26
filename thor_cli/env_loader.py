@@ -443,6 +443,39 @@ def _resolve_dotenv_assignments(
     return resolved
 
 
+def environ_before_dotenv(name: str) -> str | None:
+    """*name* as the environment this process was started with set it: ``os.environ`` with what this
+    process's dotenv passes published peeled back. None when it was not set there."""
+    with _DOTENV_LOCK:
+        return _dotenv_lookup_env(None).get(name)
+
+
+def resolve_project_dotenv(project_env: Path, home: Path, *, removed: frozenset[str] = frozenset()) -> dict[str, str]:
+    """What ``load_thor_dotenv`` would publish from the checkout's *project_env* in a process started
+    for *home* now, read-only, with the names in *removed* gone from *home*'s ``.env``: the process's own
+    environment (this process's dotenv output peeled back), then *home*'s ``.env`` with override, then
+    *project_env* with override only when *home* has no ``.env`` (else it fills gaps), ``${VAR}`` expanded
+    by the same rules at each layer."""
+    with _DOTENV_LOCK:
+        lookup_env = _dotenv_lookup_env(None)
+    user_env = home / ".env"
+    try:
+        home_assignments = [item for item in _parse_dotenv_file(user_env) if item[0] not in removed]
+    except OSError:
+        home_assignments = []
+    for name, value in _resolve_dotenv_assignments(home_assignments, lookup_env, override=True).items():
+        if value is not None:
+            lookup_env[name] = value
+    try:
+        assignments = _parse_dotenv_file(project_env)
+    except OSError:
+        return {}
+    override = not user_env.exists()
+    return {name: value for name, value in
+            _resolve_dotenv_assignments(assignments, lookup_env, override=override).items()
+            if value is not None and (override or name not in lookup_env)}
+
+
 def resolve_home_dotenv(home: Path, *, lookup_env: dict[str, str] | None = None) -> dict[str, str]:
     """What ``load_thor_dotenv`` would publish from *home*'s dotenv layers, read-only: the home's
     ``.env`` then the administrator-managed ``.env``, both with override and ``${VAR}`` expanded by the
@@ -724,6 +757,69 @@ def dotenv_unreadable(path: Path) -> bool:
         return True
     except OSError:  # missing, or a failure that is not a refusal
         return False
+
+
+class DotenvNotUtf8(OSError):
+    """A ``.env`` with a quoted value over several lines that is not UTF-8: removing an assignment from it would
+    re-encode every other byte, so it is refused."""
+
+
+def _dotenv_bindings(raw: bytes) -> list:
+    """*raw*'s assignments, comments and errors as python-dotenv (this loader's parser) reads them, in file
+    order, decoded as latin-1 like a file that is not UTF-8 (every line break and quote is ASCII); their
+    ``original.string`` values joined give the text back."""
+    from dotenv.parser import parse_stream
+    return list(parse_stream(io.StringIO(raw.decode("latin-1").removeprefix("\u00ef\u00bb\u00bf"))))
+
+
+def dotenv_multiline(raw: bytes) -> bool:
+    """Whether the ``.env`` *raw* holds a quoted value over several lines, which a line-by-line edit would cut
+    after its first line (or remove a look-alike line from)."""
+    return any(b.key is not None and not b.error and "\n" in b.original.string.strip() for b in _dotenv_bindings(raw))
+
+
+def dotenv_assigned(raw: bytes) -> list[str]:
+    """The names python-dotenv reads as assignments in the ``.env`` *raw* (a look-alike line inside another
+    quoted value is not one)."""
+    return [b.key for b in _dotenv_bindings(raw) if b.key is not None and not b.error]
+
+
+def _quoted_name(raw: bytes, key: str) -> bool:
+    """Whether *raw* assigns *key* under a quoted name (``'KEY'=value``), which python-dotenv reads as *key* and
+    the line-by-line reader does not see."""
+    return any(b.key == key and not b.error and b.original.string.strip().removeprefix("export").lstrip()[:1] == "'"
+               for b in _dotenv_bindings(raw))
+
+
+def remove_whole_dotenv_assignments(env_path: Path, key: str, write) -> bool | None:
+    """Remove every assignment of *key* from the ``.env`` at *env_path* whole, as python-dotenv reads it, when the
+    file holds a quoted value over several lines or assigns *key* under a quoted name; every other byte stays
+    (the blank lines before one included), written once by ``write(path, lines, preserve_mode=True, newline="")``.
+    Returns whether one was removed, or None for any other file (the line-by-line edit is exact there). A file
+    that is not UTF-8 with an assignment to remove raises :class:`DotenvNotUtf8`; with none it is left alone."""
+    raw = env_path.read_bytes()
+    if not dotenv_multiline(raw) and not _quoted_name(raw, key):
+        return None
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        if key in dotenv_assigned(raw):
+            raise DotenvNotUtf8(f"{env_path} is not UTF-8 text, so {key} cannot be removed from it safely: remove "
+                                f"it there by hand") from None
+        return False
+    bom = "\ufeff" if text.startswith("\ufeff") else ""
+    kept, found = [bom], False
+    from dotenv.parser import parse_stream
+    for binding in parse_stream(io.StringIO(text[len(bom):])):
+        if binding.key == key and not binding.error:
+            lead = binding.original.string[:len(binding.original.string) - len(binding.original.string.lstrip())]
+            kept.append(lead[:lead.rfind("\n") + 1])
+            found = True
+        else:
+            kept.append(binding.original.string)
+    if found:
+        write(env_path, ["".join(kept)], preserve_mode=True, newline="")  # its own line endings, once
+    return found
 
 
 def _load_user_dotenv(path: Path, *, load_pass: int) -> bool:

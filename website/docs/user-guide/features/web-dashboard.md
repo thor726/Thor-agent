@@ -856,6 +856,16 @@ dashboard:
 When `secret` is empty, a random per-process signing key is generated. That's fine for a single process, but it means **every session is invalidated on restart** and sessions **don't span multiple workers**. Set an explicit `secret` for restart-surviving / multi-worker deployments.
 :::
 
+#### Setting the password from the command line
+
+`thor dashboard password` writes `username`, `password_hash` and (when missing) `secret` under `dashboard.basic_auth`, the same fields the interactive prompt writes, and never stores or prints the password. It asks on the terminal, or reads the first line of standard input with `--password-stdin`, so it works in scripts, containers and service setups:
+
+```bash
+thor dashboard password --username admin --password-stdin < /run/secrets/dashboard_password
+```
+
+The gateway's Webapp and `thor dashboard` / `thor serve` all sign in with these credentials. Each reads them when it starts: restart a running one. Starting with a new password ends every earlier sign-in. Add `-p <profile>` for a named profile's own sign-in; it is used by that profile's `--isolated` dashboard and by a gateway the profile runs by itself, while the machine dashboard and a gateway serving several profiles use the credentials of the home they were started from. See the [CLI reference](../../reference/cli-commands.md#thor-dashboard-password) for every option.
+
 The `/auth/password-login` endpoint is rate-limited per client IP (default 10 attempts/minute → HTTP 429) and returns a single generic `401 Invalid credentials` for both unknown users and wrong passwords, so it can't be used as a username-enumeration oracle.
 
 #### Worked example: username/password
