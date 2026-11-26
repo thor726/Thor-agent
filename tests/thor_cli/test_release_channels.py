@@ -142,12 +142,12 @@ def test_passive_reads_and_missing_objects_make_one_attempt(monkeypatch):
 
 
 @pytest.mark.parametrize(("base", "headers", "blocked"), [
-    ("https://thor-assets.thor-agent.local", {"Server": "cloudflare", "Content-Type": "text/html"}, True),
-    ("https://thor-assets.thor-agent.local", {"Server": "cloudflare", "cf-cache-status": "DYNAMIC"}, False),
+    ("https://thor726.github.io/thor-agent-releases", {"Server": "cloudflare", "cf-mitigated": "challenge"}, True),
+    ("https://thor726.github.io/thor-agent-releases", {"Server": "cloudflare", "Content-Type": "text/html"}, False),
     ("https://other-r2.example", {"Server": "cloudflare", "Content-Type": "text/html"}, False),
 ])
 def test_cdn_firewall_403_names_the_network_not_the_install(base, headers, blocked):
-    """#128295: a Cloudflare block that never reached our bucket must not read as a bare HTTP 403."""
+    """#128295: a CDN firewall block must not read as a bare HTTP 403."""
     from email.message import Message
     from urllib.error import HTTPError
     from thor_cli.release_channels import ChannelError, ChannelReader
