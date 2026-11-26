@@ -24,6 +24,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import threading
 from typing import Callable
 
 from scripts.releases.pages import file_sha256, relative_artifact_path
@@ -86,7 +87,26 @@ def ensure_release(tag: str | None = None, *, runner: Runner = subprocess.run) -
     return name
 
 
+# One asset listing per (runner, tag) serves a whole staging run: listing
+# per object costs several API calls per pinned input — hundreds per run —
+# and exhausts the installation rate limit (desktop run #8, HTTP 403).
+# Keyed by runner identity so injected fakes never share a listing; put()
+# keeps the cached listing current after an upload.
+_assets_cache: dict[tuple[Runner, str], dict[str, dict]] = {}
+_assets_lock = threading.Lock()
+
+
 def _assets(tag: str, runner: Runner) -> dict[str, dict]:
+    key = (runner, tag)
+    with _assets_lock:
+        cached = _assets_cache.get(key)
+        if cached is None:
+            cached = _list_assets(tag, runner)
+            _assets_cache[key] = cached
+        return dict(cached)
+
+
+def _list_assets(tag: str, runner: Runner) -> dict[str, dict]:
     result = runner(["gh", "api", f"repos/{{owner}}/{{repo}}/releases/tags/{tag}",
                      "--jq", ".assets"], capture_output=True, text=True)
     if result.returncode == 0:
@@ -159,6 +179,11 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
         staged = Path(directory) / asset
         shutil.copyfile(source, staged)
         _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
+    with _assets_lock:
+        cached = _assets_cache.get((runner, name))
+        if cached is not None:
+            cached[asset] = {"name": asset, "size": source.stat().st_size,
+                             "digest": "sha256:" + file_sha256(source)}
     print(f"OK gh-archive: {key} ({source.stat().st_size} bytes)")
 
 
@@ -182,7 +207,14 @@ def download(key: str, path: Path, *, expected_size: int, expected_sha256: str,
     asset = asset_name_for(key)
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=path.parent) as directory:
-        _run(runner, ["release", "download", name, "--pattern", asset, "--dir", directory])
+        try:
+            _run(runner, ["release", "download", name, "--pattern", asset, "--dir", directory])
+        except ArchiveError:
+            # A concurrent run's --clobber upload can replace the asset
+            # between listing and download (HTTP 404 on the old asset id);
+            # one retry re-resolves it by name. Size + sha256 below still
+            # bind the bytes that land.
+            _run(runner, ["release", "download", name, "--pattern", asset, "--dir", directory])
         downloaded = Path(directory) / asset
         if not downloaded.is_file():
             raise ArchiveError(f"Archive asset missing after download: {key}")

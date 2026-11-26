@@ -187,3 +187,60 @@ def test_asset_info_sees_draft_archive_release(tmp_path, monkeypatch):
     source.write_bytes(b"pinned bytes")
     gh_assets.put(key, str(source), immutable=True, runner=gh)
     assert gh.uploads == []
+
+
+def test_asset_listing_is_cached_per_runner(tmp_path, monkeypatch):
+    # Regression (desktop run #8, 2026-11-26): every asset_info/put/download
+    # re-listed the release's assets — several API calls per pinned input,
+    # hundreds per run — until the installation rate limit (HTTP 403) failed
+    # the archive step. One listing per (runner, tag) must serve the run.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RecordingGh()
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    key = "upstream/sha256/aaaa"
+    gh_assets.put(key, str(source), immutable=True, runner=gh)
+    assert gh_assets.asset_info(key, runner=gh)["size"] == 12
+    assert gh_assets.asset_info(key, runner=gh)["size"] == 12
+    api_calls = [c for c in gh.calls if c[1:2] == ["api"]]
+    assert len(api_calls) == 1
+
+
+class FlakyGh:
+    """Fake `gh` whose first asset download fails transiently (a concurrent
+    run's --clobber upload replaced the asset between listing and download)."""
+
+    def __init__(self, data):
+        self.data = data
+        self.downloads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        assert args[0] == "gh"
+        cmd = args[1:]
+        if cmd[:1] == ["api"]:
+            assets = [{"name": "upstream__sha256__aaaa", "size": len(self.data),
+                       "digest": "sha256:" + hashlib.sha256(self.data).hexdigest()}]
+            return subprocess.CompletedProcess(args, 0, json.dumps(assets), "")
+        if cmd[:2] == ["release", "download"]:
+            self.downloads += 1
+            if self.downloads == 1:
+                return subprocess.CompletedProcess(args, 1, "", "HTTP 404: Not Found")
+            directory = cmd[cmd.index("--dir") + 1]
+            open(f"{directory}/upstream__sha256__aaaa", "wb").write(self.data)
+            return subprocess.CompletedProcess(args, 0, "", "")
+        raise AssertionError(f"unexpected gh call: {cmd}")
+
+
+def test_download_retries_once_on_transient_failure(tmp_path, monkeypatch):
+    # Regression (archive-inputs run #10, 2026-11-26): three runs staging
+    # into the same ci-archive release raced — one run's --clobber upload
+    # replaced an asset another run was downloading (HTTP 404 on the old
+    # asset id). One retry re-resolves the asset by name.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = FlakyGh(b"pinned bytes")
+    target = tmp_path / "out"
+    gh_assets.download("upstream/sha256/aaaa", target, expected_size=12,
+                       expected_sha256=hashlib.sha256(b"pinned bytes").hexdigest(),
+                       runner=gh)
+    assert target.read_bytes() == b"pinned bytes"
+    assert gh.downloads == 2
