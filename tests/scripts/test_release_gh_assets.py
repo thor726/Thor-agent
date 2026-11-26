@@ -296,3 +296,56 @@ def test_put_retries_once_on_transient_upload_failure(tmp_path, monkeypatch):
     gh_assets.put(key, str(source), immutable=True, runner=gh)
     assert gh.uploads == 2
     assert gh.releases["ci-archive"] == {gh_assets.asset_name_for(key): b"pinned bytes"}
+
+
+class RacingUploadGh(RecordingGh):
+    """RecordingGh whose first upload loses the race to a concurrent job:
+    the rival's upload of the same asset lands first and ours dies with
+    HTTP 422 "ReleaseAsset.name already exists". ``rival_bytes`` is what
+    the rival landed — identical bytes for content-addressed keys."""
+
+    def __init__(self, rival_bytes):
+        super().__init__()
+        self.rival_bytes = rival_bytes
+        self.uploads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        if args[1:3] == ["release", "upload"]:
+            self.uploads += 1
+            if self.uploads == 1:
+                tag, spec = args[3], args[4]
+                asset = Path(spec.partition("#")[0]).name
+                self.releases.setdefault(tag, {})[asset] = self.rival_bytes
+                return subprocess.CompletedProcess(
+                    args, 1, "", "HTTP 422: ReleaseAsset.name already exists")
+        return super().__call__(args, capture_output=capture_output, text=text)
+
+
+def test_put_treats_existing_same_digest_asset_as_success(tmp_path, monkeypatch):
+    # Regression (stable release run, 2026-11-27): many jobs upload the
+    # same content-addressed asset into the ci-archive draft at once; the
+    # loser's --clobber upload dies with HTTP 422 "already exists" even
+    # though the winner landed identical bytes. A fresh listing showing
+    # the asset with a matching digest is success — no retry needed.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RacingUploadGh(b"pinned bytes")
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    key = "upstream/sha256/aaaa"
+    gh_assets.put(key, str(source), immutable=True, runner=gh)
+    assert gh.uploads == 1
+    assert gh.releases["ci-archive"] == {gh_assets.asset_name_for(key): b"pinned bytes"}
+
+
+def test_put_retries_when_existing_asset_digest_differs(tmp_path, monkeypatch):
+    # Same race, but the asset that landed first is NOT our bytes: the
+    # fresh-listing check must not claim success — fall back to the one
+    # retry from fix #4 so our bytes land.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RacingUploadGh(b"rival bytes!")
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    key = "upstream/sha256/aaaa"
+    gh_assets.put(key, str(source), immutable=True, runner=gh)
+    assert gh.uploads == 2
+    assert gh.releases["ci-archive"] == {gh_assets.asset_name_for(key): b"pinned bytes"}

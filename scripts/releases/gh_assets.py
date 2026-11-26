@@ -163,6 +163,26 @@ def _digest(asset: dict) -> str | None:
     return digest.removeprefix("sha256:") if digest.startswith("sha256:") else None
 
 
+def _landed_by_concurrent_upload(tag: str, asset: str, source: Path,
+                                 runner: Runner) -> bool:
+    """True when a fresh listing shows `asset` already holding our bytes.
+
+    Bypasses the cached listing on purpose: the cache predates the race
+    that just failed our upload, so only a fresh read can see the rival
+    job's asset. A failed listing reads as "not landed" so the caller
+    falls back to its one retry instead of masking the upload error.
+    """
+    try:
+        fresh = _list_assets(tag, runner)
+    except ArchiveError:
+        return False
+    with _assets_lock:
+        if (runner, tag) in _assets_cache:
+            _assets_cache[(runner, tag)] = fresh
+    rival = fresh.get(asset)
+    return rival is not None and _digest(rival) == file_sha256(source)
+
+
 def asset_info(key: str, *, tag: str | None = None,
                runner: Runner = subprocess.run) -> dict | None:
     """Return {"size": int, "sha256": str | None} for one object, or None."""
@@ -198,10 +218,14 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
         except ArchiveError:
             # A concurrent run's --clobber upload can replace the asset
             # while this upload is in flight (HTTP 404 on the old asset
-            # id); one retry re-resolves it by name. Keys are
-            # content-addressed, so the retried upload lands identical
-            # bytes even when the other run finished first.
-            _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
+            # id), or land first and make ours fail with HTTP 422
+            # "ReleaseAsset.name already exists". Keys are
+            # content-addressed, so check a FRESH listing (the cached one
+            # predates the race): if the asset is already there with our
+            # digest, the other run landed identical bytes and this put
+            # has succeeded. Otherwise one retry re-resolves it by name.
+            if not _landed_by_concurrent_upload(name, asset, source, runner):
+                _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
     with _assets_lock:
         cached = _assets_cache.get((runner, name))
         if cached is not None:
