@@ -90,6 +90,20 @@ test('pnpm run builder forwards an apostrophe path to the wrapper verbatim', () 
   }
 })
 
+test('a named nsis format is prepared for Windows while the default stays msix', () => {
+  const preparedFormats = (args) => {
+    const calls = []
+    const spawn = (_node, childArgs) => { calls.push(childArgs); return { status: 0 } }
+    assert.equal(runElectronBuilder(args, { spawn }), 0)
+    const prepare = calls.find(childArgs => childArgs[0].endsWith('prepare-packaging-tools.mjs'))
+    assert.ok(prepare)
+    return prepare.filter((arg, index) => prepare[index - 1] === '--format')
+  }
+  assert.deepEqual(preparedFormats(['--win', 'nsis']), ['nsis'])
+  assert.deepEqual(preparedFormats(['--win']), ['msix'])
+  assert.deepEqual(preparedFormats(['--win', 'msix']), ['msix'])
+})
+
 test('source builds hand every child the builder heap without rewriting inherited NODE_OPTIONS', () => {
   const calls = []
   const spawn = (_node, args, options) => { calls.push({ args, options }); return { status: 0 } }

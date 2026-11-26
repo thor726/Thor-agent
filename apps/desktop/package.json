@@ -79,7 +79,10 @@
     "test:e2e": "pnpm run build && playwright test e2e/",
     "test:e2e:visual": "pnpm run build && WLR_BACKENDS=headless WLR_NO_HARDWARE_CURSORS=1 cage -- pnpm exec playwright test e2e/ --reporter=list",
     "test:e2e:update-snapshots": "pnpm run build && WLR_BACKENDS=headless WLR_NO_HARDWARE_CURSORS=1 cage -- pnpm exec playwright test e2e/ --reporter=list --update-snapshots",
-    "repro:short-session-hang": "node scripts/run-short-session-hang-repro.mjs"
+    "repro:short-session-hang": "node scripts/run-short-session-hang-repro.mjs",
+    "dist:win:nsis": "pnpm run build && pnpm run builder --win nsis",
+    "dist:bundled:nsis": "pnpm run payload && cross-env THOR_DESKTOP_VARIANT=bundled pnpm run build && cross-env THOR_DESKTOP_VARIANT=bundled pnpm run builder --win nsis --x64",
+    "dist:bundled:linux": "pnpm run payload && cross-env THOR_DESKTOP_VARIANT=bundled pnpm run build && cross-env THOR_DESKTOP_VARIANT=bundled pnpm run builder --linux AppImage --x64"
   },
   "dependencies": {
     "@assistant-ui/core": "0.2.23",

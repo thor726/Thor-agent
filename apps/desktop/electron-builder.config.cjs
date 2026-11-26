@@ -235,7 +235,9 @@ module.exports = {
   win: {
     executableName: windowsExecutableName,
     legalTrademarks: displayName,
-    target: ['msix'],
+    // Stable builds pin `--win msix` explicitly (scripts/bundles/desktop.py);
+    // `nsis` is only built when requested by name (unsigned preview lane).
+    target: ['msix', 'nsis'],
     // The updaters' relaunch waiter is PowerShell run outside the package. The
     // sealed payload's snapshot omits scripts/, so it ships as a resource
     // (RELAUNCH_WAITER_SCRIPT in electron/updater/relaunch-waiter.ts).
@@ -277,6 +279,15 @@ module.exports = {
     // the restricted capability that permits unvirtualized AppData/HKCU writes.
     capabilities: ['unvirtualizedResources'],
     showNameOnTiles: true
+  },
+  // Unsigned preview installer (desktop-unsigned-preview workflow). No code
+  // signing: windowsSigning() only engages with Azure env present, and this
+  // lane deliberately builds without it. Assisted wizard so users can pick
+  // the install directory; per-user install needs no admin elevation.
+  nsis: {
+    oneClick: false,
+    perMachine: false,
+    allowToChangeInstallationDirectory: true
   },
   linux: {
     category: 'Development',
