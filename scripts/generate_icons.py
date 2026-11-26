@@ -52,7 +52,7 @@ Dependencies:
     Pillow and resvg-py are core runtime dependencies; run this file with a
     Thor runtime interpreter (scripts/generate-icons.mjs uses THOR_PYTHON).
 
-Outputs (99 files):
+Outputs (90 files):
   assets/icon-master.svg                              generated light master
   assets/icon-master-dark.svg                         generated dark master
   apps/desktop/assets/icon.png                        1024x1024 squircle (light)
@@ -78,16 +78,13 @@ Outputs (99 files):
   apps/bootstrap-installer/src-tauri/icons/icon.ico        16,32,64,128,256
   apps/bootstrap-installer/src-tauri/icons/icon.icns       16..1024
   apps/bootstrap-installer/public/thor-girl.png   256x256 squircle mark (light)
-  website/static/img/logo.png                     1772x1799 girl alone, transparent (light)
-  website/static/img/logo-dark.png                1772x1799 girl alone, transparent (dark)
-  website/static/img/thor-logo.png                150x150 on white (opaque)
-  website/static/img/thor-logo-dark.png           150x150 on #0d1117 (opaque)
-  website/static/img/favicon-16x16.png            16x16
-  website/static/img/favicon-32x32.png            32x32
-  website/static/img/apple-touch-icon.png         180x180
-  website/static/img/favicon.ico                  16,32,48
-  website/static/img/favicon.svg                  copy of the light master
   web/public/favicon.ico                          16,32,48
+
+Website brand assets (website/static/img/logo*.png, thor-logo*.png,
+favicon*, apple-touch-icon.png, thor-agent-banner.png) are NOT generated
+here: they carry the Thor hammer mark and are rendered by hand from the
+vector masters assets/thor-hammer.svg (bright gold, dark backgrounds) and
+assets/thor-hammer-light.svg (deep gold, light backgrounds).
 """
 
 from __future__ import annotations
@@ -233,13 +230,6 @@ CHECK_SIZES: dict[str, tuple[str, tuple[int, int]]] = {
     "apps/bootstrap-installer/src-tauri/icons/128x128.png": ("PNG", (128, 128)),
     "apps/bootstrap-installer/src-tauri/icons/128x128@2x.png": ("PNG", (256, 256)),
     "apps/bootstrap-installer/public/thor-girl.png": ("PNG", (256, 256)),
-    "website/static/img/logo.png": ("PNG", (1772, 1799)),
-    "website/static/img/logo-dark.png": ("PNG", (1772, 1799)),
-    "website/static/img/thor-logo.png": ("PNG", (150, 150)),
-    "website/static/img/thor-logo-dark.png": ("PNG", (150, 150)),
-    "website/static/img/favicon-16x16.png": ("PNG", (16, 16)),
-    "website/static/img/favicon-32x32.png": ("PNG", (32, 32)),
-    "website/static/img/apple-touch-icon.png": ("PNG", (180, 180)),
 }
 
 # (relpath, kind, arg)
@@ -279,15 +269,6 @@ TARGETS: list[tuple[str, str, object]] = [
     ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/art-dark.png", "icon_art", "white"),
     ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/mono.png", "icon_mono", None),
     ("apps/bootstrap-installer/public/thor-girl.png", "girl_light", 256),
-    ("website/static/img/logo.png", "logo", None),
-    ("website/static/img/logo-dark.png", "logo_dark", None),
-    ("website/static/img/thor-logo.png", "png_white", 150),
-    ("website/static/img/thor-logo-dark.png", "png_dark_white", 150),
-    ("website/static/img/favicon-16x16.png", "png", 16),
-    ("website/static/img/favicon-32x32.png", "png", 32),
-    ("website/static/img/apple-touch-icon.png", "png", 180),
-    ("website/static/img/favicon.ico", "ico", [16, 32, 48]),
-    ("website/static/img/favicon.svg", "svg_copy", None),
     ("web/public/favicon.ico", "ico", [16, 32, 48]),
 ]
 

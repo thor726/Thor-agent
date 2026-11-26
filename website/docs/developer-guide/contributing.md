@@ -475,7 +475,6 @@ When you ask Thor to review a PR in a repository that has `.agents/checks/`, tel
 
 ## Community
 
-- **Discord**: [discord.gg/thor726](https://discord.gg/thor726)
 - **GitHub Discussions**: For design proposals and architecture discussions
 - **Skills Hub**: Upload specialized skills and share with the community
 

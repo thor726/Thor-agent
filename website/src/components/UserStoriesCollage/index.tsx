@@ -301,10 +301,7 @@ export default function UserStoriesCollage(): React.JSX.Element {
         >
           Add your story to this page
         </a>{' '}
-        by editing <code>userStories.json</code>, or post it in the{' '}
-        <a href="https://discord.gg/thor726" target="_blank" rel="noopener noreferrer">
-          Thor Labs Discord
-        </a>{' '}
+        by editing <code>userStories.json</code>, or open a GitHub issue
         and we&apos;ll pick it up.
       </div>
     </div>

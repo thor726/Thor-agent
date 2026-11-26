@@ -374,8 +374,8 @@ build. Source checkouts are separate: `main` is their only valid channel.
 
 `--build-commit` prints its deterministic downloads-page URL before dispatch,
 including in dry runs:
-`https://thor-assets.thor-agent.local/releases/commit/<full-sha>/index.html`.
-`CLOUDFLARE_R2_PUBLIC_URL` overrides the public origin. After admission, the
+`https://thor726.github.io/thor-agent-releases/releases/commit/<full-sha>/index.html`.
+`THOR_PAGES_PUBLIC_URL` overrides the public origin. After admission, the
 commit summary runs even when a build or assembly job fails; it lists only
 receipt-backed existing downloads and marks missing binaries as not built.
 Missing binaries link to the workflow run under **View build run**, not to

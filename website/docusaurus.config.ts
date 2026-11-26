@@ -217,11 +217,6 @@ const config: Config = {
           label: 'GitHub',
           position: 'right',
         },
-        {
-          href: 'https://discord.gg/thor726',
-          label: 'Discord',
-          position: 'right',
-        },
       ],
     },
     footer: {
@@ -239,7 +234,6 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            { label: 'Discord', href: 'https://discord.gg/thor726' },
             { label: 'GitHub Issues', href: 'https://github.com/thor726/thor-agent/issues' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
@@ -250,11 +244,11 @@ const config: Config = {
             { label: 'Desktop Download', href: 'https://github.com/thor726/Thor-agent/' },
             { label: 'Compare Thor Agent', href: 'https://github.com/thor726/Thor-agent/compare' },
             { label: 'GitHub', href: 'https://github.com/thor726/thor-agent' },
-            { label: 'Thor Labs', href: 'https://thor-agent.local' },
+            { label: 'Thor Labs', href: 'https://github.com/thor726/Thor-agent' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://thor-agent.local">Thor Labs</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Built by <a href="https://github.com/thor726/Thor-agent">Thor Labs</a> · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

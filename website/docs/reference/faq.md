@@ -653,7 +653,7 @@ If an MCP server crashes mid-request, Thor will report a timeout. Check the serv
 
 #### The Skills Hub page won't load in the desktop app (403 / blocked)
 
-**Cause:** The docs site (`thor-agent.thor-agent.local`) is served through Vercel, whose WAF denies some residential IP ranges it considers flagged. If your network is on such a range, every request to the domain returns a 403 block page.
+**Cause:** The Skills Hub picker embeds the hosted docs page. If your network blocks or filters the docs host — a proxy, DNS filter, firewall, or ISP-level filtering — the embedded page fails to load and the request can return a 403 block page.
 
 **Solution:** The Skills Hub picker probes the primary domain and automatically falls back to the equivalent GitHub Pages deployment (`nousresearch.github.io/thor-agent`), which serves the same catalog. If the page still fails on both origins, check whether a proxy, DNS filter, or firewall is blocking both hosts — and report the affected range to the maintainers so it can be reviewed on the deployment side.
 
@@ -925,5 +925,4 @@ If using OpenRouter, make sure your API key has credits. A 400 from OpenRouter o
 If your issue isn't covered here:
 
 1. **Search existing issues:** [GitHub Issues](https://github.com/thor726/thor-agent/issues)
-2. **Ask the community:** [Thor Labs Discord](https://discord.gg/nousresearch)
-3. **File a bug report:** Include your OS, Python version (`python3 --version`), Thor version (`thor --version`), and the full error message
+2. **File a bug report:** Include your OS, Python version (`python3 --version`), Thor version (`thor --version`), and the full error message
