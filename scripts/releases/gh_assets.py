@@ -76,14 +76,29 @@ def _run(runner: Runner, args: list[str]) -> subprocess.CompletedProcess:
     return result
 
 
+# put() ensures the release per object; without this cache every pinned
+# input costs a `gh release view` API call on top of its upload — hundreds
+# per staging run — and exhausts the installation rate limit (face96b7
+# push runs, HTTP 403). Keyed by runner identity like _assets_cache so
+# injected fakes never share state. The lock is held across view+create:
+# put() runs on a thread pool, and two threads racing to create the same
+# release would fail the second create.
+_ensured_releases: set[tuple[Runner, str]] = set()
+_ensured_lock = threading.Lock()
+
+
 def ensure_release(tag: str | None = None, *, runner: Runner = subprocess.run) -> str:
     """Create the archive release as a draft when missing; return its tag."""
     name = release_tag(tag)
-    view = runner(["gh", "release", "view", name], capture_output=True, text=True)
-    if view.returncode == 0:
-        return name
-    _run(runner, ["release", "create", name, "--draft", "--title", f"CI archive {name}",
-                  "--notes", "Release staging archive (Fase 3 R2 migration). Not a product release."])
+    key = (runner, name)
+    with _ensured_lock:
+        if key in _ensured_releases:
+            return name
+        view = runner(["gh", "release", "view", name], capture_output=True, text=True)
+        if view.returncode != 0:
+            _run(runner, ["release", "create", name, "--draft", "--title", f"CI archive {name}",
+                          "--notes", "Release staging archive (Fase 3 R2 migration). Not a product release."])
+        _ensured_releases.add(key)
     return name
 
 

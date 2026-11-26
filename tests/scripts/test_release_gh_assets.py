@@ -206,6 +206,24 @@ def test_asset_listing_is_cached_per_runner(tmp_path, monkeypatch):
     assert len(api_calls) == 1
 
 
+def test_ensure_release_checks_existence_once_per_runner(tmp_path, monkeypatch):
+    # Regression (face96b7 push runs, 2026-11-26): put() called
+    # ensure_release per object, and each call ran `gh release view` — one
+    # API call per pinned input on top of the listing — until the
+    # installation rate limit (HTTP 403) failed the archive step. The
+    # existence check must run once per (runner, tag) per process.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RecordingGh()
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    gh_assets.put("upstream/sha256/aaaa", str(source), immutable=True, runner=gh)
+    gh_assets.put("upstream/sha256/bbbb", str(source), immutable=True, runner=gh)
+    views = [c for c in gh.calls if c[1:3] == ["release", "view"]]
+    creates = [c for c in gh.calls if c[1:3] == ["release", "create"]]
+    assert len(views) == 1
+    assert len(creates) == 1
+
+
 class FlakyGh:
     """Fake `gh` whose first asset download fails transiently (a concurrent
     run's --clobber upload replaced the asset between listing and download)."""
