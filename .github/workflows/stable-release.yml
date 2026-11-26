@@ -287,6 +287,14 @@ jobs:
       - uses: ./.github/actions/setup-pm
         with:
           cache-python: false
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - id: plan
         run: python -m scripts.releases.stable transitions
         env:
@@ -298,11 +306,7 @@ jobs:
           RELEASE_CLAIM_TAG: ${{ needs.admit.outputs.claim-tag }}
           RELEASE_CLAIM_OBJECT: ${{ needs.admit.outputs.claim-object }}
           BASELINE_MANIFEST_URL: ${{ inputs.baseline-manifest }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
 
   transitions-win32:
     name: Pin actual OLD and NEW signed packages (win32)
@@ -323,6 +327,14 @@ jobs:
       - uses: ./.github/actions/setup-pm
         with:
           cache-python: false
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - id: plan
         run: python -m scripts.releases.stable transitions
         env:
@@ -334,11 +346,7 @@ jobs:
           RELEASE_CLAIM_TAG: ${{ needs.admit.outputs.claim-tag }}
           RELEASE_CLAIM_OBJECT: ${{ needs.admit.outputs.claim-object }}
           BASELINE_MANIFEST_URL: ${{ inputs.baseline-manifest }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
 
   candidate-manifest:
     name: Stage verified stable candidate artifacts
@@ -352,6 +360,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: release-signing
     timeout-minutes: 90
+    permissions:
+      contents: write
     outputs:
       manifest-url: ${{ steps.manifest.outputs.manifest-url }}
       manifest-sha256: ${{ steps.manifest.outputs.manifest-sha256 }}
@@ -360,11 +370,9 @@ jobs:
       RELEASE_CLAIM_TAG: ${{ needs.admit.outputs.claim-tag }}
       RELEASE_CLAIM_OBJECT: ${{ needs.admit.outputs.claim-object }}
       RELEASE_NEEDS: ${{ toJSON(needs) }}
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+      GH_TOKEN: ${{ github.token }}
+      THOR_ARCHIVE_RELEASE: archive-${{ needs.admit.outputs.claim-tag }}
+      THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -375,6 +383,14 @@ jobs:
       - uses: ./.github/actions/setup-pm
         with:
           cache-python: false
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - id: manifest
         run: python -m scripts.releases.stable candidate-manifest
 
@@ -567,11 +583,15 @@ jobs:
           RELEASE_CLAIM_OBJECT: ${{ needs.admit.outputs.claim-object }}
           CANDIDATE_MANIFEST_URL: ${{ needs.candidate-manifest.outputs.manifest-url }}
           CANDIDATE_MANIFEST_SHA256: ${{ needs.candidate-manifest.outputs.manifest-sha256 }}
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Render the admitted candidate smoke results
         if: fromJSON(needs.admit.outputs.lanes).bundles
         # The builds table is presentation: a render failure warns and the release still
@@ -586,18 +606,18 @@ jobs:
           DESKTOP_CHANNEL: ${{ fromJSON(needs.admit.outputs.lanes)['desktop-channel'] }}
           # It lists the archive and writes the tag page, and the shared channel page when the
           # release built every desktop package the channel serves.
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
         run: |
           args=()
           if [ "$DESKTOP_CHANNEL" != true ]; then args+=(--no-channel-page); fi
           python scripts/render-builds-table.py --tag "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --r2-base-url "$THOR_PAGES_PUBLIC_URL" \
             --archive "$RELEASE_CLAIM_TAG" \
             --candidate-manifest-sha256 "$CANDIDATE_MANIFEST_SHA256" --candidate-commit "$RELEASE_COMMIT" \
             "${args[@]}"
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "stable render candidate smoke results" --push
       - name: Set up Docker Buildx for ordered alias promotion
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Log in to Docker Hub for ordered alias promotion
@@ -611,11 +631,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_VERSION: ''
-          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
-          CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
+          THOR_PAGES_PUBLIC_URL: ${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}
           # The pass commits this release's Store draft (scripts/releases/store.py).
           MS_STORE_TENANT_ID: ${{ secrets.MS_STORE_TENANT_ID }}
           MS_STORE_CLIENT_ID: ${{ secrets.MS_STORE_CLIENT_ID }}
@@ -623,3 +639,6 @@ jobs:
           MS_STORE_PRODUCT_ID: ${{ vars.MS_STORE_PRODUCT_ID }}
           # Repository variable; 'true' commits the draft held for Publish now.
           MS_STORE_HOLD: ${{ vars.MS_STORE_HOLD }}
+      - name: Publish the Pages host changes
+        shell: bash
+        run: python -m scripts.releases.pages publish --message "stable reconcile ordered publication" --push
