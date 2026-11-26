@@ -76,6 +76,11 @@ function toolsetArguments(inputs) {
   const config = require(path.join(app, 'electron-builder.config.cjs'))
   const tools = path.join(app, config.directories?.buildResources || 'build', 'prepared-packaging-tools')
   fs.mkdirSync(tools, { recursive: true })
+  // Toolset bundles ship CommonJS entrypoints (e.g. the icons tool's
+  // icon-tool.js). Without this marker they inherit apps/desktop's
+  // "type": "module" scope and crash with "require is not defined in ES
+  // module scope" when electron-builder spawns them with node.
+  fs.writeFileSync(path.join(tools, 'package.json'), '{"type":"commonjs"}\n')
   return Object.entries(inputs.toolsets).map(([name, directory]) => {
     const destination = path.join(tools, name)
     fs.rmSync(destination, { recursive: true, force: true })

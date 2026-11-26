@@ -90,6 +90,31 @@ test('pnpm run builder forwards an apostrophe path to the wrapper verbatim', () 
   }
 })
 
+test('prepared toolsets are copied under a CommonJS scope marker', async () => {
+  const source = path.resolve(import.meta.dirname, '../../..')
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'builder-toolsets-'))
+  const toolsRoot = path.join(source, 'apps/desktop/build/prepared-packaging-tools')
+  try {
+    const electron = path.join(out, 'electron.zip')
+    fs.writeFileSync(electron, 'fixture archive')
+    const toolsets = { sevenZip: path.join(out, 'sevenZip'), icons: path.join(out, 'icons') }
+    for (const dir of Object.values(toolsets)) fs.mkdirSync(dir)
+    const manifest = await publishPackagingInputs({ source, out, target: `${process.platform}-${process.arch}`, formats: ['dir'], electron, toolsets })
+    const nativeDeps = path.join(out, 'native')
+    fs.mkdirSync(path.join(nativeDeps, 'node-pty'), { recursive: true })
+    fs.writeFileSync(path.join(nativeDeps, 'node-pty/package.json'), '{}')
+    recordNativeInputs({ source, out: nativeDeps, platform: process.platform, arch: process.arch })
+    const spawn = () => ({ status: 0 })
+    assert.equal(runElectronBuilder(['--prepared', manifest, '--native-deps', nativeDeps, '--dir'], { spawn }), 0)
+    // The copied bundles are CommonJS entrypoints spawned by electron-builder;
+    // without this marker they inherit apps/desktop's "type": "module".
+    assert.equal(JSON.parse(fs.readFileSync(path.join(toolsRoot, 'package.json'), 'utf8')).type, 'commonjs')
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true })
+    fs.rmSync(toolsRoot, { recursive: true, force: true })
+  }
+})
+
 test('a named nsis format is prepared for Windows while the default stays msix', () => {
   const preparedFormats = (args) => {
     const calls = []
