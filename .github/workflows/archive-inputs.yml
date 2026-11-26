@@ -27,23 +27,28 @@ jobs:
     runs-on: ubuntu-latest
     environment: release-signing
     timeout-minutes: 60
+    # gh release create/upload for the ci-archive draft needs write; a read
+    # token cannot see or write draft archive releases (run #16 lesson).
+    permissions:
+      contents: write
     env:
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
+      GH_TOKEN: ${{ github.token }}
+      THOR_ARCHIVE_RELEASE: ci-archive
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
           ref: ${{ inputs.sha || github.sha }}
           persist-credentials: false
       # Runner Python is intentional: the toolchain's upstream may be gone.
-      # A job-level `if` cannot read `secrets`; the job env can. Forks and a
-      # repo whose release-signing environment is not provisioned yet must
-      # skip the archive, not turn main red.
+      # The archive transport is GitHub Release assets via the `gh` CLI
+      # (scripts.releases.gh_assets) on the job token, so there is no secret
+      # to provision and no secret gate. Forks still skip: a fork push must
+      # not create or upload a ci-archive release in the fork. `!= true`
+      # (not `== false`) also runs when the flag is absent from a
+      # workflow_call payload, so a caller can never silently skip.
       - name: Verify and archive every pinned input
-        if: env.CLOUDFLARE_R2_ACCOUNT_ID != ''
+        if: github.event.repository.fork != true
         run: python3 -m scripts.ci.archive_inputs
-      - name: Report the unprovisioned archive
-        if: env.CLOUDFLARE_R2_ACCOUNT_ID == ''
-        run: echo "::notice::CLOUDFLARE_R2_* secrets are not configured; pinned inputs were not archived."
+      - name: Report the skipped fork archive
+        if: github.event.repository.fork == true
+        run: echo "::notice::Fork repository; pinned inputs were not archived."
