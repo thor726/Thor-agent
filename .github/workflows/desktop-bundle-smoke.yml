@@ -5,7 +5,7 @@ on:
   # pushed ref (the ref this is dispatched on): `gh workflow run
   # desktop-bundle-smoke.yml --ref <test-branch> -f platform=win32 -f arch=x64
   # -f format=msix -f sha=<built commit> -f commit-build=true
-  # -f public-base=https://thor-assets.thor-agent.local/`. No rebuild per test.
+  # -f public-base=https://thor726.github.io/thor-agent-releases/`. No rebuild per test.
   workflow_dispatch:
     inputs:
       platform: {required: true, type: string}
@@ -83,6 +83,12 @@ jobs:
     if: inputs.platform == 'darwin'
     runs-on: macos-latest
     timeout-minutes: 30
+    # Draft archive releases are invisible to a read token, so the
+    # gh_assets handoff fetch needs write to see and download them
+    # (stable admit lesson). A called workflow cannot raise its caller's
+    # token permissions, so callers must grant contents: write too.
+    permissions:
+      contents: write
     # Also constrains the recording action's nested cache to read-only.
     cache-mode: read
     env: &smoke-env
@@ -93,8 +99,14 @@ jobs:
       CHANNEL_BUILD: ${{ inputs.channel-build }}
       CHANNEL_REQUEST_SHA256: ${{ inputs.channel-request-sha256 }}
       PUBLIC_BASE: ${{ inputs.public-base }}
-      CLOUDFLARE_R2_PUBLIC_URL: ${{ inputs.public-root }}
-      R2_DISPOSABLE_RUN: ${{ inputs.disposable-run }}
+      THOR_PAGES_PUBLIC_URL: ${{ inputs.public-root }}
+      PAGES_DISPOSABLE_RUN: ${{ inputs.disposable-run }}
+      GH_TOKEN: ${{ github.token }}
+      # Same archive release desktop-bundled-release staged under: its
+      # validate output archive-tag is claim-tag (stable attempt ref) or
+      # tag, so archive-<archive-tag> matches archive-<claim-tag> /
+      # archive-<tag> there; tagless commit/channel builds use ci-archive.
+      THOR_ARCHIVE_RELEASE: ${{ (inputs.archive-tag != '' && format('archive-{0}', inputs.archive-tag)) || (inputs.tag != '' && format('archive-{0}', inputs.tag)) || 'ci-archive' }}
       PLATFORM: ${{ inputs.platform }}
       ARCH: ${{ inputs.arch }}
       FORMAT: ${{ inputs.format }}
@@ -154,12 +166,12 @@ jobs:
             args=(--commit-build "$RELEASE_COMMIT")
           fi
           if [ -n "${CHANNEL_BUILD:-}" ]; then args=(--channel-request "$SMOKE_ROOT/request.json"); fi
-          python -m scripts.releases.handoff fetch --public-base "$PUBLIC_BASE" "${args[@]}" \
+          python -m scripts.releases.handoff fetch "${args[@]}" \
             --name "$name" --root "$SMOKE_ROOT/download" --include "$pattern" 2>&1 | tee "$SMOKE_ROOT/out/fetch.log"
           python - "$name" "$pattern" <<'PY'
           import fnmatch, json, os, sys
           from pathlib import Path
-          from scripts.releases.r2 import file_sha256
+          from scripts.releases.pages import file_sha256
           root = Path(os.environ['SMOKE_ROOT'])
           receipt = root / 'download' / f'handoff-{sys.argv[1]}.json'
           data = json.loads(receipt.read_text(encoding='utf-8'))
@@ -252,6 +264,10 @@ jobs:
     # windows-11-arm runners are much slower (the dependency install alone runs 12+ minutes and
     # the MSIX leg exceeds 30 total); x64 legs complete in ~14.
     timeout-minutes: 45
+    # See macos: draft archive download needs contents: write, and the
+    # caller must grant it too.
+    permissions:
+      contents: write
     cache-mode: read
     env: *smoke-env
     steps: *smoke-steps
