@@ -262,3 +262,37 @@ def test_download_retries_once_on_transient_failure(tmp_path, monkeypatch):
                        runner=gh)
     assert target.read_bytes() == b"pinned bytes"
     assert gh.downloads == 2
+
+
+class FlakyUploadGh(RecordingGh):
+    """RecordingGh whose first upload dies the way a lost --clobber race
+    does: HTTP 404 on the asset id another run just replaced."""
+
+    def __init__(self):
+        super().__init__()
+        self.uploads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        if args[1:3] == ["release", "upload"]:
+            self.uploads += 1
+            if self.uploads == 1:
+                return subprocess.CompletedProcess(
+                    args, 1, "", "HTTP 404: Not Found")
+        return super().__call__(args, capture_output=capture_output, text=text)
+
+
+def test_put_retries_once_on_transient_upload_failure(tmp_path, monkeypatch):
+    # Regression (stable release v0.23.6 run 45834643789, 2026-11-26): five
+    # jobs staged pinned inputs into the same ci-archive release at once;
+    # one job's --clobber upload replaced an asset another job was still
+    # uploading, and the loser died with HTTP 404 on the old asset id. One
+    # retry re-resolves the asset by name; keys are content-addressed, so
+    # the retried upload lands identical bytes.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = FlakyUploadGh()
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    key = "upstream/sha256/aaaa"
+    gh_assets.put(key, str(source), immutable=True, runner=gh)
+    assert gh.uploads == 2
+    assert gh.releases["ci-archive"] == {gh_assets.asset_name_for(key): b"pinned bytes"}

@@ -193,7 +193,15 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
     with tempfile.TemporaryDirectory() as directory:
         staged = Path(directory) / asset
         shutil.copyfile(source, staged)
-        _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
+        try:
+            _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
+        except ArchiveError:
+            # A concurrent run's --clobber upload can replace the asset
+            # while this upload is in flight (HTTP 404 on the old asset
+            # id); one retry re-resolves it by name. Keys are
+            # content-addressed, so the retried upload lands identical
+            # bytes even when the other run finished first.
+            _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
     with _assets_lock:
         cached = _assets_cache.get((runner, name))
         if cached is not None:
