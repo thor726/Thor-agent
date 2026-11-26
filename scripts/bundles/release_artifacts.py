@@ -202,7 +202,7 @@ def assemble(root: Path, tag: str, commit: str, public_base: str, out: Path,
     The Windows groups build together, so the universal bundle (`windows`) and
     the Store bundle (`windows-store`) are each present exactly when their lane is."""
     from scripts.releases.handoff import receipt_name, validate_receipt
-    from scripts.releases.r2 import put, staging_key_for
+    from scripts.releases.pages import put, staging_key_for
 
     lanes = frozenset(lanes)
     expected = lane_set.handoffs(lanes, ALL_HANDOFFS)
@@ -309,7 +309,7 @@ def materialize(manifest: dict, root: Path, *, public_base: str, store_only: boo
 
 def publish(manifest: dict, root: Path, public_base: str) -> None:
     """Verify versioned uploads and stage APT content-addressed files, not indexes."""
-    from scripts.releases.r2 import put
+    from scripts.releases.pages import put
 
     materialize(manifest, root, public_base=public_base)
     windows = [row for row in manifest["packages"] if row["platform"] == "windows"]
@@ -346,7 +346,7 @@ def write_appinstaller(out: Path, *, identity: str, publisher: str, version: str
 def publish_canary_appinstaller(root: Path, *, tag: str, variant: str, bundle: Path,
                                identity: str, publisher: str, version: str, public_base: str) -> None:
     """Native SDK work is complete; verify its identity before writing a feed."""
-    from scripts.releases.r2 import put
+    from scripts.releases.pages import put
     from thor_cli.update_channel import is_canary_tag
 
     if not is_canary_tag(tag):
@@ -372,7 +372,8 @@ def publish_canary_appinstaller(root: Path, *, tag: str, variant: str, bundle: P
 
 
 def promote(manifest: dict, root: Path, public_base: str) -> None:
-    from scripts.releases.r2 import put, finalize
+    from scripts.releases.darwin import finalize
+    from scripts.releases.pages import put
 
     # Feeds need the per-arch feed legs and APT indexes, not the packages: those are
     # bound by the accepted candidate's sha256 receipts.

@@ -201,7 +201,7 @@ def dispatch_command(commit: str, repository: str, branch: str,
 
 def cmd_build_commit(args) -> None:
     from scripts import release
-    from scripts.releases import r2
+    from scripts.releases import pages
     from scripts.releases.bundle_env import parse_assignments
 
     try:
@@ -215,7 +215,7 @@ def cmd_build_commit(args) -> None:
         if not branch:
             raise ValueError("could not resolve the repository default branch")
         command = dispatch_command(commit, repository, branch, bundle_env)
-        page = r2.public_url_for(r2.public_base_url(), r2.commit_page_key_for(commit))
+        page = pages.public_url_for(pages.public_base_url(), pages.commit_page_key_for(commit))
         print(f"Building one-off bundle for commit {commit}")
         print(f"Builds will be available at: {page}.")
         print(f"Workflow command, running from {repository}@{branch}")

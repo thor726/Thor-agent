@@ -26,6 +26,7 @@ import subprocess
 
 from scripts.releases.r2 import (
     cache_control_for,
+    channel_for_tag,
     channel_page_key_for,
     commit_key_for,
     commit_page_key_for,
@@ -46,6 +47,7 @@ __all__ = [
     "PagesChannelStore",
     "PagesScope",
     "cache_control_for",
+    "channel_for_tag",
     "channel_page_key_for",
     "channel_public_base",
     "commit_key_for",
@@ -66,6 +68,7 @@ __all__ = [
     "repo_dir_from_env",
     "require_run",
     "staging_key_for",
+    "wait_public_bytes",
 ]
 
 # The Pages site of thor726/thor-agent-releases is the production origin.
@@ -248,6 +251,37 @@ def publish_worktree(repo_dir: str | Path, message: str, *, push: bool = False) 
                        check=True, capture_output=True, text=True)
     return subprocess.run(["git", "-C", str(worktree), "rev-parse", "HEAD"],
                           check=True, capture_output=True, text=True).stdout.strip()
+
+
+def wait_public_bytes(url: str, predicate, *, tries: int | None = None,
+                      delay_s: float | None = None) -> bytes:
+    """Poll a public Pages URL until `predicate(body)` holds.
+
+    A worktree push is not visible until the Pages deploy lands, so every
+    read-back that used to hit R2 synchronously must wait out the deploy
+    lag. Bounded: THOR_PAGES_VISIBILITY_TRIES / _DELAY_S override the
+    defaults (tests set them to 1 / 0). Raises ValueError on timeout.
+    """
+    import time
+    import urllib.error
+    import urllib.request
+
+    if tries is None:
+        tries = int(os.environ.get("THOR_PAGES_VISIBILITY_TRIES", "30"))
+    if delay_s is None:
+        delay_s = float(os.environ.get("THOR_PAGES_VISIBILITY_DELAY_S", "10"))
+    last: bytes | None = None
+    for attempt in range(max(1, tries)):
+        try:
+            with urllib.request.urlopen(url, timeout=60) as response:
+                last = response.read()
+        except (urllib.error.URLError, OSError):
+            last = None
+        if last is not None and predicate(last):
+            return last
+        if attempt + 1 < tries and delay_s:
+            time.sleep(delay_s)
+    raise ValueError(f"Public Pages object not visible after {tries} tries: {url}")
 
 
 class PagesChannelStore:

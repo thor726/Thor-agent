@@ -14,9 +14,9 @@ from thor_cli.release_channels import (
     ChannelError, build_prefix, canonical_json, validate_identity,
 )
 from scripts.bundles.channel_artifacts import assemble
-from scripts.releases import handoff, lanes as lane_set, r2, stable
+from scripts.releases import handoff, lanes as lane_set, pages, stable
 from scripts.releases.desktop_targets import MANIFEST_PLATFORM, MANIFEST_TARGETS, NATIVE_LEGS, TARGETS
-from scripts.releases.channels import ChannelPublisher, R2ChannelStore
+from scripts.releases.channels import ChannelPublisher, channel_store
 from scripts.releases.progress import log
 from scripts.releases.versioning import parse_attempt_ref
 
@@ -69,7 +69,7 @@ def read_native_receipts(root: Path, tag: str, commit: str, *, payload_tag: str 
                 raise ChannelError("Native release receipts disagree")
             file = root / row["path"]
             # Only native metadata, distributables and blockmaps are downloaded.
-            if file.is_file() and (file.stat().st_size != row["size"] or r2.file_sha256(file) != row["sha256"]):
+            if file.is_file() and (file.stat().st_size != row["size"] or pages.file_sha256(file) != row["sha256"]):
                 raise ChannelError("Native artifact differs from its receipt")
             files[row["path"]] = row
     rows = []
@@ -211,8 +211,8 @@ def accepted_stable(publisher: ChannelPublisher, env: dict, tag: str, commit: st
 
 def stable_head_version(env: dict) -> str | None:
     """Return the protected stable head's source version, if one exists."""
-    publisher = ChannelPublisher(R2ChannelStore(*r2.credentials()), env["GITHUB_REPOSITORY"],
-                                 r2.public_base_url(), authorize=lambda _action, _record: None)
+    publisher = ChannelPublisher(channel_store(), env["GITHUB_REPOSITORY"],
+                                 pages.public_base_url(), authorize=lambda _action, _record: None)
     current = publisher._read(select_channel(publisher, "stable-release"))
     if current is None or current[0]["head"] is None:
         return None
@@ -226,7 +226,7 @@ def stable_head_version(env: dict) -> str | None:
 
 def read_archive_bytes(key: str) -> bytes:
     """Read one immutable object from the release archive."""
-    store = R2ChannelStore(*r2.credentials())
+    store = channel_store()
     found = store.get(key)
     if found is None:
         raise ChannelError(f"Release archive object is unavailable: {key}")
@@ -235,9 +235,8 @@ def read_archive_bytes(key: str) -> bytes:
 
 def advance_stable(env: dict, release: dict, root: Path) -> dict:
     """Advance one published release from its immutable tag-scoped receipts."""
-    creds, base, bucket = r2.credentials()
-    R2ChannelStore(creds, base, bucket)
-    public_base = r2.public_base_url()
+    channel_store()  # fail fast when no archive transport is configured
+    public_base = pages.public_base_url()
     key = f"releases/tag/{release['claim_tag']}/release-candidates.json"
     digest = hashlib.sha256(read_archive_bytes(key)).hexdigest()
     log(f"Candidate manifest {key}: sha256 {digest} "
@@ -334,7 +333,7 @@ def verify_canary_outputs(request: dict, manifest: dict, reader) -> None:
         uri = bundle.get("Uri", "")
         if not uri.startswith(base + "/releases/win32/canary/"):
             raise ChannelError("Canary Windows feed archive mismatch")
-        r2.download_public_object(base, uri.removeprefix(base + "/"), root / "promoted.msixbundle",
+        pages.download_public_object(base, uri.removeprefix(base + "/"), root / "promoted.msixbundle",
                                   expected_size=native["artifact"]["size"], expected_sha256=native["artifact"]["sha256"])
 
 
@@ -346,8 +345,8 @@ def publish_release(policy: str, env: dict, root: Path) -> dict:
     payload_tag = f"v{parsed[0]}" if parsed else tag
     if env.get("R2_DISPOSABLE_RUN"):
         raise ChannelError("Disposable receiver builds cannot enter production release publication")
-    publisher = ChannelPublisher(R2ChannelStore(*r2.credentials()), env["GITHUB_REPOSITORY"],
-                                 r2.public_base_url(), authorize=lambda action, record:
+    publisher = ChannelPublisher(channel_store(), env["GITHUB_REPOSITORY"],
+                                 pages.public_base_url(), authorize=lambda action, record:
                                  admit_transaction(policy, env, require_published=True))
     name = select_channel(publisher, policy)
     log(f"Channel advance: policy={policy} channel={name} archive={tag} payload={payload_tag} "
@@ -414,10 +413,27 @@ def publish_release(policy: str, env: dict, root: Path) -> dict:
         match_accepted_packages(manifest, accepted)
     prefix = build_prefix(request["buildId"])
     log(f"Build {request['buildId']}: writing {len(feeds)} immutable feeds under {prefix}")
+    staged_feeds = []
     for file in feeds:
         key = prefix + file.relative_to(root).as_posix()
-        r2.put(tag=tag, key=key, file=str(file), key_is_full=True, immutable=True)
-        if publisher.reader.read_bytes(key) != file.read_bytes():
+        pages.put(tag=tag, key=key, file=str(file), key_is_full=True, immutable=True)
+        staged_feeds.append((key, file.read_bytes()))
+    # Pages writes are staged in the worktree: publish once, then wait out
+    # the deploy lag before the public read-back. The R2 fallback inside
+    # pages.put is visible synchronously and needs neither step.
+    worktree = pages.repo_dir_from_env()
+    if worktree is not None:
+        pages.publish_worktree(worktree, f"channel feeds {prefix}", push=True)
+    for key, expected in staged_feeds:
+        if worktree is not None:
+            try:
+                pages.wait_public_bytes(
+                    publisher.reader.base_url + "/" + key,
+                    lambda visible, expected=expected: visible == expected)
+                continue
+            except ValueError as exc:
+                raise ChannelError("Immutable protected feed public read-back differs") from exc
+        if publisher.reader.read_bytes(key) != expected:
             raise ChannelError("Immutable protected feed public read-back differs")
     publisher._write(prefix + "build.json", manifest)
 

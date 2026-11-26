@@ -26,6 +26,22 @@ class ChannelConflict(ChannelError):
     pass
 
 
+def channel_store(scope=None):
+    """The channel record store for this process's transport.
+
+    Pages worktree when PAGES_REPO_DIR is configured (Fase 3+); the R2
+    store remains the transitional fallback for unmigrated callers.
+    """
+    from scripts.releases import pages
+
+    worktree = pages.repo_dir_from_env()
+    if worktree is not None:
+        from scripts.releases.pages import PagesChannelStore
+
+        return PagesChannelStore(worktree, scope=scope)
+    return R2ChannelStore(*r2.credentials(), scope=scope)
+
+
 class PublicVisibilityError(ChannelError):
     """The authenticated write committed; do not roll it back on a stale CDN read."""
 
@@ -126,6 +142,26 @@ class ChannelPublisher:
     def _write(self, key: str, value: dict, etag: str | None = None) -> None:
         body = canonical_json(value)
         self.store.put(key, body, etag)
+        # A Pages worktree write is only staged; publish it and wait out
+        # the deploy lag before the public read-back below. The R2 store
+        # is visible synchronously, so its path is unchanged.
+        if hasattr(self.store, "repo_dir"):
+            from scripts.releases import pages
+
+            pages.publish_worktree(self.store.repo_dir,
+                                   f"channel publish {key}", push=True)
+            try:
+                pages.wait_public_bytes(
+                    self.public_base.rstrip("/") + "/" + artifact_key(key),
+                    lambda visible: visible == body)
+                return
+            except ValueError as exc:
+                current = self.store.get(key)
+                if current is not None and current[0] != body:
+                    raise ChannelConflict(
+                        f"Committed {key}; superseded before public readback") from exc
+                raise PublicVisibilityError(
+                    f"Committed {key}; public visibility verification failed") from exc
         try:
             visible = self.reader.read_bytes(key)
         except ChannelError as exc:

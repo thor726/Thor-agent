@@ -53,7 +53,7 @@ from urllib.parse import quote
 # Direct-script invocation starts with scripts/, not the repository root.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.releases import handoff, r2, semver, stable, versioning
+from scripts.releases import handoff, pages, r2, semver, stable, versioning
 from scripts.releases.desktop_targets import TARGETS as DESKTOP_TARGETS
 
 MARKER = "<!-- THOR_BUILDS_TABLE -->"
@@ -125,7 +125,7 @@ def render_tables(assets_by_app: dict, base_url: str,
     sections = []
     for title, rows in table_rows(assets_by_app):
         lines = [
-            f"| {os_name} | {arch} | [{kind}]({r2.public_url_for(base_url, name)}) |"
+            f"| {os_name} | {arch} | [{kind}]({pages.public_url_for(base_url, name)}) |"
             for os_name, arch, kind, name in rows
         ]
         sections.append(
@@ -232,7 +232,7 @@ def commit_expected_rows(names: list[str],
     rows: list[dict] = []
     for label, leg, pattern in _COMMIT_EXPECTED:
         receipt = receipts.get(leg)
-        listed = [r2.commit_key_for(receipt["commit"], row["path"])
+        listed = [pages.commit_key_for(receipt["commit"], row["path"])
                   for row in receipt["files"]
                   if re.fullmatch(pattern, row["path"].rsplit("/", 1)[-1])] if receipt else []
         if receipt is None:
@@ -252,7 +252,7 @@ def commit_expected_rows(names: list[str],
 def _validated_commit_inputs(commit: str, receipts: dict[str, dict | None]) -> None:
     """The summary and the commit page must never disagree about what was
     built, so both validate the SHA and every receipt the same way."""
-    r2.commit_prefix_for(commit)
+    pages.commit_prefix_for(commit)
     for leg, receipt in receipts.items():
         if receipt is not None:
             handoff.validate_commit_receipt(receipt, commit, leg)
@@ -273,7 +273,7 @@ def commit_entries(commit: str, names: list[str], base_url: str,
     for row in commit_expected_rows(names, receipts):
         label, leg, key, state = row["label"], row["leg"], row["key"], row["state"]
         if state == "built":
-            entries.append((label, "✅ Built", r2.public_url_for(base_url, key), key.rsplit("/", 1)[-1]))
+            entries.append((label, "✅ Built", pages.public_url_for(base_url, key), key.rsplit("/", 1)[-1]))
             continue
         elif state == "receipt-missing":
             related = failed.intersection({leg, _COMMIT_JOBS[leg]})
@@ -398,7 +398,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
                 run_url: str | None = None, *, repo: str = DEFAULT_REPO,
                 smoke_results: dict | None = None) -> str:
     """The tag/channel page: the release-body download table as HTML."""
-    channel = r2.channel_for_tag(tag)
+    channel = pages.channel_for_tag(tag)
     tag_url = f"https://github.com/{quote(repo, safe='/')}/releases/tag/{quote(tag, safe='')}"
     body = [
         f"<h1>Thor Desktop {channel} builds</h1>",
@@ -424,7 +424,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
         body.extend(_table(
             ("OS", "Architecture", "Download"),
             [[html.escape(os_name), html.escape(arch),
-              f"{_link(r2.public_url_for(base_url, name))}{html.escape(kind)}</a>"]
+              f"{_link(pages.public_url_for(base_url, name))}{html.escape(kind)}</a>"]
              for os_name, arch, kind, name in rows],
         ))
     if incomplete_jobs and run_url:
@@ -513,16 +513,21 @@ def write_page(key: str, page: str, base_url: str) -> str:
         handle.write(page)
         path = handle.name
     try:
-        r2.put(tag="", key=key, file=path, key_is_full=True)
+        pages.put(tag="", key=key, file=path, key_is_full=True)
     finally:
         os.unlink(path)
-    url = r2.public_url_for(base_url, key)
+    url = pages.public_url_for(base_url, key)
     print(f"✓ Page {url} ({len(page)} bytes)")
     return url
 
 
 def existing_page(key: str) -> str | None:
     """The page currently at `key`, or None when nothing is published there."""
+    worktree = pages.repo_dir_from_env()
+    if worktree is not None:
+        scoped = pages.PagesScope.configured().key(key)
+        path = worktree.joinpath(*scoped.split("/"))
+        return path.read_text(encoding="utf-8") if path.is_file() else None
     try:
         creds, base, bucket = r2.credentials()
         return r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
@@ -535,7 +540,7 @@ def existing_page(key: str) -> str | None:
 def write_channel_page(tag: str, assets_by_app: dict, base_url: str,
                        *, repo: str = DEFAULT_REPO, smoke_results: dict | None = None) -> str | None:
     """Publish releases/<channel>/index.html for the tag's own channel."""
-    key = r2.channel_page_key_for(r2.channel_for_tag(tag))
+    key = pages.channel_page_key_for(pages.channel_for_tag(tag))
     if not supersedes(existing_page(key), tag):
         print(f"::warning::{key} already describes a newer release; leaving it unchanged")
         return None
@@ -543,6 +548,16 @@ def write_channel_page(tag: str, assets_by_app: dict, base_url: str,
 
 
 def r2_object_names_under(prefix: str) -> list[str]:
+    worktree = pages.repo_dir_from_env()
+    if worktree is not None:
+        scope = pages.PagesScope.configured()
+        root = worktree.joinpath(*scope.listing_prefix(prefix).rstrip("/").split("/"))
+        if not root.is_dir():
+            return []
+        return sorted(
+            scope.logical_key(path.relative_to(worktree).as_posix())
+            for path in root.rglob("*") if path.is_file()
+        )
     return r2.list_objects(prefix=prefix)["keys"]
 
 
@@ -578,7 +593,7 @@ def render_channel_summary(manifest: dict) -> str:
             rows.append(f"| {label} | Unavailable | — |")
             continue
         item = selected[0]
-        url = r2.public_url_for(request["publicBase"], item["artifact"]["key"])
+        url = pages.public_url_for(request["publicBase"], item["artifact"]["key"])
         rows.append(f"| {label} | {item['version']} | [Download]({url}) |")
     return (f"## Channel `{request['channel']}` build `{request['buildId']}`\n\n"
             f"Source `{request['commit']}` ({request['sourceVersion']}); sequence {request['sequence']}.\n\n"
@@ -672,7 +687,7 @@ def main() -> int:
             from scripts.releases.bundle_env import decode
 
             bundle_env = decode(args.bundle_env_json)
-            prefix = r2.commit_prefix_for(commit)
+            prefix = pages.commit_prefix_for(commit)
         except ValueError as err:
             print(f"::error::{err}")
             return 1
@@ -684,7 +699,7 @@ def main() -> int:
                                       smoke_results=smoke_results)
         with open(args.summary_out, "a", encoding="utf-8") as out:
             out.write(block)
-        write_page(r2.commit_page_key_for(commit),
+        write_page(pages.commit_page_key_for(commit),
                    render_commit_page(commit, names, args.r2_base_url, receipts, failed_legs, args.run_url,
                                       repo=args.repo, bundle_env=bundle_env, smoke_results=smoke_results),
                    args.r2_base_url)
@@ -706,7 +721,7 @@ def main() -> int:
             return 1
         names = r2_object_names(archive)
         if candidate is not None:
-            admitted = {r2.staging_key_for(archive, item["path"]) for item in candidate["files"]}
+            admitted = {pages.staging_key_for(archive, item["path"]) for item in candidate["files"]}
             names = [name for name in names if name in admitted]
         assets = parse_assets(names)
         incomplete = [] if candidate is not None else incomplete_release_jobs(os.environ.get("RELEASE_NEEDS"))
@@ -714,7 +729,7 @@ def main() -> int:
         # A failed run still owns its tag page, never the channel pointer
         # consumed by source updates. Missing artifacts never become downloads.
         if not args.dry_run:
-            write_page(r2.staging_key_for(archive, "index.html"),
+            write_page(pages.staging_key_for(archive, "index.html"),
                        render_page(archive, assets, args.r2_base_url, incomplete, args.run_url,
                                    repo=args.repo, smoke_results=smoke_results), args.r2_base_url)
 

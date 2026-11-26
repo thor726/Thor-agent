@@ -20,7 +20,7 @@ from thor_cli.release_channels import (
 )
 from scripts.releases import commit_build, r2
 from scripts.releases.bundle_env import parse_assignments, validate
-from scripts.releases.channels import BRANDINGS, ChannelPublisher, R2ChannelStore
+from scripts.releases.channels import BRANDINGS, ChannelPublisher
 
 
 def dispatch_command(
@@ -124,10 +124,25 @@ def maintainer_authorizer(repository: str):
 
 
 def configured_publisher(repository: str) -> ChannelPublisher:
-    from scripts.releases.r2_scope import R2Scope, channel_public_base
+    from scripts.releases import pages
 
     validate_repository(repository)
-    scope = R2Scope.configured(repository)
+    worktree = pages.repo_dir_from_env()
+    if worktree is not None:
+        from scripts.releases.pages import PagesChannelStore
+
+        scope = pages.PagesScope.configured(repository)
+        base = pages.channel_public_base()
+        store = PagesChannelStore(worktree, scope=scope)
+    else:
+        # Transitional fallback: unmigrated callers without a Pages
+        # worktree keep the R2-backed store.
+        from scripts.releases.channels import R2ChannelStore
+        from scripts.releases.r2_scope import R2Scope, channel_public_base
+
+        scope = R2Scope.configured(repository)
+        base = channel_public_base()
+        store = R2ChannelStore(*r2.credentials(), scope=scope)
     if scope.prefix:
         actual_id = commit_build.output([
             "gh",
@@ -138,8 +153,6 @@ def configured_publisher(repository: str) -> ChannelPublisher:
         ])
         if actual_id != os.environ.get("GITHUB_REPOSITORY_ID"):
             raise ChannelError("Disposable namespace belongs to another repository")
-    base = channel_public_base()
-    store = R2ChannelStore(*r2.credentials(), scope=scope)
 
     def verify_build(request: dict, manifest: dict) -> bool:
         from scripts.releases.channel_releases import verify_bootstrap

@@ -57,3 +57,60 @@ def test_pages_channel_store_roundtrip_and_cas(tmp_path):
     with pytest.raises(ChannelConflict):
         store.put("releases/channels/stable.json", b'{"revision":3}\n', etag)
     assert store.keys("releases/channels/") == ["releases/channels/stable.json"]
+
+
+def test_wait_public_bytes_polls_until_the_deploy_lands(monkeypatch):
+    import urllib.request
+
+    bodies = [b"stale", b"stale", b"fresh"]
+
+    class _Response:
+        def __init__(self, body):
+            self._body = body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return self._body
+
+    monkeypatch.setattr(urllib.request, "urlopen",
+                        lambda url, timeout=60: _Response(bodies.pop(0)))
+    found = pages.wait_public_bytes("https://example.test/x", lambda b: b == b"fresh",
+                                    tries=5, delay_s=0)
+    assert found == b"fresh"
+    assert bodies == []
+
+
+def test_wait_public_bytes_gives_up_after_the_budget(monkeypatch):
+    import urllib.request
+
+    class _Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return b"never"
+
+    monkeypatch.setattr(urllib.request, "urlopen",
+                        lambda url, timeout=60: _Response())
+    with pytest.raises(ValueError, match="not visible"):
+        pages.wait_public_bytes("https://example.test/x", lambda b: b == b"fresh",
+                                tries=2, delay_s=0)
+
+
+def test_channel_store_selects_pages_worktree_then_r2_fallback(tmp_path, monkeypatch):
+    from scripts.releases import channels, r2
+
+    monkeypatch.setenv("PAGES_REPO_DIR", str(tmp_path))
+    assert isinstance(channels.channel_store(), PagesChannelStore)
+
+    monkeypatch.delenv("PAGES_REPO_DIR")
+    monkeypatch.setattr(r2, "credentials", lambda: ({"k": "v"}, "https://r2.test", "bucket"))
+    assert isinstance(channels.channel_store(), channels.R2ChannelStore)

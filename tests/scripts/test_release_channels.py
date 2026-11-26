@@ -519,7 +519,7 @@ def test_accepted_release_receipts_feed_the_protected_head_without_rebuilding(tm
         # Exercise the real controller, HTTP receipt downloader, immutable feeds,
         # manifest and final CAS; only GitHub admission and generated product facts
         # are fixture inputs (no native signature acceptance is claimed here).
-        from scripts.releases import r2
+        from scripts.releases import pages
         monkeypatch.setattr(channel_releases, "admit_transaction",
                             lambda policy, env, **_kwargs: (tag, commit))
         monkeypatch.setattr(channel_releases.stable, "final_context",
@@ -533,11 +533,11 @@ def test_accepted_release_receipts_feed_the_protected_head_without_rebuilding(tm
                 raise ChannelError("fixture feed failure")
         monkeypatch.setattr(channel_releases, "promote_stable_feeds", promote_stable_feeds)
         monkeypatch.setattr(channel_releases, "product_identity", lambda tag: dict(identity))
-        monkeypatch.setattr(r2, "credentials", lambda: (pub.store.creds, url, "bucket"))
-        monkeypatch.setattr(r2, "public_base_url", lambda: base)
+        monkeypatch.setattr(channel_releases, "channel_store", lambda: pub.store)
+        monkeypatch.setattr(pages, "public_base_url", lambda: base)
         def put(**kwargs):
             pub.store.put(kwargs["key"], __import__("pathlib").Path(kwargs["file"]).read_bytes())
-        monkeypatch.setattr(r2, "put", put)
+        monkeypatch.setattr(pages, "put", put)
         # A previous bundled release already owns the stable head.
         pub.store.put("releases/stable/release-candidates.json", b'{"tag":"v1.9.0"}')
         with pytest.raises(ChannelError, match="fixture feed failure"):

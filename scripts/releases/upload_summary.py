@@ -29,13 +29,13 @@ def note(key: str) -> None:
 
 def rows(keys: list[str]) -> list[tuple[str, str]]:
     """Public URL for each key, in upload order. A bad key is named, not dropped."""
-    from scripts.releases import r2
+    from scripts.releases import pages
 
-    base = r2.public_base_url()
+    base = pages.public_base_url()
     listed = []
     for key in keys:
         try:
-            listed.append((key, r2.public_url_for(base, key)))
+            listed.append((key, pages.public_url_for(base, key)))
         except ValueError:
             listed.append((key, ""))
     return listed

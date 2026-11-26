@@ -388,6 +388,50 @@ def _receipt_manifest(root: Path, receipt: str, tag: str, commit: str, archive: 
             "archive": archive, "packages": packages}
 
 
+def _publish_staged(message: str) -> None:
+    """Commit+push staged Pages writes; a no-op without a worktree.
+
+    With R2 the put landed synchronously. With Pages the bytes sit in the
+    thor-agent-releases checkout until published, and every public URL
+    this module emits must be live for the next job that reads it.
+    """
+    from scripts.releases import pages
+
+    worktree = pages.repo_dir_from_env()
+    if worktree is not None:
+        pages.publish_worktree(worktree, message, push=True)
+
+
+def _read_manifest_visible(url: str, expected: dict) -> dict:
+    """Read a just-staged manifest back, waiting out the Pages deploy lag.
+
+    Without a Pages worktree the object is already live (R2 fallback), so
+    one read decides. With one, poll with the shared visibility budget.
+    """
+    from scripts.releases import pages
+
+    if pages.repo_dir_from_env() is None:
+        return read_manifest(url)
+    import os
+    import time
+
+    tries = int(os.environ.get("THOR_PAGES_VISIBILITY_TRIES", "30"))
+    delay = float(os.environ.get("THOR_PAGES_VISIBILITY_DELAY_S", "10"))
+    last_error: Exception | None = None
+    for attempt in range(max(1, tries)):
+        try:
+            found = read_manifest(url)
+        except Exception as exc:  # health: allow BLE001 -- deploy lag surfaces as any read failure; retried below
+            last_error = exc
+        else:
+            if found == expected:
+                return found
+            last_error = ValueError("Transition manifest read-back mismatch")
+        if attempt + 1 < tries and delay:
+            time.sleep(delay)
+    raise ValueError("Transition manifest read-back mismatch") from last_error
+
+
 def stage_receipt(env: dict, receipt: str) -> None:
     """Publish one group's signed receipt into its immutable attempt archive.
 
@@ -407,6 +451,7 @@ def stage_receipt(env: dict, receipt: str) -> None:
         file = root / f"{receipt}-receipt.json"
         file.write_text(json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8")
         put(tag=archive, key=file.name, file=str(file), immutable=True)
+        _publish_staged(f"stable stage {receipt} receipt for {archive}")
         digest = hashlib.sha256(file.read_bytes()).hexdigest()
     url = f"{base}/releases/tag/{archive}/{receipt}-receipt.json"
     print(url)
@@ -724,9 +769,9 @@ def _stage_transition(env: dict, archive: str, base: str, row: dict) -> dict:
     file = Path(env["RUNNER_TEMP"]) / name
     file.write_text(json.dumps(transition), encoding="utf-8")
     put(tag=archive, key=name, file=str(file), immutable=True)
+    _publish_staged(f"stable stage {name} for {archive}")
     url = f"{base}/releases/tag/{archive}/{name}"
-    if read_manifest(url) != transition:
-        raise ValueError("Transition manifest read-back mismatch")
+    _read_manifest_visible(url, transition)
     return {"arch": transition["arch"], "manifest": url, "old": transition["old"]["tag"],
             "id": row["target"],
             "manifest_sha256": hashlib.sha256(file.read_bytes()).hexdigest()}
@@ -842,6 +887,7 @@ def candidate_manifest(env: dict) -> None:
         out = root / "release-candidates.json"
         assemble(root, tag, commit, base, out, smoke_results=smoke,
                  release_epoch=claim["claim_epoch"], archive=archive, lanes=lanes)
+        _publish_staged(f"stable stage candidate manifest for {archive}")
         digest = hashlib.sha256(out.read_bytes()).hexdigest()
     emit({"manifest-url": f"{base}/releases/tag/{archive}/release-candidates.json",
           "manifest-sha256": digest}, env)
