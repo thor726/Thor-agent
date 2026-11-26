@@ -1,7 +1,6 @@
 """Icon generation reports per-target failures without hiding later targets."""
 import importlib.util
 import io
-import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -28,8 +27,7 @@ def test_svg_readers_accept_bom_without_rewriting_assets(tmp_path, monkeypatch, 
     document = f'<svg{namespaces} viewBox="0 0 20 30">{metadata}{element}</svg>'
     raw = bom + (declaration + document).encode("utf-8")
     path.write_bytes(raw)
-    art = SimpleNamespace(girls={"black": path}, paths={}, backgrounds=tmp_path, colors=None)
-    assert module.girl_path(art, "black") == element
+    art = SimpleNamespace(backgrounds=tmp_path, colors=None)
     inner, width, height = module.background_inner(art, path.name)
     composed = ET.fromstring(f'<svg xmlns="http://www.w3.org/2000/svg">{inner}</svg>')
     assert (width, height) == (20, 30)
@@ -38,9 +36,6 @@ def test_svg_readers_accept_bom_without_rewriting_assets(tmp_path, monkeypatch, 
     ]
     assert path.read_bytes() == raw
     path.write_bytes(bom + b"<svg/>")
-    art.paths.clear()
-    with pytest.raises(AssertionError, match="no <path>"):
-        module.girl_path(art, "black")
     with pytest.raises(AssertionError, match="viewBox"):
         module.background_inner(art, path.name)
 
@@ -90,12 +85,12 @@ def test_write_status_includes_every_target(tmp_path, monkeypatch, capsys, failu
 
 
 @pytest.mark.parametrize("platform", ["", "mac-"])
-@pytest.mark.parametrize("appearance,girl", [("light", "black"), ("dark", "white")])
+@pytest.mark.parametrize("appearance,mark", [("light", "light"), ("dark", "dark")])
 @pytest.mark.parametrize("colors", [None, ("#f5cc32", "#443808"), ("#e34850", "#4a1117")])
-def test_icon_portrait_sits_on_the_plain_tile_inside_the_outer_silhouette(monkeypatch, platform, appearance, girl, colors):
+def test_icon_mark_sits_centered_on_the_plain_tile_inside_the_outer_silhouette(monkeypatch, platform, appearance, mark, colors):
     """The tile keeps the background's own geometry and fill with no stroke
-    (the ring is disabled), the portrait is clipped to that outline and its
-    lowest nodes are dragged past the bottom edge so the clip crops her."""
+    (the ring is disabled), and the hammer layer is centered in its box and
+    clipped to that outline — fully inside the tile, never dragged past it."""
     monkeypatch.setitem(sys.modules, "resvg_py", ModuleType("resvg_py"))
     source = Path(__file__).resolve().parents[2]
     spec = importlib.util.spec_from_file_location("icon_geometry_under_test", source / "scripts/generate_icons.py")
@@ -105,12 +100,13 @@ def test_icon_portrait_sits_on_the_plain_tile_inside_the_outer_silhouette(monkey
     assert module.BORDER_ENABLED is False
     art = SimpleNamespace(
         backgrounds=source / "assets/backgrounds", colors=colors, commit="0123456",
-        bboxes={girl: (0, 0, 100, 90)}, paths={girl: '<path d="M 0 0 L 100 0 L 100 90 L 0 90 z"/>'},
+        bboxes={mark: (0, 0, 100, 90)},
+        _mark_uri="data:image/png;base64,AAAA", _mark_size=(100, 90),
     )
     name = f"squircle-{platform}{appearance}.svg"
     ns = {"svg": "http://www.w3.org/2000/svg"}
     original = ET.parse(art.backgrounds / name).find("svg:rect", ns)
-    result = ET.fromstring(module.compose_svg(art, girl, name))
+    result = ET.fromstring(module.compose_svg(art, mark, name))
     tile = result.find("svg:rect", ns)
     assert original is not None and tile is not None
     geometry = tuple(float(original.attrib[key]) for key in ("x", "y", "width", "height", "rx"))
@@ -122,54 +118,60 @@ def test_icon_portrait_sits_on_the_plain_tile_inside_the_outer_silhouette(monkey
     assert clip is not None
     assert tuple(float(clip.attrib[key]) for key in ("x", "y", "width", "height", "rx")) == geometry
     group = result[-1]
-    portrait = group[-1]
-    portraits = [child for child in group if child.tag == f"{{{ns['svg']}}}svg"]
-    assert portraits == [portrait], "extend the existing contour, not a duplicate strip"
+    layer = group[-1]
+    layers = [child for child in group if child.tag == f"{{{ns['svg']}}}image"]
+    assert layers == [layer], "one mark layer, not a duplicate strip"
     # The commit badge rides inside the same clip, so its anti-aliased edge can
     # never add alpha outside the plate (visible at targetsize-16..30).
     assert [child.tag for child in group[:-1]] == [f"{{{ns['svg']}}}g"]
-    assert portrait.get("preserveAspectRatio") == "xMidYMax meet"
-    assert tuple(float(portrait.attrib[key]) for key in ("x", "y", "width", "height")) == module.GIRL_BOXES[name]
+    assert layer.get("preserveAspectRatio") == "xMidYMid meet"
+    assert layer.get("href") == art._mark_uri
+    assert tuple(float(layer.attrib[key]) for key in ("x", "y", "width", "height")) == module.MARK_BOXES[name]
     clip_path = result.find("svg:defs/svg:clipPath", ns)
     assert clip_path is not None
     assert group.get("clip-path") == f"url(#{clip_path.attrib['id']})"
-    assert portrait.get("overflow") == "visible"
-    assert len(result.findall(".//svg:path", ns)) == 2  # one badge and one portrait
-    # The dragged bottom node lands below the tile: the clip, not a gap, ends her.
-    _x, y, width, height, _ = geometry
-    _, by, bw, bh = art.bboxes[girl]
-    box_y, box_h = module.GIRL_BOXES[name][1], module.GIRL_BOXES[name][3]
-    scale = min(module.GIRL_BOXES[name][2] / bw, box_h / bh)
-    lowest_raw_y = max(float(v) for v in re.findall(r"[-+]?\d*\.?\d+", portrait[0].attrib["d"])[1::2])
-    lowest_tile_y = box_y + box_h - bh * scale + (lowest_raw_y - by) * scale  # xMidYMax: bottom-aligned
-    assert lowest_tile_y == pytest.approx(y + height + width * module.EDGE_OVERSHOOT)
+    assert layer.get("overflow") is None
+    assert len(result.findall(".//svg:path", ns)) == 1  # the badge only; the mark is raster
+    # The mark's bottom edge lands centered in the box, inside the tile.
+    _x, y, _width, height, _ = geometry
+    _, _by, bw, bh = art.bboxes[mark]
+    box_y, box_h = module.MARK_BOXES[name][1], module.MARK_BOXES[name][3]
+    scale = min(module.MARK_BOXES[name][2] / bw, box_h / bh)
+    lowest_tile_y = box_y + (box_h + bh * scale) / 2  # xMidYMid: centered
+    assert lowest_tile_y < y + height
 
 
-def test_bottom_node_drag_preserves_upper_geometry_and_path_transform(monkeypatch):
+def test_mark_layer_embeds_the_raster_hammer(tmp_path, monkeypatch):
+    import base64
+
     monkeypatch.setitem(sys.modules, "resvg_py", ModuleType("resvg_py"))
     script = Path(__file__).resolve().parents[2] / "scripts/generate_icons.py"
-    spec = importlib.util.spec_from_file_location("icon_nodes_under_test", script)
+    spec = importlib.util.spec_from_file_location("icon_markup_under_test", script)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    path = ET.fromstring('<path transform="matrix(2,0,0,2,10,-100)" d="M 0 0 C 0 90 10 98 20 100 L 0 100 z"/>')
-    module.drag_bottom_nodes(path, cutoff=80, band=20, distance=10)
-    assert path.get("transform") == "matrix(2,0,0,2,10,-100)"
-    assert path.get("d") == "M 0 0 C 0 90 10 102.48 20 105 L 0 105 z"
-    with pytest.raises(ValueError, match="absolute M/L/C"):
-        module.drag_bottom_nodes(ET.fromstring('<path d="m 0 0 l 1 1"/>'), cutoff=0, band=1, distance=1)
+    path = tmp_path / "thor-hammer.png"
+    Image.new("RGBA", (40, 58), (242, 195, 77, 255)).save(path, "PNG")
+    art = SimpleNamespace(mark_file=path, _mark_uri=None, _mark_size=None, bboxes={})
+    layer = module.mark_layer(art, "dark", (10.0, 20.0, 300.0, 300.0))
+    element = ET.fromstring(layer)
+    assert element.tag == "image"
+    href = element.get("href")
+    assert href is not None and href.startswith("data:image/png;base64,")
+    assert base64.b64decode(href.split(",", 1)[1]) == path.read_bytes()
+    assert module.mark_bbox(art, "dark") == (0.0, 0.0, 40.0, 58.0)
 
 
-def test_icon_art_builds_masters_from_the_committed_girl_svgs():
-    """The generator's girl sources are the SVGs the repo actually ships; a
-    stale source name crashes the Nix thor-icons build in girl_bbox, where
-    resvg receives an empty/invalid SVG for a path that does not exist."""
+def test_icon_art_builds_masters_from_the_committed_hammer_png():
+    """The generator's hammer source is the PNG the repo actually ships; a
+    stale source name crashes the Nix thor-icons build when the art is read."""
     source = Path(__file__).resolve().parents[2]
     spec = importlib.util.spec_from_file_location("icon_art_sources_under_test", source / "scripts/generate_icons.py")
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     art = module.IconArt(source)
-    assert art.girls["black"].exists() and art.girls["white"].exists()
-    assert art.master.startswith("<svg") and art.master_dark.startswith("<svg")
-    assert art.master_mac.startswith("<svg") and art.master_mac_dark.startswith("<svg")
+    assert art.mark_file.exists()
+    assert art.marks["light"] == art.marks["dark"] == art.mark_file
+    for master in (art.master, art.master_dark, art.master_mac, art.master_mac_dark):
+        assert master.startswith("<svg") and "data:image/png;base64," in master

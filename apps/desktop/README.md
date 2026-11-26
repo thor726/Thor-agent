@@ -2,8 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/thor726/thor-agent/releases"><img src="https://img.shields.io/badge/Download-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-FFD700?style=for-the-badge" alt="Download"></a>
-  <a href="https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/thor726"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-thor726.github.io-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
@@ -261,8 +260,7 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\thor\thor-agent\venv"
 
 ## Community
 
-- 💬 [Discord](https://discord.gg/thor726)
-- 📖 [Documentation](https://raw.githubusercontent.com/thor726/Thor-agent/main/website/docs/)
+- 📖 [Documentation](https://thor726.github.io/Thor-agent/docs/)
 - 🐛 [Issues](https://github.com/thor726/thor-agent/issues)
 
 ---
