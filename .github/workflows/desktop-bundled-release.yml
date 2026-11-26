@@ -1252,6 +1252,14 @@ jobs:
       - uses: ./.github/actions/setup-pm
         with:
           cache-python: false
+      - name: Check out the Pages release host
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - id: receipt
         run: python -m scripts.releases.stable stage-receipt --receipt darwin-arm64
 
@@ -1266,7 +1274,7 @@ jobs:
       && (inputs.upload_release == true || inputs.release-phase == 'candidate' || inputs.build_commit != '' || inputs.channel != '')
       && inputs.skip-tests != true
     permissions:
-      contents: read
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -1305,7 +1313,7 @@ jobs:
       && inputs.skip-tests != true
       && inputs.skip-signed != true
     permissions:
-      contents: read
+      contents: write
     uses: ./.github/workflows/desktop-bundle-smoke.yml
     with:
       platform: win32
@@ -1337,7 +1345,7 @@ jobs:
       && inputs.skip-tests != true
       && inputs.skip-signed != true
     permissions:
-      contents: read
+      contents: write
     uses: ./.github/workflows/desktop-bundle-smoke.yml
     with:
       platform: win32
@@ -1530,6 +1538,17 @@ jobs:
               --name windows-universal --root apps/desktop/release --include '*.msixbundle'
           fi
 
+      - name: Check out the Pages release host
+        if: inputs.release-phase == 'candidate' && inputs.skip-signed != true
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
+        with:
+          repository: thor726/thor-agent-releases
+          token: ${{ secrets.PAGES_REPO_TOKEN }}
+          path: pages-host
+      - name: Point the Pages publisher at the host checkout
+        if: inputs.release-phase == 'candidate' && inputs.skip-signed != true
+        shell: bash
+        run: echo "PAGES_REPO_DIR=$GITHUB_WORKSPACE/pages-host" >> "$GITHUB_ENV"
       - name: Stage the stable win32-bundle receipt
         # Same receipt-before-smoke contract as the darwin arches (decision 11):
         # the bundle and its per-arch metadata are staged and digest-verified;
