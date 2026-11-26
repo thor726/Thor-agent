@@ -120,7 +120,7 @@ jobs:
     needs: admit
     if: fromJSON(needs.admit.outputs.jobs)['termux-checks']
     permissions:
-      contents: read
+      contents: write
       actions: read
     uses: ./.github/workflows/termux-verify.yml
     secrets: inherit
