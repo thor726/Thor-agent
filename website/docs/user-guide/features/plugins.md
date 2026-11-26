@@ -440,6 +440,8 @@ thor plugins enable my-plugin              # add to allow-list
 thor plugins disable my-plugin             # remove from allow-list + add to disabled (bundled platforms:
                                              # either spelling works, e.g. photon-platform or platforms/photon)
 thor plugins capabilities [my-plugin]      # declared vs granted capabilities
+thor plugins config my-plugin              # view and edit the plugin's settings (interactive editor);
+                                             # a terminal install also lists them and asks "Edit these now?"
 thor plugins idle-tasks [my-plugin]        # background idle jobs plugins registered: last run, next run
 thor plugins idle-tasks my-plugin --pause suggest   # stop one until --resume
 thor plugins check-updates                 # read-only: is any installed plugin outdated?
