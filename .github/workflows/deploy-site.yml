@@ -28,8 +28,6 @@ on:
 permissions:
   contents: read
   actions: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -49,15 +47,29 @@ jobs:
       - name: Trigger Vercel Deploy
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
-        run: curl -fsS --retry 3 --retry-delay 10 -X POST "$VERCEL_DEPLOY_HOOK"
+        run: |
+          # The site is live on GitHub Pages (deploy-docs below); the Vercel
+          # hook is optional. With the secret unset, curl -X POST "" exits 2
+          # and fails the whole run (run 45859901529), so skip cleanly.
+          # (secrets are not available in job-level `if`, hence the env guard.)
+          if [ -z "$VERCEL_DEPLOY_HOOK" ]; then
+            echo "::notice::VERCEL_DEPLOY_HOOK is not set; skipping Vercel deploy (site is live on GitHub Pages)."
+            exit 0
+          fi
+          curl -fsS --retry 3 --retry-delay 10 -X POST "$VERCEL_DEPLOY_HOOK"
 
-  deploy-docs:
+  # Build and deploy are separate jobs on purpose: when upload-pages-artifact
+  # and deploy-pages ran back-to-back in one job, deploy-pages checked the
+  # artifact list ~0.3s after the upload finished and the API had not caught
+  # up yet ("No artifacts named github-pages", run 45859901529). A job
+  # boundary gives the artifact time to become visible.
+  build-docs:
     if: github.repository == 'thor726/thor-agent'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -280,6 +292,19 @@ jobs:
         with:
           path: _site
 
+  deploy-docs:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1
