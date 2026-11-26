@@ -89,11 +89,38 @@ def ensure_release(tag: str | None = None, *, runner: Runner = subprocess.run) -
 def _assets(tag: str, runner: Runner) -> dict[str, dict]:
     result = runner(["gh", "api", f"repos/{{owner}}/{{repo}}/releases/tags/{tag}",
                      "--jq", ".assets"], capture_output=True, text=True)
-    if result.returncode != 0:
-        if "404" in result.stderr:
-            return {}
+    if result.returncode == 0:
+        return {asset["name"]: asset for asset in json.loads(result.stdout or "[]")}
+    if "404" not in result.stderr:
         raise ArchiveError(f"gh api releases/tags/{tag} failed: {result.stderr.strip()}")
-    return {asset["name"]: asset for asset in json.loads(result.stdout or "[]")}
+    # A draft release has no tag ref yet, so the by-tag endpoint 404s even
+    # though the release exists — and every archive release here is a draft.
+    # Resolve it through the release list, then read assets by release id;
+    # without this, every archived object looks missing and callers fall
+    # back to re-downloading from upstream on every run.
+    listing = runner(["gh", "api", "repos/{owner}/{repo}/releases?per_page=100"],
+                     capture_output=True, text=True)
+    if listing.returncode != 0:
+        raise ArchiveError(f"gh api releases failed: {listing.stderr.strip()}")
+    release_id = next((row["id"] for row in json.loads(listing.stdout or "[]")
+                       if row.get("tag_name") == tag), None)
+    if release_id is None:
+        return {}
+    assets: dict[str, dict] = {}
+    page = 1
+    while True:
+        result = runner(["gh", "api",
+                         f"repos/{{owner}}/{{repo}}/releases/{release_id}/assets"
+                         f"?per_page=100&page={page}"],
+                        capture_output=True, text=True)
+        if result.returncode != 0:
+            raise ArchiveError(
+                f"gh api releases/{release_id}/assets failed: {result.stderr.strip()}")
+        rows = json.loads(result.stdout or "[]")
+        assets.update({asset["name"]: asset for asset in rows})
+        if len(rows) < 100:
+            return assets
+        page += 1
 
 
 def _digest(asset: dict) -> str | None:

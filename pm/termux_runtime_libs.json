@@ -47,9 +47,9 @@
       "version": "1.26-1"
     },
     "glib": {
-      "sha256": "132d8ce961d96a7252fd4bc2228bddd385b1b17b706a46caae6d541ae0e4b2c0",
-      "url": "https://packages.termux.dev/apt/termux-main/pool/main/g/glib/glib_2.90.1_aarch64.deb",
-      "version": "2.90.1"
+      "sha256": "22237d7b0df4e65a81c0bb68767ebec4fbf5769dbb2849217ecfd8bf25ed11f4",
+      "url": "https://packages.termux.dev/apt/termux-main/pool/main/g/glib/glib_2.90.2_aarch64.deb",
+      "version": "2.90.2"
     },
     "glslang": {
       "sha256": "c5b5d6cb57d5841966c4b07033d319ebf6a3df61347a484b9dc5e332d29cd721",

@@ -137,3 +137,53 @@ def test_put_get_download_and_immutable_refusal(tmp_path, monkeypatch):
         gh_assets.put(key, str(source), immutable=True, runner=gh)
     with pytest.raises(gh_assets.ArchiveError):
         gh_assets.download(key, target, expected_size=13, expected_sha256="0" * 64, runner=gh)
+
+
+class DraftGh:
+    """Fake `gh` for a DRAFT archive release: the by-tag REST endpoint 404s
+    (a draft has no tag ref yet), while the release list and the by-id
+    assets endpoint see it. Mirrors the real ci-archive draft."""
+
+    def __init__(self, tag, assets):
+        self.tag = tag
+        self.assets = assets  # asset name -> bytes
+        self.uploads = []
+
+    def __call__(self, args, capture_output=True, text=True):
+        assert args[0] == "gh"
+        cmd = args[1:]
+        if cmd[:2] == ["release", "view"]:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if cmd[:2] == ["release", "upload"]:
+            self.uploads.append(cmd[3])
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if cmd[:1] == ["api"]:
+            endpoint = cmd[1]
+            if "/releases/tags/" in endpoint:
+                return subprocess.CompletedProcess(args, 1, "", "HTTP 404: Not Found")
+            if endpoint.rstrip("/").endswith("/releases") or "/releases?" in endpoint:
+                listing = [{"id": 42, "tag_name": self.tag, "draft": True}]
+                return subprocess.CompletedProcess(args, 0, json.dumps(listing), "")
+            if "/releases/42/assets" in endpoint:
+                assets = [{"name": name, "size": len(data),
+                           "digest": "sha256:" + hashlib.sha256(data).hexdigest()}
+                          for name, data in self.assets.items()]
+                return subprocess.CompletedProcess(args, 0, json.dumps(assets), "")
+        raise AssertionError(f"unexpected gh call: {cmd}")
+
+
+def test_asset_info_sees_draft_archive_release(tmp_path, monkeypatch):
+    # Regression: ci-archive is a draft, so releases/tags/{tag} 404s and
+    # asset_info reported every archived input as missing — CI re-downloaded
+    # every pin from upstream on every run, and broke the moment the Termux
+    # pool retired one (glib 2.90.1, 2026-11-26).
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    key = "upstream/sha256/aaaa"
+    gh = DraftGh("ci-archive", {gh_assets.asset_name_for(key): b"pinned bytes"})
+    info = gh_assets.asset_info(key, runner=gh)
+    assert info == {"size": 12, "sha256": hashlib.sha256(b"pinned bytes").hexdigest()}
+    # Identical bytes already archived: put is an idempotent no-op.
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    gh_assets.put(key, str(source), immutable=True, runner=gh)
+    assert gh.uploads == []
