@@ -7,7 +7,7 @@ name: Canary Release
 #
 # Source identity is the exact stable version plus build metadata:
 # v<stable>+canary.<YYYYMMDDTHHMMSSZ>. It compares equal to the stable; only
-# the protected R2 canary head moves subscribers. A dispatch queued behind a
+# the protected canary head moves subscribers. A dispatch queued behind a
 # running canary has conclusion=cancelled if a newer one supersedes it; only
 # conclusion=failure is a canary failure signal.
 
@@ -55,14 +55,6 @@ jobs:
     # runs in its own workflow run, so this does not wait on it — the
     # window is 14 days, far wider than any build.
     if: always() && needs.tag.result != 'cancelled' && needs.tag.result != 'skipped'
-    # Job-level so the R2 prune step can gate on `env` (a step `if` cannot
-    # read `secrets`): an unprovisioned release-signing environment skips
-    # the R2 prune instead of failing the canary run.
-    env:
-      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
-      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-      CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a  # v7.0.1
         with:
@@ -72,10 +64,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/release.py --prune-canaries --publish --remote origin
-      - uses: ./.github/actions/setup-pm
-        if: env.CLOUDFLARE_R2_ACCOUNT_ID != ''
-        with:
-          cache-python: false
-      - name: Prune R2 canary objects
-        if: env.CLOUDFLARE_R2_ACCOUNT_ID != ''
-        run: python -m scripts.ci.python_packages ruamel.yaml==0.18.17 -- -m scripts.releases.r2 prune-canaries --keep-days 14
