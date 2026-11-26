@@ -655,7 +655,7 @@ If an MCP server crashes mid-request, Thor will report a timeout. Check the serv
 
 **Cause:** The Skills Hub picker embeds the hosted docs page. If your network blocks or filters the docs host — a proxy, DNS filter, firewall, or ISP-level filtering — the embedded page fails to load and the request can return a 403 block page.
 
-**Solution:** The Skills Hub picker probes the primary domain and automatically falls back to the equivalent GitHub Pages deployment (`nousresearch.github.io/thor-agent`), which serves the same catalog. If the page still fails on both origins, check whether a proxy, DNS filter, or firewall is blocking both hosts — and report the affected range to the maintainers so it can be reviewed on the deployment side.
+**Solution:** The Skills Hub picker probes the primary domain and automatically falls back to the equivalent GitHub Pages deployment (`thor726.github.io/Thor-agent`), which serves the same catalog. If the page still fails on both origins, check whether a proxy, DNS filter, or firewall is blocking both hosts — and report the affected range to the maintainers so it can be reviewed on the deployment side.
 
 ---
 

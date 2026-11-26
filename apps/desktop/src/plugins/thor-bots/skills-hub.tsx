@@ -20,10 +20,10 @@ import type { RosterRow } from './types'
 // the origin, install via skills.manage, and bubble onInstalled so the
 // checklist above gains the row. Search-box fallback kept for offline use.
 
-const HUB_ORIGIN = 'https://github.com/thor726/Thor-agent'
-const FALLBACK_HUB_ORIGIN = 'https://nousresearch.github.io'
+const HUB_ORIGIN = 'https://thor726.github.io/Thor-agent'
+const FALLBACK_HUB_ORIGIN = 'https://thor726.github.io'
 const HUB_PICKER_URL = HUB_ORIGIN + '/docs/skills?embed=picker'
-const FALLBACK_HUB_PICKER_URL = FALLBACK_HUB_ORIGIN + '/thor-agent/docs/skills?embed=picker'
+const FALLBACK_HUB_PICKER_URL = FALLBACK_HUB_ORIGIN + '/Thor-agent/docs/skills?embed=picker'
 // A WAF-blocked or unreachable docs host must not delay the fallback longer
 // than this — the probe only decides which origin to embed, never blocks it.
 const HUB_PROBE_TIMEOUT_MS = 8_000

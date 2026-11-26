@@ -46,6 +46,13 @@ export const CONTROL_TEXT = 'text-xs'
 
 export const PROVIDER_GROUPS: ProviderPrefix[] = [
   {
+    prefix: 'THORHUB_',
+    name: 'ThorHub',
+    description: "Thor's own gateway — token quota at llm.thormarket.site",
+    docsUrl: 'https://llm.thormarket.site',
+    priority: 0
+  },
+  {
     prefix: 'NOUS_',
     name: 'Thor Portal',
     description: 'Hosted Thor & Nous-trained models',

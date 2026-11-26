@@ -15,8 +15,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { translateBots } from './i18n-test-helper'
 
-const HUB_ORIGIN = 'https://github.com/thor726/Thor-agent'
-const FALLBACK_HUB_ORIGIN = 'https://nousresearch.github.io'
+const HUB_ORIGIN = 'https://thor726.github.io/Thor-agent'
+const FALLBACK_HUB_ORIGIN = 'https://thor726.github.io'
 
 const mocks = vi.hoisted(() => ({
   notify: vi.fn(),
@@ -99,7 +99,7 @@ describe('hub pick messages', () => {
     const frame = openHubBrowser()
 
     await waitFor(() =>
-      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/thor-agent/docs/skills?embed=picker`)
+      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/Thor-agent/docs/skills?embed=picker`)
     )
   })
 
@@ -109,7 +109,7 @@ describe('hub pick messages', () => {
     const frame = openHubBrowser()
 
     await waitFor(() =>
-      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/thor-agent/docs/skills?embed=picker`)
+      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/Thor-agent/docs/skills?embed=picker`)
     )
   })
 
@@ -142,7 +142,7 @@ describe('hub pick messages', () => {
         await vi.advanceTimersByTimeAsync(8_000)
       })
 
-      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/thor-agent/docs/skills?embed=picker`)
+      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/Thor-agent/docs/skills?embed=picker`)
     } finally {
       vi.restoreAllMocks()
       vi.useRealTimers()
