@@ -626,8 +626,9 @@ def main() -> int:
                         help="Explicit non-secret commit desktop bundle overrides, not the CI environment")
     parser.add_argument("--run-url", default=None,
                         help="Actual workflow run URL for incomplete-build diagnostics")
-    parser.add_argument("--r2-base-url", default=os.environ.get("CLOUDFLARE_R2_PUBLIC_URL"),
-                        help="Public base URL of the R2 bucket (default: $CLOUDFLARE_R2_PUBLIC_URL)")
+    parser.add_argument("--r2-base-url",
+                        default=os.environ.get("THOR_PAGES_PUBLIC_URL") or os.environ.get("CLOUDFLARE_R2_PUBLIC_URL"),
+                        help="Public base URL of the release host (default: $THOR_PAGES_PUBLIC_URL)")
     parser.add_argument("--no-channel-page", action="store_true",
                         help="Render the attempt page and release table but leave the shared channel "
                              "downloads page alone (a release that did not build every desktop package "
