@@ -199,9 +199,6 @@ def main(argv: list[str] | None = None) -> None:
     from scripts.releases.pages import PagesScope, channel_public_base, require_run
     if args.disposable_run is not None:
         os.environ["PAGES_DISPOSABLE_RUN"] = require_run(args.disposable_run)
-        # Transitional: handoff/commit_build disposable scoping still reads
-        # the legacy name until Fase 3 migrates those modules and workflows.
-        os.environ["R2_DISPOSABLE_RUN"] = os.environ["PAGES_DISPOSABLE_RUN"]
     args.public_base = channel_public_base(args.public_base)
     request = read_request(args.build_id, args.request_sha256, args.public_base, args.repository)
     if args.command == "admit":
@@ -228,16 +225,9 @@ def main(argv: list[str] | None = None) -> None:
             return pinned == request and manifest == expected
 
         worktree = pages.repo_dir_from_env()
-        if worktree is not None:
-            store = PagesChannelStore(worktree)
-        else:
-            # Transitional fallback (see pages.put): unmigrated CI/tests
-            # without a Pages worktree keep the R2-backed store until
-            # Fase 3 sets PAGES_REPO_DIR in the workflows.
-            from scripts.releases import r2
-            from scripts.releases.channels import R2ChannelStore
-
-            store = R2ChannelStore(*r2.credentials())
+        if worktree is None:
+            raise ValueError("Channel publication requires PAGES_REPO_DIR (a thor-agent-releases checkout)")
+        store = PagesChannelStore(worktree)
         publisher = ChannelPublisher(store, args.repository, args.public_base,
                                      authorize=authorize, verify_build=qualified)
         if args.command.startswith("receiver-"):

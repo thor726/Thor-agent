@@ -1,4 +1,4 @@
-"""Replay artifact handoffs and publication against a fake R2."""
+"""Replay artifact handoffs and publication against the fake Pages/gh transport."""
 import hashlib
 import json
 import shutil
@@ -16,7 +16,7 @@ from tests.ci.desktop_release_roles import (
 )
 from tests.ci.test_commit_build_staging import ROOT, shell_step
 from tests.ci.test_desktop_release_tag_admission import _child_env, _workflow
-from tests.scripts.test_release_r2 import r2_server
+from tests.scripts.release_fakes import release_transport as release_transport  # noqa: PLC0414 -- self-alias suppresses F811 for the fixture parameter
 
 
 def smoke_workflow():
@@ -48,10 +48,8 @@ def smoke_fetch_script():
 def transport_env(tmp_path, server, *, commit=False):
     return dict(THOR_PAYLOAD_TAG='' if commit else TAG, THOR_BUILD_COMMIT=SHA if commit else '',
                 RELEASE_TAG='' if commit else TAG, RELEASE_COMMIT=SHA, COMMIT_BUILD=str(commit).lower(),
-                PUBLIC_BASE=f'http://127.0.0.1:{server.server_port}/thor-releases',
-                CLOUDFLARE_R2_PUBLIC_URL=f'http://127.0.0.1:{server.server_port}/thor-releases',
-                CLOUDFLARE_R2_ACCOUNT_ID='loopback', CLOUDFLARE_R2_ACCESS_KEY_ID='test-inert',
-                CLOUDFLARE_R2_SECRET_ACCESS_KEY='test-inert', CLOUDFLARE_R2_BUCKET='thor-releases',
+                PUBLIC_BASE=server.base,
+                THOR_PAGES_PUBLIC_URL=server.base,
                 RELEASE_PHASE='', SMOKE_ROOT=str(tmp_path / 'smoke'), GITHUB_OUTPUT=str(tmp_path / 'output'))
 
 
@@ -60,8 +58,8 @@ def transport_env(tmp_path, server, *, commit=False):
     ('darwin', 'dmg', 'arm64'), ('darwin', 'zip', 'arm64'),
     ('win32', 'msix', 'arm64'), ('win32', 'msix', 'x64'),
     ('win32', 'msixbundle', 'arm64'), ('win32', 'msixbundle', 'x64')])
-def test_public_smoke_fetches_the_receipt_bound_native_format(tmp_path, r2_server, commit, platform, fmt, arch):
-    env = transport_env(tmp_path, r2_server, commit=commit)
+def test_public_smoke_fetches_the_receipt_bound_native_format(tmp_path, release_transport, commit, platform, fmt, arch):
+    env = transport_env(tmp_path, release_transport, commit=commit)
     release = tmp_path / 'apps/desktop/release'
     release.mkdir(parents=True)
     suffix = f'mac-{arch}.{fmt}' if platform == 'darwin' else ('win.msixbundle' if fmt == 'msixbundle' else f'win-{arch}.msix')
@@ -77,50 +75,50 @@ def test_public_smoke_fetches_the_receipt_bound_native_format(tmp_path, r2_serve
         for ext in ('dmg', 'zip', 'zip.blockmap'):
             (release / f'ThorBundled-0.28.0-mac-{arch}.{ext}').write_bytes(payload)
         (release / f'{arch}-canary-mac.yml').write_bytes(payload)
-    staged = shell_step(tmp_path, r2_server, '', '', {**env, 'TARGET': f'{platform}-{arch}'},
+    staged = shell_step(tmp_path, release_transport, '', '', {**env, 'TARGET': f'{platform}-{arch}'},
                         script=stage_step(jobs[producer])['run'])
     assert staged.returncode == 0, staged.stdout + staged.stderr
-    assert all('/canary/' not in key for key in r2_server.store)
+    assert all('/canary/' not in key for key in release_transport.store)
     script = smoke_fetch_script()
     # Deliberately remove every storage credential before executing public fetch.
-    public_env = {key: '' if key.startswith('CLOUDFLARE_') else value for key, value in env.items()}
+    public_env = {key: '' if key in ('THOR_ARCHIVE_RELEASE', 'PAGES_REPO_DIR', 'THOR_FAKE_GH_STATE') else value for key, value in env.items()}
     public_env.update(PLATFORM=platform, ARCH=arch, FORMAT=fmt)
-    r2_server.requests.clear()
-    result = shell_step(tmp_path, r2_server, '', '', public_env, script=script)
+    release_transport.origin.requests.clear()
+    result = shell_step(tmp_path, release_transport, '', '', public_env, script=script)
     assert result.returncode == 0, result.stdout + result.stderr
     selected = Path((tmp_path / 'output').read_text(encoding='utf-8-sig').strip().removeprefix('path='))
     assert selected.name == filename and selected.read_bytes() == payload
     witness = json.loads((tmp_path / 'smoke/out/download.json').read_text(encoding='utf-8-sig'))
     assert witness['commit'] == SHA and witness['artifact']['sha256'] == hashlib.sha256(payload).hexdigest()
     assert not any(file.name.startswith('Store-') for file in selected.parent.iterdir())
-    assert all(method == 'GET' and 'Authorization' not in headers for method, _, headers in r2_server.requests)
+    assert all(method == 'GET' and 'Authorization' not in headers for method, _, headers in release_transport.origin.requests)
 
 
 @pytest.mark.parametrize('fault', ['missing', 'ambiguous', 'wrong-commit', 'corrupt'])
-def test_download_faults_never_export_an_accepted_artifact(tmp_path, r2_server, fault):
-    env = transport_env(tmp_path, r2_server, commit=True)
+def test_download_faults_never_export_an_accepted_artifact(tmp_path, release_transport, fault):
+    env = transport_env(tmp_path, release_transport, commit=True)
     filename = 'ThorBundled-0.28.0-win-x64.msix'
     payload = b'inert integrity fixture'
     row = {'path': filename, 'size': len(payload), 'sha256': hashlib.sha256(payload).hexdigest()}
     receipt = {'schema': 2, 'commit': 'b' * 40 if fault == 'wrong-commit' else SHA,
                'name': 'win32-x64', 'files': [row]}
     prefix = f'releases/commit/{SHA}/'
-    r2_server.store[prefix + filename] = (b'corrupted' if fault == 'corrupt' else payload, '"e"')
+    release_transport.store[prefix + filename] = (b'corrupted' if fault == 'corrupt' else payload, '"e"')
     if fault == 'missing':
         receipt['files'] = [{**row, 'path': 'Store-' + filename}]
     elif fault == 'ambiguous':
         second = 'ThorBundled-0.29.0-win-x64.msix'
         receipt['files'].append({**row, 'path': second})
-        r2_server.store[prefix + second] = (payload, '"e"')
-    r2_server.store[prefix + 'handoff-win32-x64.json'] = (json.dumps(receipt).encode(), '"e"')
+        release_transport.store[prefix + second] = (payload, '"e"')
+    release_transport.store[prefix + 'handoff-win32-x64.json'] = (json.dumps(receipt).encode(), '"e"')
     script = smoke_fetch_script()
-    result = shell_step(tmp_path, r2_server, '', '', {**env, 'PLATFORM': 'win32', 'ARCH': 'x64', 'FORMAT': 'msix'}, script=script)
+    result = shell_step(tmp_path, release_transport, '', '', {**env, 'PLATFORM': 'win32', 'ARCH': 'x64', 'FORMAT': 'msix'}, script=script)
     assert result.returncode != 0
     assert not (tmp_path / 'output').exists()
     assert not (tmp_path / 'smoke/out/download.json').exists()
 
 
-def test_stable_phase_result_requires_smoke_but_preserves_other_phases(tmp_path, r2_server):
+def test_stable_phase_result_requires_smoke_but_preserves_other_phases(tmp_path, release_transport):
     jobs = _workflow()['jobs']
     gates, smokes = selection_gates(jobs), smoke_callers(jobs)
     group_jobs = {target: [gates[target], smokes[target]] for target in NATIVE_TARGETS}
@@ -152,7 +150,7 @@ def test_stable_phase_result_requires_smoke_but_preserves_other_phases(tmp_path,
         if failed:
             needs[failed]['result'] = 'cancelled'
         (step,) = [step for step in jobs[verdict]['steps'] if 'SKIP_TESTS' in (step.get('env') or {})]
-        return shell_step(tmp_path, r2_server, '', '',
+        return shell_step(tmp_path, release_transport, '', '',
                           {'RELEASE_NEEDS': json.dumps(needs), 'RELEASE_PHASE': phase,
                            'SKIP_TESTS': 'true' if skip_tests else 'false',
                            'SKIP_SIGNED': 'true' if skip_signed else 'false'}, script=step['run'])
@@ -185,9 +183,9 @@ def test_stable_phase_result_requires_smoke_but_preserves_other_phases(tmp_path,
 
 
 
-def test_canary_publisher_consumes_staged_bytes_and_writes_pointer_last(tmp_path, r2_server):
+def test_canary_publisher_consumes_staged_bytes_and_writes_pointer_last(tmp_path, release_transport):
     tag = 'v0.28.1+canary.20260818T101010Z'
-    env = {**transport_env(tmp_path, r2_server), 'THOR_DESKTOP_VARIANT': 'bundled',
+    env = {**transport_env(tmp_path, release_transport), 'THOR_DESKTOP_VARIANT': 'bundled',
            'THOR_PAYLOAD_TAG': tag, 'RELEASE_TAG': tag}
     # Use the real assembly identity derivation with a stable base available.
     for file in ['scripts/msix-shared.mjs', 'scripts/release-content-types.json',
@@ -227,22 +225,21 @@ def test_canary_publisher_consumes_staged_bytes_and_writes_pointer_last(tmp_path
     tested_bytes = bundle.read_bytes()
     jobs = _workflow()['jobs']
     publisher = updater_publishers(jobs)['win32']
-    staged = shell_step(tmp_path, r2_server, '', '', env, script=stage_step(jobs[universal_assembler(jobs)])['run'])
+    staged = shell_step(tmp_path, release_transport, '', '', env, script=stage_step(jobs[universal_assembler(jobs)])['run'])
     assert staged.returncode == 0, staged.stdout + staged.stderr
-    assert all(key.startswith(f'releases/tag/{tag}/') for key in r2_server.store)
+    assert all(key.startswith(f'releases/tag/{tag}/') for key in release_transport.store)
     # A newer stable becomes visible after assembly but cannot alter the
     # timestamp-derived canary identity.
     git('-c', 'commit.gpgsign=false', 'commit', '--allow-empty', '-qm', 'new stable', date='2026-08-18T11:10:10Z')
     git('tag', 'v0.28.1')
     assert assembly_identity()['version'] == version
     for name in ('Retrieve the tested universal bundle', 'Publish identical tested bytes without rebuilding'):
-        result = shell_step(tmp_path, r2_server, publisher, name, env)
+        result = shell_step(tmp_path, release_transport, publisher, name, env)
         assert result.returncode == 0, result.stdout + result.stderr
     assert (tmp_path / 'staged' / filename).read_bytes() == tested_bytes
-    assert r2_server.store[f'releases/win32/canary/{filename}'][0] == tested_bytes
-    writes = [path for method, path, _ in r2_server.requests if method == 'PUT']
-    assert writes[-1].endswith('/canary.appinstaller')
-    descriptor = ET.fromstring(r2_server.store['releases/win32/canary/canary.appinstaller'][0])
+    assert release_transport.store[f'releases/win32/canary/{filename}'][0] == tested_bytes
+    published = dict(release_transport.store)
+    descriptor = ET.fromstring(release_transport.store['releases/win32/canary/canary.appinstaller'][0])
     main_bundle = descriptor.find('{*}MainBundle')
     assert main_bundle is not None
     assert descriptor.get('Version') == main_bundle.get('Version') == version
@@ -250,11 +247,10 @@ def test_canary_publisher_consumes_staged_bytes_and_writes_pointer_last(tmp_path
     # The publication job must refuse an ambiguous envelope, even when a
     # caller accidentally broadens the receipt selector in future.
     (tmp_path / 'staged/ThorBundled-0.29.0.0-win.msixbundle').write_bytes(tested_bytes)
-    before = len(writes)
-    refused = shell_step(tmp_path, r2_server, publisher,
+    refused = shell_step(tmp_path, release_transport, publisher,
                          'Publish identical tested bytes without rebuilding', env)
     assert refused.returncode != 0
-    assert len([row for row in r2_server.requests if row[0] == 'PUT']) == before
+    assert dict(release_transport.store) == published
     (tmp_path / 'staged/ThorBundled-0.29.0.0-win.msixbundle').unlink()
 
     # Filename, tag base, and baked identity must still agree. Reading the
@@ -268,16 +264,16 @@ def test_canary_publisher_consumes_staged_bytes_and_writes_pointer_last(tmp_path
         native.set(field, wrong)
         with zipfile.ZipFile(staged_bundle, 'w') as archive:
             archive.writestr('AppxMetadata/AppxBundleManifest.xml', ET.tostring(manifest))
-        refused = shell_step(tmp_path, r2_server, publisher,
+        refused = shell_step(tmp_path, release_transport, publisher,
                              'Publish identical tested bytes without rebuilding', env)
         assert refused.returncode != 0, field
-        assert len([row for row in r2_server.requests if row[0] == 'PUT']) == before
+        assert dict(release_transport.store) == published
     staged_bundle.write_bytes(tested_bytes)
     for wrong in ['ThorBundled-0.29.0.0-win.msixbundle', 'ThorBundled-0.28.1.65536-win.msixbundle',
                   'ThorBundled-0.28.1-canary.20260818101010-win.msixbundle']:
         renamed = staged_bundle.rename(staged_bundle.with_name(wrong))
-        refused = shell_step(tmp_path, r2_server, publisher,
+        refused = shell_step(tmp_path, release_transport, publisher,
                              'Publish identical tested bytes without rebuilding', env)
         assert refused.returncode != 0, wrong
-        assert len([row for row in r2_server.requests if row[0] == 'PUT']) == before
+        assert dict(release_transport.store) == published
         renamed.rename(staged_bundle)

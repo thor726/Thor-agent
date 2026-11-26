@@ -16,12 +16,11 @@ from scripts.releases.pages import PagesChannelStore
 @pytest.fixture(autouse=True)
 def _clean_pages_env(monkeypatch):
     for name in ("THOR_PAGES_PUBLIC_URL", "PAGES_REPO_DIR", "PAGES_DISPOSABLE_RUN",
-                 "R2_DISPOSABLE_RUN", "GITHUB_REPOSITORY_ID"):
+                 "GITHUB_REPOSITORY_ID"):
         monkeypatch.delenv(name, raising=False)
 
 
 def test_public_base_url_defaults_to_the_pages_host(monkeypatch):
-    monkeypatch.delenv("CLOUDFLARE_R2_PUBLIC_URL", raising=False)
     assert pages.public_base_url() == "https://thor726.github.io/thor-agent-releases"
     assert pages.public_base_url("https://example.test/base/") == "https://example.test/base"
 
@@ -105,12 +104,20 @@ def test_wait_public_bytes_gives_up_after_the_budget(monkeypatch):
                                 tries=2, delay_s=0)
 
 
-def test_channel_store_selects_pages_worktree_then_r2_fallback(tmp_path, monkeypatch):
-    from scripts.releases import channels, r2
+def test_channel_store_requires_the_pages_worktree(tmp_path, monkeypatch):
+    from scripts.releases import channels
+    from thor_cli.release_channels import ChannelError
 
     monkeypatch.setenv("PAGES_REPO_DIR", str(tmp_path))
     assert isinstance(channels.channel_store(), PagesChannelStore)
 
     monkeypatch.delenv("PAGES_REPO_DIR")
-    monkeypatch.setattr(r2, "credentials", lambda: ({"k": "v"}, "https://r2.test", "bucket"))
-    assert isinstance(channels.channel_store(), channels.R2ChannelStore)
+    with pytest.raises(ChannelError, match="PAGES_REPO_DIR"):
+        channels.channel_store()
+
+
+def test_put_without_a_worktree_is_a_clear_error(tmp_path, monkeypatch):
+    source = tmp_path / "stable.json"
+    source.write_bytes(b"{}\n")
+    with pytest.raises(ValueError, match="PAGES_REPO_DIR"):
+        pages.put(tag="", key="releases/channels/stable.json", file=str(source), key_is_full=True)

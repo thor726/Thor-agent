@@ -26,7 +26,7 @@ import subprocess
 import tempfile
 from typing import Callable
 
-from scripts.releases.r2 import file_sha256, relative_artifact_path
+from scripts.releases.pages import file_sha256, relative_artifact_path
 
 __all__ = [
     "ArchiveError",

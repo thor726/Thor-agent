@@ -22,7 +22,7 @@ from thor_cli.release_channels import ChannelReader
 from scripts.releases import channel_releases, desktop_targets, handoff
 from tests.ci.desktop_release_roles import canary_publisher, native_builds, stage_step
 from tests.ci.test_desktop_release_tag_admission import _git, _seed_repo
-from tests.scripts.test_release_r2 import r2_server
+from tests.scripts.release_fakes import release_transport as release_transport  # noqa: PLC0414 -- self-alias suppresses F811 for the fixture parameter
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.platforms("posix")
@@ -48,7 +48,7 @@ def step_script(job, name):
 
 
 @pytest.fixture
-def canary(tmp_path, r2_server, monkeypatch):
+def canary(tmp_path, release_transport, monkeypatch):
     _, clone = _seed_repo(tmp_path)
     commit = _git("rev-parse", "HEAD", cwd=clone)
     tag = "v0.1.2+canary.20260913T001000Z"
@@ -72,8 +72,8 @@ def canary(tmp_path, r2_server, monkeypatch):
     driver.write_text(
         "import runpy,sys\n"
         f"sys.path.insert(0, {str(ROOT)!r})\n"
-        "from scripts.releases import r2\n"
-        f"r2.s3_endpoint=lambda _: 'http://127.0.0.1:{r2_server.server_port}'\n"
+        "from tests.scripts.release_fakes import install_fake_gh_driver\n"
+        "install_fake_gh_driver()\n"
         "args=sys.argv[1:]\nsys.argv=args[1:]\n"
         "assert args[0]=='-m', args\nrunpy.run_module(args[1],run_name='__main__')\n"
     )
@@ -97,16 +97,16 @@ def canary(tmp_path, r2_server, monkeypatch):
     codesign = tools / "codesign"
     codesign.write_text('#!/bin/sh\nprintf "TeamIdentifier=ABCDEFGHIJ\\n" >&2\n')
     codesign.chmod(0o755)
-    base = f"http://127.0.0.1:{r2_server.server_port}/thor-releases"
-    env = {**os.environ, "PATH": str(tools) + os.pathsep + os.environ["PATH"],
+    base = release_transport.base
+    env = {**os.environ, **release_transport.env, "PATH": str(tools) + os.pathsep + os.environ["PATH"],
            "FIXTURE_RELEASE": str(release_state), "FIXTURE_WINDOWS_VERSION": windows_version, "GITHUB_ACTIONS": "true",
            "GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REPOSITORY": "thor726/thor-agent",
            "GITHUB_WORKFLOW_REF": "thor726/thor-agent/.github/workflows/desktop-bundled-release.yml@refs/heads/main",
            "RELEASE_TAG": tag, "TAG": tag, "THOR_PAYLOAD_TAG": tag,
            "RELEASE_TAG_OBJECT": tag_object,
            "RELEASE_COMMIT": commit, "RELEASE_PHASE": "", "THOR_DESKTOP_VARIANT": "bundled",
-           "THOR_BUILD_COMMIT": "", "CHANNEL_BUILD": "", "R2_DISPOSABLE_RUN": "",
-           "CLOUDFLARE_R2_PUBLIC_URL": base,
+           "THOR_BUILD_COMMIT": "", "CHANNEL_BUILD": "", "PAGES_DISPOSABLE_RUN": "",
+           "THOR_PAGES_PUBLIC_URL": base,
            "RELEASE_NEEDS": json.dumps({name: {"result": "success"} for name in canary_job()["needs"]})}
 
     def run(script, **overrides):
@@ -147,7 +147,7 @@ def native_leg(root, identity, env, platform, arch):
     ("bundled", "", False), ("bundled", "candidate", False),
     ("light", "", False), ("bundled", "", True),
 ])
-def test_canary_metadata_is_recorded_and_receipt_bound(canary, r2_server, platform, variant, phase, commit_build):
+def test_canary_metadata_is_recorded_and_receipt_bound(canary, release_transport, platform, variant, phase, commit_build):
     clone, identity, original_env, run = canary
     env = {**original_env, "THOR_DESKTOP_VARIANT": variant, "RELEASE_PHASE": phase}
     if phase == "candidate":
@@ -163,13 +163,13 @@ def test_canary_metadata_is_recorded_and_receipt_bound(canary, r2_server, platfo
     result = run(script, **env, TARGET=f"{platform}-{arch}")
     assert result.returncode == 0, result.stdout + result.stderr
     prefix = f"releases/commit/{env['RELEASE_COMMIT']}/" if commit_build else f"releases/tag/{env['RELEASE_TAG']}/"
-    receipt = json.loads(r2_server.store[prefix + handoff.receipt_name(f"{platform}-{arch}")][0])
+    receipt = json.loads(release_transport.store[prefix + handoff.receipt_name(f"{platform}-{arch}")][0])
     metadata_name = f"metadata-{'windows' if platform == 'win32' else 'macos'}-{arch}.json"
     if variant == "light" or commit_build:
         assert not any(row["path"].startswith("metadata-") for row in receipt["files"])
         return
     entry = next(row for row in receipt["files"] if row["path"] == metadata_name)
-    body = r2_server.store[prefix + metadata_name][0]
+    body = release_transport.store[prefix + metadata_name][0]
     metadata = json.loads(body)
     assert entry["sha256"] == hashlib.sha256(body).hexdigest()
     assert metadata["commit"] == env["RELEASE_COMMIT"] and metadata["tag"] == env["RELEASE_TAG"]
@@ -194,12 +194,12 @@ def stage_canary(clone, identity, env, run):
     return bundle
 
 
-def test_published_canary_workflow_advances_only_after_every_gate(canary, r2_server, monkeypatch, tmp_path):
+def test_published_canary_workflow_advances_only_after_every_gate(canary, release_transport, monkeypatch, tmp_path):
     clone, identity, env, run = canary
     bundle = stage_canary(clone, identity, env, run)
     publisher = canary_job()
     script = step_script(publisher, "Publish the admitted canary and advance its protected head")
-    before = dict(r2_server.store)
+    before = dict(release_transport.store)
     for job in publisher["needs"]:
         for outcome in ("failure", "skipped", "cancelled", None):
             needs = json.loads(env["RELEASE_NEEDS"])
@@ -209,41 +209,41 @@ def test_published_canary_workflow_advances_only_after_every_gate(canary, r2_ser
                 needs[job] = {"result": outcome}
             result = run(script, RELEASE_NEEDS=json.dumps(needs))
             assert result.returncode != 0 and job in result.stderr
-            assert r2_server.store == before
+            assert release_transport.store == before
     release = Path(env["FIXTURE_RELEASE"])
     published = json.loads(release.read_text())
     for bad in ({**published, "isPrerelease": False},):
         release.write_text(json.dumps(bad))
         result = run(script)
         assert result.returncode != 0 and "prerelease" in result.stderr
-        assert r2_server.store == before
+        assert release_transport.store == before
     release.write_text(json.dumps({**published, "isDraft": True}))
     result = run(script, RELEASE_TAG_OBJECT="b" * 40)
     assert result.returncode != 0 and "moved" in result.stderr
     assert json.loads(release.read_text())["isDraft"] is True
-    assert r2_server.store == before
+    assert release_transport.store == before
     release.write_text(json.dumps(published))
     prefix = f"releases/tag/{env['RELEASE_TAG']}/"
     for key in (prefix + "metadata-windows-arm64.json", prefix + bundle.name):
-        saved = r2_server.store.pop(key)
-        missing = dict(r2_server.store)
+        saved = release_transport.store.pop(key)
+        missing = dict(release_transport.store)
         result = run(script)
         assert result.returncode != 0
-        assert r2_server.store == missing
-        r2_server.store[key] = (b"corrupt", '"corrupt"')
-        corrupted = dict(r2_server.store)
+        assert release_transport.store == missing
+        release_transport.store[key] = (b"corrupt", '"corrupt"')
+        corrupted = dict(release_transport.store)
         result = run(script)
         assert result.returncode != 0 and "checksum mismatch" in result.stderr
-        assert r2_server.store == corrupted
-        r2_server.store[key] = saved
-    assert r2_server.store == before
+        assert release_transport.store == corrupted
+        release_transport.store[key] = saved
+    assert release_transport.store == before
     # The controller owns the draft flip and its independent custody read-back.
     release.write_text(json.dumps({**published, "isDraft": True}))
     for step in publisher["steps"]:
         if "run" in step:
             result = run(step["run"])
             assert result.returncode == 0, result.stdout + result.stderr
-    resolved = ChannelReader(env["CLOUDFLARE_R2_PUBLIC_URL"], repository=env["GITHUB_REPOSITORY"]).resolve("canary")
+    resolved = ChannelReader(env["THOR_PAGES_PUBLIC_URL"], repository=env["GITHUB_REPOSITORY"]).resolve("canary")
     assert resolved.manifest is not None
     assert resolved.manifest["request"]["windowsVersion"] == "26.913.0.1000"
     assert resolved.manifest["request"]["commit"] == env["RELEASE_COMMIT"]
@@ -254,33 +254,33 @@ def test_published_canary_workflow_advances_only_after_every_gate(canary, r2_ser
     from scripts.releases import stable
     from thor_cli.release_channels import canonical_json
     mac = resolved.manifest["packages"][0]
-    mac_feed = json.loads(r2_server.store[mac["feed"]["key"]][0])
+    mac_feed = json.loads(release_transport.store[mac["feed"]["key"]][0])
     for entry in mac_feed["files"]:
-        entry["url"] = entry["url"].removeprefix(env["CLOUDFLARE_R2_PUBLIC_URL"])
-    mac_feed["path"] = mac_feed["path"].removeprefix(env["CLOUDFLARE_R2_PUBLIC_URL"])
-    r2_server.store["releases/darwin/canary/canary-mac.yml"] = (canonical_json(mac_feed), '"feed"')
+        entry["url"] = entry["url"].removeprefix(env["THOR_PAGES_PUBLIC_URL"])
+    mac_feed["path"] = mac_feed["path"].removeprefix(env["THOR_PAGES_PUBLIC_URL"])
+    release_transport.store["releases/darwin/canary/canary-mac.yml"] = (canonical_json(mac_feed), '"feed"')
     win = next(p for p in resolved.manifest["packages"] if p["platform"] == "win32")
     promoted_key = "releases/win32/canary/" + bundle.name
-    r2_server.store[promoted_key] = r2_server.store[win["artifact"]["key"]]
+    release_transport.store[promoted_key] = release_transport.store[win["artifact"]["key"]]
     descriptor = tmp_path / "canary.appinstaller"
     write_appinstaller(descriptor, identity=win["identity"], publisher=win["publisher"], version=win["version"],
-                       self_uri=env["CLOUDFLARE_R2_PUBLIC_URL"] + "/releases/win32/canary/canary.appinstaller",
-                       artifact_uri=env["CLOUDFLARE_R2_PUBLIC_URL"] + "/" + promoted_key)
-    r2_server.store["releases/win32/canary/canary.appinstaller"] = (descriptor.read_bytes(), '"feed"')
+                       self_uri=env["THOR_PAGES_PUBLIC_URL"] + "/releases/win32/canary/canary.appinstaller",
+                       artifact_uri=env["THOR_PAGES_PUBLIC_URL"] + "/" + promoted_key)
+    release_transport.store["releases/win32/canary/canary.appinstaller"] = (descriptor.read_bytes(), '"feed"')
     monkeypatch.setattr(stable, "output", lambda args: env["RELEASE_COMMIT"] if "/commits/" in args[2]
                         else json.dumps({"draft": False, "prerelease": True, "published_at": "fixture-published"}))
     assert channel_releases.verify_bootstrap(resolved.manifest["request"], resolved.manifest,
-                                            env["CLOUDFLARE_R2_PUBLIC_URL"], env["GITHUB_REPOSITORY"])
-    saved_feed = r2_server.store["releases/darwin/canary/canary-mac.yml"]
+                                            env["THOR_PAGES_PUBLIC_URL"], env["GITHUB_REPOSITORY"])
+    saved_feed = release_transport.store["releases/darwin/canary/canary-mac.yml"]
     bad = json.loads(saved_feed[0]); bad["version"] = "9.0.0"
-    r2_server.store["releases/darwin/canary/canary-mac.yml"] = (canonical_json(bad), '"bad"')
+    release_transport.store["releases/darwin/canary/canary-mac.yml"] = (canonical_json(bad), '"bad"')
     with pytest.raises(ValueError, match="promoted"):
         channel_releases.verify_bootstrap(resolved.manifest["request"], resolved.manifest,
-                                         env["CLOUDFLARE_R2_PUBLIC_URL"], env["GITHUB_REPOSITORY"])
-    r2_server.store["releases/darwin/canary/canary-mac.yml"] = saved_feed
-    after = dict(r2_server.store)
+                                         env["THOR_PAGES_PUBLIC_URL"], env["GITHUB_REPOSITORY"])
+    release_transport.store["releases/darwin/canary/canary-mac.yml"] = saved_feed
+    after = dict(release_transport.store)
     assert run(script).returncode == 0
-    assert r2_server.store == after
+    assert release_transport.store == after
     # A later canary really advances the existing head and native quad, rather
     # than merely succeeding at the empty-channel bootstrap case.
     newer_tag = "v0.1.2+canary.20260913T001100Z"
@@ -294,19 +294,19 @@ def test_published_canary_workflow_advances_only_after_every_gate(canary, r2_ser
     release.write_text(json.dumps({**published, "tagName": newer_tag}))
     result = run(script, **newer)
     assert result.returncode == 0, result.stdout + result.stderr
-    advanced = ChannelReader(env["CLOUDFLARE_R2_PUBLIC_URL"], repository=env["GITHUB_REPOSITORY"]).resolve("canary")
+    advanced = ChannelReader(env["THOR_PAGES_PUBLIC_URL"], repository=env["GITHUB_REPOSITORY"]).resolve("canary")
     assert advanced.manifest is not None
     assert advanced.manifest["request"]["windowsVersion"] == "26.913.0.1100"
     assert advanced.terminal["head"]["sequence"] > resolved.terminal["head"]["sequence"]
-    after = dict(r2_server.store)
+    after = dict(release_transport.store)
     release.write_text(json.dumps(published))
     result = run(script)
     assert result.returncode != 0 and "stale" in result.stderr
-    assert r2_server.store == after
+    assert release_transport.store == after
     # A moved published tag must not retarget the accepted release, even on retry.
     _git("commit", "--allow-empty", "-m", "new source", cwd=clone)
     _git("tag", "-f", "-a", env["RELEASE_TAG"], "-m", '{"schema":1}', cwd=clone)
     _git("push", "--force", "origin", env["RELEASE_TAG"], cwd=clone)
     result = run(script)
     assert result.returncode != 0 and "moved" in result.stderr
-    assert r2_server.store == after
+    assert release_transport.store == after

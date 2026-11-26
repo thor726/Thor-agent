@@ -1,7 +1,7 @@
 """Channel dispatch: the local command names intent; CI allocates and builds.
 
 A channel build is a preview of an exact pushed commit. The local command does
-not touch R2: it resolves the commit, validates the request and dispatches the
+not touch storage: it resolves the commit, validates the request and dispatches the
 default-branch workflow. The workflow's privileged allocation step creates the
 channel and mints the immutable build request (see channel_disposable.py).
 """
@@ -18,7 +18,7 @@ from thor_cli.release_channels import (
     validate_name,
     validate_repository,
 )
-from scripts.releases import commit_build, r2
+from scripts.releases import commit_build
 from scripts.releases.bundle_env import parse_assignments, validate
 from scripts.releases.channels import BRANDINGS, ChannelPublisher
 
@@ -128,21 +128,13 @@ def configured_publisher(repository: str) -> ChannelPublisher:
 
     validate_repository(repository)
     worktree = pages.repo_dir_from_env()
-    if worktree is not None:
-        from scripts.releases.pages import PagesChannelStore
+    if worktree is None:
+        raise ChannelError("Channel administration requires PAGES_REPO_DIR (a thor-agent-releases checkout)")
+    from scripts.releases.pages import PagesChannelStore
 
-        scope = pages.PagesScope.configured(repository)
-        base = pages.channel_public_base()
-        store = PagesChannelStore(worktree, scope=scope)
-    else:
-        # Transitional fallback: unmigrated callers without a Pages
-        # worktree keep the R2-backed store.
-        from scripts.releases.channels import R2ChannelStore
-        from scripts.releases.r2_scope import R2Scope, channel_public_base
-
-        scope = R2Scope.configured(repository)
-        base = channel_public_base()
-        store = R2ChannelStore(*r2.credentials(), scope=scope)
+    scope = pages.PagesScope.configured(repository)
+    base = pages.channel_public_base()
+    store = PagesChannelStore(worktree, scope=scope)
     if scope.prefix:
         actual_id = commit_build.output([
             "gh",
@@ -223,12 +215,12 @@ def cmd_channel(args) -> None:
         if selected == "channels":
             print("These are the channel records. This command did not change them.")
         elif not args.publish:
-            print("Dry run: no R2 object was written. Add --publish to execute.")
+            print("Dry run: no channel object was written. Add --publish to execute.")
         elif selected == "retire_channel":
             print(f"Retired {args.retire_channel}. New installs move to {args.to} at version {args.minimum_version} or newer.")
         else:
             print("Wrote the channel records. Check the JSON above for each record.")
-    except (OSError, ValueError, subprocess.SubprocessError, r2.R2RequestError) as exc:
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
         raise SystemExit(f"release: channel operation refused: {exc}") from exc
 
 
@@ -254,7 +246,7 @@ def add_arguments(parser) -> None:
         "--channel",
         type=validate_name,
         metavar="NAME",
-        help="R2 channel for --build-commit",
+        help="Preview channel for --build-commit",
     )
     parser.add_argument(
         "--channel-specific-data-dirs",
@@ -270,7 +262,7 @@ def add_arguments(parser) -> None:
         "its own side-by-side app",
     )
     parser.add_argument(
-        "--channels", action="store_true", help="List authenticated R2 channel records"
+        "--channels", action="store_true", help="List authenticated channel records"
     )
     parser.add_argument(
         "--retire-channel",

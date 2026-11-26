@@ -10,13 +10,7 @@ from tests.ci.desktop_release_roles import DOWNLOADABLE_DISPATCHES, gate, needs_
 from tests.ci.workflow_steps import is_checkout
 
 ROOT = Path(__file__).resolve().parents[2]
-R2_ENV = {"CLOUDFLARE_R2_ACCOUNT_ID", "CLOUDFLARE_R2_ACCESS_KEY_ID", "CLOUDFLARE_R2_SECRET_ACCESS_KEY", "CLOUDFLARE_R2_BUCKET"}
-
-
-def needs_r2_credentials(step):
-    """The step runs with R2 credentials configured and skips without them."""
-    configured = gate(step["if"], {}, {}, job_if=False, env={"CLOUDFLARE_R2_ACCOUNT_ID": "account"})
-    return configured and not gate(step["if"], {}, {}, job_if=False, env={"CLOUDFLARE_R2_ACCOUNT_ID": ""})
+ARCHIVE_ENV = {"GH_TOKEN", "THOR_ARCHIVE_RELEASE"}
 
 
 def load(name):
@@ -47,27 +41,32 @@ def test_archive_gate_uses_bootstrap_python_and_trusted_exact_revision():
     assert "workflow_dispatch" in workflow["on"] and "push" in workflow["on"]
     job = workflow["jobs"]["archive-inputs"]
     assert job["environment"] == "release-signing"
-    assert R2_ENV <= job["env"].keys()
+    # The archive is the ci-archive GitHub release, written with the job token.
+    assert ARCHIVE_ENV <= job["env"].keys()
+    assert job["env"]["THOR_ARCHIVE_RELEASE"] == "ci-archive"
     assert not any(s.get("uses") == "./.github/actions/setup-pm" for s in job["steps"])
     (archive,) = [s for s in job["steps"] if s.get("run") == "python3 -m scripts.ci.archive_inputs"]
-    # Pushes to main without R2 credentials skip the archive rather than fail.
-    assert needs_r2_credentials(archive)
+    # Forks cannot write the archive release; they skip with a notice instead.
+    assert "fork" in archive["if"]
+    assert any("fork" in str(s.get("if", "")) and "notice" in str(s.get("run", ""))
+               for s in job["steps"])
     checkout = job["steps"][0]
     assert checkout["with"]["ref"] == "${{ inputs.sha || github.sha }}"
-    release = load("desktop-bundled-release.yml")["jobs"]
+    release = load("desktop-bundled-release.yml")
+    assert ARCHIVE_ENV <= release["env"].keys()
+    release_jobs = release["jobs"]
     # The archive lives as a validate step with the job's own gate shape —
     # a skipped archive (disposable/termux runs) must not skip the builds.
-    validate = release["validate"]
+    validate = release_jobs["validate"]
     (archive,) = [s for s in validate["steps"] if s.get("run") == "python3 -m scripts.ci.archive_inputs"]
     for dispatch, inputs in DOWNLOADABLE_DISPATCHES.items():
         assert gate(archive["if"], inputs, {}, job_if=False), dispatch
     for skipped in ({"disposable_run": "98765"}, {"disposable_channel": "native-preview"},
                     {"release-phase": "publish"}, {"release-phase": "promote"}):
         assert not gate(archive["if"], {**DOWNLOADABLE_DISPATCHES["tag"], **skipped}, {}, job_if=False), skipped
-    assert R2_ENV <= archive["env"].keys()
     assert validate["environment"] == "release-signing"
     assert is_checkout(validate["steps"][0])
-    assert not [name for name, job in release.items() if "archive-inputs" in needs_of(job)]
+    assert not [name for name, job in release_jobs.items() if "archive-inputs" in needs_of(job)]
 
     action = YAML(typ="base").load((ROOT / ".github/actions/setup-pm/action.yml").read_text(encoding="utf-8"))
     assert action["inputs"]["archive-inputs"]["default"] == "false"
@@ -78,12 +77,13 @@ def test_archive_gate_uses_bootstrap_python_and_trusted_exact_revision():
     assert archive_index < next(i for i, s in enumerate(steps) if s.get("id") == "install")
 
 
-def test_scheduled_and_main_r2_consumers_skip_without_credentials():
-    """Only explicit release runs may fail on missing R2; main and the nightly stay green."""
+def test_scheduled_and_main_consumers_skip_without_archive_access():
+    """Only explicit release runs may fail on a missing archive; main and the nightly stay green."""
     prune = load("canary-release.yml")["jobs"]["prune"]
-    assert R2_ENV <= prune["env"].keys()
-    r2_steps = [s for s in prune["steps"] if "scripts.releases.r2" in s.get("run", "")]
-    assert r2_steps and all(needs_r2_credentials(s) for s in r2_steps)
+    # Tag pruning is release.py's; no step may call the retired object-store module.
+    assert not [s for s in prune["steps"] if "scripts.releases.r2" in s.get("run", "")]
+    assert any("release.py" in s.get("run", "") and "--prune-canaries" in s.get("run", "")
+               for s in prune["steps"])
 
     termux = load("termux-verify.yml")
     assert termux["on"]["push"]["branches"] == ["main"] and "pull_request" in termux["on"]
@@ -94,4 +94,3 @@ def test_scheduled_and_main_r2_consumers_skip_without_credentials():
                                       ("", False, False)):
         needs = {native["needs"]: {"result": "success", "outputs": {"configured": configured}}}
         assert gate(native["if"], {"release": release}, needs) is runs, (configured, release)
-

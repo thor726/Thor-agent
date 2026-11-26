@@ -5,7 +5,6 @@ import re
 from typing import Any, Callable
 
 from . import gh_assets, pages
-from . import r2 as r2_module
 from .semver import compare, is_release_version
 from thor_cli.update_channel import canary_timestamp, is_canary_tag
 
@@ -187,12 +186,6 @@ def finalize(tag: str, dir: str, variant: str | None = None, archive: str | None
     if variant and variant != "light":
         raise ValueError("Unknown macOS variant")
     import os
-
-    if not os.environ.get("PAGES_REPO_DIR"):
-        # Transitional fallback for unmigrated workflows (Fase 3 draft).
-        _finalize_legacy_r2(tag=tag, dir=dir, variant=variant, archive=archive,
-                            verify_bytes=verify_bytes)
-        return
     import hashlib
     import tempfile
     from pathlib import Path
@@ -258,62 +251,3 @@ def finalize(tag: str, dir: str, variant: str | None = None, archive: str | None
     publish_mac_feed(plan, {"read": read, "verify": verify, "write": write})
     print(f"OK pages: finalized {tag} -> {plan['key']}")
 
-
-def _finalize_legacy_r2(tag: str, dir: str, variant: str | None = None, archive: str | None = None,
-             verify_bytes: bool = True) -> None:
-    """Validate the native legs, verify their streamed bytes, then replace
-    the feed pointer (conditional write, then readback).
-
-    ``verify_bytes=False`` (stable promotion of an accepted candidate, whose
-    artifacts are already bound by receipt sha256) checks each artifact's
-    remote size instead of streaming multi-GB packages back down."""
-    if variant and variant != "light":
-        raise ValueError("Unknown macOS variant")
-    creds, base, bucket = r2_module.credentials()
-    now = r2_module.amz_timestamp()
-    import os
-
-    legs = {
-        name: open(os.path.join(dir, name), encoding="utf-8-sig").read()
-        for name in sorted(os.listdir(dir))
-        if name.endswith("-mac.yml")
-    }
-    plan = merge_mac_feeds(legs, tag, variant == "light", archive=archive)
-
-    def read(key: str) -> dict[str, str] | None:
-        try:
-            response = r2_module.signed_request(
-                "GET", f"{base}/{bucket}/{r2_module.encode_key_path(key)}", creds=creds, now=now
-            )
-        except r2_module.R2RequestError as err:
-            if err.status == 404:
-                return None  # first publish: no live feed yet
-            raise
-        if response.status >= 400:
-            raise r2_module.R2RequestError("GET", key, response.status)
-        etag = response.header("etag")
-        if not etag:
-            raise ValueError(f"No ETag for {key}")
-        return {"text": response.text(), "etag": etag}
-
-    def verify(key: str, file_entry: dict[str, Any]) -> None:
-        if not verify_bytes:
-            head = r2_module.signed_request(
-                "HEAD", f"{base}/{bucket}/{r2_module.encode_key_path(key)}", creds=creds, now=now)
-            if str(head.header("content-length")) != str(file_entry["size"]):
-                raise ValueError(f"Artifact size mismatch: {key}")
-            return
-        r2_module.verify_remote_artifact(
-            f"{base}/{bucket}/{r2_module.encode_key_path(key)}",
-            creds, now, file_entry["size"], file_entry["sha512"],
-        )
-
-    def write(key: str, text: str, etag: str | None) -> None:
-        r2_module.put_object(
-            creds, base, bucket, key, text.encode("utf-8"), now,
-            "application/yaml",
-            {"If-Match": etag} if etag else {"If-None-Match": "*"},
-        )
-
-    publish_mac_feed(plan, {"read": read, "verify": verify, "write": write})
-    print(f"OK r2: finalized {tag} -> {plan['key']}")

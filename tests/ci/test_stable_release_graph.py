@@ -421,7 +421,7 @@ def test_docker_recovery_refuses_to_replace_a_divergent_version_tag(tmp_path):
 def test_every_run_step_receives_the_variables_it_reads():
     """A run step reading $VAR it was never given gets an empty string: rc.14-v0.21.7 passed
     every build and gate, then 'complete' died rendering the builds table without
-    CLOUDFLARE_R2_PUBLIC_URL or RELEASE_CLAIM_TAG."""
+    THOR_PAGES_PUBLIC_URL or RELEASE_CLAIM_TAG."""
     import re
 
     runner = {"GITHUB_REPOSITORY", "GITHUB_OUTPUT", "GITHUB_STEP_SUMMARY", "GITHUB_ENV", "GITHUB_SHA",
@@ -434,14 +434,13 @@ def test_every_run_step_receives_the_variables_it_reads():
             assert not missing, f"{name} / {step.get('name') or step['run'][:40]}: {sorted(missing)}"
 
 
-def test_the_builds_table_render_cannot_block_the_release_and_has_its_r2_inputs():
+def test_the_builds_table_render_cannot_block_the_release_and_has_its_pages_inputs():
     """The table is presentation: it never fails 'Stable release is green', and it gets the
-    R2 credentials its listing and page writes need."""
+    Pages public base and claim tag its listing and page writes need."""
     step = next(step for step in workflow("stable-release.yml")["jobs"]["complete"]["steps"]
                 if step.get("name") == "Render the admitted candidate smoke results")
     assert str(step.get("continue-on-error")).lower() == "true"  # base YAML loader: a string
-    assert {"CLOUDFLARE_R2_ACCOUNT_ID", "CLOUDFLARE_R2_ACCESS_KEY_ID", "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
-            "CLOUDFLARE_R2_BUCKET", "CLOUDFLARE_R2_PUBLIC_URL", "RELEASE_CLAIM_TAG"} <= set(step["env"])
+    assert {"THOR_PAGES_PUBLIC_URL", "RELEASE_CLAIM_TAG", "GH_TOKEN"} <= set(step["env"])
 
 
 @pytest.mark.parametrize("arch", ["arm64"])

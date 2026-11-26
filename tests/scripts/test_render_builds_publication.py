@@ -10,7 +10,7 @@ from urllib.request import urlopen
 
 import pytest
 
-from tests.scripts.test_release_r2 import r2_server
+from tests.scripts.release_fakes import page_bytes, page_keys, release_transport  # noqa: F401  (fixture)
 
 _SPEC = importlib.util.spec_from_file_location(
     'render_builds_table', Path(__file__).resolve().parents[2] / 'scripts/render-builds-table.py')
@@ -19,11 +19,25 @@ rbt = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(rbt)
 
 
+def seed(worktree, key, data):
+    path = Path(worktree).joinpath(*key.split("/"))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def snapshot(worktree):
+    return {key: page_bytes(worktree, key) for key in page_keys(worktree)}
+
+
 @pytest.fixture
 def release_body(monkeypatch):
     state = {'body': '# Notes\n\n<!-- THOR_BUILDS_TABLE -->\n\n## Changes\n- x\n', 'edits': []}
 
+    real_run = subprocess.run
+
     def gh(argv, **kwargs):
+        if argv[:1] != ['gh']:
+            return real_run(argv, **kwargs)
         if argv[:3] == ['gh', 'release', 'view']:
             return subprocess.CompletedProcess(argv, 0, json.dumps({'body': state['body']}), '')
         assert argv[:3] == ['gh', 'release', 'edit']
@@ -36,8 +50,8 @@ def release_body(monkeypatch):
 
 
 @pytest.mark.parametrize('tag', ['v1.2.3', 'v1.2.3+canary.20260818T101010Z'])
-def test_tag_publication_pending_rerun_stale_and_dry_run(monkeypatch, r2_server, release_body, tag):
-    base = f'http://127.0.0.1:{r2_server.server_port}/thor-releases'
+def test_tag_publication_pending_rerun_stale_and_dry_run(monkeypatch, release_transport, release_body, tag):
+    worktree, base = release_transport.worktree, release_transport.base
     version = tag[1:]
     prefix = f'releases/tag/{tag}/'
     visible = [f'ThorBundled-{version}-mac-arm64.dmg', f'ThorBundled-{version}-win-x64.msix',
@@ -47,8 +61,8 @@ def test_tag_publication_pending_rerun_stale_and_dry_run(monkeypatch, r2_server,
               f'ThorBundled-{version}-win-x64.msix.blockmap', 'latest.yml',
               'ThorBundled-9.9.9-win-x64.msix']
     for name in visible + hidden:
-        r2_server.store[prefix + name] = (name.encode(), '"e"')
-    r2_server.store['releases/tag/v9.9.9/ThorBundled-9.9.9-win-x64.msix'] = (b'neighbor', '"e"')
+        seed(worktree, prefix + name, name.encode())
+    seed(worktree, 'releases/tag/v9.9.9/ThorBundled-9.9.9-win-x64.msix', b'neighbor')
     monkeypatch.setenv('RELEASE_NEEDS', '{"build-win32":{"result":"success"}}')
     args = ['render-builds-table.py', '--tag', tag, '--repo', 'o/r', '--r2-base-url', base + '/']
 
@@ -59,16 +73,16 @@ def test_tag_publication_pending_rerun_stale_and_dry_run(monkeypatch, r2_server,
     for run in ('1', '2'):
         render('--pending-run-url', f'https://github.example/runs/{run}')
     assert 'runs/1' not in release_body['body'] and release_body['body'].count('runs/2') == 1
-    assert not any(method == 'PUT' for method, _, _ in r2_server.requests)
+    assert page_bytes(worktree, prefix + 'index.html') is None
     render()
     body = release_body['body']
     assert 'runs/2' not in body and body.count('## Downloads') == 1
     assert body.count(rbt.MARKER) == body.count(rbt.END_MARKER) == 1
-    expected = {rbt.r2.public_url_for(base, prefix + name) for name in visible}
+    expected = {rbt.pages.public_url_for(base, prefix + name) for name in visible}
     assert set(re.findall(r'\]\((http[^)]+)\)', body)) == expected
     with urlopen(f'{base}/{prefix}index.html', timeout=5) as response:
         page = response.read().decode()
-    release_url = rbt.r2.public_url_for('https://github.com/o/r/releases/tag', tag)
+    release_url = rbt.pages.public_url_for('https://github.com/o/r/releases/tag', tag)
     assert set(re.findall(r'href="(http[^"]+)"', page)) == expected | {release_url}
     assert rbt.recorded_build(page) == tag and 'Bundle environment' not in page
     assert all(name not in page and name not in body for name in hidden)
@@ -77,19 +91,19 @@ def test_tag_publication_pending_rerun_stale_and_dry_run(monkeypatch, r2_server,
         with urlopen(url, timeout=5) as response:
             assert response.read() == unquote(url.rsplit('/', 1)[1]).encode()
     channel_key = 'releases/canary/index.html' if '+canary.' in tag else 'releases/stable/index.html'
-    assert r2_server.store[channel_key][0].decode() == page
+    assert page_bytes(worktree, channel_key).decode() == page
     render()
     assert release_body['body'] == body
 
     # Use the real page writer's marker format, independent of asset selection.
     newer = rbt.render_page('v9.9.9', {}, base).encode()
-    r2_server.store[channel_key] = (newer, '"e"')
+    seed(worktree, channel_key, newer)
     render()
-    assert r2_server.store[channel_key][0] == newer
-    assert r2_server.store[prefix + 'index.html'][0].decode() == page
-    before, edits = dict(r2_server.store), list(release_body['edits'])
+    assert page_bytes(worktree, channel_key) == newer
+    assert page_bytes(worktree, prefix + 'index.html').decode() == page
+    before, edits = snapshot(worktree), list(release_body['edits'])
     render('--dry-run')
-    assert r2_server.store == before and release_body['edits'] == edits
+    assert snapshot(worktree) == before and release_body['edits'] == edits
     release_body['body'] = 'no marker here'
     render()
     assert release_body['body'] == 'no marker here' and release_body['edits'] == edits
@@ -98,23 +112,23 @@ def test_tag_publication_pending_rerun_stale_and_dry_run(monkeypatch, r2_server,
     # table but leaves the shared downloads page alone; the same page is replaced without the flag.
     release_body['body'] = rbt.MARKER
     older = rbt.render_page('v1.2.3+canary.20200101T000000Z' if '+canary.' in tag else 'v0.0.1', {}, base).encode()
-    r2_server.store[channel_key] = (older, '"e"')
+    seed(worktree, channel_key, older)
     render('--no-channel-page')
-    assert r2_server.store[channel_key][0] == older
+    assert page_bytes(worktree, channel_key) == older
     release_body['body'] = rbt.MARKER
     render()
-    assert r2_server.store[channel_key][0].decode() == page
+    assert page_bytes(worktree, channel_key).decode() == page
 
 
 @pytest.mark.parametrize('asset_present', [False, True])
 @pytest.mark.parametrize('result', ['failure', 'cancelled', 'skipped'])
-def test_incomplete_tag_keeps_channel_and_links_diagnostics(monkeypatch, r2_server, release_body, asset_present, result):
+def test_incomplete_tag_keeps_channel_and_links_diagnostics(monkeypatch, release_transport, release_body, asset_present, result):
+    worktree, base = release_transport.worktree, release_transport.base
     tag = 'v1.2.3+canary.20260818T101010Z'
-    base = f'http://127.0.0.1:{r2_server.server_port}/thor-releases'
     key = f'releases/tag/{tag}/ThorBundled-{tag[1:]}-win-x64.msix'
-    r2_server.store['releases/canary/index.html'] = (b'previous good page', '"e"')
+    seed(worktree, 'releases/canary/index.html', b'previous good page')
     if asset_present:
-        r2_server.store[key] = (b'transport fixture', '"e"')
+        seed(worktree, key, b'transport fixture')
     run = 'https://github.example/runs/123'
     monkeypatch.setenv('RELEASE_NEEDS', json.dumps({'publish-win32-updater': {'result': result}}))
     monkeypatch.setattr(sys, 'argv', ['renderer', '--tag', tag, '--r2-base-url', base, '--run-url', run])
@@ -124,9 +138,9 @@ def test_incomplete_tag_keeps_channel_and_links_diagnostics(monkeypatch, r2_serv
     for output in (page, release_body['body']):
         assert 'Build incomplete' in output and f'publish-win32-updater ({result})' in output
         assert run in output
-        assert (rbt.r2.public_url_for(base, key) in output) == asset_present
+        assert (rbt.pages.public_url_for(base, key) in output) == asset_present
     assert ('No downloadable artifacts' in page) == (not asset_present)
-    assert r2_server.store['releases/canary/index.html'][0] == b'previous good page'
+    assert page_bytes(worktree, 'releases/canary/index.html') == b'previous good page'
 
 
 def test_attempt_page_warns_and_canary_page_does_not():

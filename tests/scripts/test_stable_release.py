@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.scripts.test_release_r2 import r2_server as r2_server  # noqa: PLC0414 -- the self-alias is load-bearing: it suppresses F811 for the pytest fixture parameter shadowing this import
+from tests.scripts.release_fakes import release_transport as release_transport  # noqa: PLC0414 -- the self-alias is load-bearing: it suppresses F811 for the pytest fixture parameter shadowing this import
 from scripts.releases.draft_warning import (
     WARNING_CLOSE, WARNING_OPEN, strip_draft_warning,
 )
@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def candidates(tag, commit, digest, archive=None):
-    """A desktop candidate manifest. `archive` is the R2 prefix ref the
+    """A desktop candidate manifest. `archive` is the archive prefix ref the
     manifest itself names; the payload `tag` stays plain vX.Y.Z."""
     packages = []
     second = 100 + int(tag.rsplit('.', 1)[1])
@@ -292,8 +292,47 @@ def test_transitions_bind_all_arches_identity_version_and_archive():
         plan_transitions(new, candidates("v1.2.3", "a" * 40, "1" * 64), BASE)
 
 
+class TransportStore:
+    """(bytes, etag) view over the release transport: Pages worktree files
+    first, then gh archive assets — the two homes stable objects live in."""
+
+    def __init__(self, transport):
+        self.transport = transport
+
+    def _path(self, key):
+        return self.transport.worktree.joinpath(*key.split("/"))
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def __getitem__(self, key):
+        path = self._path(key)
+        if path.is_file():
+            return path.read_bytes(), '"e"'
+        data = self.transport.gh.find_bytes(key)
+        if data is None:
+            raise KeyError(key)
+        return data, '"e"'
+
+    def __setitem__(self, key, value):
+        data = value[0] if isinstance(value, tuple) else value
+        path = self._path(key)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+
+    def __delitem__(self, key):
+        self._path(key).unlink(missing_ok=True)
+        self.transport.gh.delete(key)
+
+    def __contains__(self, key):
+        return self._path(key).is_file() or self.transport.gh.find_bytes(key) is not None
+
+
 @pytest.fixture
-def https_origin(tmp_path, monkeypatch):
+def https_origin(tmp_path, monkeypatch, release_transport):
     import datetime
     import ipaddress
     import ssl
@@ -341,7 +380,8 @@ def https_origin(tmp_path, monkeypatch):
             pass
 
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    server.store = {'manifest': (b'{"schema":1}', '"e"')}
+    server.store = TransportStore(release_transport)
+    server.store['manifest'] = (b'{"schema":1}', '"e"')
     server.requests = requests
     server_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     server_context.load_cert_chain(cert_file, key_file)
@@ -545,7 +585,7 @@ def test_a_claim_cut_before_lanes_existed_reads_as_the_lane_set_that_gated_the_s
 
 
 def test_a_default_claim_builds_no_termux_and_lanes_restore_it(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     from scripts.releases import stable
 
     off = {"candidates-termux", "termux-checks"}
@@ -560,7 +600,6 @@ def test_a_default_claim_builds_no_termux_and_lanes_restore_it(
 
     # Only the default groups stage handoffs; the manifest is complete without
     # the Termux row.
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_darwin_handoff(built, "arm64")
@@ -571,7 +610,7 @@ def test_a_default_claim_builds_no_termux_and_lanes_restore_it(
     calls = _calls(lane_set.DEFAULT)
     env = {**_receipt_env(tmp_path, https_origin.base), "RELEASE_NEEDS": json.dumps(calls)}
     stable.main(["candidate-manifest"], env)
-    stored, _ = r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
+    stored, _ = https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
     manifest = json.loads(stored)
     assert {f"{row['platform']}/{row['arch']}" for row in manifest["packages"]} == {
         "macos/arm64", "windows/x64", "windows/arm64"}
@@ -586,20 +625,19 @@ def test_a_default_claim_builds_no_termux_and_lanes_restore_it(
         stable.validate_candidates(lean, "v1.2.3", RECEIPT_COMMIT, https_origin.base,
                                    RELEASE_EPOCH, archive=ATTEMPT)
     # A claim that built Termux needs its handoff: a missing one leaves no manifest.
-    del r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
+    del https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
     termux = lane_set.select(with_=["termux"])
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context(lanes=termux))
-    with pytest.raises(Exception, match="handoff-termux"):
+    with pytest.raises(Exception, match="Missing release handoff: termux"):
         stable.main(["candidate-manifest"], {**env, "RELEASE_NEEDS": json.dumps(_calls(termux))})
-    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in r2_server.store
+    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in https_origin.store
 
 
 def test_a_termux_only_claim_assembles_a_termux_only_manifest(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     """--only termux: no desktop call exists, so there is no smoke to judge, only the Termux call."""
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_termux_handoff(built)
@@ -607,23 +645,22 @@ def test_a_termux_only_claim_assembles_a_termux_only_manifest(
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context(lanes=lanes))
     env = {**_receipt_env(tmp_path, https_origin.base), "RELEASE_NEEDS": json.dumps(_calls(lanes))}
     stable.main(["candidate-manifest"], env)
-    manifest = json.loads(r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
+    manifest = json.loads(https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
     assert {f"{row['platform']}/{row['arch']}" for row in manifest["packages"]} == {"termux/aarch64"}
     stable.require_targets_match_claim(manifest, lanes)
     # The Termux call is judged like any other: a failed one leaves no manifest.
-    del r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
+    del https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
     failed = {**env, "RELEASE_NEEDS": json.dumps({"candidates-termux": {"result": "failure"}})}
     with pytest.raises(ValueError, match="candidates-termux=failure"):
         stable.main(["candidate-manifest"], failed)
-    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in r2_server.store
+    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in https_origin.store
 
 
 def test_a_windows_only_claim_assembles_a_windows_only_manifest(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     """--only windows,docker: no macOS handoff exists, so none is read and no macOS row appears."""
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_windows_handoff(built, "x64")
@@ -634,7 +671,7 @@ def test_a_windows_only_claim_assembles_a_windows_only_manifest(
     calls = _calls(lanes)
     env = {**_receipt_env(tmp_path, https_origin.base), "RELEASE_NEEDS": json.dumps(calls)}
     stable.main(["candidate-manifest"], env)
-    manifest = json.loads(r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
+    manifest = json.loads(https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
     assert {f"{row['platform']}/{row['arch']}" for row in manifest["packages"]} == {"windows/x64", "windows/arm64"}
     # Nothing smoked: the claim has no smoke lane, so every smoke is recorded skipped.
     assert manifest["smoke_results"] == {job: {"result": "skipped"} for job in stable.SMOKE_JOBS}
@@ -643,11 +680,10 @@ def test_a_windows_only_claim_assembles_a_windows_only_manifest(
 
 
 def test_a_store_only_claim_assembles_a_manifest_with_the_store_bundle_and_no_packages(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     """--only windows-store: the per-arch handoffs carry unsigned Store MSIX and no metadata."""
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     for arch in ("x64", "arm64"):
@@ -659,7 +695,7 @@ def test_a_store_only_claim_assembles_a_manifest_with_the_store_bundle_and_no_pa
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context(lanes=lanes))
     env = {**_receipt_env(tmp_path, https_origin.base), "RELEASE_NEEDS": json.dumps(_calls(lanes))}
     stable.main(["candidate-manifest"], env)
-    manifest = json.loads(r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
+    manifest = json.loads(https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
     assert manifest["packages"] == []
     assert [file["path"] for file in manifest["files"] if file["path"].endswith(".msixbundle")] == [
         "Store-Product-1.2.3-win.msixbundle"]
@@ -669,12 +705,11 @@ def test_a_store_only_claim_assembles_a_manifest_with_the_store_bundle_and_no_pa
 
 
 def test_a_store_plus_macos_claim_records_only_the_macos_smoke(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     """--without windows: the Windows candidate calls run for the Store bundle and succeed, but no
     Windows package is smoked, so their success is not a smoke result."""
     from scripts.releases import handoff, stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_darwin_handoff(built, "arm64")
@@ -689,7 +724,7 @@ def test_a_store_plus_macos_claim_records_only_the_macos_smoke(
     assert calls["candidates-win32-x64"] == {"result": "success"}
     env = {**_receipt_env(tmp_path, https_origin.base), "RELEASE_NEEDS": json.dumps(calls)}
     stable.main(["candidate-manifest"], env)
-    manifest = json.loads(r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
+    manifest = json.loads(https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"][0])
     assert {f"{row['platform']}/{row['arch']}" for row in manifest["packages"]} == {"macos/arm64"}
     assert manifest["smoke_results"]["smoke-darwin-arm64"] == {"result": "success"}
     assert manifest["smoke_results"]["smoke-win32-x64"] == {"result": "skipped"}
@@ -698,11 +733,10 @@ def test_a_store_plus_macos_claim_records_only_the_macos_smoke(
 
 
 def test_the_manifest_refuses_a_windows_bundle_the_claims_lanes_did_not_build(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     """A signed bundle under a Store-only claim, or a missing Store bundle under `windows` + `windows-store`."""
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_windows_handoff(built, "x64")
@@ -714,7 +748,7 @@ def test_the_manifest_refuses_a_windows_bundle_the_claims_lanes_did_not_build(
         env = {**_receipt_env(tmp_path, https_origin.base), "RELEASE_NEEDS": json.dumps(_calls(lanes))}
         with pytest.raises(ValueError, match=message):
             stable.main(["candidate-manifest"], env)
-    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in r2_server.store
+    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in https_origin.store
 
 
 def _claim_fixture(tmp_path, *, tag, version, lanes=lane_set.DEFAULT):
@@ -768,7 +802,7 @@ def test_complete_writes_no_final_tag_and_leaves_the_draft_on_the_attempt_ref(tm
         "RELEASE_CLAIM_TAG": "rc.1-v1.2.3", "RELEASE_CLAIM_OBJECT": tag_object,
         **CONTROLLER_ENV,
         "RELEASE_TAG": "v1.2.3", "CANDIDATE_MANIFEST_SHA256": "c" * 64,
-        "CLOUDFLARE_R2_PUBLIC_URL": BASE,
+        "THOR_PAGES_PUBLIC_URL": BASE,
     })
     remote = subprocess.check_output(
         ["git", "ls-remote", "origin", "refs/tags/*"], text=True, encoding="utf-8")
@@ -1098,22 +1132,21 @@ def _stage_universal_bundle(built, *, signed=True, store=True):
 
 
 def _receipt_env(tmp_path, base):
-    return {"RELEASE_TAG": "v1.2.3", "CLOUDFLARE_R2_PUBLIC_URL": base,
+    return {"RELEASE_TAG": "v1.2.3", "THOR_PAGES_PUBLIC_URL": base,
             "GITHUB_OUTPUT": str(tmp_path / "output")}
 
 
-def test_stage_receipt_publishes_the_groups_signed_receipt(tmp_path, r2_server, https_origin,
+def test_stage_receipt_publishes_the_groups_signed_receipt(tmp_path, release_transport, https_origin,
                                                            monkeypatch, capsys):
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_darwin_handoff(built, "arm64")
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context())
     stable.main(["stage-receipt", "--receipt", "darwin-arm64"], _receipt_env(tmp_path, https_origin.base))
 
-    stored, _ = r2_server.store[f"releases/tag/{ATTEMPT}/darwin-arm64-receipt.json"]
+    stored, _ = https_origin.store[f"releases/tag/{ATTEMPT}/darwin-arm64-receipt.json"]
     receipt = json.loads(stored)
     assert receipt["tag"] == "v1.2.3" and receipt["archive"] == ATTEMPT
     assert receipt["releaseEpoch"] == RELEASE_EPOCH
@@ -1127,11 +1160,10 @@ def test_stage_receipt_publishes_the_groups_signed_receipt(tmp_path, r2_server, 
     assert f"receipt-url={url}" in emitted and f"receipt-sha256={digest}" in emitted
 
 
-def test_stage_receipt_publishes_both_windows_rows_from_the_bundle(tmp_path, r2_server, https_origin,
+def test_stage_receipt_publishes_both_windows_rows_from_the_bundle(tmp_path, release_transport, https_origin,
                                                                    monkeypatch):
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_windows_handoff(built, "x64")
@@ -1140,7 +1172,7 @@ def test_stage_receipt_publishes_both_windows_rows_from_the_bundle(tmp_path, r2_
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context())
     stable.main(["stage-receipt", "--receipt", "win32-bundle"], _receipt_env(tmp_path, https_origin.base))
 
-    stored, _ = r2_server.store[f"releases/tag/{ATTEMPT}/win32-bundle-receipt.json"]
+    stored, _ = https_origin.store[f"releases/tag/{ATTEMPT}/win32-bundle-receipt.json"]
     receipt = json.loads(stored)
     rows = {f"{row['platform']}/{row['arch']}": row for row in receipt["packages"]}
     assert set(rows) == {"windows/x64", "windows/arm64"}
@@ -1149,11 +1181,10 @@ def test_stage_receipt_publishes_both_windows_rows_from_the_bundle(tmp_path, r2_
     assert rows["windows/x64"]["executableVersion"] == WINDOWS_VERSION
 
 
-def test_stage_receipt_refuses_a_bundle_whose_arm64_row_is_absent(tmp_path, r2_server, https_origin,
+def test_stage_receipt_refuses_a_bundle_whose_arm64_row_is_absent(tmp_path, release_transport, https_origin,
                                                                   monkeypatch):
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_windows_handoff(built, "x64")
@@ -1163,7 +1194,7 @@ def test_stage_receipt_refuses_a_bundle_whose_arm64_row_is_absent(tmp_path, r2_s
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context())
     with pytest.raises(ValueError):
         stable.main(["stage-receipt", "--receipt", "win32-bundle"], _receipt_env(tmp_path, https_origin.base))
-    assert f"releases/tag/{ATTEMPT}/win32-bundle-receipt.json" not in r2_server.store
+    assert f"releases/tag/{ATTEMPT}/win32-bundle-receipt.json" not in https_origin.store
 
 
 def _stage_termux_handoff(built):
@@ -1196,13 +1227,13 @@ def _transitions_env(tmp_path, base, receipt, url, digest):
             "RELEASE_TAG": "v1.2.3", "RELEASE_CLAIM_TAG": ATTEMPT,
             "RELEASE_CLAIM_OBJECT": "0" * 40,
             "BASELINE_MANIFEST_URL": f"{base}/baseline.json",
-            "CLOUDFLARE_R2_PUBLIC_URL": base,
+            "THOR_PAGES_PUBLIC_URL": base,
             "RUNNER_TEMP": str(tmp_path / "runner-temp"),
             "GITHUB_OUTPUT": str(tmp_path / "output"),
             "GITHUB_REPOSITORY": "example/project"}
 
 
-def _staged_receipt(tmp_path, r2_server, https_origin, monkeypatch, receipt):
+def _staged_receipt(tmp_path, release_transport, https_origin, monkeypatch, receipt):
     """Stage one group's handoffs and publish its receipt; return its URL+digest."""
     import urllib.request
 
@@ -1211,7 +1242,6 @@ def _staged_receipt(tmp_path, r2_server, https_origin, monkeypatch, receipt):
     # The receipt and the baseline are read over the fixture's self-signed
     # origin; trust it the way the production opener would trust the CDN.
     monkeypatch.setattr(urllib.request, "urlopen", https_origin.opener)
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir(exist_ok=True)
     if receipt in ("darwin-arm64", "darwin-x64"):
@@ -1223,16 +1253,16 @@ def _staged_receipt(tmp_path, r2_server, https_origin, monkeypatch, receipt):
     monkeypatch.setattr(stable, "stable_context", _fake_stable_context())
     stable.main(["stage-receipt", "--receipt", receipt], _receipt_env(tmp_path, https_origin.base))
     key = f"releases/tag/{ATTEMPT}/{receipt}-receipt.json"
-    stored, _ = r2_server.store[key]
+    stored, _ = https_origin.store[key]
     return f"{https_origin.base}/releases/tag/{ATTEMPT}/{receipt}-receipt.json", \
         hashlib.sha256(stored).hexdigest()
 
 
-def test_transitions_from_one_darwin_receipt_emit_one_macos_row(tmp_path, r2_server, https_origin,
+def test_transitions_from_one_darwin_receipt_emit_one_macos_row(tmp_path, release_transport, https_origin,
                                                                 monkeypatch):
     from scripts.releases import stable
 
-    url, digest = _staged_receipt(tmp_path, r2_server, https_origin, monkeypatch, "darwin-arm64")
+    url, digest = _staged_receipt(tmp_path, release_transport, https_origin, monkeypatch, "darwin-arm64")
     baseline = _local_baseline(https_origin.base)
     https_origin.store["baseline.json"] = (json.dumps(baseline).encode(), '"e"')
     monkeypatch.setattr(stable, "output", lambda argv: json.dumps(
@@ -1249,11 +1279,11 @@ def test_transitions_from_one_darwin_receipt_emit_one_macos_row(tmp_path, r2_ser
                for row in macos["include"])
 
 
-def test_transitions_from_the_bundle_receipt_emit_two_windows_rows(tmp_path, r2_server, https_origin,
+def test_transitions_from_the_bundle_receipt_emit_two_windows_rows(tmp_path, release_transport, https_origin,
                                                                    monkeypatch):
     from scripts.releases import stable
 
-    url, digest = _staged_receipt(tmp_path, r2_server, https_origin, monkeypatch, "win32-bundle")
+    url, digest = _staged_receipt(tmp_path, release_transport, https_origin, monkeypatch, "win32-bundle")
     baseline = _local_baseline(https_origin.base)
     https_origin.store["baseline.json"] = (json.dumps(baseline).encode(), '"e"')
     monkeypatch.setattr(stable, "output", lambda argv: json.dumps(
@@ -1269,10 +1299,10 @@ def test_transitions_from_the_bundle_receipt_emit_two_windows_rows(tmp_path, r2_
 
 
 def test_missing_baseline_plans_no_upgrade_arm_but_a_missing_supplied_one_blocks(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     from scripts.releases import stable
 
-    url, digest = _staged_receipt(tmp_path, r2_server, https_origin, monkeypatch, "darwin-arm64")
+    url, digest = _staged_receipt(tmp_path, release_transport, https_origin, monkeypatch, "darwin-arm64")
     env = {**_transitions_env(tmp_path, https_origin.base, "darwin-arm64", url, digest),
            "BASELINE_MANIFEST_URL": ""}
     stable.main(["transitions"], env)
@@ -1301,10 +1331,9 @@ def test_gate_excuses_an_upgrade_arm_only_for_its_planners_no_baseline_output():
 
 
 def test_candidate_manifest_needs_every_call_and_stages_the_archive_manifest(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_darwin_handoff(built, "arm64")
@@ -1317,7 +1346,7 @@ def test_candidate_manifest_needs_every_call_and_stages_the_archive_manifest(
            "RELEASE_NEEDS": json.dumps(_calls())}
     stable.main(["candidate-manifest"], env)
 
-    stored, _ = r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
+    stored, _ = https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
     manifest = json.loads(stored)
     assert {f"{row['platform']}/{row['arch']}" for row in manifest["packages"]} == {
         "macos/arm64", "windows/x64", "windows/arm64", "termux/aarch64"}
@@ -1333,18 +1362,17 @@ def test_candidate_manifest_needs_every_call_and_stages_the_archive_manifest(
     # no accepted manifest in the archive.
     failed = dict(env)
     failed["RELEASE_NEEDS"] = json.dumps({**_calls(), "candidates-darwin-arm64": {"result": "failure"}})
-    del r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
+    del https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
     (tmp_path / "output").unlink()
     with pytest.raises(ValueError, match="smoke-darwin-arm64"):
         stable.main(["candidate-manifest"], failed)
-    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in r2_server.store
+    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in https_origin.store
 
 
 def test_a_claim_without_the_smoke_lane_records_skipped_smokes_never_passed(
-        tmp_path, r2_server, https_origin, monkeypatch):
+        tmp_path, release_transport, https_origin, monkeypatch):
     from scripts.releases import stable
 
-    https_origin.store = r2_server.store
     built = tmp_path / "built"
     built.mkdir()
     _stage_darwin_handoff(built, "arm64")
@@ -1359,11 +1387,11 @@ def test_a_claim_without_the_smoke_lane_records_skipped_smokes_never_passed(
     failed = {**env, "RELEASE_NEEDS": json.dumps({**calls, "candidates-win32-x64": {"result": "failure"}})}
     with pytest.raises(ValueError, match="candidates-win32-x64"):
         stable.main(["candidate-manifest"], failed)
-    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in r2_server.store
+    assert f"releases/tag/{ATTEMPT}/release-candidates.json" not in https_origin.store
 
     stable.main(["candidate-manifest"], env)
 
-    stored, _ = r2_server.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
+    stored, _ = https_origin.store[f"releases/tag/{ATTEMPT}/release-candidates.json"]
     manifest = json.loads(stored)
     assert manifest["smoke_results"] == {job: {"result": "skipped"} for job in stable.SMOKE_JOBS}
     stable.validate_candidates(manifest, "v1.2.3", RECEIPT_COMMIT, https_origin.base,

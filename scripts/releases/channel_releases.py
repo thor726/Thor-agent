@@ -343,7 +343,7 @@ def publish_release(policy: str, env: dict, root: Path) -> dict:
     # channel record bind the plain payload tag, while the archive is attempt-scoped.
     parsed = parse_attempt_ref(tag)
     payload_tag = f"v{parsed[0]}" if parsed else tag
-    if env.get("R2_DISPOSABLE_RUN"):
+    if env.get("PAGES_DISPOSABLE_RUN"):
         raise ChannelError("Disposable receiver builds cannot enter production release publication")
     publisher = ChannelPublisher(channel_store(), env["GITHUB_REPOSITORY"],
                                  pages.public_base_url(), authorize=lambda action, record:

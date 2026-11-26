@@ -126,14 +126,11 @@ def archive_inputs(args) -> None:
     from pm.paths import repo_root
     from pm.store import Store
     from scripts.ci.archive_inputs import Archive, pinned_inputs, stage_inputs
-    from scripts.releases import r2
 
     lock = Lockfile(repo_root() / "pm/lock.json")
     pins = pinned_inputs(repo_root(), target=current_target(),
                          packages=set(packages(args.toolchain, args.packages, lock)))
-    # With a GitHub archive release configured, Archive fetches via gh_assets
-    # and must not demand R2 credentials; R2 stays the transitional fallback.
-    archive = Archive() if os.environ.get("THOR_ARCHIVE_RELEASE") else Archive(*r2.credentials())
+    archive = Archive()
     stage_inputs(pins, archive=archive, store=Store(args.home.resolve() / "tools"))
 
 

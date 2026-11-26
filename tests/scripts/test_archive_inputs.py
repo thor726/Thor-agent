@@ -11,8 +11,8 @@ import pytest
 from pm.artifact_mirror import object_key
 from pm.downloader import HashError
 from scripts.ci import archive_inputs as inputs
-from scripts.releases import r2
-from tests.scripts.test_release_r2 import r2_server
+from scripts.releases import gh_assets
+from tests.scripts.release_fakes import install_fake_gh
 from tests.scripts.test_termux_runtime_libs import _Server, _build_deb
 
 
@@ -32,6 +32,11 @@ def upstream(tmp_path):
         yield server, root
     finally:
         server.stop()
+
+
+@pytest.fixture
+def archive_gh(tmp_path, monkeypatch):
+    return install_fake_gh(monkeypatch, tmp_path / "gh-state")
 
 
 def test_target_selection_preserves_multi_archive_and_any_fallback(tmp_path):
@@ -65,7 +70,7 @@ def test_invalid_pins_fail_without_rewriting_authority(tmp_path, bad):
     assert (tmp_path / "pm/lock.json").read_bytes() == before
 
 
-def test_real_cli_miss_hit_and_staging_use_the_same_archived_bytes(tmp_path, upstream, r2_server, monkeypatch):
+def test_real_cli_miss_hit_and_staging_use_the_same_archived_bytes(tmp_path, upstream, archive_gh, monkeypatch):
     from pm import paths
     from pm.store import Store
     from scripts.termux.stage_runtime_libs import stage
@@ -80,17 +85,16 @@ def test_real_cli_miss_hit_and_staging_use_the_same_archived_bytes(tmp_path, ups
     monkeypatch.setattr(paths, "repo_root", lambda: repo)
     monkeypatch.setattr(paths, "lockfile_path", lambda: repo / "pm/lock.json")
     assert inputs.main([]) == 0
-    assert r2_server.store[object_key(digest)][0] == body
-    puts = [r for r in r2_server.requests if r[0] == "PUT"]
-    assert len(puts) == 1 and puts[0][2]["If-None-Match"] == "*"
-    assert r2_server.requests[-1][0] == "GET"
+    assert archive_gh.get_bytes(object_key(digest)) == body
+    assert archive_gh.uploads() == [object_key(digest)]
+    assert archive_gh.calls[-1][1:3] == ["release", "download"]
     assert not (repo / ".archive-inputs").exists()
     (root / "lib.deb").unlink()
-    r2_server.requests.clear()
+    archive_gh.calls.clear()
     store = Store(tmp_path / "tools")
     payload = tmp_path / "payload"
     assert inputs.main(["--target", "linux-arm64-bionic", "--store", str(store.root), "--payload", str(payload)]) == 0
-    assert not any(r[0] == "PUT" for r in r2_server.requests)
+    assert archive_gh.uploads() == []
     assert (stage(payload, {"lib": row}) / "libarchive-proof.so").read_bytes().endswith(b"pinned library")
     engine = importlib.import_module("pm.install")
     monkeypatch.setattr(engine, "_store", lambda: store)
@@ -98,11 +102,10 @@ def test_real_cli_miss_hit_and_staging_use_the_same_archived_bytes(tmp_path, ups
     entry = engine.stage_only("stage-test", "linux-arm64-bionic")
     assert (entry / "bin/tool").read_bytes() == body
     assert not store.entry(f"fetch-{digest}").exists()
-    assert r2.canary_doomed_keys([object_key(digest)], "99999999") == []
 
 
-@pytest.mark.parametrize("failure", ["upstream-hash", "r2-hash", "r2-permission", "readback"])
-def test_corrupt_or_denied_archive_never_publishes_a_destination(tmp_path, upstream, r2_server, monkeypatch, failure):
+@pytest.mark.parametrize("failure", ["upstream-hash", "archive-hash", "archive-denied", "readback"])
+def test_corrupt_or_denied_archive_never_publishes_a_destination(tmp_path, upstream, archive_gh, monkeypatch, failure):
     server, root = upstream
     body = (root / "lib.deb").read_bytes()
     digest = hashlib.sha256(body).hexdigest()
@@ -110,51 +113,46 @@ def test_corrupt_or_denied_archive_never_publishes_a_destination(tmp_path, upstr
     key = object_key(digest)
     if failure == "upstream-hash":
         (root / "lib.deb").write_bytes(b"corrupt")
-    elif failure == "r2-hash":
-        r2_server.store[key] = (b"corrupt", '"etag"')
+    elif failure == "archive-hash":
+        archive_gh.put_bytes(key, b"corrupt")
     elif failure == "readback":
-        original = r2.put_object
+        original = gh_assets.put
         def corrupt(*args, **kwargs):
             original(*args, **kwargs)
-            r2_server.store[key] = (b"x" * len(body), '"etag"')
-        monkeypatch.setattr(r2, "put_object", corrupt)
+            archive_gh.put_bytes(key, b"x" * len(body))
+        monkeypatch.setattr(gh_assets, "put", corrupt)
     else:
-        original = r2.signed_request
-        def deny(method, url, **kwargs):
-            if method == "HEAD":
-                raise r2.R2RequestError(method, url, 403)
-            return original(method, url, **kwargs)
-        monkeypatch.setattr(r2, "signed_request", deny)
+        def deny(*args, **kwargs):
+            raise gh_assets.ArchiveError("gh release view failed (1): denied")
+        monkeypatch.setattr(gh_assets, "asset_info", deny)
     dest = tmp_path / "preserved"
     dest.write_bytes(b"old")
-    with pytest.raises((HashError, ValueError, r2.R2RequestError)):
-        inputs.Archive(*r2.credentials()).fetch(pin, dest)
+    with pytest.raises((HashError, ValueError)):
+        inputs.Archive().fetch(pin, dest)
     assert dest.read_bytes() == b"old"
-    assert any(r[0] == "PUT" for r in r2_server.requests) == (failure == "readback")
+    assert (archive_gh.uploads() == [key]) == (failure == "readback")
 
 
-def test_racing_misses_verify_the_immutable_winner(tmp_path, upstream, r2_server, monkeypatch):
+def test_racing_misses_verify_the_immutable_winner(tmp_path, upstream, archive_gh, monkeypatch):
     server, root = upstream
     body = (root / "lib.deb").read_bytes()
     pin = inputs.InputPin("lib", server.url + "/lib.deb", hashlib.sha256(body).hexdigest(), "library")
     barrier = threading.Barrier(2)
-    original = r2.signed_request
-    def race(method, url, **kwargs):
-        try:
-            return original(method, url, **kwargs)
-        except r2.R2RequestError as exc:
-            if method == "HEAD" and exc.status == 404:
-                barrier.wait(timeout=10)
-            raise
-    monkeypatch.setattr(r2, "signed_request", race)
-    archive = inputs.Archive(*r2.credentials())
+    original = gh_assets.asset_info
+    def race(*args, **kwargs):
+        info = original(*args, **kwargs)
+        if info is None:
+            barrier.wait(timeout=10)
+        return info
+    monkeypatch.setattr(gh_assets, "asset_info", race)
+    archive = inputs.Archive()
     paths = [tmp_path / f"race-{i}" for i in range(2)]
     with ThreadPoolExecutor(max_workers=2) as pool:
         assert list(pool.map(lambda p: archive.fetch(pin, p), paths)) == ["upstream", "upstream"]
     assert all(p.read_bytes() == body for p in paths)
 
 
-def test_all_digests_start_together_and_seed_every_reference(tmp_path, upstream, r2_server, monkeypatch):
+def test_all_digests_start_together_and_seed_every_reference(tmp_path, upstream, archive_gh, monkeypatch):
     from collections import Counter
     from pm.store import Store
     from scripts.termux.stage_runtime_libs import download_path
@@ -168,29 +166,28 @@ def test_all_digests_start_together_and_seed_every_reference(tmp_path, upstream,
         for kind, label in (("tool", name), ("library", name), ("library", f"{name}-alias")):
             pins.append(inputs.InputPin(label, f"{server.url}/{name}.deb", digest, kind))
 
-    # Every unique input must reach the real HTTP path before any can finish.
+    # Every unique input must reach the archive lookup before any can finish.
     barrier = threading.Barrier(len(bodies))
-    original = r2.signed_request
-    def together(method, url, **kwargs):
-        if method == "HEAD":
-            barrier.wait(timeout=10)
-        return original(method, url, **kwargs)
-    monkeypatch.setattr(r2, "signed_request", together)
+    original = gh_assets.asset_info
+    def together(*args, **kwargs):
+        barrier.wait(timeout=10)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(gh_assets, "asset_info", together)
     store = Store(tmp_path / "tools")
     payload = tmp_path / "payload"
-    assert inputs.stage_inputs(pins, archive=inputs.Archive(*r2.credentials()),
+    assert inputs.stage_inputs(pins, archive=inputs.Archive(),
                                store=store, payload=payload) == len(bodies)
-    puts = Counter(path for method, path, _ in r2_server.requests if method == "PUT")
+    puts = Counter(archive_gh.uploads())
     assert len(puts) == len(bodies) and set(puts.values()) == {1}
     for name, body in bodies.items():
         digest = hashlib.sha256(body).hexdigest()
-        assert r2_server.store[object_key(digest)][0] == body
+        assert archive_gh.get_bytes(object_key(digest)) == body
         assert (store.entry(f"fetch-{digest}") / f"{name}.deb").read_bytes() == body
         for label in (name, f"{name}-alias"):
             assert download_path(payload, label).read_bytes() == body
 
 
-def test_parallel_readback_failure_reaches_cli_and_preserves_destination(tmp_path, upstream, r2_server, monkeypatch, capsys):
+def test_parallel_readback_failure_reaches_cli_and_preserves_destination(tmp_path, upstream, archive_gh, monkeypatch, capsys):
     from pm import paths
     from scripts.termux.stage_runtime_libs import download_path
 
@@ -202,7 +199,7 @@ def test_parallel_readback_failure_reaches_cli_and_preserves_destination(tmp_pat
         row = {"url": f"{server.url}/{name}.deb", "sha256": hashlib.sha256(body).hexdigest()}
         libs[name] = row
         packages[name] = {"version": "1", "artifacts": {"any": row}}
-        r2_server.store[object_key(row["sha256"])] = (body if name == "good" else b"xxx", '"etag"')
+        archive_gh.put_bytes(object_key(row["sha256"]), body if name == "good" else b"xxx")
     repo = tmp_path / "repo"
     write_pins(repo, packages, {"libs": libs})
     monkeypatch.setattr(paths, "repo_root", lambda: repo)
@@ -211,13 +208,12 @@ def test_parallel_readback_failure_reaches_cli_and_preserves_destination(tmp_pat
     preserved.parent.mkdir(parents=True)
     preserved.write_bytes(b"existing destination")
     barrier = threading.Barrier(len(libs))
-    original = r2.signed_request
-    def together(method, url, **kwargs):
-        if method == "HEAD":
-            barrier.wait(timeout=10)
-        return original(method, url, **kwargs)
-    monkeypatch.setattr(r2, "signed_request", together)
-    with pytest.raises(ValueError, match="checksum mismatch"):
+    original = gh_assets.asset_info
+    def together(*args, **kwargs):
+        barrier.wait(timeout=10)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(gh_assets, "asset_info", together)
+    with pytest.raises(ValueError, match="mismatch"):
         inputs.main(["--payload", str(payload), "--store", str(tmp_path / "tools")])
     assert preserved.read_bytes() == b"existing destination"
     assert not (tmp_path / "tools" / f"fetch-{libs['bad']['sha256']}").exists()
@@ -225,13 +221,13 @@ def test_parallel_readback_failure_reaches_cli_and_preserves_destination(tmp_pat
     assert "Verified " not in capsys.readouterr().out
 
 
-def test_historical_recovery_keeps_the_original_digest(tmp_path, upstream, r2_server, monkeypatch):
+def test_historical_recovery_keeps_the_original_digest(tmp_path, upstream, archive_gh, monkeypatch):
     server, root = upstream
     body = (root / "lib.deb").read_bytes()
     pin = inputs.InputPin("lib", server.url + "/gone.deb", hashlib.sha256(body).hexdigest(), "library")
     monkeypatch.setattr(inputs, "historical_url", lambda _: server.url + "/lib.deb")
     dest = tmp_path / "recovered"
-    assert inputs.Archive(*r2.credentials()).fetch(pin, dest) == "historical archive"
+    assert inputs.Archive().fetch(pin, dest) == "historical archive"
     assert dest.read_bytes() == body
 
 
@@ -250,7 +246,7 @@ def test_committed_inventory_matches_every_http_pin():
     assert {p.sha256 for p in inputs.pinned_inputs(repo)} == expected
 
 
-def test_ci_toolchain_seed_runs_before_the_tool_installer(tmp_path, upstream, r2_server, monkeypatch):
+def test_ci_toolchain_seed_runs_before_the_tool_installer(tmp_path, upstream, archive_gh, monkeypatch):
     from types import SimpleNamespace
     from scripts.ci import setup_toolchain
     from pm import paths

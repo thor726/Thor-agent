@@ -1,16 +1,16 @@
-"""Release handoffs use exact R2 bytes without advancing a channel."""
+"""Release handoffs use exact archive bytes without advancing a channel."""
 import copy
 import json
-from urllib.parse import unquote
 
 import pytest
 
-from scripts.releases import handoff, r2
-from tests.scripts.test_release_r2 import r2_server
+from scripts.releases import gh_assets, handoff, pages
+from tests.scripts.release_fakes import release_transport  # noqa: F401  (pytest fixture)
 
 
 @pytest.mark.parametrize('tag', ['v1.2.3', 'v1.2.3+canary.20260908T232538Z', 'rc.1-v1.2.3', None])
-def test_stage_and_fetch_bind_tag_commit_and_files_without_feed_writes(tmp_path, monkeypatch, r2_server, tag):
+def test_stage_and_fetch_bind_tag_commit_and_files_without_feed_writes(tmp_path, monkeypatch, release_transport, tag):
+    gh = release_transport.gh
     commit = "a" * 40
     identity = ['--tag', tag, '--commit', commit] if tag else ['--commit-build', commit]
     prefix = f'releases/tag/{tag}/' if tag else f'releases/commit/{commit}/'
@@ -27,14 +27,13 @@ def test_stage_and_fetch_bind_tag_commit_and_files_without_feed_writes(tmp_path,
     handoff.main(["stage", *identity, "--name", "win32-x64",
                   "--root", str(root), "--include", "*.msix", "--include", "metadata-*.json", "--include", "apt/**/*"])
     receipt_key = prefix + 'handoff-win32-x64.json'
-    receipt = json.loads(r2_server.store[receipt_key][0])
+    receipt = json.loads(gh.get_bytes(receipt_key))
     assert receipt['schema'] == (1 if tag else 2) and receipt['commit'] == commit
     assert receipt['tag'] == tag if tag else 'tag' not in receipt
     assert {row["path"] for row in receipt["files"]} == {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()}
-    assert all(key.startswith(prefix) for key in r2_server.store)
-    puts = [path for method, path, _ in r2_server.requests if method == "PUT"]
-    assert unquote(puts[-1]).endswith(receipt_key)
-    assert all(headers.get("If-None-Match") == "*" for method, _, headers in r2_server.requests if method == "PUT")
+    assert all(key.startswith(prefix) for key in gh.keys())
+    # The receipt lands last: it is the completion marker for the stage.
+    assert gh.uploads()[-1] == receipt_key
 
     downloaded = tmp_path / "downloaded"
     handoff.main(["fetch", *identity, "--name", "win32-x64",
@@ -49,7 +48,7 @@ def test_stage_and_fetch_bind_tag_commit_and_files_without_feed_writes(tmp_path,
 
     fetch = lambda target: handoff.main(['fetch', *identity, '--name', 'win32-x64', '--root', str(target)])
     for changed in ({'schema': 2 if tag else 1}, {'commit': 'b' * 40}, {'tag': 'v9.9.9'}, {'name': 'wrong'}):
-        r2_server.store[receipt_key] = (json.dumps({**receipt, **changed}).encode(), '"e"')
+        gh.put_bytes(receipt_key, json.dumps({**receipt, **changed}).encode())
         with pytest.raises(ValueError, match='identity') as error:
             fetch(tmp_path / 'wrong')
         assert not isinstance(error.value, handoff.MissingReceipt)
@@ -57,78 +56,83 @@ def test_stage_and_fetch_bind_tag_commit_and_files_without_feed_writes(tmp_path,
     for bad_path in ("../outside", "C:/outside", "dir\\outside", "a//b", "./a", "a%2fb", "a:b", "a?b", "a#b", '', '/abs.msix', 'NUL'):
         bad = copy.deepcopy(receipt)
         bad["files"][0]["path"] = bad_path
-        r2_server.store[receipt_key] = (json.dumps(bad).encode(), '"e"')
-        r2_server.requests.clear()
+        gh.put_bytes(receipt_key, json.dumps(bad).encode())
+        gh.calls.clear()
         with pytest.raises(ValueError, match="path"):
             fetch(tmp_path / 'unsafe')
-        assert len(r2_server.requests) == 1
+        assert gh.downloads() == [receipt_key]
     bad = copy.deepcopy(receipt)
     bad['files'] += [{**bad['files'][0], 'path': bad['files'][0]['path'].upper()}]
-    r2_server.store[receipt_key] = (json.dumps(bad).encode(), '"e"')
+    gh.put_bytes(receipt_key, json.dumps(bad).encode())
     with pytest.raises(ValueError, match='Duplicate'):
         fetch(tmp_path / 'duplicate')
-    r2_server.store[receipt_key] = (json.dumps(receipt).encode(), '"e"')
-    r2_server.store[prefix + 'app.msix'] = (b"different bytes", '"e"')
-    with pytest.raises(ValueError, match="checksum mismatch"):
+    gh.put_bytes(receipt_key, json.dumps(receipt).encode())
+    gh.put_bytes(prefix + 'app.msix', b"x" * len(data))
+    with pytest.raises(ValueError, match="mismatch"):
         fetch(downloaded)
     assert (downloaded / "app.msix").read_bytes() == data
 
 
 @pytest.mark.parametrize('commit_only', [False, True])
-def test_failed_stage_never_publishes_a_receipt_or_channel(tmp_path, r2_server, commit_only):
+def test_failed_stage_never_publishes_a_receipt_or_channel(tmp_path, release_transport, monkeypatch, commit_only):
+    gh = release_transport.gh
     tag, commit = "v1.2.3", "a" * 40
     (tmp_path / "one.msix").write_bytes(b"first")
     (tmp_path / "two.msix").write_bytes(b"second")
     prefix = f'releases/commit/{commit}/' if commit_only else f'releases/tag/{tag}/'
     identity = ['--commit-build', commit] if commit_only else ['--tag', tag, '--commit', commit]
-    r2_server.fail_put = prefix + 'two.msix'
-    with pytest.raises(r2.R2RequestError):
+    original = gh_assets.put
+    def fail_two(key, file, **kwargs):
+        if key == prefix + 'two.msix':
+            raise gh_assets.ArchiveError("gh release upload failed (1): denied")
+        return original(key, file, **kwargs)
+    monkeypatch.setattr(gh_assets, "put", fail_two)
+    with pytest.raises(gh_assets.ArchiveError):
         handoff.main(['stage', *identity, '--name', 'win32-x64', '--root', str(tmp_path), '--include', '*.msix'])
-    assert set(r2_server.store) == {prefix + 'one.msix'}
-    r2_server.requests.clear()
+    assert set(gh.keys()) == {prefix + 'one.msix'}
+    gh.calls.clear()
     with pytest.raises(ValueError, match="No files"):
         handoff.stage(tag, commit, "win32-x64", tmp_path, ["*.zip"])
-    assert r2_server.requests == []
+    assert gh.calls == []
     with pytest.raises(ValueError, match="identity"):
         handoff.stage("../bad", commit, "win32-x64", tmp_path, ["*.msix"])
-    assert r2_server.requests == []
+    assert gh.calls == []
 
 
 @pytest.mark.parametrize("commit_only", [False, True])
-def test_shared_receipt_files_download_once_and_conflicts_leave_targets_intact(tmp_path, r2_server, commit_only):
-    from scripts.releases import handoff
-
+def test_shared_receipt_files_download_once_and_conflicts_leave_targets_intact(tmp_path, release_transport, commit_only):
+    gh = release_transport.gh
     commit, tag = "a" * 40, "v1.2.3"
     artifact = tmp_path / "shared.bin"
     artifact.write_bytes(b"same shared bytes")
     if commit_only:
         stage = lambda name: handoff.stage_commit_build(commit, name, tmp_path, ["*.bin"])
         fetch = lambda target: handoff.fetch_commit_build(commit, ["one", "two"], target)
-        prefix = r2.commit_prefix_for(commit)
+        prefix = pages.commit_prefix_for(commit)
     else:
         stage = lambda name: handoff.stage(tag, commit, name, tmp_path, ["*.bin"])
         fetch = lambda target: handoff.fetch(tag, commit, ["one", "two"], target)
-        prefix = r2.staging_key_for(tag, "")
+        prefix = pages.staging_key_for(tag, "")
     stage("one")
     stage("two")
-    r2_server.requests.clear()
+    gh.calls.clear()
     target = tmp_path / "download"
     fetch(target)
     assert (target / "shared.bin").read_bytes() == artifact.read_bytes()
-    gets = [url for method, url, _ in r2_server.requests if method == "GET"]
-    assert sum(url.endswith(prefix + "shared.bin") for url in gets) == 1
+    assert gh.downloads().count(prefix + "shared.bin") == 1
 
     receipt_key = prefix + "handoff-two.json"
-    receipt = json.loads(r2_server.store[receipt_key][0])
+    receipt = json.loads(gh.get_bytes(receipt_key))
     receipt["files"][0]["sha256"] = "0" * 64
-    r2_server.store[receipt_key] = (json.dumps(receipt).encode(), '"changed"')
+    gh.put_bytes(receipt_key, json.dumps(receipt).encode())
     before = {file.name: file.read_bytes() for file in target.iterdir()}
     with pytest.raises(ValueError, match="Conflicting"):
         fetch(target)
     assert {file.name: file.read_bytes() for file in target.iterdir()} == before
 
 
-def test_commit_identity_and_simultaneous_namespaces(tmp_path, r2_server):
+def test_commit_identity_and_simultaneous_namespaces(tmp_path, release_transport):
+    gh = release_transport.gh
     commit = 'a' * 40
     for bad in ('abc', commit[:39], 'g' * 40, '', None, ' ' * 40):
         with pytest.raises(ValueError):
@@ -140,7 +144,7 @@ def test_commit_identity_and_simultaneous_namespaces(tmp_path, r2_server):
     for conflict in (['--commit', 'b' * 40], ['--tag', 'v1.2.3']):
         with pytest.raises(SystemExit):
             handoff.main([*args, *conflict])
-    assert r2_server.requests == []
+    assert gh.calls == []
     handoff.main(args)
     (tmp_path / 'app.msix').write_bytes(b'tag bytes')
     handoff.stage('v1.2.3', commit, 'win32-x64', tmp_path, ['*.msix'])
@@ -150,18 +154,19 @@ def test_commit_identity_and_simultaneous_namespaces(tmp_path, r2_server):
         assert (tmp_path / 'out/app.msix').read_bytes() == data
     with pytest.raises(handoff.MissingReceipt):
         handoff.read_commit_receipt('b' * 40, 'win32-x64')
-    r2_server.store[f'releases/commit/{commit}/handoff-win32-x64.json'] = (b'not-json', '"e"')
+    gh.put_bytes(f'releases/commit/{commit}/handoff-win32-x64.json', b'not-json')
     with pytest.raises(json.JSONDecodeError):
         handoff.read_commit_receipt(commit, 'win32-x64')
 
 
 @pytest.mark.parametrize('tag', ['v1.2.3', None])
-def test_public_handoff_downloads_exact_staged_bytes_without_credentials(tmp_path, monkeypatch, r2_server, tag):
+def test_public_handoff_downloads_exact_staged_bytes_without_credentials(tmp_path, monkeypatch, release_transport, tag):
     import os
     from pathlib import Path
     import subprocess
     import sys
 
+    gh, origin = release_transport.gh, release_transport.origin
     commit = 'a' * 40
     identity = ['--tag', tag, '--commit', commit] if tag else ['--commit-build', commit]
     prefix = f'releases/tag/{tag}/' if tag else f'releases/commit/{commit}/'
@@ -170,13 +175,9 @@ def test_public_handoff_downloads_exact_staged_bytes_without_credentials(tmp_pat
     payload = b'public artifact transport fixture\n' * 90000
     (built / 'app x64.msix').write_bytes(payload)
     handoff.main(['stage', *identity, '--name', 'win32-x64', '--root', str(built), '--include', '*.msix'])
-    for key in ('CLOUDFLARE_R2_ACCOUNT_ID', 'CLOUDFLARE_R2_ACCESS_KEY_ID',
-                'CLOUDFLARE_R2_SECRET_ACCESS_KEY', 'CLOUDFLARE_R2_BUCKET'):
-        monkeypatch.delenv(key)
-    r2_server.requests.clear()
+    origin.requests.clear()
     download = tmp_path / 'downloaded'
-    base = f'http://127.0.0.1:{r2_server.server_port}/thor-releases'
-    args = ['fetch', *identity, '--public-base', base, '--name', 'win32-x64',
+    args = ['fetch', *identity, '--public-base', origin.base, '--name', 'win32-x64',
             '--root', str(download), '--include', '*.msix']
     handoff.main(args)
     assert (download / 'app x64.msix').read_bytes() == payload
@@ -184,15 +185,15 @@ def test_public_handoff_downloads_exact_staged_bytes_without_credentials(tmp_pat
     original_receipt = receipt_file.read_bytes()
     assert json.loads(original_receipt)['commit'] == commit
     assert all(method == 'GET' and not any(k.lower() == 'authorization' for k in headers)
-               for method, _, headers in r2_server.requests)
-    assert any(path.endswith('/app%20x64.msix') for _, path, _ in r2_server.requests)
+               for method, _, headers in origin.requests)
+    assert any(path.endswith('/app%20x64.msix') for _, path, _ in origin.requests)
     result = subprocess.run([sys.executable, '-m', 'scripts.releases.handoff', *args],
                             cwd=Path(__file__).resolve().parents[2], env=os.environ,
                             capture_output=True, text=True, encoding='utf-8', timeout=30, check=False)
     assert result.returncode == 0, result.stdout + result.stderr
     assert (download / 'app x64.msix').read_bytes() == payload
     # A bad CDN object cannot replace a previously verified local download.
-    r2_server.store[prefix + 'app x64.msix'] = (b'corrupt', '"changed"')
+    gh.put_bytes(prefix + 'app x64.msix', b'corrupt')
     with pytest.raises(ValueError, match='checksum mismatch'):
         handoff.main(args)
     assert (download / 'app x64.msix').read_bytes() == payload
@@ -200,25 +201,26 @@ def test_public_handoff_downloads_exact_staged_bytes_without_credentials(tmp_pat
     assert sorted(p.name for p in download.iterdir()) == ['app x64.msix', receipt_file.name]
     bad = json.loads(original_receipt)
     bad['commit'] = 'b' * 40
-    r2_server.store[prefix + receipt_file.name] = (json.dumps(bad).encode(), '"bad"')
-    r2_server.requests.clear()
+    gh.put_bytes(prefix + receipt_file.name, json.dumps(bad).encode())
+    origin.requests.clear()
     with pytest.raises(ValueError, match='identity'):
         handoff.main(args)
-    assert len(r2_server.requests) == 1
+    assert len(origin.requests) == 1
     bad = json.loads(original_receipt)
     bad['files'][0]['path'] = '../outside.msix'
-    r2_server.store[prefix + receipt_file.name] = (json.dumps(bad).encode(), '"bad"')
-    r2_server.requests.clear()
+    gh.put_bytes(prefix + receipt_file.name, json.dumps(bad).encode())
+    origin.requests.clear()
     with pytest.raises(ValueError, match='path'):
         handoff.main(args)
-    assert len(r2_server.requests) == 1
+    assert len(origin.requests) == 1
     assert not (tmp_path / 'outside.msix').exists()
 
 
-def test_public_handoff_rejects_unsafe_origins_paths_and_redirects(tmp_path, r2_server):
+def test_public_handoff_rejects_unsafe_origins_paths_and_redirects(tmp_path, release_transport):
     import threading
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+    origin = release_transport.origin
     commit = 'a' * 40
     args = ['fetch', '--commit-build', commit, '--name', 'win32-x64', '--root', str(tmp_path / 'out')]
     for base in ('http://cdn.example', 'https://user:password@cdn.example', 'file:///tmp',
@@ -226,12 +228,12 @@ def test_public_handoff_rejects_unsafe_origins_paths_and_redirects(tmp_path, r2_
                  'https://cdn.example/../escape', 'https://cdn.example/%2e%2e/escape'):
         with pytest.raises(ValueError, match='public'):
             handoff.main([*args, '--public-base', base])
-    assert r2_server.requests == []
+    assert origin.requests == []
 
     class Redirect(BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(302)
-            self.send_header('Location', f'http://127.0.0.1:{r2_server.server_port}/thor-releases/unwanted')
+            self.send_header('Location', f'http://127.0.0.1:{origin.server_port}/thor-releases/unwanted')
             self.send_header('Content-Length', '0')
             self.end_headers()
 
@@ -242,10 +244,10 @@ def test_public_handoff_rejects_unsafe_origins_paths_and_redirects(tmp_path, r2_
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        with pytest.raises(r2.R2RequestError) as error:
+        with pytest.raises(pages.PublicFetchError) as error:
             handoff.main([*args, '--public-base', f'http://127.0.0.1:{server.server_port}'])
         assert error.value.status == 302
-        assert r2_server.requests == []
+        assert origin.requests == []
         assert not (tmp_path / 'out').exists()
     finally:
         server.shutdown()

@@ -35,7 +35,7 @@ def env(**values):
         "JOBS": ALL_JOBS,
         "TERMUX_UPGRADE_FROM_TAG": "",
         "BUNDLE_ENV_JSON": "{}",
-        "R2_DISPOSABLE_RUN": "",
+        "PAGES_DISPOSABLE_RUN": "",
     }
     base.update(values)
     return base
@@ -86,7 +86,7 @@ def test_printed_command_is_the_dispatcher_command(kind, extra):
     {"TAG": "v0.1.0-canary.20260921120000", "UPLOAD_RELEASE": "true"},
     {"TAG": "v0.1.0", "RELEASE_PHASE": "candidate"},
     {"TAG": "v0.1.0", "RELEASE_PHASE": "publish"},
-    {"DISPOSABLE_CHANNEL": "probe", "BUILD_COMMIT": SHA, "R2_DISPOSABLE_RUN": "99"},
+    {"DISPOSABLE_CHANNEL": "probe", "BUILD_COMMIT": SHA, "PAGES_DISPOSABLE_RUN": "99"},
 ])
 def test_unrecreatable_dispatches_name_the_kind_and_no_command(override):
     text = dispatch_log.report(env(**override))
@@ -111,7 +111,7 @@ def test_an_unreadable_jobs_value_is_reported_not_raised():
 
 
 def test_report_omits_values_the_workflow_did_not_forward(monkeypatch):
-    monkeypatch.setenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY", "secret-value")
+    monkeypatch.setenv("EXAMPLE_SECRET_ACCESS_KEY", "secret-value")
     text = dispatch_log.report(env(BUILD_COMMIT=SHA))
     assert "secret-value" not in text
 

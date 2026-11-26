@@ -424,7 +424,7 @@ def main(argv: list[str] | None = None) -> None:
                         help="Attempt ref the release archive is keyed under when the payload tag is plain vX.Y.Z")
     # A stable run dispatches from the default branch, so GITHUB_SHA is not the admitted claim commit.
     parser.add_argument("--commit", default=os.environ.get("RELEASE_COMMIT") or os.environ.get("GITHUB_SHA"))
-    parser.add_argument("--public-base", default=os.environ.get("CLOUDFLARE_R2_PUBLIC_URL"))
+    parser.add_argument("--public-base", default=os.environ.get("THOR_PAGES_PUBLIC_URL"))
     parser.add_argument("--store-only", action="store_true")
     for name in ("identity", "publisher", "version", "self-uri", "artifact-uri"):
         parser.add_argument(f"--{name}")

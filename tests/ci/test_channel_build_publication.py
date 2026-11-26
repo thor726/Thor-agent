@@ -16,7 +16,7 @@ import thor_yaml
 import pytest
 
 from thor_cli.release_channels import canonical_json
-from scripts.releases import channel_publish, desktop_targets, handoff, r2
+from scripts.releases import channel_publish, desktop_targets, handoff, pages
 from scripts.releases.channels import preview_identity
 from scripts.releases.versioning import tag_record
 from tests.ci.desktop_release_roles import (
@@ -24,7 +24,7 @@ from tests.ci.desktop_release_roles import (
     universal_assembler,
 )
 from tests.ci.test_desktop_release_tag_admission import _seed_repo, _git, _workflow
-from tests.scripts.test_release_r2 import r2_server
+from tests.scripts.release_fakes import page_keys, release_transport as release_transport  # noqa: PLC0414 -- self-alias suppresses F811 for the fixture parameter
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -37,14 +37,14 @@ def request_for(base):
 
 
 @pytest.fixture
-def staged_channel(tmp_path, r2_server, request, monkeypatch):
-    from scripts.releases.r2_scope import R2Scope
-    base = f"http://127.0.0.1:{r2_server.server_port}/thor-releases"
+def staged_channel(tmp_path, release_transport, request, monkeypatch):
+    from scripts.releases.pages import PagesScope
+    base = release_transport.base
     if getattr(request, "param", ""):
-        monkeypatch.setenv("R2_DISPOSABLE_RUN", "98765" if request.param == "receiver" else request.param)
+        monkeypatch.setenv("PAGES_DISPOSABLE_RUN", "98765" if request.param == "receiver" else request.param)
         monkeypatch.setenv("GITHUB_REPOSITORY_ID", "12345")
-        monkeypatch.setenv("CLOUDFLARE_R2_PUBLIC_URL", base)
-    scope = R2Scope.configured()
+        monkeypatch.setenv("THOR_PAGES_PUBLIC_URL", base)
+    scope = PagesScope.configured()
     receiver = getattr(request, "param", "") == "receiver"
     request = request_for(scope.public_base(base))
     if receiver:
@@ -89,11 +89,11 @@ def staged_channel(tmp_path, r2_server, request, monkeypatch):
                          + '<Package Type="application" Architecture="x64"/></Packages></Bundle>')
     handoff.stage_channel_build(request, "windows-universal", build, [bundle_name])
     prefix = handoff.channel_prefix(request)
-    r2_server.store[scope.key(prefix + "request.json")] = (canonical_json(request), '"request"')
+    release_transport.store[scope.key(prefix + "request.json")] = (canonical_json(request), '"request"')
     return request, build
 
 
-def test_channel_handoff_binds_full_request_and_feed_bytes(tmp_path, r2_server, staged_channel):
+def test_channel_handoff_binds_full_request_and_feed_bytes(tmp_path, release_transport, staged_channel):
     request, build = staged_channel
     digest = hashlib.sha256(canonical_json(request)).hexdigest()
     assert channel_publish.read_request(request["buildId"], digest, request["publicBase"], request["repository"]) == request
@@ -140,29 +140,30 @@ def test_channel_handoff_binds_full_request_and_feed_bytes(tmp_path, r2_server, 
 
 
 @pytest.mark.parametrize("staged_channel", ["receiver"], indirect=True)
-def test_scoped_receiver_publication_preserves_existing_head_and_requires_smoke(tmp_path, r2_server, staged_channel):
-    from scripts.releases.channels import ChannelPublisher, R2ChannelStore
-    from scripts.releases.r2_scope import R2Scope
+def test_scoped_receiver_publication_preserves_existing_head_and_requires_smoke(tmp_path, release_transport, staged_channel):
+    from scripts.releases.channels import ChannelPublisher
+    from scripts.releases.pages import PagesChannelStore
+    from scripts.releases.pages import PagesScope
     request, _ = staged_channel
-    scope = R2Scope.configured()
+    scope = PagesScope.configured()
     previous = {"buildId": "b" * 32, "sequence": 1,
                 "manifestKey": "releases/channel-builds/" + "b" * 32 + "/build.json", "sha256": "e" * 64}
     record = {"schema": 1, "name": "stable", "repository": request["repository"], "policy": "stable-release",
               "state": "active", "revision": 1, "nextSequence": 8, "identity": request["identity"],
               "testOnly": True, "head": previous}
     key = scope.key("releases/channels/stable.json")
-    r2_server.store[key] = (canonical_json(record), '"record"')
-    publisher = ChannelPublisher(R2ChannelStore(*r2.credentials()), request["repository"], request["publicBase"],
+    release_transport.store[key] = (canonical_json(record), '"record"')
+    publisher = ChannelPublisher(PagesChannelStore(release_transport.worktree, scope=scope), request["repository"], request["publicBase"],
                                  authorize=lambda *_: pytest.fail("Receiver must not enter production promotion"))
-    before = dict(r2_server.store)
+    before = dict(release_transport.store)
     with pytest.raises(ValueError, match="successful jobs"):
         channel_publish.publish_receiver(request, tmp_path / "rejected", needs={}, publisher=publisher)
-    assert r2_server.store == before
+    assert release_transport.store == before
     result = channel_publish.publish_receiver(request, tmp_path / "receiver", publisher=publisher,
         needs={job: {"result": "success"} for job in channel_publish.REQUIRED_JOBS})
     assert result["manifest"]["receiverProtocol"] == 1
     assert json.loads(publisher.reader.read_bytes(result["head"]["manifestKey"], result["head"]["sha256"])) == result["manifest"]
-    assert json.loads(r2_server.store[key][0])["head"] == previous
+    assert json.loads(release_transport.store[key][0])["head"] == previous
 
 
 def workflow_step(workflow, job, name):
@@ -170,13 +171,13 @@ def workflow_step(workflow, job, name):
     return next(step["run"] for step in doc["jobs"][job]["steps"] if step.get("name") == name)
 
 
-def run_shell(tmp_path, r2_server, script, env, *, cwd=None):
+def run_shell(tmp_path, release_transport, script, env, *, cwd=None):
     tools = tmp_path / "tools"
     tools.mkdir(exist_ok=True)
     driver = tools / "python-driver.py"
     driver.write_text('import runpy,sys\n' + f'sys.path.insert(0, {str(ROOT)!r})\n'
-                      + 'from scripts.releases import r2\n'
-                      + f'r2.s3_endpoint=lambda _: "http://127.0.0.1:{r2_server.server_port}"\n'
+                      + 'from tests.scripts.release_fakes import install_fake_gh_driver\n'
+                      + 'install_fake_gh_driver()\n'
                       + 'args=sys.argv[1:]\n'
                       + 'if args[0]=="-m":\n    sys.argv=args[1:]\n    runpy.run_module(args[1],run_name="__main__")\n'
                       + 'elif args[0]=="-c":\n    sys.argv=args[1:]\n    exec(args[1])\n'
@@ -196,83 +197,84 @@ def run_shell(tmp_path, r2_server, script, env, *, cwd=None):
         'esac\n', encoding="utf-8")
     gh.chmod(0o755)
     return subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script], cwd=cwd or tmp_path,
-                          env={**os.environ, **env, "PATH": str(tools) + os.pathsep + os.environ["PATH"]},
+                          env={**os.environ, **release_transport.env, **env, "PATH": str(tools) + os.pathsep + os.environ["PATH"]},
                           capture_output=True, text=True, encoding="utf-8", timeout=60, check=False)
 
 
 @pytest.mark.platforms("posix")
-def test_real_workflow_admission_and_public_smoke_fetch(tmp_path, r2_server, staged_channel):
+def test_real_workflow_admission_and_public_smoke_fetch(tmp_path, release_transport, staged_channel):
     request, _ = staged_channel
     clone = tmp_path / "clone"
     prefix = handoff.channel_prefix(request)
-    r2_server.store[prefix + "request.json"] = (canonical_json(request), '"request"')
+    release_transport.store[prefix + "request.json"] = (canonical_json(request), '"request"')
     digest = hashlib.sha256(canonical_json(request)).hexdigest()
-    env = {"CHANNEL_BUILD": request["buildId"], "CHANNEL_REQUEST_SHA256": digest, "CLOUDFLARE_R2_PUBLIC_URL": request["publicBase"],
+    env = {"CHANNEL_BUILD": request["buildId"], "CHANNEL_REQUEST_SHA256": digest, "THOR_PAGES_PUBLIC_URL": request["publicBase"],
            "DEFAULT_BRANCH": "main", "GITHUB_REPOSITORY": "fixture/repo", "GITHUB_REF": "refs/heads/main",
            "GITHUB_WORKFLOW_REF": "fixture/repo/.github/workflows/desktop-bundled-release.yml@refs/heads/main",
            "GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_SHA": request["commit"], "GITHUB_ACTOR": "fixture",
            "GITHUB_TRIGGERING_ACTOR": "fixture", "GITHUB_OUTPUT": str(tmp_path / "outputs"),
            "TAG": "", "BUILD_COMMIT": "", "RELEASE_PHASE": "", "UPLOAD_RELEASE": "false", "BUNDLE_ENV_JSON": "{}"}
     script = workflow_step("desktop-bundled-release.yml", "validate", "Validate tag shape, pyproject lockstep, and ancestry on origin/main")
-    result = run_shell(tmp_path, r2_server, script, env, cwd=clone)
+    result = run_shell(tmp_path, release_transport, script, env, cwd=clone)
     assert result.returncode == 0, result.stdout + result.stderr
     assert f"sha={request['commit']}" in (tmp_path / "outputs").read_text(encoding="utf-8")
     for overrides in ({"GITHUB_REF": "refs/heads/feature"}, {"TAG": "v0.1.2"}, {"JOBS": "termux"},
                       {"CHANNEL_REQUEST_SHA256": "f" * 64}):
-        failed = run_shell(tmp_path, r2_server, script, {**env, **overrides}, cwd=clone)
+        failed = run_shell(tmp_path, release_transport, script, {**env, **overrides}, cwd=clone)
         assert failed.returncode != 0
     # Re-stage a real ZIP-format MSIX fixture bound to the new admitted commit.
     package_root = tmp_path / "package"
     package_root.mkdir()
     filename = request["identity"]["artifactNamePascal"] + "-0.0.7-win-x64.msix"
     (package_root / filename).write_bytes(b"inert HTTP download fixture, not a native smoke")
-    r2_server.store.pop(prefix + "handoff-win32-x64.json")
-    r2_server.store.pop(prefix + filename)
+    release_transport.store.pop(prefix + "handoff-win32-x64.json")
+    release_transport.store.pop(prefix + filename)
     handoff.stage_channel_build(request, "win32-x64", package_root, [filename])
     fetch = workflow_step("desktop-bundle-smoke.yml", "windows", "Fetch one exact downloadable artifact")
     smoke = tmp_path / "smoke"
     env.update(SMOKE_ROOT=str(smoke), PUBLIC_BASE=request["publicBase"], RELEASE_TAG="", RELEASE_COMMIT=request["commit"],
                COMMIT_BUILD="false", PLATFORM="win32", ARCH="x64", FORMAT="msix")
-    result = run_shell(tmp_path, r2_server, fetch, env)
+    result = run_shell(tmp_path, release_transport, fetch, env)
     assert result.returncode == 0, result.stdout + result.stderr
     evidence = json.loads((smoke / "out/download.json").read_text(encoding="utf-8"))
     assert evidence["request"] == request
     assert (smoke / "download" / filename).read_bytes() == (package_root / filename).read_bytes()
-    r2_server.store[prefix + filename] = (b"corrupt", '"corrupt"')
-    failed = run_shell(tmp_path, r2_server, fetch, env)
+    release_transport.store[prefix + filename] = (b"corrupt", '"corrupt"')
+    release_transport.gh.put_bytes(prefix + filename, b"corrupt")
+    failed = run_shell(tmp_path, release_transport, fetch, env)
     assert failed.returncode != 0
     assert (smoke / "download" / filename).read_bytes() == (package_root / filename).read_bytes()
 
 
 @pytest.mark.platforms("posix")
-def test_workflow_promotion_missing_native_gate_does_not_write(tmp_path, r2_server, staged_channel):
+def test_workflow_promotion_missing_native_gate_does_not_write(tmp_path, release_transport, staged_channel):
     request, _ = staged_channel
     script = workflow_step("desktop-bundled-release.yml", channel_publisher(_workflow()["jobs"]),
                            "Publish immutable feeds and manifest, then CAS channel head")
     env = {"CHANNEL_BUILD": request["buildId"], "CHANNEL_REQUEST_SHA256": hashlib.sha256(canonical_json(request)).hexdigest(),
-           "CLOUDFLARE_R2_PUBLIC_URL": request["publicBase"], "GITHUB_REPOSITORY": request["repository"],
+           "THOR_PAGES_PUBLIC_URL": request["publicBase"], "GITHUB_REPOSITORY": request["repository"],
            "RUNNER_TEMP": str(tmp_path), "RELEASE_NEEDS": "{}"}
-    before = dict(r2_server.store)
-    result = run_shell(tmp_path, r2_server, script, env)
+    before = dict(release_transport.store)
+    result = run_shell(tmp_path, release_transport, script, env)
     assert result.returncode != 0 and "successful jobs" in result.stderr
-    assert dict(r2_server.store) == before
+    assert dict(release_transport.store) == before
 
 
 @pytest.mark.platforms("posix")
 @pytest.mark.parametrize("staged_channel", ["", "98765"], indirect=True)
-def test_real_publication_cas_and_manifest_summary(tmp_path, r2_server, staged_channel):
+def test_real_publication_cas_and_manifest_summary(tmp_path, release_transport, staged_channel):
     request, _ = staged_channel
-    from scripts.releases.r2_scope import R2Scope
-    scope = R2Scope.configured()
+    from scripts.releases.pages import PagesScope
+    scope = PagesScope.configured()
     channel_key = scope.key(f"releases/channels/{request['channel']}.json")
     record = {"schema": 1, "name": request["channel"], "repository": request["repository"],
               "policy": "preview", "state": "active", "revision": 1, "nextSequence": 8,
               "identity": request["identity"], "head": None}
-    r2_server.store[channel_key] = (canonical_json(record), '"record"')
+    release_transport.store[channel_key] = (canonical_json(record), '"record"')
     script = workflow_step("desktop-bundled-release.yml", channel_publisher(_workflow()["jobs"]),
                            "Publish immutable feeds and manifest, then CAS channel head")
     env = {"CHANNEL_BUILD": request["buildId"], "CHANNEL_REQUEST_SHA256": hashlib.sha256(canonical_json(request)).hexdigest(),
-           "CLOUDFLARE_R2_PUBLIC_URL": request["publicBase"], "GITHUB_REPOSITORY": request["repository"],
+           "THOR_PAGES_PUBLIC_URL": request["publicBase"], "GITHUB_REPOSITORY": request["repository"],
            "RUNNER_TEMP": str(tmp_path), "GITHUB_STEP_SUMMARY": str(tmp_path / "summary.md"),
            "RELEASE_NEEDS": json.dumps({name: {"result": "success"} for name in channel_publish.REQUIRED_JOBS}),
            "DEFAULT_BRANCH": "main", "GITHUB_REF": "refs/heads/main", "GITHUB_EVENT_NAME": "workflow_dispatch",
@@ -281,39 +283,39 @@ def test_real_publication_cas_and_manifest_summary(tmp_path, r2_server, staged_c
            "GITHUB_ACTIONS": "true", "GITHUB_RUN_ID": "98765"}
     prefix = scope.prefix + handoff.channel_prefix(request)
     if scope.prefix:
-        env["CLOUDFLARE_R2_PUBLIC_URL"] = os.environ["CLOUDFLARE_R2_PUBLIC_URL"]
+        env["THOR_PAGES_PUBLIC_URL"] = os.environ["THOR_PAGES_PUBLIC_URL"]
         env["GITHUB_ACTIONS"] = "true"
         # A production sentinel makes accidental writes outside scope observable.
-        r2_server.store["releases/channels/stable.json"] = (b"production sentinel", '"production"')
+        release_transport.store["releases/channels/stable.json"] = (b"production sentinel", '"production"')
     artifact_key = prefix + request["identity"]["artifactNamePascal"] + "-0.0.7-mac-arm64.zip"
-    saved = r2_server.store[artifact_key]
-    r2_server.store[artifact_key] = (b"damaged artifact", '"damaged"')
-    result = run_shell(tmp_path, r2_server, script, env, cwd=tmp_path / "clone")
+    saved = release_transport.store[artifact_key]
+    release_transport.store[artifact_key] = (b"damaged artifact", '"damaged"')
+    result = run_shell(tmp_path, release_transport, script, env, cwd=tmp_path / "clone")
     assert result.returncode != 0 and "checksum mismatch" in result.stderr
-    assert json.loads(r2_server.store[channel_key][0])["head"] is None
-    assert prefix + "build.json" not in r2_server.store
-    r2_server.store[artifact_key] = saved
-    result = run_shell(tmp_path, r2_server, script, env, cwd=tmp_path / "clone")
+    assert json.loads(release_transport.store[channel_key][0])["head"] is None
+    assert prefix + "build.json" not in release_transport.store
+    release_transport.store[artifact_key] = saved
+    result = run_shell(tmp_path, release_transport, script, env, cwd=tmp_path / "clone")
     assert result.returncode == 0, result.stdout + result.stderr
-    stored = json.loads(r2_server.store[channel_key][0])
+    stored = json.loads(release_transport.store[channel_key][0])
     manifest_key = scope.key(handoff.channel_prefix(request) + "build.json")
-    raw = r2_server.store[manifest_key][0]
+    raw = release_transport.store[manifest_key][0]
     assert stored["head"]["sha256"] == hashlib.sha256(raw).hexdigest()
     manifest = json.loads(raw)
     assert manifest["request"] == request
     summary = (tmp_path / "summary.md").read_text(encoding="utf-8")
     for package in manifest["packages"]:
         assert request["publicBase"] + "/" + package["artifact"]["key"] in summary
-    puts = [path for method, path, _ in r2_server.requests if method == "PUT"]
-    assert puts[-1].endswith(channel_key)
     if scope.prefix:
-        assert all(path.startswith("/thor-releases/" + scope.prefix) for path in puts)
-        assert r2_server.store["releases/channels/stable.json"][0] == b"production sentinel"
+        written = {key for key in page_keys(release_transport.worktree)
+                   if key not in ("README.md", "releases/channels/stable.json")}
+        assert written and all(key.startswith(scope.prefix) for key in written)
+        assert release_transport.store["releases/channels/stable.json"][0] == b"production sentinel"
         smoke_env = {**env, "SMOKE_ROOT": str(tmp_path / "scoped-smoke"), "PUBLIC_BASE": request["publicBase"],
                      "RELEASE_TAG": "", "RELEASE_COMMIT": request["commit"], "COMMIT_BUILD": "false",
                      "PLATFORM": "win32", "ARCH": "x64", "FORMAT": "msix", "GITHUB_OUTPUT": str(tmp_path / "smoke-output")}
         fetch = workflow_step("desktop-bundle-smoke.yml", "windows", "Fetch one exact downloadable artifact")
-        result = run_shell(tmp_path, r2_server, fetch, smoke_env)
+        result = run_shell(tmp_path, release_transport, fetch, smoke_env)
         assert result.returncode == 0, result.stdout + result.stderr
         evidence = json.loads((tmp_path / "scoped-smoke/out/download.json").read_text())
         assert evidence["request"] == request
@@ -331,14 +333,14 @@ def test_real_publication_cas_and_manifest_summary(tmp_path, r2_server, staged_c
     retired = {**stored, "state": "retired", "destination": "stable", "minimumVersion": "1.2.3",
                "lastHead": stored["head"], "destinationHead": stored["head"], "receiverProtocol": 1,
                "receiver": {"kind": "discontinued"}}
-    r2_server.store[channel_key] = (canonical_json(retired), '"retired"')
-    result = run_shell(tmp_path, r2_server, script, env, cwd=tmp_path / "clone")
+    release_transport.store[channel_key] = (canonical_json(retired), '"retired"')
+    result = run_shell(tmp_path, release_transport, script, env, cwd=tmp_path / "clone")
     assert result.returncode != 0 and "Retired" in result.stderr
-    assert json.loads(r2_server.store[channel_key][0]) == retired
+    assert json.loads(release_transport.store[channel_key][0]) == retired
 
 
 @pytest.mark.platforms("posix")
-def test_channel_windows_record_stage_and_assembly_handoff_shell(tmp_path, r2_server, staged_channel):
+def test_channel_windows_record_stage_and_assembly_handoff_shell(tmp_path, release_transport, staged_channel):
     import shutil
     request, build = staged_channel
     release = tmp_path / "apps/desktop/release"
@@ -354,28 +356,28 @@ def test_channel_windows_record_stage_and_assembly_handoff_shell(tmp_path, r2_se
     # transport metadata is deliberately not a native recorder output.
     prefix = handoff.channel_prefix(request)
     for key in ("metadata-windows-x64.json", "handoff-win32-x64.json"):
-        r2_server.store.pop(prefix + key)
+        release_transport.store.pop(prefix + key)
     jobs = _workflow()["jobs"]
     script = stage_step(jobs[native_builds(jobs)[("win32-x64", "commit")]], channel=True)["run"]
-    result = run_shell(tmp_path, r2_server, script, env)
+    result = run_shell(tmp_path, release_transport, script, env)
     assert result.returncode == 0, result.stdout + result.stderr
     # One-dispatch: the env-default commit equals the request's own, which is
     # provenance, not selection — the channel stage must accept it.
     for key in ("metadata-windows-x64.json", "handoff-win32-x64.json"):
-        r2_server.store.pop(prefix + key)
-    result = run_shell(tmp_path, r2_server, script, dict(env, THOR_BUILD_COMMIT=request["commit"]))
+        release_transport.store.pop(prefix + key)
+    result = run_shell(tmp_path, release_transport, script, dict(env, THOR_BUILD_COMMIT=request["commit"]))
     assert result.returncode == 0, result.stdout + result.stderr
     # A different commit stays an override attempt (and stages nothing).
-    result = run_shell(tmp_path, r2_server, script, dict(env, THOR_BUILD_COMMIT="d" * 40))
+    result = run_shell(tmp_path, release_transport, script, dict(env, THOR_BUILD_COMMIT="d" * 40))
     assert result.returncode != 0 and "another commit" in result.stderr
     receipt_key = handoff.channel_prefix(request) + "handoff-win32-x64.json"
-    receipt = json.loads(r2_server.store[receipt_key][0])
+    receipt = json.loads(release_transport.store[receipt_key][0])
     assert receipt["request"] == request
     metadata = json.loads((release / "metadata-windows-x64.json").read_text(encoding="utf-8"))
     assert metadata["identity"] == request["identity"]["msixAppIdWithOrg"]
     assert metadata["applicationId"] == request["identity"]["appNamePascal"]
-    fetch = workflow_step("desktop-bundled-release.yml", universal_assembler(jobs), "Retrieve Windows packages from R2")
-    result = run_shell(tmp_path, r2_server, fetch, env)
+    fetch = workflow_step("desktop-bundled-release.yml", universal_assembler(jobs), "Retrieve Windows packages from the archive release")
+    result = run_shell(tmp_path, release_transport, fetch, env)
     assert result.returncode == 0, result.stdout + result.stderr
     assert sorted(p.name for p in release.glob("*.msix")) == sorted(p.name for p in build.glob("*.msix"))
     # Native admission validates package stamps before the stage can claim completion.
@@ -384,30 +386,28 @@ def test_channel_windows_record_stage_and_assembly_handoff_shell(tmp_path, r2_se
     with zipfile.ZipFile(release / filename, "w") as package:
         package.writestr("AppxManifest.xml", manifest)
         package.writestr("app/resources/install-stamp.json", json.dumps({"source": "commit-build", "commit": request["commit"]}))
-    before = dict(r2_server.store)
-    result = run_shell(tmp_path, r2_server, script, env)
+    before = dict(release_transport.store)
+    result = run_shell(tmp_path, release_transport, script, env)
     assert result.returncode != 0 and "provenance" in result.stderr
-    assert dict(r2_server.store) == before
+    assert dict(release_transport.store) == before
     gate = workflow_step("desktop-bundle-smoke.yml", "validate", "Reject empty or unsupported native smoke jobs")
     for target, expected in (("darwin/arm64/dmg", 0), ("win32/x64/msixbundle", 0), ("//", 1), ("linux/x64/zip", 1)):
-        result = run_shell(tmp_path, r2_server, gate, {"TARGET": target})
+        result = run_shell(tmp_path, release_transport, gate, {"TARGET": target})
         assert result.returncode == expected
 
 
 @pytest.mark.platforms("posix")
-def test_disposable_controller_allocates_then_separate_admission(tmp_path):
-    from tests.scripts.test_release_channels import object_server
+def test_disposable_controller_allocates_then_separate_admission(tmp_path, release_transport):
     _origin, clone = _seed_repo(tmp_path)
     commit = _git("rev-parse", "HEAD", cwd=clone)
-    with object_server() as (url, objects, _headers, requests, _faults):
-        # run_shell redirects only the R2 network endpoint; the controller,
+    if True:
+        # run_shell redirects only the archive transport; the controller,
         # permission CLI, pushed Git source and both workflow scripts run for real.
-        from types import SimpleNamespace
-        server = SimpleNamespace(server_port=int(url.rsplit(":", 1)[1]))
+        url = release_transport.base
+        objects = release_transport.store
+        server = release_transport
         env = {"DISPOSABLE_CHANNEL": "native-preview", "BUILD_COMMIT": commit,
-               "CLOUDFLARE_R2_BUCKET": "bucket", "CLOUDFLARE_R2_PUBLIC_URL": url + "/bucket",
-               "CLOUDFLARE_R2_ACCOUNT_ID": "loopback", "CLOUDFLARE_R2_ACCESS_KEY_ID": "fixture",
-               "CLOUDFLARE_R2_SECRET_ACCESS_KEY": "fixture", "GITHUB_REPOSITORY": "fixture/repo",
+               "THOR_PAGES_PUBLIC_URL": url, "GITHUB_REPOSITORY": "fixture/repo",
                "GITHUB_REPOSITORY_ID": "12345", "GITHUB_RUN_ID": "98765", "GITHUB_RUN_ATTEMPT": "1",
                "GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "workflow_dispatch",
                "GITHUB_REF": "refs/heads/main", "DEFAULT_BRANCH": "main", "GITHUB_SHA": commit,
@@ -420,13 +420,15 @@ def test_disposable_controller_allocates_then_separate_admission(tmp_path):
         assert result.returncode == 0, result.stdout + result.stderr
         allocation = json.loads(result.stdout)
         request = allocation["request"]
-        assert request["publicBase"] == url + "/bucket/ci-disposable/12345/98765"
+        assert request["publicBase"] == url + "/ci-disposable/12345/98765"
         assert allocation["storagePrefix"] == "ci-disposable/12345/98765/"
         assert allocation["disposableRun"] == "98765"
-        assert objects["releases/channels/stable.json"] == b"production sentinel"
-        assert all(key.startswith(allocation["storagePrefix"]) for method, key in requests if method == "PUT")
+        assert objects["releases/channels/stable.json"] == (b"production sentinel", '"e"')
+        written = {key for key in page_keys(release_transport.worktree)
+                   if key not in ("README.md", "releases/channels/stable.json")}
+        assert written and all(key.startswith(allocation["storagePrefix"]) for key in written)
         before = dict(objects)
-        # One dispatch: a preset R2_DISPOSABLE_RUN no longer fails admission — the
+        # One dispatch: a preset PAGES_DISPOSABLE_RUN no longer fails admission — the
         # allocator derives and overwrites the lease from GITHUB_RUN_ID.
         for change in ({"DISPOSABLE_CHANNEL": "stable"},
                        {"GITHUB_REF": "refs/heads/other"}, {"GITHUB_ACTOR": "", "GITHUB_TRIGGERING_ACTOR": ""}):
@@ -434,15 +436,15 @@ def test_disposable_controller_allocates_then_separate_admission(tmp_path):
             assert failed.returncode != 0
             assert objects == before
         admit_env = {**env, "DISPOSABLE_CHANNEL": "", "BUILD_COMMIT": "", "TAG": "",
-                     "R2_DISPOSABLE_RUN": allocation["disposableRun"], "CHANNEL_BUILD": request["buildId"],
+                     "PAGES_DISPOSABLE_RUN": allocation["disposableRun"], "CHANNEL_BUILD": request["buildId"],
                      "CHANNEL_REQUEST_SHA256": allocation["requestSha256"], "GITHUB_OUTPUT": str(tmp_path / "admitted")}
         admission = workflow_step("desktop-bundled-release.yml", "validate", "Validate tag shape, pyproject lockstep, and ancestry on origin/main")
         result = run_shell(tmp_path, server, admission, admit_env, cwd=clone)
         assert result.returncode == 0, result.stdout + result.stderr
         assert "public-base=" + request["publicBase"] in (tmp_path / "admitted").read_text()
-        for change in ({"R2_DISPOSABLE_RUN": ""}, {"GITHUB_REPOSITORY_ID": ""},
-                       {"CLOUDFLARE_R2_PUBLIC_URL": ""}, {"R2_DISPOSABLE_RUN": "../escape"},
-                       {"R2_DISPOSABLE_RUN": "98765-2"}, {"CHANNEL_REQUEST_SHA256": "f" * 64}):
+        for change in ({"PAGES_DISPOSABLE_RUN": ""}, {"GITHUB_REPOSITORY_ID": ""},
+                       {"THOR_PAGES_PUBLIC_URL": ""}, {"PAGES_DISPOSABLE_RUN": "../escape"},
+                       {"PAGES_DISPOSABLE_RUN": "98765-2"}, {"CHANNEL_REQUEST_SHA256": "f" * 64}):
             failed = run_shell(tmp_path, server, admission, {**admit_env, **change}, cwd=clone)
             assert failed.returncode != 0
             assert objects == before
@@ -453,13 +455,13 @@ def test_receiver_allocation_uses_official_identity_only_inside_scope(tmp_path):
     from tests.scripts.test_release_channels import object_server, publisher
     from scripts.releases.channel_disposable import allocate_receivers
     from scripts.releases.channel_releases import product_identity
-    from scripts.releases.r2_scope import R2Scope
+    from scripts.releases.pages import PagesScope
 
     with object_server() as (url, _objects, *_):
         pub = publisher(url)
         with pytest.raises(ValueError, match="disposable"):
             allocate_receivers(pub, "a" * 40, "1.2.3", "a" * 40)
-        scope = R2Scope("ci-disposable/12345/17/")
+        scope = PagesScope("ci-disposable/12345/17/")
         pub.store.scope = scope
         pub.public_base += "/" + scope.prefix.rstrip("/")
         from thor_cli.release_channels import ChannelReader

@@ -1,7 +1,8 @@
 # tests/scripts/test_release_darwin.py — contract tests for the macOS
 # electron-updater feed publication (port of tests-js/darwin-feed.test.mjs).
-# Feed merge/validation is pure; publication runs against a REAL loopback
-# HTTP server (http.server on 127.0.0.1), not a fabricated backend.
+# Feed merge/validation is pure; publication runs against the fake gh
+# archive + a real Pages worktree directory (release_fakes), not a
+# fabricated backend.
 
 from __future__ import annotations
 
@@ -12,14 +13,15 @@ import tempfile
 import pytest
 import thor_yaml as yaml
 
-from scripts.releases import darwin, r2
-from tests.scripts.test_release_r2 import r2_server
+from scripts.releases import darwin, pages
 from scripts.releases.darwin import (
     _darwin_feed,
     mac_feed_references,
     merge_mac_feeds,
     parse_mac_feed,
+    publish_mac_feed,
 )
+from tests.scripts.release_fakes import page_bytes, release_transport  # noqa: F401  (fixture)
 
 
 def _inputs(version="0.28.0", light=False):
@@ -53,29 +55,6 @@ def base64_sha512(data: bytes) -> str:
     return __import__("base64").b64encode(hashlib.sha512(data).digest()).decode("ascii")
 
 
-
-def test_real_prune_protects_live_macos_artifacts_and_fails_closed(r2_server, monkeypatch):
-    legs, _bytes = _inputs("0.28.0+canary.20200101T000000Z")
-    plan = merge_mac_feeds(legs, "v0.28.0+canary.20200101T000000Z")
-    references = mac_feed_references(plan["text"])
-    stale = "releases/tag/v0.27.0+canary.20200101T000000Z/unreferenced.zip"
-    for key in [plan["key"], *references, stale]:
-        r2_server.store[key] = (b"x", '"e"')
-    r2_server.store[plan["key"]] = (plan["text"].encode(), '"e"')
-    monkeypatch.setattr(r2.time, "time", lambda: 1788547200.0)  # 2026-09-04
-    r2.prune(keep_days=14, dry_run=False)
-    assert stale not in r2_server.store
-    for reference in references:
-        assert reference in r2_server.store, reference
-    # Fail closed: an unreadable manifest aborts the prune, nothing deleted.
-    r2_server.store[stale] = (b"still protected until all feeds are readable", '"e"')
-    before = set(r2_server.store)
-    r2_server.store["releases/darwin/canary/canary-mac.yml"] = (b"<html>503</html>", '"e"')
-    with pytest.raises(ValueError):
-        r2.prune(keep_days=14, dry_run=False)
-    assert set(r2_server.store) == before
-
-
 def test_merges_native_legs_and_preserves_release_metadata():
     legs, _bytes = _inputs()
     plan = merge_mac_feeds(legs, "v0.28.0")
@@ -88,7 +67,7 @@ def test_merges_native_legs_and_preserves_release_metadata():
         for f in feed["files"]
         for ref in (f["url"][1:], f"{f['url'][1:]}.blockmap")
     ]
-    assert r2.cache_control_for(plan["key"]) == "no-store"
+    assert pages.cache_control_for(plan["key"]) == "no-store"
     selection = _darwin_feed("canary", True)
     light_legs, _ = _inputs("0.29.0+canary.20260906T000000Z", light=True)
     light_plan = merge_mac_feeds(light_legs, "v0.29.0+canary.20260906T000000Z", light=True)
@@ -146,54 +125,42 @@ def test_semver_grammar_rejects_non_release_versions():
         compare("nonsense", "0.28.0")
 
 
-
-def test_finalize_uses_the_real_signed_transport_and_publishes_last(r2_server):
+def test_finalize_verifies_archive_bytes_and_publishes_last(release_transport):
+    gh, worktree = release_transport.gh, release_transport.worktree
     with tempfile.TemporaryDirectory() as dir_path:
         legs, bytes_by_key = _inputs()
         for name, text in legs.items():
             with open(os.path.join(dir_path, name), "w", encoding="utf-8") as handle:
                 handle.write(text)
         for key, value in bytes_by_key.items():
-            r2_server.store[key] = (value, '"e"')
+            gh.put_bytes(key, value)
         darwin.finalize(tag="v0.28.0", dir=dir_path)
     feed_key = "releases/darwin/stable/stable-mac.yml"
-    assert feed_key in r2_server.store
-    published = r2_server.store[feed_key][0].decode("utf-8")
+    published = page_bytes(worktree, feed_key).decode("utf-8")
     assert len(parse_mac_feed(published)["files"]) == len(darwin.ARCHES)
-    # Order: reads (legs verified) FIRST, then exactly one conditional PUT,
-    # then the readback — verify bytes before the pointer write.
-    methods = [m for m, _p, _h in r2_server.requests]
-    assert methods.count("PUT") == 1
-    # The live-feed read and one verify per artifact all precede the write.
-    assert methods.index("PUT") == 1 + len(bytes_by_key)
-    assert all(method == "GET" for method in methods[:methods.index("PUT")])
-    put_headers = next(h for m, _p, h in r2_server.requests if m == "PUT")
-    assert put_headers["If-None-Match"] == "*"
-    assert put_headers["Cache-Control"] == "no-store"
-    assert put_headers["Content-Type"] == "application/yaml"
-    # Every request was signed.
-    for _m, _p, headers in r2_server.requests:
-        assert headers["authorization"].startswith("AWS4-HMAC-SHA256 ")
+    # Every artifact was verified through the archive before the pointer
+    # landed in the worktree.
+    assert set(gh.downloads()) == set(bytes_by_key)
 
 
-def test_finalize_rejects_a_downgrade_over_the_live_feed(r2_server):
+def test_finalize_rejects_a_downgrade_over_the_live_feed(release_transport):
+    gh, worktree = release_transport.gh, release_transport.worktree
     with tempfile.TemporaryDirectory() as dir_path:
         legs, bytes_by_key = _inputs("0.27.0")
         for name, text in legs.items():
             with open(os.path.join(dir_path, name), "w", encoding="utf-8") as handle:
                 handle.write(text)
         for key, value in bytes_by_key.items():
-            r2_server.store[key] = (value, '"e"')
+            gh.put_bytes(key, value)
         # The live feed is already at 0.28.0.
         newer = merge_mac_feeds(_inputs()[0], "v0.28.0")
-        r2_server.store["releases/darwin/stable/stable-mac.yml"] = (
-            newer["text"].encode(), '"live"')
+        live_path = worktree / "releases/darwin/stable/stable-mac.yml"
+        live_path.parent.mkdir(parents=True, exist_ok=True)
+        live_path.write_text(newer["text"], encoding="utf-8")
         with pytest.raises(ValueError, match="backward"):
             darwin.finalize(tag="v0.27.0", dir=dir_path)
     # The live pointer was not replaced.
-    assert parse_mac_feed(
-        r2_server.store["releases/darwin/stable/stable-mac.yml"][0].decode()
-    )["version"] == "0.28.0"
+    assert parse_mac_feed(page_bytes(worktree, "releases/darwin/stable/stable-mac.yml").decode())["version"] == "0.28.0"
 
 
 def test_finalize_rejects_unknown_variant():
@@ -201,41 +168,60 @@ def test_finalize_rejects_unknown_variant():
         darwin.finalize(tag="v0.28.0", dir=".", variant="dark")
 
 
-@pytest.mark.parametrize('fault', ['identical', 'different', 'corrupt-artifact', 'stale-etag', 'readback', 'upgrade'])
-def test_finalize_live_feed_faults(tmp_path, r2_server, fault):
+def test_publish_mac_feed_readback_must_match_the_publication():
+    plan = merge_mac_feeds(_inputs()[0], "v0.28.0")
+    stored = {}
+
+    def write(key, text, etag):
+        stored[key] = {"text": text + "# corrupted\n", "etag": "x"}
+
+    with pytest.raises(ValueError, match="readback differs"):
+        publish_mac_feed(plan, {"read": stored.get, "verify": lambda key, entry: None, "write": write})
+
+
+@pytest.mark.parametrize('fault', ['identical', 'different', 'corrupt-artifact', 'missing-artifact', 'raced-feed', 'upgrade'])
+def test_finalize_live_feed_faults(tmp_path, release_transport, monkeypatch, fault):
+    from scripts.releases import gh_assets
+
+    gh, worktree = release_transport.gh, release_transport.worktree
     legs, content = _inputs()
     for name, text in legs.items():
         (tmp_path / name).write_text(text, encoding='utf-8')
-    r2_server.store.update({key: (value, '"e"') for key, value in content.items()})
+    for key, value in content.items():
+        gh.put_bytes(key, value)
     key = 'releases/darwin/stable/stable-mac.yml'
     live = merge_mac_feeds(_inputs('0.28.0' if fault in {'identical', 'different'} else '0.27.0')[0],
                            'v0.28.0' if fault in {'identical', 'different'} else 'v0.27.0')['text']
     if fault == 'different':
         live = live.replace('two lines', 'other notes')
-    r2_server.store[key] = (live.encode(), '"live"')
+    live_path = worktree.joinpath(*key.split("/"))
+    live_path.parent.mkdir(parents=True, exist_ok=True)
+    live_path.write_text(live, encoding="utf-8")
     if fault == 'corrupt-artifact':
-        r2_server.store[next(iter(content))] = (b'corrupt', '"e"')
-    if fault == 'stale-etag':
-        r2_server.race_key = key
-    if fault == 'readback':
-        r2_server.corrupt_put = key
-    errors = {'different': (ValueError, 'different artifacts'),
-              'corrupt-artifact': (ValueError, 'checksum mismatch'),
-              'stale-etag': (r2.R2RequestError, '412'), 'readback': (ValueError, 'readback differs')}
+        first = next(iter(content))
+        gh.put_bytes(first, b'x' * len(content[first]))
+    if fault == 'missing-artifact':
+        gh.delete(next(iter(content)))
+    if fault == 'raced-feed':
+        original = gh_assets.download
+        def race(*args, **kwargs):
+            result = original(*args, **kwargs)
+            live_path.write_text(live + "# raced\n", encoding="utf-8")
+            return result
+        monkeypatch.setattr(gh_assets, "download", race)
+    errors = {'different': 'different artifacts',
+              'corrupt-artifact': 'sha512 mismatch',
+              'missing-artifact': 'missing from archive',
+              'raced-feed': 'changed before write'}
     if fault in errors:
-        error, message = errors[fault]
-        with pytest.raises(error, match=message):
+        with pytest.raises(ValueError, match=errors[fault]):
             darwin.finalize(tag='v0.28.0', dir=str(tmp_path))
     else:
         darwin.finalize(tag='v0.28.0', dir=str(tmp_path))
-    puts = [headers for method, _, headers in r2_server.requests if method == 'PUT']
-    if fault in {'identical', 'different', 'corrupt-artifact'}:
-        assert puts == [] and r2_server.store[key][0] == live.encode()
-    else:
-        assert len(puts) == 1 and puts[0]['If-Match'] == '"live"'
-        if fault == 'stale-etag':
-            assert r2_server.store[key] == (live.encode(), '"raced"')
-        elif fault == 'upgrade':
-            assert parse_mac_feed(r2_server.store[key][0].decode())['version'] == '0.28.0'
-        elif fault == 'readback':
-            assert [method for method, path, _ in r2_server.requests if path.endswith(key)] == ['GET', 'PUT', 'HEAD', 'GET']
+    if fault in {'identical', 'different', 'corrupt-artifact', 'missing-artifact'}:
+        assert page_bytes(worktree, key) == live.encode()
+        assert gh.downloads() == [] or fault in {'corrupt-artifact', 'missing-artifact'}
+    elif fault == 'raced-feed':
+        assert page_bytes(worktree, key) == (live + "# raced\n").encode()
+    elif fault == 'upgrade':
+        assert parse_mac_feed(page_bytes(worktree, key).decode())['version'] == '0.28.0'

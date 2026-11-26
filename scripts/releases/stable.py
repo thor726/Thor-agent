@@ -39,17 +39,10 @@ RELEASE_LINE_BRANCHES = ("main", "release/*")
 
 
 def _public_base(env: dict) -> str:
-    """The public release origin from the caller's env mapping.
-
-    THOR_PAGES_PUBLIC_URL wins; the legacy CLOUDFLARE_R2_PUBLIC_URL is still
-    honored during the transition so unmigrated workflows and tests keep
-    naming the origin they actually serve. Fase 3 drops the fallback.
-    """
+    """The public release origin from the caller's env mapping."""
     from scripts.releases.pages import public_base_url
 
-    return public_base_url(
-        env.get("THOR_PAGES_PUBLIC_URL") or env.get("CLOUDFLARE_R2_PUBLIC_URL")
-    )
+    return public_base_url(env.get("THOR_PAGES_PUBLIC_URL"))
 
 
 def release_line_refspecs(remote_prefix: str) -> list[str]:

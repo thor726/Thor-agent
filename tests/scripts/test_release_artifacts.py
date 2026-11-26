@@ -15,11 +15,39 @@ import thor_yaml
 import pytest
 
 from scripts.bundles.release_artifacts import materialize, record, stamp_matches
-from tests.scripts.test_release_r2 import r2_server as r2_server  # noqa: PLC0414 -- the self-alias is load-bearing: it suppresses F811 for the pytest fixture parameter shadowing this import
+from tests.scripts.release_fakes import page_bytes, page_keys, release_transport as release_transport  # noqa: PLC0414 -- the self-alias is load-bearing: it suppresses F811 for the pytest fixture parameter shadowing this import
 from tests.scripts.test_stable_release import https_origin as https_origin  # noqa: PLC0414 -- same self-alias, for the https_origin fixture
 from tests.scripts.test_release_darwin import _inputs
 from scripts.bundles import release_artifacts as artifacts
 from scripts.releases import lanes as lane_set
+
+class RecordedPuts(list):
+    """pages.put keys in call order, with the unwrapped original attached."""
+
+    original = None
+
+
+@pytest.fixture
+def recorded_puts(monkeypatch):
+    from scripts.releases import pages
+
+    puts = RecordedPuts()
+    puts.original = pages.put
+
+    def recording(**kwargs):
+        key = kwargs["key"] if kwargs.get("key_is_full") else pages.staging_key_for(kwargs.get("tag", ""), kwargs["key"])
+        puts.append(key)
+        return puts.original(**kwargs)
+
+    puts.recording = recording
+    monkeypatch.setattr(pages, "put", recording)
+    return puts
+
+
+def store_snapshot(transport, store):
+    keys = set(page_keys(transport.worktree)) | set(transport.gh.all_keys())
+    return {key: store.get(key) for key in sorted(keys)}
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SMOKE_RESULTS = {name: {'result': 'success'} for name in (
@@ -65,13 +93,12 @@ def test_windows_metadata_is_read_from_package_and_stale_stamp_is_rejected(tmp_p
 
 
 @pytest.fixture
-def staged_candidate(tmp_path, r2_server, https_origin):
+def staged_candidate(tmp_path, release_transport, https_origin, recorded_puts):
     from scripts.bundles.release_artifacts import assemble
     from scripts.releases import handoff
 
     tag, commit, base = 'v1.2.3', 'a' * 40, https_origin.base
     attempt = 'rc.2-v1.2.3'
-    https_origin.store = r2_server.store
     legs, mac_bytes = _inputs('1.2.3')
     built = tmp_path / 'built'
     built.mkdir()
@@ -120,7 +147,7 @@ def staged_candidate(tmp_path, r2_server, https_origin):
     fetched = tmp_path / 'fetched'
     names = ['win32-x64', 'win32-arm64', 'darwin-arm64', 'termux', 'windows-universal']
     handoff.fetch(attempt, commit, names, fetched, ['metadata-*.json', '*.msixbundle'])
-    r2_server.requests.clear()
+    recorded_puts.clear()
     manifest = assemble(fetched, tag, commit, base, tmp_path / 'release-candidates.json',
                         smoke_results=SMOKE_RESULTS, release_epoch=RELEASE_EPOCH, archive=attempt,
                         lanes=lane_set.NAMES)
@@ -129,14 +156,14 @@ def staged_candidate(tmp_path, r2_server, https_origin):
         'windows/x64', 'windows/arm64', 'macos/arm64', 'termux/aarch64'}
     assert all(not file['path'].startswith(('handoff-', 'metadata-')) for file in manifest['files'])
     assert all(file['url'].startswith(f'{base}/releases/tag/{attempt}/') for file in manifest['files'])
-    puts = [path for method, path, _ in r2_server.requests if method == 'PUT']
-    assert puts == [f'/thor-releases/releases/tag/{attempt}/release-candidates.json']
-    assert all(key.startswith(f'releases/tag/{attempt}/') for key in r2_server.store)
-    assert not any(key.startswith(f'releases/tag/{tag}/') for key in r2_server.store)
+    assert recorded_puts == [f'releases/tag/{attempt}/release-candidates.json']
+    assert all(key.startswith(f'releases/tag/{attempt}/') for key in release_transport.gh.keys())
+    assert not any(key.startswith(f'releases/tag/{tag}/') for key in release_transport.gh.keys())
+    assert not any(key.startswith(f'releases/tag/{tag}/') for key in page_keys(release_transport.worktree))
     return manifest, fetched, base
 
 
-def test_bootstrap_reuses_published_candidate_and_rejects_substitution(staged_candidate, r2_server, monkeypatch):
+def test_bootstrap_reuses_published_candidate_and_rejects_substitution(staged_candidate, release_transport, monkeypatch, https_origin):
     from scripts.releases import channel_releases
     candidate, _, base = staged_candidate
     request = {'releaseTag': candidate['tag'], 'commit': candidate['commit'], 'publicBase': base,
@@ -153,7 +180,7 @@ def test_bootstrap_reuses_published_candidate_and_rejects_substitution(staged_ca
     published = {'draft': False, 'prerelease': False, 'published_at': 'fixture-published'}
     monkeypatch.setattr(channel_releases.stable, 'output', lambda args: candidate['commit']
                         if '/commits/' in args[2] else json.dumps(published))
-    r2_server.store['releases/stable/release-candidates.json'] = r2_server.store[f"releases/tag/{candidate['archive']}/release-candidates.json"]
+    https_origin.store['releases/stable/release-candidates.json'] = https_origin.store[f"releases/tag/{candidate['archive']}/release-candidates.json"]
     assert channel_releases.verify_bootstrap(request, manifest, base, 'fixture/repo')
     substituted = copy.deepcopy(manifest)
     substituted['packages'][0]['artifact']['sha256'] = 'f' * 64
@@ -185,7 +212,7 @@ def test_assemble_rejects_missing_and_changed_receipts(tmp_path, staged_candidat
 
 
 def test_publish_rejects_a_universal_bundle_whose_identity_differs_from_its_packages(
-        tmp_path, r2_server, staged_candidate):
+        tmp_path, release_transport, staged_candidate, recorded_puts, https_origin):
     """Candidate staging binds the bundle by digest only; publish opens it before anything goes live."""
     manifest, _, base = staged_candidate
     key = f"releases/tag/{manifest['archive']}/Product-win.msixbundle"
@@ -193,7 +220,7 @@ def test_publish_rejects_a_universal_bundle_whose_identity_differs_from_its_pack
     with zipfile.ZipFile(forged, 'w') as archive:
         archive.writestr('AppxMetadata/AppxBundleManifest.xml', f'<Bundle><Identity Name="Other" Publisher="CN=Test" Version="{WINDOWS_VERSION}"/><Packages><Package Type="application" Architecture="arm64"/><Package Type="application" Architecture="x64"/></Packages></Bundle>')
     body = forged.read_bytes()
-    r2_server.store[key] = (body, *r2_server.store[key][1:])
+    https_origin.store[key] = (body, *https_origin.store[key][1:])
     tampered = copy.deepcopy(manifest)
     digest = hashlib.sha256(body).hexdigest()
     for item in tampered['files']:
@@ -202,16 +229,16 @@ def test_publish_rejects_a_universal_bundle_whose_identity_differs_from_its_pack
     for row in tampered['packages']:
         if row['platform'] == 'windows':
             row['artifact']['sha256'] = digest
-    r2_server.requests.clear()
+    recorded_puts.clear()
     with pytest.raises(ValueError, match='Universal bundle identity'):
         artifacts.publish(tampered, tmp_path / 'publish', base)
-    assert not [path for method, path, _ in r2_server.requests if method == 'PUT']
+    assert recorded_puts == []
 
 
-def test_candidate_publication_and_store_selection(tmp_path, monkeypatch, r2_server, staged_candidate):
+def test_candidate_publication_and_store_selection(tmp_path, monkeypatch, release_transport, staged_candidate, recorded_puts, https_origin):
     manifest, _, base = staged_candidate
     tag, commit = manifest['tag'], manifest['commit']
-    raw = r2_server.store[f"releases/tag/{manifest['archive']}/release-candidates.json"][0]
+    raw = https_origin.store[f"releases/tag/{manifest['archive']}/release-candidates.json"][0]
     args = ['--tag', tag, '--archive', manifest['archive'], '--commit', commit, '--public-base', base]
     monkeypatch.setenv('CANDIDATE_MANIFEST_SHA256', hashlib.sha256(raw).hexdigest())
     artifacts.main(['materialize', *args, '--root', str(tmp_path / 'store'), '--store-only'])
@@ -230,24 +257,25 @@ def test_candidate_publication_and_store_selection(tmp_path, monkeypatch, r2_ser
     with pytest.raises(ValueError, match='receipts differ'):
         materialize(changed, tmp_path / 'bad', public_base=base)
 
-    r2_server.requests.clear()
+    recorded_puts.clear()
     artifacts.publish(manifest, tmp_path / 'publish', base)
-    assert [path for method, path, _ in r2_server.requests if method == 'PUT'] == [
-        '/thor-releases/releases/termux/stable/pool/package.deb']
-    r2_server.requests.clear()
+    assert recorded_puts == ['releases/termux/stable/pool/package.deb']
+    recorded_puts.clear()
     artifacts.promote(manifest, tmp_path / 'promote', base)
-    puts = [path for method, path, _ in r2_server.requests if method == 'PUT']
-    assert puts == ['/thor-releases/' + name for name in (
-        'releases/darwin/stable/stable-mac.yml', 'releases/win32/stable/stable.appinstaller',
-        'releases/termux/stable/dists/thor-stable/Release', 'releases/termux/stable/dists/thor-stable/InRelease')]
-    # Promotion materializes only feed legs and indexes; packages stay receipt-bound on R2.
+    # The mac feed lands in the worktree via darwin.finalize; the pointers
+    # and APT indexes go through pages.put, in that order.
+    assert page_bytes(release_transport.worktree, 'releases/darwin/stable/stable-mac.yml') is not None
+    assert recorded_puts == [
+        'releases/win32/stable/stable.appinstaller',
+        'releases/termux/stable/dists/thor-stable/Release', 'releases/termux/stable/dists/thor-stable/InRelease']
+    # Promotion materializes only feed legs and indexes; packages stay receipt-bound in the archive.
     for item in manifest['files']:
         local = tmp_path / 'promote' / item['path']
         if item['path'].endswith(artifacts.PACKAGE_SUFFIXES):
             assert not local.exists(), item['path']
         else:
-            assert local.read_bytes() == r2_server.store[f"releases/tag/{manifest['archive']}/{item['path']}"][0]
-    descriptor = ET.fromstring(r2_server.store['releases/win32/stable/stable.appinstaller'][0])
+            assert local.read_bytes() == https_origin.store[f"releases/tag/{manifest['archive']}/{item['path']}"][0]
+    descriptor = ET.fromstring(https_origin.store['releases/win32/stable/stable.appinstaller'][0])
     assert descriptor.attrib == {
         'Uri': base + '/releases/win32/stable/stable.appinstaller',
         'Version': WINDOWS_VERSION,
@@ -256,26 +284,37 @@ def test_candidate_publication_and_store_selection(tmp_path, monkeypatch, r2_ser
         'Name': 'Product', 'Publisher': 'CN=Test', 'Version': WINDOWS_VERSION,
         'Uri': base + f"/releases/tag/{manifest['archive']}/Product-win.msixbundle"}
     pointer = 'releases/win32/stable/stable.appinstaller'
-    original = r2_server.store[pointer]
-    r2_server.corrupt_put = pointer
-    r2_server.requests.clear()
+    original = https_origin.store[pointer]
+    from scripts.releases import pages as pages_module
+
+    def corrupt_put(**kwargs):
+        recorded_puts.append(kwargs["key"])
+        if kwargs["key"] == pointer:
+            path = release_transport.worktree.joinpath(*pointer.split("/"))
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'corrupt')
+            return
+        return recorded_puts.original(**kwargs)
+
+    monkeypatch.setattr(pages_module, "put", corrupt_put)
+    recorded_puts.clear()
     with pytest.raises(ValueError, match='Channel read-back differs'):
         artifacts.promote(manifest, tmp_path / 'bad-readback', base)
-    assert [path for method, path, _ in r2_server.requests if method == 'PUT'] == ['/thor-releases/' + pointer]
-    r2_server.corrupt_put = None
-    r2_server.store[pointer] = original
-    before = dict(r2_server.store)
+    assert recorded_puts == [pointer]
+    monkeypatch.setattr(pages_module, "put", recorded_puts.recording)
+    https_origin.store[pointer] = original
+    before = store_snapshot(release_transport, https_origin.store)
     # Packages are receipt-bound and never re-downloaded here; a corrupt file that
     # promotion does materialize (a feed leg) is still refused before any write.
-    r2_server.store[f"releases/tag/{manifest['archive']}/arm64-stable-mac.yml"] = (b'corrupt', '"e"')
-    r2_server.requests.clear()
+    https_origin.store[f"releases/tag/{manifest['archive']}/arm64-stable-mac.yml"] = (b'corrupt', '"e"')
+    recorded_puts.clear()
     with pytest.raises(ValueError, match='digest mismatch'):
         artifacts.promote(manifest, tmp_path / 'broken', base)
-    assert not any(method == 'PUT' for method, _, _ in r2_server.requests)
-    assert all(value == r2_server.store[key] for key, value in before.items() if not key.startswith('releases/tag/'))
+    assert recorded_puts == []
+    assert all(value == https_origin.store[key] for key, value in before.items() if not key.startswith('releases/tag/'))
 
 
-def test_promote_writes_the_stable_mac_feed_from_the_attempt_archive(tmp_path, monkeypatch, r2_server, https_origin, staged_candidate):
+def test_promote_writes_the_stable_mac_feed_from_the_attempt_archive(tmp_path, monkeypatch, release_transport, https_origin, staged_candidate, recorded_puts):
     import urllib.request
 
     manifest, _, base = staged_candidate
@@ -283,7 +322,7 @@ def test_promote_writes_the_stable_mac_feed_from_the_attempt_archive(tmp_path, m
     # this test is order-independent against the per-test self-signed CA.
     monkeypatch.setattr(urllib.request, 'urlopen', https_origin.opener)
     artifacts.promote(manifest, tmp_path / 'promote', base)
-    feed = thor_yaml.safe_load(r2_server.store['releases/darwin/stable/stable-mac.yml'][0].decode())
+    feed = thor_yaml.safe_load(https_origin.store['releases/darwin/stable/stable-mac.yml'][0].decode())
     # The feed version is the plain package version, never the attempt ref.
     assert feed['version'] == '1.2.3'
     assert feed['version'] != manifest['archive']
@@ -297,33 +336,31 @@ def test_promote_writes_the_stable_mac_feed_from_the_attempt_archive(tmp_path, m
     default = copy.deepcopy(manifest)
     default['packages'] = [row for row in default['packages'] if row['platform'] != 'termux']
     default['files'] = [f for f in default['files'] if not f['path'].startswith(('apt/', 'deb/'))]
-    del r2_server.store['releases/darwin/stable/stable-mac.yml']
-    r2_server.requests.clear()
+    del https_origin.store['releases/darwin/stable/stable-mac.yml']
+    recorded_puts.clear()
     artifacts.promote(default, tmp_path / 'promote-default', base)
-    puts = [path for method, path, _ in r2_server.requests if method == 'PUT']
-    assert puts == ['/thor-releases/releases/darwin/stable/stable-mac.yml',
-                    '/thor-releases/releases/win32/stable/stable.appinstaller']
-    feed = thor_yaml.safe_load(r2_server.store['releases/darwin/stable/stable-mac.yml'][0].decode())
+    assert page_bytes(release_transport.worktree, 'releases/darwin/stable/stable-mac.yml') is not None
+    assert recorded_puts == ['releases/win32/stable/stable.appinstaller']
+    feed = thor_yaml.safe_load(https_origin.store['releases/darwin/stable/stable-mac.yml'][0].decode())
     assert [entry['url'].rsplit('/', 1)[1] for entry in feed['files']] == ['ThorBundled-1.2.3-mac-arm64.zip']
 
 
-def test_promote_refuses_when_the_macos_feed_is_missing(tmp_path, monkeypatch, r2_server, https_origin, staged_candidate):
+def test_promote_refuses_when_the_macos_feed_is_missing(tmp_path, monkeypatch, release_transport, https_origin, staged_candidate, recorded_puts):
     import urllib.request
 
     manifest, _, base = staged_candidate
     monkeypatch.setattr(urllib.request, 'urlopen', https_origin.opener)
     broken = copy.deepcopy(manifest)
     broken['files'] = [f for f in broken['files'] if f['path'] != 'arm64-stable-mac.yml']
-    r2_server.requests.clear()
+    recorded_puts.clear()
     with pytest.raises(ValueError, match='one ARM64 macOS feed'):
         artifacts.promote(broken, tmp_path / 'broken-arch', base)
     # The refusal happens before any channel pointer moves.
-    assert not [path for method, path, _ in r2_server.requests
-                if method == 'PUT' and '/releases/win32/stable/' in path]
+    assert not [key for key in recorded_puts if '/releases/win32/stable/' in key]
 
 
 @pytest.fixture
-def candidate_workflow_step(tmp_path, r2_server, staged_candidate):
+def candidate_workflow_step(tmp_path, release_transport, staged_candidate):
     """Run real workflow shell/CLIs; replace only service endpoints and tool setup."""
     manifest, fetched, base = staged_candidate
     jobs = thor_yaml.safe_load((ROOT / '.github/workflows/desktop-bundled-release.yml').read_text(encoding='utf-8-sig'))['jobs']
@@ -345,8 +382,8 @@ def candidate_workflow_step(tmp_path, r2_server, staged_candidate):
     driver.write_text(
         'import runpy,sys\n'
         f'sys.path.insert(0, {str(ROOT)!r})\n'
-        'from scripts.releases import r2\n'
-        f'r2.s3_endpoint=lambda _: "http://127.0.0.1:{r2_server.server_port}"\n'
+        'from tests.scripts.release_fakes import install_fake_gh_driver\n'
+        'install_fake_gh_driver()\n'
         'args=sys.argv[1:]\n'
         'if args[:2] == ["-m", "scripts.ci.python_packages"]:\n'
         '    import ruamel.yaml  # already provided by the test environment\n'
@@ -388,11 +425,10 @@ def candidate_workflow_step(tmp_path, r2_server, staged_candidate):
             '${{ needs.validate.outputs.archive-tag }}': manifest['archive'],
             '${{ needs.candidates.outputs.manifest-sha256 }}': pinned,
             '${{ needs.candidate-manifest.outputs.manifest-sha256 }}': pinned,
-            '${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}': base, '${{ toJSON(needs) }}': json.dumps(needs),
+            "${{ vars.THOR_PAGES_PUBLIC_URL || 'https://thor726.github.io/thor-agent-releases' }}": base,
+            '${{ toJSON(needs) }}': json.dumps(needs),
         }
-        for key in ('CLOUDFLARE_R2_ACCOUNT_ID', 'CLOUDFLARE_R2_ACCESS_KEY_ID', 'CLOUDFLARE_R2_SECRET_ACCESS_KEY', 'CLOUDFLARE_R2_BUCKET'):
-            expressions['${{ ' + ('vars.' if key.endswith('_BUCKET') else 'secrets.') + key + ' }}'] = os.environ[key]
-        env = {**os.environ, 'GITHUB_SHA': manifest['commit'], 'GITHUB_REPOSITORY': 'fixture/release',
+        env = {**os.environ, **release_transport.env, 'GITHUB_SHA': manifest['commit'], 'GITHUB_REPOSITORY': 'fixture/release',
                'RELEASE_CLAIM_TAG': manifest['archive'],
                'PATH': str(bin_dir) + os.pathsep + os.environ['PATH'], 'GITHUB_OUTPUT': str(tmp_path / 'outputs')}
         env.pop('RELEASE_NEEDS', None)
@@ -409,22 +445,22 @@ def candidate_workflow_step(tmp_path, r2_server, staged_candidate):
 
 @pytest.mark.parametrize('ambient_needs', [None, {job: {'result': 'skipped'} for job in SMOKE_RESULTS}])
 @pytest.mark.platforms('posix')
-def test_candidate_smoke_survives_real_promotion_and_renderer(tmp_path, r2_server, staged_candidate,
+def test_candidate_smoke_survives_real_promotion_and_renderer(tmp_path, release_transport, staged_candidate,
                                                            candidate_workflow_step, ambient_needs, https_origin):
     manifest, _, base = staged_candidate
     jobs, run, body_file = candidate_workflow_step
-    stored = json.loads(r2_server.store[f"releases/tag/{manifest['archive']}/release-candidates.json"][0])
+    stored = json.loads(https_origin.store[f"releases/tag/{manifest['archive']}/release-candidates.json"][0])
     assert stored['smoke_results'] == SMOKE_RESULTS
     # An unrelated orphan object must not acquire the candidate's Passed label.
     orphan = f"releases/tag/{manifest['archive']}/ThorBundled-1.2.3-linux-x64.AppImage"
-    r2_server.store[orphan] = (b'orphan transport fixture', '"e"')
+    https_origin.store[orphan] = (b'orphan transport fixture', '"e"')
     for step in jobs['controller-promote']['steps']:
         if 'run' in step:
             result = run('controller-promote', step, {'validate': {'result': 'success'}},
                          ambient_needs=ambient_needs)
             assert result.returncode == 0, result.stdout + result.stderr
-    assert 'releases/win32/stable/stable.appinstaller' in r2_server.store
-    page = r2_server.store['releases/stable/index.html'][0].decode()
+    assert 'releases/win32/stable/stable.appinstaller' in https_origin.store
+    page = https_origin.store['releases/stable/index.html'][0].decode()
     for output in (page, body_file.read_text(encoding='utf-8-sig')):
         assert output.count('Passed') == len(SMOKE_RESULTS)
         assert 'Not run' not in output and 'Build incomplete' not in output
@@ -435,11 +471,11 @@ def test_candidate_smoke_survives_real_promotion_and_renderer(tmp_path, r2_serve
 
 
 @pytest.mark.platforms('posix')
-def test_candidate_smoke_admission_fails_before_publication(tmp_path, r2_server, staged_candidate, candidate_workflow_step):
+def test_candidate_smoke_admission_fails_before_publication(tmp_path, release_transport, staged_candidate, candidate_workflow_step, https_origin):
     manifest, _, _ = staged_candidate
     jobs, run, body_file = candidate_workflow_step
     key = f"releases/tag/{manifest['archive']}/release-candidates.json"
-    raw = r2_server.store[key][0]
+    raw = https_origin.store[key][0]
     for fault, message in [('legacy', 'Candidate manifest'), ('missing', 'Candidate smoke results'),
                            ('failed', 'smoke-win32-x64=failure'), ('identity', 'release identity'),
                            ('tampered', 'digest mismatch')]:
@@ -454,17 +490,15 @@ def test_candidate_smoke_admission_fails_before_publication(tmp_path, r2_server,
         else:
             invalid['commit'] = 'b' * 40
         data = json.dumps(invalid).encode()
-        r2_server.store[key] = (data, '"fault"')
+        https_origin.store[key] = (data, '"fault"')
         digest = hashlib.sha256(raw if fault == 'tampered' else data).hexdigest()
-        before = dict(r2_server.store), body_file.read_bytes()
+        before = store_snapshot(release_transport, https_origin.store), body_file.read_bytes()
         # Exercise both commands independently, not just shell short-circuiting.
         for step in jobs['controller-promote']['steps']:
             if 'run' not in step:
                 continue
-            r2_server.requests.clear()
             result = run('controller-promote', step, {}, pinned=digest)
             assert result.returncode != 0, (fault, step, result.stdout, result.stderr)
             assert message in result.stderr, result.stdout + result.stderr
-            assert not any(method == 'PUT' for method, _, _ in r2_server.requests)
-            assert (dict(r2_server.store), body_file.read_bytes()) == before
-    r2_server.store[key] = (raw, '"original"')
+            assert (store_snapshot(release_transport, https_origin.store), body_file.read_bytes()) == before
+    https_origin.store[key] = (raw, '"original"')

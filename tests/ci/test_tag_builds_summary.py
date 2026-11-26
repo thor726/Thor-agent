@@ -1,22 +1,22 @@
-"""Run the tagged-build summary step against a disposable R2 transport."""
+"""Run the tagged-build summary step against a disposable Pages/gh transport."""
 import json
 import shlex
 import sys
 
 import pytest
 
-from scripts.releases import r2
+from scripts.releases import pages
 from tests.ci.desktop_release_roles import (
     CANARY_TAG, DOWNLOADABLE_DISPATCHES, admitted, gate, needs_of, selection_gates, tag_summary, termux_builder,
     updater_publishers,
 )
 from tests.ci.test_commit_build_staging import shell_step
 from tests.ci.test_desktop_release_tag_admission import _workflow
-from tests.scripts.test_release_r2 import r2_server
+from tests.scripts.release_fakes import release_transport as release_transport  # noqa: PLC0414 -- self-alias suppresses F811 for the fixture parameter
 
 
 @pytest.mark.parametrize("gh_available", [False, True])
-def test_admitted_failure_publishes_tag_info_without_promoting_channel(tmp_path, r2_server, gh_available):
+def test_admitted_failure_publishes_tag_info_without_promoting_channel(tmp_path, release_transport, gh_available):
     jobs = _workflow()["jobs"]
     table = tag_summary(jobs)
     job = jobs[table]
@@ -47,10 +47,10 @@ def test_admitted_failure_publishes_tag_info_without_promoting_channel(tmp_path,
 
     tag = CANARY_TAG
     run_url = "https://github.example/o/r/actions/runs/12345"
-    base = f"http://127.0.0.1:{r2_server.server_port}/thor-releases"
+    base = release_transport.base
     channel_key = "releases/canary/index.html"
     previous = b'<meta name="thor-build" content="v0.27.0+canary.20260817T101010Z">'
-    r2_server.store[channel_key] = (previous, "text/html")
+    release_transport.store[channel_key] = (previous, "text/html")
     helper = tmp_path / "bin"
     helper.mkdir()
     gh = helper / "gh"
@@ -75,18 +75,16 @@ def test_admitted_failure_publishes_tag_info_without_promoting_channel(tmp_path,
     for name in [*gates.values(), termux]:
         needs[name]["result"] = "failure"
     needs[windows_publisher]["result"] = "skipped"
-    result = shell_step(tmp_path, r2_server, table, "Render", {
+    result = shell_step(tmp_path, release_transport, table, "Render", {
         "THOR_PAYLOAD_TAG": tag, "GITHUB_REPOSITORY": "o/r",
         "RUN_URL": run_url,
-        "RELEASE_NEEDS": json.dumps(needs), "CLOUDFLARE_R2_PUBLIC_URL": base,
-        "CLOUDFLARE_R2_ACCOUNT_ID": "loopback", "CLOUDFLARE_R2_ACCESS_KEY_ID": "test-inert",
-        "CLOUDFLARE_R2_SECRET_ACCESS_KEY": "test-inert", "CLOUDFLARE_R2_BUCKET": "thor-releases",
+        "RELEASE_NEEDS": json.dumps(needs), "THOR_PAGES_PUBLIC_URL": base,
     })
     assert (result.returncode == 0) is gh_available, result.stdout + result.stderr
     key = f"releases/tag/{tag}/index.html"
-    assert key in r2_server.store, result.stdout + result.stderr
-    page = r2_server.store[key][0].decode()
-    release_url = r2.public_url_for("https://github.com/o/r/releases/tag", tag)
+    assert key in release_transport.store, result.stdout + result.stderr
+    page = release_transport.store[key][0].decode()
+    release_url = pages.public_url_for("https://github.com/o/r/releases/tag", tag)
     assert f'href="{release_url}"' in page
     assert "Build incomplete" in page
     assert f"{gates['win32-x64']} (failure)" in page and f"{windows_publisher} (skipped)" in page
@@ -96,16 +94,16 @@ def test_admitted_failure_publishes_tag_info_without_promoting_channel(tmp_path,
             assert f'<td>{name} ({info["result"]})</td><td><a href="{run_url}">View build run</a>' in page
     assert base not in page
     assert render["env"]["RUN_URL"] == "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-    assert r2.public_url_for(base, key) in result.stdout
-    assert r2_server.store[channel_key][0] == previous
-    assert set(r2_server.store) == {channel_key, key}
+    assert pages.public_url_for(base, key) in result.stdout
+    assert release_transport.store[channel_key][0] == previous
+    assert set(release_transport.store) == {channel_key, key}
 
     # publish-canary depends on this job's success; rendering diagnostics must
     # not turn a failed Termux prerequisite into permission to publish a draft.
     needs = {name: {"result": "success"} for name in job["needs"]}
     for state in ("failure", "skipped", "success"):
         needs[termux]["result"] = state
-        checked = shell_step(tmp_path, r2_server, table, "Preserve release success gate", {
+        checked = shell_step(tmp_path, release_transport, table, "Preserve release success gate", {
             "RELEASE_NEEDS": json.dumps(needs),
         })
         assert (checked.returncode == 0) is (state == "success"), checked.stdout + checked.stderr

@@ -1,105 +1,141 @@
-"""Exercise publisher/reader through the real signed HTTP transport."""
+"""Exercise publisher/reader through the Pages worktree + public origin."""
 from __future__ import annotations
 
+from collections.abc import MutableMapping
 from contextlib import contextmanager
 import base64
 import hashlib
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
-import socket
-from threading import Lock, Thread
-from urllib.parse import parse_qs, urlsplit
-import xml.sax.saxutils
+import os
+from pathlib import Path
+import tempfile
+from threading import RLock
 
 import pytest
 
-from scripts.releases import desktop_targets, lanes as lane_set
+from scripts.releases import desktop_targets, lanes as lane_set, pages
+from scripts.releases.pages import PagesChannelStore
+from tests.scripts.release_fakes import PublicOrigin, init_pages_worktree
+
+
+class _WorktreeObjects(MutableMapping):
+    """Logical release objects as files under the worktree's releases/ tree."""
+
+    def __init__(self, worktree: Path):
+        self.worktree = Path(worktree)
+
+    def _path(self, key: str) -> Path:
+        return self.worktree.joinpath(*key.split("/"))
+
+    def __getitem__(self, key):
+        path = self._path(key)
+        if not path.is_file():
+            raise KeyError(key)
+        return path.read_bytes()
+
+    def __setitem__(self, key, value):
+        path = self._path(key)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(value)
+
+    def __delitem__(self, key):
+        self._path(key).unlink()
+
+    def __iter__(self):
+        root = self.worktree / "releases"
+        if not root.is_dir():
+            return iter(())
+        return iter(sorted(p.relative_to(self.worktree).as_posix()
+                           for p in root.rglob("*") if p.is_file()))
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+
+class _FaultStore(PagesChannelStore):
+    """Pages store with the fault knobs the retired S3 fixture exposed.
+
+    ``conflict`` runs a competing writer just before a put lands (the CAS
+    must then refuse); ``lose_put`` lands the write but reports it lost
+    (the publisher's conflict retry must recover); puts and the git
+    publish are serialized so concurrent publishers race on records, not
+    on the git index.
+    """
+
+    def __init__(self, worktree, faults, objects, headers, requests, lock):
+        super().__init__(worktree)
+        self._faults, self._objects = faults, objects
+        self._headers, self._requests, self._lock = headers, requests, lock
+
+    def put(self, key, body, etag=None):
+        from scripts.releases.channels import ChannelConflict
+
+        with self._lock:
+            if self._faults["conflict"]:
+                conflict = self._faults["conflict"]
+                self._faults["conflict"] = None
+                conflict(self._objects, key)
+            super().put(key, body, etag)
+            self._headers[key] = {"Cache-Control": pages.cache_control_for(key)}
+            self._requests.append(("PUT", key))
+            if self._faults["lose_put"]:
+                self._faults["lose_put"] = False
+                raise ChannelConflict(f"Channel write conflict: {key} (lost response)")
+
+
+_HOSTS: dict[str, _FaultStore] = {}
 
 
 @contextmanager
 def object_server():
-    objects, headers, requests = {}, {}, []
-    lock = Lock()
-    faults = {"lose_put": False, "stale_public": None, "conflict": None, "bad_pagination": False}
+    headers, requests = {}, []
+    lock = RLock()
+    faults = {"lose_put": False, "stale_public": None, "conflict": None}
+    saved_env = {name: os.environ.get(name) for name in
+                 ("THOR_PAGES_VISIBILITY_TRIES", "THOR_PAGES_VISIBILITY_DELAY_S", "PAGES_DISPOSABLE_RUN")}
+    os.environ["THOR_PAGES_VISIBILITY_TRIES"] = "3"
+    os.environ["THOR_PAGES_VISIBILITY_DELAY_S"] = "0"
+    os.environ.pop("PAGES_DISPOSABLE_RUN", None)
+    original_publish = pages.publish_worktree
 
-    class Handler(BaseHTTPRequestHandler):
-        def log_message(self, *args):
-            pass
+    def locked_publish(repo_dir, message, *, push=False):
+        with lock:
+            return original_publish(repo_dir, message, push=push)
 
-        def do_GET(self):
-            parsed = urlsplit(self.path)
-            query = parse_qs(parsed.query)
-            with lock:
-                requests.append(("GET", self.path))
-                if "list-type" in query:
-                    prefix = query.get("prefix", [""])[0]
-                    keys = sorted(k for k in objects if k.startswith(prefix))
-                    start = int(query.get("continuation-token", ["0"])[0])
-                    page = keys[start:start + 2]
-                    more = start + 2 < len(keys)
-                    body = ("<ListBucketResult>" + "".join(
-                        f"<Contents><Key>{xml.sax.saxutils.escape(k)}</Key></Contents>" for k in page)
-                        + f"<IsTruncated>{str(more).lower()}</IsTruncated>"
-                        + (f"<NextContinuationToken>{start + 2}</NextContinuationToken>" if more else "")
-                        + "</ListBucketResult>").encode()
-                    if faults["bad_pagination"]:
-                        body = b"<ListBucketResult><IsTruncated>true</IsTruncated></ListBucketResult>"
-                    etag = None
+    pages.publish_worktree = locked_publish
+    with tempfile.TemporaryDirectory() as tmp:
+        worktree = init_pages_worktree(Path(tmp))
+        objects = _WorktreeObjects(worktree)
+        origin = PublicOrigin(worktree=worktree)
+        store = _FaultStore(worktree, faults, objects, headers, requests, lock)
+        _HOSTS[origin.base] = store
+        # faults["stale_public"] drives the origin's stale-CDN mode.
+        faults_stale = faults
+
+        class _FaultsView(dict):
+            def __setitem__(self, name, value):
+                super().__setitem__(name, value)
+                if name == "stale_public":
+                    origin.stale_all = value
+
+        faults = _FaultsView(faults_stale)
+        store._faults = faults
+        try:
+            yield origin.base, objects, headers, requests, faults
+        finally:
+            _HOSTS.pop(origin.base, None)
+            origin.close()
+            pages.publish_worktree = original_publish
+            for name, value in saved_env.items():
+                if value is None:
+                    os.environ.pop(name, None)
                 else:
-                    key = parsed.path.removeprefix("/bucket/")
-                    body = objects.get(key)
-                    if not self.headers.get("Authorization") and faults["stale_public"] is not None:
-                        body = faults["stale_public"]
-                    etag = '"' + hashlib.sha256(body).hexdigest() + '"' if body is not None else None
-                self.send_response(200 if body is not None else 404)
-                if etag:
-                    self.send_header("ETag", etag)
-                self.end_headers()
-                if body is not None:
-                    self.wfile.write(body)
-
-        def do_PUT(self):
-            body = self.rfile.read(int(self.headers["Content-Length"]))
-            key = self.path.removeprefix("/bucket/")
-            with lock:
-                requests.append(("PUT", key))
-                if faults["conflict"]:
-                    conflict = faults["conflict"]
-                    faults["conflict"] = None
-                    conflict(objects, key)
-                old = objects.get(key)
-                etag = '"' + hashlib.sha256(old).hexdigest() + '"' if old is not None else None
-                conflict = ((self.headers.get("If-None-Match") == "*" and old is not None)
-                            or (self.headers.get("If-Match") is not None and self.headers["If-Match"] != etag))
-                if conflict:
-                    self.send_response(412)
-                    self.end_headers()
-                    return
-                objects[key] = body
-                headers[key] = dict(self.headers)
-                if faults["lose_put"]:
-                    faults["lose_put"] = False
-                    self.connection.shutdown(socket.SHUT_RDWR)
-                    self.connection.close()
-                    return
-                self.send_response(200)
-                self.end_headers()
-
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    thread = Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        yield f"http://127.0.0.1:{server.server_port}", objects, headers, requests, faults
-    finally:
-        server.shutdown()
-        server.server_close()
-        thread.join()
+                    os.environ[name] = value
 
 
 def publisher(url, **kwargs):
-    from scripts.releases.channels import ChannelPublisher, R2ChannelStore
-    store = R2ChannelStore({"access_key_id": "fixture", "secret_key": "fixture"}, url, "bucket")
-    return ChannelPublisher(store, "example/thor-agent", url + "/bucket",
+    from scripts.releases.channels import ChannelPublisher
+    return ChannelPublisher(_HOSTS[url], "example/thor-agent", url,
                             authorize=kwargs.pop("authorize", lambda action, record: None), **kwargs)
 
 
@@ -107,7 +143,7 @@ def test_unknown_channel_created_over_http_retains_identity_and_immutable_reques
     from thor_cli.release_channels import ChannelReader, ChannelNotFound
     with object_server() as (url, _objects, headers, _requests, _faults):
         pub = publisher(url)
-        reader = ChannelReader(url + "/bucket", repository="example/thor-agent")
+        reader = ChannelReader(url, repository="example/thor-agent")
         with pytest.raises(ChannelNotFound):
             reader.resolve("not-registered-in-code")
         record = pub.create("not-registered-in-code")
@@ -236,11 +272,6 @@ def test_list_bootstrap_protected_roles_and_qualification_gate():
         for name in ("first", "second", "third"):
             pub.create(name)
         assert {r["name"] for r in pub.list()} == {"main", "first", "second", "third"}
-        assert any("continuation-token" in path for method, path in requests)
-        faults["bad_pagination"] = True
-        with pytest.raises(ChannelError, match="pagination"):
-            pub.list()
-        faults["bad_pagination"] = False
         assert pub.reader.resolve("main").manifest is None
         with pytest.raises(ChannelError, match="Protected"):
             pub.allocate("main", "a" * 40, "1.0.0")
@@ -488,7 +519,7 @@ def test_accepted_release_receipts_feed_the_protected_head_without_rebuilding(tm
         receipt = {"schema": 1, "tag": tag, "commit": commit, "name": "windows-universal", "files": [{"path": bundle_name, "size": len(body), "sha256": hashlib.sha256(body).hexdigest()}]}
         (tmp_path / receipt_name(receipt["name"])).write_bytes(canonical_json(receipt))
         objects[prefix + receipt_name(receipt["name"])] = canonical_json(receipt)
-        # An R2 policy record chooses this name, not the legacy default selector.
+        # A policy record chooses this name, not the legacy default selector.
         record = {"schema": 1, "name": "released", "repository": pub.repository, "policy": "stable-release", "state": "active", "revision": 1, "nextSequence": 1, "head": None, "identity": identity}
         objects["releases/channels/released.json"] = canonical_json(record)
         assert channel_releases.select_channel(pub, "stable-release") == "released"
@@ -536,7 +567,8 @@ def test_accepted_release_receipts_feed_the_protected_head_without_rebuilding(tm
         monkeypatch.setattr(channel_releases, "channel_store", lambda: pub.store)
         monkeypatch.setattr(pages, "public_base_url", lambda: base)
         def put(**kwargs):
-            pub.store.put(kwargs["key"], __import__("pathlib").Path(kwargs["file"]).read_bytes())
+            # pages.put overwrites mutable pointers; model that on the files.
+            objects[kwargs["key"]] = __import__("pathlib").Path(kwargs["file"]).read_bytes()
         monkeypatch.setattr(pages, "put", put)
         # A previous bundled release already owns the stable head.
         pub.store.put("releases/stable/release-candidates.json", b'{"tag":"v1.9.0"}')

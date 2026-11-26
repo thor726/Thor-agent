@@ -83,7 +83,7 @@ def describe(env: Mapping[str, str]) -> dict[str, object]:
         "all_jobs": _all_jobs(env.get("JOBS")),
         "termux_upgrade_from_tag": _text(env.get("TERMUX_UPGRADE_FROM_TAG")),
         "disposable_receivers": _flag(env.get("DISPOSABLE_RECEIVERS")),
-        "disposable_run": _text(env.get("R2_DISPOSABLE_RUN")),
+        "disposable_run": _text(env.get("PAGES_DISPOSABLE_RUN")),
         "bundle_env": bundle_env(env.get("BUNDLE_ENV_JSON")),
         "branding": _text(env.get("BRANDING")) or "preview",
     }

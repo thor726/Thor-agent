@@ -1,17 +1,17 @@
 #!/usr/bin/env -S bash -c 'exec "$BASH" "$(dirname "$0")/run-in-thor-env" python3 "$0" "$@"'
 """Render the release download tables into <!-- THOR_BUILDS_TABLE -->, and
-the same rows as standalone pages in the bucket.
+the same rows as standalone pages on the Pages host.
 
 Runs after the build jobs of desktop-bundled-release.yml finish, including
 failed legs, and edits the GitHub release body in place. The tables
-are built from the bucket's ACTUAL object names (scripts/releases/r2.py
-list --prefix releases/tag/<tag>/), filtered to the tag's exact version —
-a missing artifact shows up as a missing row, never a dead link. The
-GitHub release carries the notes only; the binaries live in the R2 bucket
-under releases/tag/<tag>/, and the download links point at the R2 public
-URL (CLOUDFLARE_R2_PUBLIC_URL / --r2-base-url).
+are built from the Pages worktree's ACTUAL object names (the files under
+releases/tag/<tag>/ in the thor-agent-releases checkout), filtered to the
+tag's exact version — a missing artifact shows up as a missing row, never
+a dead link. The GitHub release carries the notes only; the binaries live
+under releases/tag/<tag>/, and the download links point at the public
+Pages URL (THOR_PAGES_PUBLIC_URL / --r2-base-url).
 
-Every run also publishes the same rows as a tiny HTML page in the bucket,
+Every run also publishes the same rows as a tiny HTML page on the host,
 so a build can be read straight from the download origin:
 
   releases/tag/<tag>/index.html     every admitted tag, including failed builds
@@ -23,7 +23,7 @@ so a build can be read straight from the download origin:
 Tables: Thor Desktop (bundled) and Thor Light, one row per (OS,
 arch). Feed manifests (latest*/light*/canary*.yml), blockmaps and mac .zip
 (an electron-updater delta target, not a user download) stay out of the
-tables on purpose; they still live in the bucket for the updater to
+tables on purpose; they still live on the host for the updater to
 consume.
 
 With --pending-run-url, renders a "builds in progress" link to the
@@ -53,7 +53,7 @@ from urllib.parse import quote
 # Direct-script invocation starts with scripts/, not the repository root.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.releases import handoff, pages, r2, semver, stable, versioning
+from scripts.releases import handoff, pages, semver, stable, versioning
 from scripts.releases.desktop_targets import TARGETS as DESKTOP_TARGETS
 
 MARKER = "<!-- THOR_BUILDS_TABLE -->"
@@ -101,8 +101,8 @@ def parse_assets(names: list[str]) -> dict[str, dict[tuple[str, str], tuple[str,
 def table_rows(assets_by_app: dict) -> list[tuple[str, list[tuple[str, str, str, str]]]]:
     """[(section title, [(os label, arch label, kind label, object key), ...]), ...].
 
-    The ONE row set every sink renders (release-body markdown, R2 page);
-    a row exists only for an object that is actually in the bucket.
+    The ONE row set every sink renders (release-body markdown, host page);
+    a row exists only for an object that is actually on the host.
     """
     sections: list[tuple[str, list[tuple[str, str, str, str]]]] = []
     for app, title in (("ThorBundled", "Thor Desktop"), ("ThorLight", "Thor Light (remote-only client)")):
@@ -265,7 +265,7 @@ def commit_entries(commit: str, names: list[str], base_url: str,
                    ) -> list[tuple[str, str, str | None, str | None]]:
     """[(label, status, URL or None, link text or None)] for both summary sinks.
 
-    Downloads require a receipt-listed object in the bucket. Missing artifacts
+    Downloads require a receipt-listed object on the host. Missing artifacts
     link to the actual workflow run, never a guessed download or job URL.
     """
     failed = set(failed_legs or [])
@@ -355,7 +355,7 @@ def incomplete_release_jobs(release_needs_json: str | None) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Bucket pages: the same rows as the tables, served from the download origin
+# Host pages: the same rows as the tables, served from the download origin
 # ---------------------------------------------------------------------------
 
 _PAGE_STYLE = (
@@ -403,7 +403,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
     body = [
         f"<h1>Thor Desktop {channel} builds</h1>",
         f"<p>Release {_link(tag_url)}<code>{html.escape(tag)}</code></a>. Only objects this release "
-        "actually staged in the bucket are listed.</p>",
+        "actually staged on the host are listed.</p>",
     ]
     attempt = versioning.parse_attempt_ref(tag)
     if attempt is not None:
@@ -474,7 +474,7 @@ def render_commit_page(commit: str, names: list[str], base_url: str,
 
 
 def recorded_build(page: str | None) -> str | None:
-    """The release tag or commit a page in the bucket describes."""
+    """The release tag or commit a page on the host describes."""
     match = _BUILD_META_RE.search(page or "")
     return (match.group(1) or None) if match else None
 
@@ -524,17 +524,11 @@ def write_page(key: str, page: str, base_url: str) -> str:
 def existing_page(key: str) -> str | None:
     """The page currently at `key`, or None when nothing is published there."""
     worktree = pages.repo_dir_from_env()
-    if worktree is not None:
-        scoped = pages.PagesScope.configured().key(key)
-        path = worktree.joinpath(*scoped.split("/"))
-        return path.read_text(encoding="utf-8") if path.is_file() else None
-    try:
-        creds, base, bucket = r2.credentials()
-        return r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
-    except r2.R2RequestError as err:
-        if err.status == 404:
-            return None
-        raise
+    if worktree is None:
+        raise ValueError("Reading published pages requires PAGES_REPO_DIR (a thor-agent-releases checkout)")
+    scoped = pages.PagesScope.configured().key(key)
+    path = worktree.joinpath(*scoped.split("/"))
+    return path.read_text(encoding="utf-8") if path.is_file() else None
 
 
 def write_channel_page(tag: str, assets_by_app: dict, base_url: str,
@@ -549,20 +543,20 @@ def write_channel_page(tag: str, assets_by_app: dict, base_url: str,
 
 def r2_object_names_under(prefix: str) -> list[str]:
     worktree = pages.repo_dir_from_env()
-    if worktree is not None:
-        scope = pages.PagesScope.configured()
-        root = worktree.joinpath(*scope.listing_prefix(prefix).rstrip("/").split("/"))
-        if not root.is_dir():
-            return []
-        return sorted(
-            scope.logical_key(path.relative_to(worktree).as_posix())
-            for path in root.rglob("*") if path.is_file()
-        )
-    return r2.list_objects(prefix=prefix)["keys"]
+    if worktree is None:
+        raise ValueError("Listing published objects requires PAGES_REPO_DIR (a thor-agent-releases checkout)")
+    scope = pages.PagesScope.configured()
+    root = worktree.joinpath(*scope.listing_prefix(prefix).rstrip("/").split("/"))
+    if not root.is_dir():
+        return []
+    return sorted(
+        scope.logical_key(path.relative_to(worktree).as_posix())
+        for path in root.rglob("*") if path.is_file()
+    )
 
 
 def r2_object_names(tag: str) -> list[str]:
-    """Object keys in the R2 staging dir for `tag`, under releases/tag/<tag>/.
+    """Object keys in the staging dir for `tag`, under releases/tag/<tag>/.
 
     A tag prefix and exact version match exclude neighboring releases. An
     attempt ref filters by its plain version, which is what file names carry.
@@ -627,7 +621,7 @@ def main() -> int:
     parser.add_argument("--run-url", default=None,
                         help="Actual workflow run URL for incomplete-build diagnostics")
     parser.add_argument("--r2-base-url",
-                        default=os.environ.get("THOR_PAGES_PUBLIC_URL") or os.environ.get("CLOUDFLARE_R2_PUBLIC_URL"),
+                        default=os.environ.get("THOR_PAGES_PUBLIC_URL"),
                         help="Public base URL of the release host (default: $THOR_PAGES_PUBLIC_URL)")
     parser.add_argument("--no-channel-page", action="store_true",
                         help="Render the attempt page and release table but leave the shared channel "
@@ -681,7 +675,7 @@ def main() -> int:
             print("::error::--summary-out is required with --summary-commit")
             return 1
         if not args.r2_base_url:
-            print("::error::--r2-base-url (or CLOUDFLARE_R2_PUBLIC_URL) is required to render the summary")
+            print("::error::--r2-base-url (or THOR_PAGES_PUBLIC_URL) is required to render the summary")
             return 1
         commit = args.summary_commit
         try:
@@ -718,7 +712,7 @@ def main() -> int:
         names: list[str] = []
     else:
         if not args.r2_base_url:
-            print("::error::--r2-base-url (or CLOUDFLARE_R2_PUBLIC_URL) is required to render the tables")
+            print("::error::--r2-base-url (or THOR_PAGES_PUBLIC_URL) is required to render the tables")
             return 1
         names = r2_object_names(archive)
         if candidate is not None:

@@ -1,51 +1,38 @@
 """GitHub Pages release transport: publish into the thor-agent-releases worktree.
 
-Fase 2 of the R2 -> GitHub migration. The public host is the GitHub Pages
-site of the ``thor726/thor-agent-releases`` repository; object keys are
-paths inside that repository, so ``put`` writes a file into a local
-checkout (``PAGES_REPO_DIR``) instead of uploading to an object store.
-Committing and pushing that checkout is a separate, explicit step
+The public host is the GitHub Pages site of the
+``thor726/thor-agent-releases`` repository; object keys are paths inside
+that repository, so ``put`` writes a file into a local checkout
+(``PAGES_REPO_DIR``) instead of uploading to an object store. Committing
+and pushing that checkout is a separate, explicit step
 (``publish_worktree`` / the ``publish`` CLI command) so callers and tests
 never touch the network implicitly.
 
-Transitional fallback: while Fase 3 workflow changes are pending, ``put``
-delegates to the R2 transport when no Pages worktree is configured but the
-legacy R2 credentials are. Callers no longer import ``scripts.releases.r2``
-directly; removing the delegation is a Fase 3 follow-up once every
-workflow sets ``PAGES_REPO_DIR``.
+This module also owns the pure release-layout helpers (object keys,
+public URLs, artifact-path validation) and the public read path
+(receipt-bound downloads from the Pages origin) that every release
+caller shares.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import http.client
+import json
 import os
 from pathlib import Path
 import re
 import shutil
 import subprocess
-
-from scripts.releases.r2 import (
-    cache_control_for,
-    channel_for_tag,
-    channel_page_key_for,
-    commit_key_for,
-    commit_page_key_for,
-    commit_prefix_for,
-    download_public_object,
-    feed_dir_for,
-    file_sha256,
-    is_full_sha,
-    public_artifact_url,
-    public_url_for,
-    read_public_receipt,
-    relative_artifact_path,
-    staging_key_for,
-)
+import time
+from typing import Callable, Iterable
+from urllib.parse import quote, urlparse
 
 __all__ = [
     "DEFAULT_PUBLIC_URL",
     "PagesChannelStore",
     "PagesScope",
+    "PublicFetchError",
     "cache_control_for",
     "channel_for_tag",
     "channel_page_key_for",
@@ -72,10 +59,241 @@ __all__ = [
 ]
 
 # The Pages site of thor726/thor-agent-releases is the production origin.
-# THOR_PAGES_PUBLIC_URL overrides it (tests, forks); the legacy
-# CLOUDFLARE_R2_PUBLIC_URL is still honored during the transition so
-# unmigrated workflows keep naming the origin they actually serve.
+# THOR_PAGES_PUBLIC_URL overrides it (tests, forks).
 DEFAULT_PUBLIC_URL = "https://thor726.github.io/thor-agent-releases"
+
+
+# ---------------------------------------------------------------------------
+# Layout helpers (pure)
+# ---------------------------------------------------------------------------
+
+def channel_for_tag(tag: str) -> str:
+    """Return the release channel encoded by a canonical tag."""
+    from thor_cli.update_channel import is_canary_tag
+
+    return "canary" if is_canary_tag(tag) else "stable"
+
+
+def staging_key_for(tag: str, filename: str) -> str:
+    return f"releases/tag/{tag}/{filename}"
+
+
+_FULL_SHA_RE = re.compile(r"[a-f0-9]{40}")
+
+
+def is_full_sha(value: str) -> bool:
+    return bool(isinstance(value, str) and _FULL_SHA_RE.fullmatch(value))
+
+
+# Windows reserved names (CPython ntpath parity). COM/LPT superscript forms
+# (COM² etc.) are reserved under NTFS namespace rules, same as the digit forms.
+_WIN_RESERVED_NAMES = frozenset(
+    ["CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"]
+    + [f"COM{i}" for i in range(1, 10)] + ["COM¹", "COM²", "COM³"]
+    + [f"LPT{i}" for i in range(1, 10)] + ["LPT¹", "LPT²", "LPT³"]
+)
+
+
+def _is_windows_reserved(value: str) -> bool:
+    """True if any path component is reserved on Windows.
+
+    Port of ntpath.isreserved() (added in Python 3.13; release CI may run
+    older system Pythons, so inline the semantics rather than depend on it).
+    """
+    for part in reversed(value.split("/")):
+        # Trailing dots and spaces are reserved.
+        if part[-1:] in (".", " ") and part not in (".", ".."):
+            return True
+        stem = part.partition(".")[0].rstrip(" ").upper()
+        if stem in _WIN_RESERVED_NAMES:
+            return True
+    return False
+
+
+def relative_artifact_path(value: str) -> str:
+    """Validate the original path before any filesystem normalization."""
+    if (not isinstance(value, str) or not value or value.startswith("/")
+            or any(part in ("", ".", "..") for part in value.split("/"))
+            or any(c in value for c in "\\:%?#") or any(ord(c) < 32 for c in value)
+            or _is_windows_reserved(value)):
+        raise ValueError("Invalid release artifact path")
+    return value
+
+
+def commit_key_for(commit: str, filename: str) -> str:
+    """Keep nested artifacts inside the exact commit namespace."""
+    return commit_prefix_for(commit) + relative_artifact_path(filename)
+
+
+def commit_prefix_for(commit: str) -> str:
+    if not is_full_sha(commit):
+        raise ValueError("Commit builds require an exact full 40-character SHA")
+    return f"releases/commit/{commit}/"
+
+
+def public_url_for(base_url: str, key: str) -> str:
+    """Public download URL of an object key (segment-wise encoded)."""
+    return f"{base_url.rstrip('/')}/{quote(key, safe='/')}"
+
+
+def channel_page_key_for(channel: str) -> str:
+    """The mutable per-channel downloads page, replaced by each release."""
+    return f"releases/{channel}/index.html"
+
+
+def commit_page_key_for(commit: str) -> str:
+    """The per-commit-build downloads page (every expected binary, built or not)."""
+    return commit_prefix_for(commit) + "index.html"
+
+
+def feed_dir_for(platform: str, channel: str) -> str:
+    return f"releases/{platform}/{channel}"
+
+
+def cache_control_for(key: str) -> str | None:
+    """APT indexes are mutable; by-hash indexes and versioned packages are not."""
+    if key.startswith("releases/channels/"):
+        return "no-store"
+    if key.startswith(("releases/channel-builds/", "releases/channel-identities/")):
+        return "public, max-age=31536000, immutable"
+    if key.endswith((".appinstaller", ".html")) or key.startswith("releases/stable/") or (key.startswith("releases/darwin/") and key.endswith("-mac.yml")):
+        return "no-store"
+    if not key.startswith("releases/termux/"):
+        return None
+    return (
+        "public, max-age=31536000, immutable"
+        if "/by-hash/" in key or "/pool/" in key
+        else "no-store"
+    )
+
+
+def stream_file(path: str, chunk_size: int = 1024 * 1024) -> Iterable[bytes]:
+    with open(path, "rb") as handle:
+        while chunk := handle.read(chunk_size):
+            yield chunk
+
+
+def file_sha256(path: str) -> str:
+    digest = hashlib.sha256()
+    for chunk in stream_file(path):
+        digest.update(chunk)
+    return digest.hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Public reads (receipt-bound downloads from the Pages origin)
+# ---------------------------------------------------------------------------
+
+class PublicFetchError(ValueError):
+    """A public-origin GET failed with an HTTP status (404 = missing object)."""
+
+    def __init__(self, method: str, path: str, status: int, body: str = ""):
+        self.method, self.path, self.status, self.body = method, path, status, body
+        super().__init__(f"Public {method} {path} -> {status}" + (f": {body[:300]}" if body else ""))
+
+
+def _connection(url: str, timeout: float) -> http.client.HTTPConnection:
+    parsed = urlparse(url)
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    if parsed.scheme == "https":
+        import ssl
+        return http.client.HTTPSConnection(
+            parsed.hostname, port, context=ssl.create_default_context(), timeout=timeout
+        )
+    return http.client.HTTPConnection(parsed.hostname, port, timeout=timeout)
+
+
+_RETRYABLE_STATUSES = {500, 502, 503, 504}
+
+
+def public_artifact_url(base: str, key: str) -> str:
+    """Public reads never carry credentials or follow redirects out of the archive."""
+    parsed = urlparse(base)
+    if (not parsed.hostname or parsed.username is not None or parsed.password is not None
+            or parsed.query or parsed.fragment or parsed.params
+            or any(c in base for c in ('%', '\\')) or any(ord(c) <= 32 for c in base)
+            or any(part in ('.', '..') for part in parsed.path.split('/'))
+            or not (parsed.scheme == 'https' or (parsed.scheme == 'http'
+                    and parsed.hostname in ('127.0.0.1', 'localhost', '::1')))):
+        raise ValueError('Invalid public artifact base URL')
+    return public_url_for(base, relative_artifact_path(key))
+
+
+def read_public_receipt(base: str, key: str) -> dict:
+    url = public_artifact_url(base, key)
+    parsed = urlparse(url)
+    conn = _connection(url, timeout=60.0)
+    try:
+        conn.request('GET', parsed.path)
+        response = conn.getresponse()
+        if response.status != 200:
+            raise PublicFetchError('GET', parsed.path, response.status)
+        # Receipts are metadata, never an unbounded binary download.
+        body = response.read(4 * 1024 * 1024 + 1)
+        if len(body) > 4 * 1024 * 1024:
+            raise ValueError('Public handoff receipt exceeds metadata limit')
+        return json.loads(body)
+    finally:
+        conn.close()
+
+
+class _TransferMismatch(ValueError):
+    """A completed download whose size or SHA256 disagrees with its receipt."""
+
+
+def download_public_object(base: str, key: str, file: Path, *, expected_size: int, expected_sha256: str) -> None:
+    _download_url(public_artifact_url(base, key), file, lambda _attempt: {},
+                  expected_size=expected_size, expected_sha256=expected_sha256)
+
+
+def _download_url(url: str, file: Path, request_headers: Callable[[int], dict[str, str]],
+                  *, expected_size: int, expected_sha256: str) -> None:
+    """Publish a download locally only after its exact receipt matches."""
+    import tempfile
+
+    if type(expected_size) is not int or expected_size < 0 or not re.fullmatch(r"[a-f0-9]{64}", expected_sha256):
+        raise ValueError("Invalid artifact size or SHA256")
+    file = Path(file)
+    file.parent.mkdir(parents=True, exist_ok=True)
+    parsed = urlparse(url)
+    for attempt in range(1, 4):
+        conn = _connection(url, timeout=600.0)
+        temporary = None
+        try:
+            conn.request("GET", parsed.path, headers=request_headers(attempt))
+            response = conn.getresponse()
+            if response.status != 200:
+                raise PublicFetchError("GET", parsed.path, response.status)
+            digest, size = hashlib.sha256(), 0
+            with tempfile.NamedTemporaryFile(dir=file.parent, prefix=f".{file.name}.", delete=False) as output:
+                temporary = Path(output.name)
+                while chunk := response.read(1024 * 1024):
+                    digest.update(chunk)
+                    size += len(chunk)
+                    if size > expected_size:
+                        raise _TransferMismatch(f"Artifact checksum mismatch: {parsed.path}")
+                    output.write(chunk)
+            if size != expected_size or digest.hexdigest() != expected_sha256:
+                raise _TransferMismatch(f"Artifact checksum mismatch: {parsed.path}")
+            temporary.replace(file)
+            return
+        except _TransferMismatch:
+            # The receipt is the authority: a body that disagrees with it is a bad transfer, so
+            # fetch again; a stored object that really differs fails the same way three times.
+            if attempt == 3:
+                raise
+        except PublicFetchError as error:
+            if error.status not in _RETRYABLE_STATUSES or attempt == 3:
+                raise
+        except (OSError, http.client.HTTPException):
+            if attempt == 3:
+                raise
+        finally:
+            conn.close()
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
+        time.sleep(float(attempt))
+
 
 _RUN_LEASE = r"[1-9][0-9]{0,19}"
 
@@ -90,8 +308,7 @@ def require_run(value: str) -> str:
 class PagesScope:
     """Disposable CI namespace as a path prefix inside the releases repo.
 
-    Mirrors the old R2 disposable scoping: ``PAGES_DISPOSABLE_RUN`` (or the
-    legacy ``R2_DISPOSABLE_RUN`` while workflows migrate) selects
+    ``PAGES_DISPOSABLE_RUN`` selects
     ``ci-disposable/<repository-id>/<run-id>/``; unset means production keys.
     """
 
@@ -104,7 +321,7 @@ class PagesScope:
 
     @classmethod
     def configured(cls, repository: str | None = None) -> "PagesScope":
-        run = os.environ.get("PAGES_DISPOSABLE_RUN") or os.environ.get("R2_DISPOSABLE_RUN", "")
+        run = os.environ.get("PAGES_DISPOSABLE_RUN", "")
         if not run:
             return cls()
         require_run(run)
@@ -145,7 +362,6 @@ def public_root_url(explicit: str | None = None) -> str:
     return public_base(
         explicit
         or os.environ.get("THOR_PAGES_PUBLIC_URL")
-        or os.environ.get("CLOUDFLARE_R2_PUBLIC_URL")
         or DEFAULT_PUBLIC_URL
     )
 
@@ -203,14 +419,6 @@ def put(
     """
     worktree = repo_dir_from_env(repo_dir)
     if worktree is None:
-        # Transitional fallback (see module docstring): unmigrated callers
-        # and tests still configured for R2 keep their transport until
-        # Fase 3 sets PAGES_REPO_DIR everywhere.
-        if os.environ.get("CLOUDFLARE_R2_ACCOUNT_ID"):
-            from scripts.releases import r2
-
-            r2.put(tag=tag, key=key, file=file, key_is_full=key_is_full, immutable=immutable)
-            return
         raise ValueError(
             "Pages publishing requires PAGES_REPO_DIR (a thor-agent-releases checkout)"
         )
@@ -258,8 +466,8 @@ def wait_public_bytes(url: str, predicate, *, tries: int | None = None,
     """Poll a public Pages URL until `predicate(body)` holds.
 
     A worktree push is not visible until the Pages deploy lands, so every
-    read-back that used to hit R2 synchronously must wait out the deploy
-    lag. Bounded: THOR_PAGES_VISIBILITY_TRIES / _DELAY_S override the
+    public read-back must wait out the deploy lag. Bounded:
+    THOR_PAGES_VISIBILITY_TRIES / _DELAY_S override the
     defaults (tests set them to 1 / 0). Raises ValueError on timeout.
     """
     import time
@@ -287,8 +495,8 @@ def wait_public_bytes(url: str, predicate, *, tries: int | None = None,
 class PagesChannelStore:
     """Channel records as files in the releases worktree, ETag = body SHA256.
 
-    Implements the same get/put/keys protocol as the old R2 store so
-    ChannelPublisher's CAS flow is unchanged: ``put`` with an etag only
+    Implements the get/put/keys protocol ChannelPublisher's CAS flow
+    expects: ``put`` with an etag only
     lands when the current bytes hash to it, and ``put`` without one is
     create-only (identical bytes are an idempotent retry).
     """
@@ -349,7 +557,7 @@ class PagesChannelStore:
 
 
 def main(argv: list[str] | None = None) -> None:
-    """CLI mirroring the old r2 put surface for Fase 3 workflow swaps."""
+    """CLI: put one object, publish the worktree, or finalize a macOS feed."""
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__)

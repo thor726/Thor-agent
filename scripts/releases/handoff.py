@@ -1,9 +1,9 @@
 """Transfer immutable release files through the GitHub archive without publishing a feed.
 
-Fase 3: the transport is GitHub Release assets (scripts.releases.gh_assets)
-when THOR_ARCHIVE_RELEASE is configured; receipts, keys and validation are
-unchanged from the R2 era. Without it, the legacy R2 transport remains as
-the transitional fallback for unmigrated workflows and tests.
+The transport is GitHub Release assets (scripts.releases.gh_assets),
+selected by THOR_ARCHIVE_RELEASE; receipts, keys and validation are
+unchanged from the earlier object-store era. Fetches may instead read
+from the public Pages origin when a public base is given.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import re
 import tempfile
 from pathlib import Path, PurePosixPath
 
-from scripts.releases import gh_assets, pages, r2
+from scripts.releases import gh_assets, pages
 from scripts.releases.semver import is_release_version
 
 
@@ -126,23 +126,25 @@ def _prefix(receipt: dict) -> str:
             else pages.commit_prefix_for(receipt["commit"]))
 
 
-def _use_archive() -> bool:
-    return bool(os.environ.get("THOR_ARCHIVE_RELEASE"))
-
-
 def _put(key: str, file: str, tag: str) -> None:
-    if _use_archive():
-        gh_assets.put(key, file, immutable=True)
-    else:
-        r2.put(tag=tag, key=key, file=file, key_is_full=True, immutable=True)
+    # Without THOR_ARCHIVE_RELEASE, gh_assets raises ArchiveError via
+    # release_tag() — a clear configuration error, never a silent fallback.
+    gh_assets.put(key, file, immutable=True)
 
 
 def _get_receipt_body(key: str) -> bytes | None:
-    if _use_archive():
-        return gh_assets.get_bytes(key)
-    creds, base, bucket = r2.credentials()
-    text = r2.get_object(creds, base, bucket, key, r2.amz_timestamp())
-    return text.encode() if text is not None else None
+    return gh_assets.get_bytes(key)
+
+
+def _missing_receipt(name: str, kind: str, err: Exception) -> MissingReceipt:
+    """Convert a transport read failure to MissingReceipt, except when the
+    archive transport is not configured at all (that ArchiveError is the
+    clear configuration error callers must see)."""
+    if isinstance(err, gh_assets.ArchiveError) and not os.environ.get("THOR_ARCHIVE_RELEASE"):
+        raise err
+    if isinstance(err, pages.PublicFetchError) and err.status != 404:
+        raise err
+    return MissingReceipt(f"Missing {kind} handoff: {name}")
 
 
 def stage_channel_build(request: dict, name: str, root: Path, includes: list[str]) -> dict:
@@ -166,10 +168,8 @@ def read_channel_receipt(request: dict, name: str, *, public_base: str | None = 
             if body is None:
                 raise MissingReceipt(f"Missing channel handoff: {name}")
             receipt = json.loads(body)
-    except (gh_assets.ArchiveError, r2.R2RequestError) as err:
-        if isinstance(err, r2.R2RequestError) and err.status != 404:
-            raise
-        raise MissingReceipt(f"Missing channel handoff: {name}") from err
+    except (gh_assets.ArchiveError, pages.PublicFetchError) as err:
+        raise _missing_receipt(name, "channel", err) from err
     validate_channel_receipt(receipt, request, name)
     return receipt
 
@@ -236,10 +236,8 @@ def read_commit_receipt(commit: str, name: str, *, public_base: str | None = Non
             if body is None:
                 raise MissingReceipt(f"Missing commit handoff: {name}")
             receipt = json.loads(body)
-    except (gh_assets.ArchiveError, r2.R2RequestError) as err:
-        if isinstance(err, r2.R2RequestError) and err.status != 404:
-            raise
-        raise MissingReceipt(f"Missing commit handoff: {name}") from err
+    except (gh_assets.ArchiveError, pages.PublicFetchError) as err:
+        raise _missing_receipt(name, "commit", err) from err
     validate_commit_receipt(receipt, commit, name)
     return receipt
 
@@ -281,23 +279,18 @@ def _fetch_receipts(receipts: list[dict], root: Path,
     if not selected and require_files:
         raise ValueError("No files selected from release handoff")
     root.mkdir(parents=True, exist_ok=True)
-    use_archive = public_base is None
     from scripts.releases.progress import log
 
     total = sum(row["size"] for row, _key in selected.values())
     log(f"Downloading {len(selected)} receipt-bound files ({total / 1e9:.1f} GB)")
     for number, (row, key) in enumerate(selected.values(), start=1):
         log(f"  [{number}/{len(selected)}] {key} ({row['size'] / 1e6:.0f} MB)")
-        if use_archive and _use_archive():
+        if public_base is None:
+            # Without THOR_ARCHIVE_RELEASE, gh_assets raises ArchiveError
+            # via release_tag() — a clear configuration error.
             gh_assets.download(key, root / row["path"],
                                expected_size=row["size"], expected_sha256=row["sha256"])
-        elif use_archive:
-            creds, base, bucket = r2.credentials()
-            r2.download_object(creds, base, bucket, key,
-                               root / row["path"], r2.amz_timestamp(),
-                               expected_size=row["size"], expected_sha256=row["sha256"])
         else:
-            assert public_base is not None
             pages.download_public_object(public_base, key, root / row["path"],
                                       expected_size=row["size"], expected_sha256=row["sha256"])
     for receipt in receipts:
