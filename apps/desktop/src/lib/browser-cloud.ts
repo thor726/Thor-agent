@@ -28,11 +28,11 @@ export function createBrowserCloudBridge({
     const { providers } = await api<{
       providers: Array<{ id: string; status: { logged_in?: boolean; source_label?: string | null } }>
     }>({ path: '/api/providers/oauth' })
-    const thor = providers.find((p) => p.id === 'thor')
+
+    const thor = providers.find(p => p.id === 'thor')
+
     const portalUrl =
-      thor?.status.source_label && thor.status.source_label.startsWith('http')
-        ? thor.status.source_label
-        : ''
+      thor?.status.source_label && thor.status.source_label.startsWith('http') ? thor.status.source_label : ''
 
     return { portalBaseUrl: portalUrl, signedIn: Boolean(thor?.status.logged_in) }
   }

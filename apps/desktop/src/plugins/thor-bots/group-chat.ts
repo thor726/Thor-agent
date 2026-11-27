@@ -12,9 +12,9 @@
 import { atom, host, randomUuid } from '@thor/plugin-sdk'
 
 import { $botMeta, $lastRoster, botRosterKey } from './data'
+import { durableGroupChatRoom } from './group-chat-record'
 import type { GroupEngine } from './group-engine'
 import { gatewayGroupEngine, gatewayGroupIdentityConflicts, stickyGroupEngine } from './group-engine'
-import { durableGroupChatRoom } from './group-chat-record'
 import { groupMemberReferencesConnection, markOrphanedGroupMemberDescriptor } from './hygiene'
 import { displayName } from './labels'
 import { botRosterMeta } from './routing'
