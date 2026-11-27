@@ -3,12 +3,12 @@ import { useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { ErrorBanner } from '@/components/ui/error-state'
-import { installMessagingCatalogPlatform, type MessagingCatalogPlatform } from '@/thor'
 import { useI18n } from '@/i18n'
 import { Download } from '@/lib/icons'
 import { normalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
 import { notify } from '@/store/notifications'
+import { installMessagingCatalogPlatform, type MessagingCatalogPlatform } from '@/thor'
 
 import { PlatformAvatar } from './platform-icon'
 

@@ -2919,14 +2919,16 @@ export const esOverrides = {
       sectionTitle: 'Disponibles para instalar',
       badges: { official: 'Oficial', verified: 'Verificado' },
       notInstalled: 'No instalado',
-      intro: (name: string) => `${name} es un plugin del catálogo de Thor. Al instalarlo se activa y luego puedes introducir sus credenciales aquí.`,
+      intro: (name: string) =>
+        `${name} es un plugin del catálogo de Thor. Al instalarlo se activa y luego puedes introducir sus credenciales aquí.`,
       disclosure: 'Aviso:',
       install: 'Instalar',
       installing: 'Instalando…',
       installed: (name: string) => `${name} instalado`,
       installedDetail: 'Introduce sus credenciales para conectarlo.',
       installFailed: (name: string) => `No se pudo instalar ${name}`,
-      lazyOff: 'Las instalaciones automáticas de plugins están desactivadas (security.allow_lazy_installs), así que Thor no lo instala desde aquí.',
+      lazyOff:
+        'Las instalaciones automáticas de plugins están desactivadas (security.allow_lazy_installs), así que Thor no lo instala desde aquí.',
       runCommand: 'Instálalo desde una terminal:'
     },
     search: 'Buscar mensajería...',
