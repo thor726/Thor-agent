@@ -49,7 +49,7 @@ Obfuscates trigger words in the user's prompt to evade input-side safety classif
 See `scripts/parseltongue.py` for the Python implementation.
 
 ### 3. ULTRAPLINIAN — Multi-Model Racing
-Query N models in parallel via OpenRouter, score responses on quality/filteredness/speed, return the best unfiltered answer. Uses 55 models across 5 tiers (FAST/STANDARD/SMART/POWER/ULTRA).
+Query N models in parallel via OpenRouter, score responses on quality/filteredness/speed, return the best unfiltered answer. Uses 51 models across 5 tiers (FAST/STANDARD/SMART/POWER/ULTRA).
 
 See `scripts/godmode_race.py` for the implementation.
 
@@ -331,7 +331,7 @@ print(response.choices[0].message.content)
 | GPT-4/4o (OpenAI) | OG GODMODE l33t + prefill | Responds to the classic divider format |
 | Gemini (Google) | Refusal inversion + rebel persona | Gemini's refusal can be semantically inverted |
 | Grok (xAI) | Unfiltered liberated + GODMODE divider | Grok is already less filtered; light prompting works |
-| Thor (Nous) | No jailbreak needed | Already uncensored — use directly |
+| Thor 3/4 (retired) | n/a — retired | Shipped with the retired Nous provider; no longer available — race a live model instead |
 | DeepSeek | Parseltongue + multi-attempt | Input classifiers are keyword-based; obfuscation effective |
 | Llama (Meta) | Prefill + simple system prompt | Open models respond well to prefill engineering |
 
@@ -395,8 +395,8 @@ Claude Sonnet 4 is robust against all current techniques for clearly harmful con
 1. **Jailbreak prompts are perishable** — Models get updated to resist known techniques. If a template stops working, check L1B3RT4S for updated versions.
 2. **Prefill is the most reliable technique** — It doesn't depend on specific wording; it establishes a behavioral pattern. Even if the jailbreak system prompt is partially ignored, the prefill shows the model "I already complied before."
 3. **Don't over-encode** — Heavy Parseltongue (Tier 3) can make queries unintelligible to the model itself. Start with Tier 1 (light) and escalate only if refused.
-4. **ULTRAPLINIAN costs money** — Racing 55 models means 55 API calls. Use `fast` tier (10 models) for quick tests, `ultra` only when you need maximum coverage.
-5. **Thor models don't need jailbreaking** — nousresearch/thor-3-* and thor-4-* are already uncensored. Use them directly for the fastest path.
+4. **ULTRAPLINIAN costs money** — Racing 51 models means 51 API calls. Use `fast` tier (10 models) for quick tests, `ultra` only when you need maximum coverage.
+5. **Thor 3/4 models are retired** — nousresearch/thor-3-* and thor-4-* shipped with the retired Nous provider and are no longer available. Don't rely on them as an uncensored shortcut; race a live model instead.
 6. **Encoding escalation order matters** — Plain → Leetspeak → Bubble → Braille → Morse. Each level is less readable, so try the lightest encoding that works.
 7. **Prefill messages are ephemeral** — They're injected at API call time but never saved to sessions or trajectories. If Thor restarts, the prefill is re-loaded from the JSON file automatically.
 8. **System prompt vs ephemeral system prompt** — The `agent.system_prompt` in config.yaml is appended AFTER Thor's own system prompt. It doesn't replace the default prompt; it augments it. This means the jailbreak instructions coexist with Thor's normal personality.

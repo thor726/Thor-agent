@@ -73,12 +73,12 @@ describe('model visibility', () => {
     const stored = new Set([emptyProviderSentinelKey('nous')])
 
     const visible = effectiveVisibleKeys(stored, [
-      provider('nous', ['thor-3-llama-3.1-70b', 'thor-3-llama-3.1-8b']),
+      provider('nous', ['llama-3.1-70b', 'llama-3.1-8b']),
       provider('ollama', ['qwen3:latest'])
     ])
 
-    expect(visible.has(modelVisibilityKey('nous', 'thor-3-llama-3.1-70b'))).toBe(false)
-    expect(visible.has(modelVisibilityKey('nous', 'thor-3-llama-3.1-8b'))).toBe(false)
+    expect(visible.has(modelVisibilityKey('nous', 'llama-3.1-70b'))).toBe(false)
+    expect(visible.has(modelVisibilityKey('nous', 'llama-3.1-8b'))).toBe(false)
     // Sentinel itself is stripped from the result.
     expect(visible.has(emptyProviderSentinelKey('nous'))).toBe(false)
     // Other providers still get defaults.

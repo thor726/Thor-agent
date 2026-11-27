@@ -91,7 +91,7 @@ class TestThorHubParity:
     def test_tags(self, transport):
         from agent.portal_tags import thorhub_portal_tags
         kw = transport.build_kwargs(
-            model="thor-3-llama-3.1-405b",
+            model="deepseek-v4-pro",
             messages=_simple_messages(),
             tools=None,
             provider_profile=get_provider_profile("thorhub"),

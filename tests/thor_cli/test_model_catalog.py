@@ -347,7 +347,7 @@ class TestDefaultModelFromCache:
                 == "openai/gpt-5.4"
             )
             assert (
-                model_catalog.get_default_model_from_cache("nous")
+                model_catalog.get_default_model_from_cache("thor")
                 == "moonshotai/kimi-k2.6"
             )
             fetch.assert_not_called()

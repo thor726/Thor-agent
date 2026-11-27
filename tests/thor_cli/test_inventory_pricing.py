@@ -362,8 +362,8 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
     try:
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["a/model"]}],
-                current_provider="nous",
+                [{"slug": "thor", "models": ["a/model"]}],
+                current_provider="thor",
                 current_base_url=endpoint_a,
             )
         )
@@ -372,8 +372,8 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
         active_endpoint["value"] = endpoint_b
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["b/model"]}],
-                current_provider="nous",
+                [{"slug": "thor", "models": ["b/model"]}],
+                current_provider="thor",
                 current_base_url=endpoint_b,
             )
         )
@@ -383,7 +383,7 @@ def test_prewarm_endpoint_rotation_starts_a_new_worker(tmp_path, monkeypatch):
         threads[1].join(timeout=2)
         assert not threads[1].is_alive()
         assert models_pricing.get_pricing_for_provider(
-            "nous", cached_only=True
+            "thor", cached_only=True
         ) == expected[endpoint_b]
     finally:
         release_a.set()
@@ -438,7 +438,7 @@ def test_prewarm_thorhub_rotation_when_another_provider_is_current(tmp_path, mon
     try:
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["a/model"]}],
+                [{"slug": "thor", "models": ["a/model"]}],
                 current_provider="openrouter",
                 current_base_url="https://openrouter.ai/api/v1",
             )
@@ -448,7 +448,7 @@ def test_prewarm_thorhub_rotation_when_another_provider_is_current(tmp_path, mon
         active_endpoint["value"] = endpoint_b
         threads.append(
             inv._prewarm_pricing_async(
-                [{"slug": "nous", "models": ["b/model"]}],
+                [{"slug": "thor", "models": ["b/model"]}],
                 current_provider="openrouter",
                 current_base_url="https://openrouter.ai/api/v1",
             )
@@ -459,7 +459,7 @@ def test_prewarm_thorhub_rotation_when_another_provider_is_current(tmp_path, mon
         threads[1].join(timeout=2)
         assert not threads[1].is_alive()
         assert models_pricing.get_pricing_for_provider(
-            "nous", cached_only=True
+            "thor", cached_only=True
         ) == expected[endpoint_b]
     finally:
         release_a.set()
@@ -644,7 +644,7 @@ def test_cached_only_dynamic_pricing_is_profile_scoped(tmp_path, monkeypatch):
         active_endpoint["value"] = endpoint
         try:
             return models_pricing.get_pricing_for_provider(
-                "nous", cached_only=cached_only
+                "thor", cached_only=cached_only
             )
         finally:
             reset_thor_home_override(token)

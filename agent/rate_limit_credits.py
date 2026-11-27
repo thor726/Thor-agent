@@ -61,7 +61,8 @@ class RateLimitCreditsMixin:
     def _capture_nous_model_switch(self, http_response: Any) -> None:
         """Retired with the Nous free tier: the Thor gateway's ``x-nous-model-switch`` header is no
         longer captured, so no model switch is ever recorded here. Kept (a no-op) because the
-        response-header capture calls it; the credits path it fed is Fase 3's."""
+        response-header capture calls it; the header parser it fed is kept for the generic
+        rate-limit machinery (see ``agent.credits_tracker``)."""
         return
 
     def _capture_anthropic_response_headers(self, http_response: Any) -> None:

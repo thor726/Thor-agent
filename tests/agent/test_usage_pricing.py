@@ -357,6 +357,19 @@ def test_google_and_vertex_routes_share_official_pricing_snapshot():
     assert all(route.billing_mode == "official_docs_snapshot" for route in routes)
 
 
+def test_retired_nous_route_resolves_unknown():
+    """The retired Nous provider (and its inference host) no longer has a billing
+    route: both fall through to ``unknown`` instead of the official-models-api route.
+    """
+    routes = (
+        resolve_billing_route("gpt-5", provider="nous"),
+        resolve_billing_route(
+            "gpt-5", provider="custom", base_url="https://inference-api.thor-agent.local/v1"
+        ),
+    )
+    assert all(route.billing_mode == "unknown" for route in routes)
+
+
 def test_vertex_default_model_estimates_cached_usage(monkeypatch):
     """The bundled Vertex profile's default auxiliary model must fall back to
     Google snapshot pricing when the OpenAI-compatible endpoint has no model

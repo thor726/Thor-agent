@@ -43,9 +43,9 @@ def _make_agent(
         patch("agent.process_bootstrap.OpenAI"),
         # Unit tests must not probe live endpoints. The compressor resolves
         # context length lazily via a real network call against base_url; for
-        # reachable hosts (the nous portal case) the endpoint's answer for the
-        # empty test model (32K) trips agent_init's 64K floor and fails the
-        # test on network behavior, not code under test.
+        # reachable hosts the endpoint's answer for the empty test model (32K)
+        # trips agent_init's 64K floor and fails the test on network behavior,
+        # not code under test.
         patch(
             "agent.context_compressor.get_model_context_length",
             return_value=200_000,

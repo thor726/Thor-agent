@@ -864,8 +864,7 @@ def rewarm_pricing_before_depleted_notice(agent) -> bool:
     shows), or a fetch already failed and the cache is still refusing to dial. May raise; the notice
     path that calls it catches."""
     base_url = getattr(agent, "base_url", "") or ""
-    # Legacy "nous" provider id still routes to ThorHub (migration bridge).
-    if getattr(agent, "provider", "") not in {"thor", "thorhub", "nous"} or not base_url:
+    if getattr(agent, "provider", "") not in {"thor", "thorhub"} or not base_url:
         return False
     from thor_cli.models_pricing import peek_cached_pricing, pricing_fetch_suppressed
 
@@ -891,7 +890,7 @@ def seed_credits_at_session_start(agent) -> bool:
     warnings show at session OPEN (TUI/desktop "ready" and plain-CLI first-turn setup). Idempotent once a seed
     or real header populated _credits_state. Returns True iff it seeded this call. Never raises."""
     try:
-        if getattr(agent, "provider", "") not in {"thor", "thorhub", "nous"} or getattr(agent, "_credits_state", None) is not None:
+        if getattr(agent, "provider", "") not in {"thor", "thorhub"} or getattr(agent, "_credits_state", None) is not None:
             return False
         try:
             fixture = dev_fixture_credits_state()

@@ -639,23 +639,22 @@ class TestQwenAlibabaFamily:
 
 
 
-    def test_qwen_on_nous_portal_caches_with_envelope_layout(self):
-        # Nous Portal Qwen takes the same envelope-layout cache_control
-        # path as Portal Claude. Without this, Portal-routed qwen3.6-plus
-        # falls through to the alibaba-family check (which only matches
-        # provider=opencode/alibaba) and serves 0% cache hits.
+    def test_qwen_on_retired_portal_host_gets_no_cache_markers(self):
+        # The Portal host is retired: Qwen routed there no longer gets the
+        # envelope-layout cache_control grant (only OpenRouter and the
+        # alibaba-family providers do now), so it serves no cache hits.
         agent = _make_agent(
             provider="nous",
             base_url="https://inference-api.thor-agent.local/v1",
             api_mode="chat_completions",
             model="qwen3.6-plus",
         )
-        assert agent._anthropic_prompt_cache_policy() == (True, False)
+        assert agent._anthropic_prompt_cache_policy() == (False, False)
 
 
-    def test_non_qwen_non_claude_on_nous_portal_does_not_cache(self):
-        # Portal scope is narrow: Claude OR Qwen only. Other models
-        # routed through Portal keep their existing fall-through behavior.
+    def test_non_qwen_non_claude_on_retired_portal_host_does_not_cache(self):
+        # The retired Portal host grants nothing: other models routed there
+        # keep their existing fall-through behavior.
         agent = _make_agent(
             provider="nous",
             base_url="https://inference-api.thor-agent.local/v1",
@@ -974,26 +973,26 @@ class TestLiteLLMOpenAIWire:
         assert inner, "the OpenAI-wire grant must still place real breakpoints"
 
 
-class TestNousPortalAnthropicWire:
-    def test_portal_claude_on_the_messages_wire_uses_the_native_layout(self):
+class TestClaudeAnthropicWireLayout:
+    def test_claude_on_the_messages_wire_uses_the_native_layout(self):
         agent = _make_agent(
-            provider="nous",
-            base_url="https://inference-api.thor-agent.local/v1",
+            provider="custom",
+            base_url="https://custom.example.invalid/v1",
             api_mode="anthropic_messages",
             model="anthropic/claude-opus-4.8",
         )
         assert agent._anthropic_prompt_cache_policy() == (True, True)
 
-    def test_portal_claude_on_chat_completions_keeps_the_envelope_layout(self):
-        """The wire, not the provider, picks the layout — Portal models still on
-        /chat/completions must not be flipped to inner-block markers."""
+    def test_claude_on_retired_portal_host_gets_no_envelope_layout(self):
+        """The wire, not the provider, picks the layout — and the retired Portal
+        host no longer grants the envelope layout on /chat/completions."""
         agent = _make_agent(
             provider="nous",
             base_url="https://inference-api.thor-agent.local/v1",
             api_mode="chat_completions",
             model="anthropic/claude-opus-4.8",
         )
-        assert agent._anthropic_prompt_cache_policy() == (True, False)
+        assert agent._anthropic_prompt_cache_policy() == (False, False)
 
 
 class TestExplicitOverrides:

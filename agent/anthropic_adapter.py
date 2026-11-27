@@ -869,7 +869,7 @@ def create_anthropic_message(
     turn path and fall back to ``create()`` only for providers that explicitly don't support
     streaming (restricted Bedrock roles). Both callbacks are best-effort and fire only on the
     streaming path: ``on_stream_event(event)`` lets liveness watchdogs see forward progress;
-    ``on_response(httpx_response)`` exposes headers the parsed Message drops (Thor Portal's
+    ``on_response(httpx_response)`` exposes headers the parsed Message drops (ThorHub's
     ``x-nous-credits-*`` balance family)."""
     sanitize_anthropic_kwargs(api_kwargs, log_prefix=log_prefix)
     messages_api = getattr(client, "messages", None)

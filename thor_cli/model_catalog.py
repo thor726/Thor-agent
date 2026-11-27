@@ -376,7 +376,7 @@ def get_default_model_from_cache(provider: str) -> str | None:
     user never picked one) — in-process then disk cache only, never a fetch."""
     from thor_cli.models import normalize_provider  # lazy: models imports this module
 
-    provider = normalize_provider(provider)  # legacy "nous" resolves to "thor"
+    provider = normalize_provider(provider)
     cached = _in_process_catalog()
     found = _default_model_from_block(_block_of(cached, provider)) if cached is not None else None
     if found:

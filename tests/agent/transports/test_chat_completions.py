@@ -682,7 +682,7 @@ class TestChatCompletionsCacheStats:
 
 
 class TestChatCompletionsGeminiNativeExtraBodyStrip:
-    """Profile extra_body (e.g. Nous portal tags) must not reach a native
+    """Profile extra_body (e.g. ThorHub tags) must not reach a native
     Gemini endpoint — Google's REST API rejects unknown fields with HTTP 400.
     """
 
@@ -703,13 +703,13 @@ class TestChatCompletionsGeminiNativeExtraBodyStrip:
         eb = kw.get("extra_body")
         assert not eb or "tags" not in eb
 
-    def test_tags_preserved_on_nous_endpoint(self, transport):
+    def test_tags_preserved_on_thorhub_endpoint(self, transport):
         kw = transport.build_kwargs(
-            "thor-3-405b",
+            "deepseek-v4-pro",
             [{"role": "user", "content": "hi"}],
             None,
             provider_profile=self._thorhub_profile(),
-            base_url="https://inference.thor-agent.local/v1",
+            base_url="https://llm.thormarket.site/v1",
             session_id="s1",
             max_tokens=None,
         )

@@ -102,17 +102,18 @@ def test_cli_setup_flow_and_gui_picker_agree(monkeypatch):
     _stub_portal(monkeypatch, free_tier=False, pricing=pricing)
     monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: None)
 
-    cli = model_setup_flows._thorhub_model_catalog(False, "", ["thor/a"], pricing)
+    cli = model_setup_flows._thorhub_model_catalog("", ["thor/a"], pricing)
     assert cli is not None
     assert cli[0] == msp._thorhub_picker_model_ids({"thor": ["thor/a"]}, False)
 
 
-def _login_picker_ids(monkeypatch, *, free_tier: bool, pricing: dict, allowed=None) -> list:
+def _login_picker_ids(monkeypatch, *, pricing: dict, allowed=None) -> list:
     """Model ids the post-login picker (``thor auth add thor``) offers: the same
     ThorHub catalog ``thor model`` and the GUI/in-chat picker list."""
-    _stub_portal(monkeypatch, free_tier=free_tier, pricing=pricing, allowed=allowed)
+    monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider, **kw: pricing)
+    monkeypatch.setattr(mp, "thorhub_policy_allowed_ids", lambda **kw: allowed)
     monkeypatch.setattr("thor_cli.models.get_curated_thorhub_model_ids", lambda *a, **kw: ["curated/only"])
-    result = model_setup_flows._thorhub_model_catalog(free_tier, "", ["curated/only"], pricing)
+    result = model_setup_flows._thorhub_model_catalog("", ["curated/only"], pricing)
     if result is None:
         return []
     return list(result[0]) + list(result[2])  # selectable, then greyed-out
@@ -121,26 +122,20 @@ def _login_picker_ids(monkeypatch, *, free_tier: bool, pricing: dict, allowed=No
 def test_post_login_picker_paid_tier_shows_on_sale_model(monkeypatch):
     """The sign-in picker applies the same on-sale union as ``thor model`` (review on #121906)."""
     pricing = {"curated/only": dict(_LIST), "vendor/sale": _sale(80)}
-    assert _login_picker_ids(monkeypatch, free_tier=False, pricing=pricing) == ["curated/only", "vendor/sale"]
-
-
-def test_post_login_picker_free_tier_does_not_list_paid_sales(monkeypatch):
-    """Not even greyed out: free accounts get freeRecommendedModels, as in the other pickers."""
-    pricing = {"curated/only": {"prompt": "0", "completion": "0"}, "vendor/sale": _sale(80)}
-    assert "vendor/sale" not in _login_picker_ids(monkeypatch, free_tier=True, pricing=pricing)
+    assert _login_picker_ids(monkeypatch, pricing=pricing) == ["curated/only", "vendor/sale"]
 
 
 def test_post_login_picker_org_policy_still_narrows_on_sale_models(monkeypatch):
     pricing = {"curated/only": dict(_LIST), "vendor/sale": _sale(80)}
-    ids = _login_picker_ids(monkeypatch, free_tier=False, pricing=pricing, allowed={"curated/only"})
+    ids = _login_picker_ids(monkeypatch, pricing=pricing, allowed={"curated/only"})
     assert ids == ["curated/only"]
 
 
 def test_all_three_paid_pickers_agree(monkeypatch):
     """Sign-in picker, ``thor model`` and the GUI/in-chat picker list the same paid ThorHub models."""
     pricing = {"curated/only": dict(_LIST), "sale/x": _sale(80), "sale/y": _sale(30)}
-    login = _login_picker_ids(monkeypatch, free_tier=False, pricing=pricing)
-    cli = model_setup_flows._thorhub_model_catalog(False, "", ["curated/only"], pricing)
+    login = _login_picker_ids(monkeypatch, pricing=pricing)
+    cli = model_setup_flows._thorhub_model_catalog("", ["curated/only"], pricing)
     gui = msp._thorhub_picker_model_ids({"thor": ["curated/only"]}, False)
     assert cli is not None
     assert login == cli[0] == gui == ["curated/only", "sale/x", "sale/y"]

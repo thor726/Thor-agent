@@ -344,19 +344,19 @@ class TestBuildApiKwargsAIGateway:
 
 
 
-class TestBuildApiKwargsNousPortal:
-    def test_includes_nous_product_tags(self, monkeypatch):
-        from agent.portal_tags import nous_portal_tags
+class TestBuildApiKwargsThorHub:
+    def test_includes_thorhub_product_tags(self, monkeypatch):
+        from agent.portal_tags import thorhub_portal_tags
         agent = _make_agent(
             monkeypatch,
-            "nous",
-            base_url="https://inference-api.thor-agent.local/v1",
-            model="gpt-5",
+            "thor",
+            base_url="https://llm.thormarket.site/v1",
+            model="deepseek-v4-pro",
         )
         messages = [{"role": "user", "content": "hi"}]
         kwargs = agent._build_api_kwargs(messages)
         extra = kwargs.get("extra_body", {})
-        assert extra.get("tags") == nous_portal_tags(session_id=agent.session_id)
+        assert extra.get("tags") == thorhub_portal_tags(session_id=agent.session_id)
 
     @pytest.mark.parametrize("data_use,provider", [
         (None, None),
