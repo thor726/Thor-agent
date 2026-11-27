@@ -1,6 +1,5 @@
 import type {
   MessagingCatalogInstallResponse,
-  MessagingCatalogPlatform,
   MessagingPlatformsResponse,
   MessagingPlatformTestResponse,
   MessagingPlatformUpdate,

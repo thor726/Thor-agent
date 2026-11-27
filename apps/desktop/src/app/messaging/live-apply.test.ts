@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import type { MessagingPlatformUpdateResponse } from '@/api/messaging'
-import {
-  appliedLive,
-  needsCredentials,
-  optimisticToggleState,
-  restartPendingAfter,
-  restartReason
-} from './live-apply'
+
+import { appliedLive, needsCredentials, optimisticToggleState, restartPendingAfter, restartReason } from './live-apply'
 
 function result(overrides: Partial<MessagingPlatformUpdateResponse> = {}): MessagingPlatformUpdateResponse {
   return { ok: true, platform: 'telegram', ...overrides }
@@ -41,9 +36,7 @@ describe('restartPendingAfter', () => {
   it('clears a platform the gateway applied and keeps one it could not', () => {
     const pending = new Set(['telegram'])
     expect(restartPendingAfter(pending, 'telegram', result({ live: { applied: true } }))).toEqual(new Set())
-    expect(restartPendingAfter(new Set(), 'slack', result({ live: { applied: false } }))).toEqual(
-      new Set(['slack'])
-    )
+    expect(restartPendingAfter(new Set(), 'slack', result({ live: { applied: false } }))).toEqual(new Set(['slack']))
   })
 })
 

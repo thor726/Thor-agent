@@ -26,7 +26,7 @@ function coldState(): DesktopOnboardingState {
     requested: false,
     firstRunSkipped: false,
     manual: false,
-    localEndpoint: false,
+    localEndpoint: false
   }
 }
 

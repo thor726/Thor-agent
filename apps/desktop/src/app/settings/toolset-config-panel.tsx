@@ -103,11 +103,7 @@ function providerStatus(provider: ToolProvider, envState: Record<string, boolean
  * "Thor Subscription" row and the BYOK Firecrawl rows resolve to the same
  * backend name, so the server's `*_via_thorhub` flag decides which one is lit.
  */
-function capabilityServedBy(
-  provider: ToolProvider,
-  backend: null | string | undefined,
-  viaThorHub?: boolean
-): boolean {
+function capabilityServedBy(provider: ToolProvider, backend: null | string | undefined, viaThorHub?: boolean): boolean {
   if (provider.managed_thorhub_feature) {
     return Boolean(viaThorHub)
   }

@@ -3,8 +3,8 @@
  * <form>: its Open and Dismiss buttons must never act as Send for whatever draft is typed.
  */
 
-import type * as ThorSdk from '@thor/plugin-sdk'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import type * as ThorSdk from '@thor/plugin-sdk'
 import { afterEach, expect, it, vi } from 'vitest'
 
 import { translateBotsIn } from './i18n-test-helper'

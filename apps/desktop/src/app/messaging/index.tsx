@@ -192,11 +192,13 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
   const [statusFilter, setStatusFilter] = useState<'all' | StatusTone>('all')
   const [refreshing, setRefreshing] = useState(false)
   const [saving, setSaving] = useState<string | null>(null)
+
   const platformIds = useMemo(() => {
     const catalogIds = catalogRowsWithKept(available, keptCatalog).map(catalogRowId)
 
     return [...(platforms?.map(p => p.id) ?? []), ...new Set(catalogIds)]
   }, [available, keptCatalog, platforms])
+
   const [selectedId, setSelectedId] = useRouteEnumParam('platform', platformIds, platformIds[0] ?? '')
 
   const restartGatewayNow = useCallback(async () => {
@@ -361,8 +363,7 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
   }, [changeEventsAvailable, refreshAll])
 
   const selectedCatalog = useMemo(
-    () =>
-      catalogRowsWithKept(available, keptCatalog).find(row => catalogRowId(row) === selectedId) ?? null,
+    () => catalogRowsWithKept(available, keptCatalog).find(row => catalogRowId(row) === selectedId) ?? null,
     [available, keptCatalog, selectedId]
   )
 
@@ -711,11 +712,7 @@ export function MessagingView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
                   </Alert>
                 )}
                 {selectedCatalog && (
-                  <CatalogPlatformDetail
-                    {...catalogInstall}
-                    row={selectedCatalog}
-                    scopeProfile={scopeProfile}
-                  />
+                  <CatalogPlatformDetail {...catalogInstall} row={selectedCatalog} scopeProfile={scopeProfile} />
                 )}
                 {selected && (
                   <PlatformDetail

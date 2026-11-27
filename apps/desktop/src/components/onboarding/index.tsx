@@ -27,7 +27,6 @@ import {
   refreshOnboarding,
   saveOnboardingApiKey,
   setOnboardingMode,
-  startManualOnboarding,
   startProviderOAuth
 } from '@/store/onboarding'
 import { $onboardingSurfaces, onboardingSurfaceActive } from '@/store/onboarding-presence'

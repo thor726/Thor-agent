@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 import type { WritableAtom } from 'nanostores'
 import { isValidElement, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { group } from '@/components/pane-shell/tree/model'
 import { $layoutTree, noteActiveTreeGroup } from '@/components/pane-shell/tree/store'
@@ -22,7 +22,7 @@ import {
 } from '@/store/session'
 import { $focusedTreePaneId as $focusedTreePaneIdMock } from '@/store/session-focus'
 import { $sessionStates, $sessionTiles } from '@/store/session-states'
-import { $statusbarVisible, setStatusbarItemVisible } from '@/store/statusbar-prefs'
+import { setStatusbarItemVisible } from '@/store/statusbar-prefs'
 import { $desktopVersion, $updateStatus } from '@/store/updates'
 import type { ContextBreakdown, UsageStats } from '@/types/thor'
 
