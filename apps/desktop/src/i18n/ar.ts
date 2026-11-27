@@ -147,7 +147,7 @@ export const arOverrides = {
   desktop: arChat.desktop,
   errors: arDiagnostics.errors,
   tips: arChat.tips,
-  ui: arCommon.ui,
+  ui: arCommon.ui
 } satisfies TranslationOverrides
 
 export const ar = defineLocale(arOverrides)

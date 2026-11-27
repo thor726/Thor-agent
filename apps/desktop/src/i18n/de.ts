@@ -2928,14 +2928,16 @@ export const deOverrides = {
       sectionTitle: 'Zum Installieren verfügbar',
       badges: { official: 'Offiziell', verified: 'Geprüft' },
       notInstalled: 'Nicht installiert',
-      intro: (name: string) => `${name} ist ein Plugin aus dem Thor-Katalog. Die Installation aktiviert es, danach kannst du hier die Zugangsdaten eingeben.`,
+      intro: (name: string) =>
+        `${name} ist ein Plugin aus dem Thor-Katalog. Die Installation aktiviert es, danach kannst du hier die Zugangsdaten eingeben.`,
       disclosure: 'Offenlegung:',
       install: 'Installieren',
       installing: 'Wird installiert…',
       installed: (name: string) => `${name} installiert`,
       installedDetail: 'Gib die Zugangsdaten ein, um es zu verbinden.',
       installFailed: (name: string) => `${name} konnte nicht installiert werden`,
-      lazyOff: 'Automatische Plugin-Installationen sind aus (security.allow_lazy_installs), daher installiert Thor es nicht von hier.',
+      lazyOff:
+        'Automatische Plugin-Installationen sind aus (security.allow_lazy_installs), daher installiert Thor es nicht von hier.',
       runCommand: 'Im Terminal installieren:'
     },
     search: 'Messaging durchsuchen...',

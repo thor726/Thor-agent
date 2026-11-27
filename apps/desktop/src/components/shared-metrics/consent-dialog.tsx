@@ -68,10 +68,7 @@ export function SharedMetricsConsentDialog({ enabled, profile, requestGateway }:
   // Never over the provider picker, onboarding or a tour on screen:
   // the question belongs to the moment after setup.
   const onboardingSettled =
-    (onboarding.configured === true || onboarding.firstRunSkipped) &&
-    !onboarding.manual &&
-    surfaceClear &&
-    !tourActive
+    (onboarding.configured === true || onboarding.firstRunSkipped) && !onboarding.manual && surfaceClear && !tourActive
 
   const ready = enabled && onboardingSettled
 

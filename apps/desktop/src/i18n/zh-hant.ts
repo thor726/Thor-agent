@@ -210,7 +210,7 @@ export const zhHantOverrides = {
   desktop: zhHantChat.desktop,
   errors: zhHantDiagnostics.errors,
   tips: zhHantChat.tips,
-  ui: zhHantCommon.ui,
+  ui: zhHantCommon.ui
 } satisfies TranslationOverrides
 
 export const zhHant = defineLocale(zhHantOverrides)
