@@ -11,7 +11,6 @@ import { triggerHaptic } from '@/lib/haptics'
 import { billingCtaLabel, clearBillingBlock, runBillingRecovery, setBillingBlock } from '@/store/billing-block'
 import { clearSettledClarifyRequest } from '@/store/clarify'
 import { setSessionCompacting } from '@/store/compaction'
-import { noteFreeTierTurnComplete } from '@/store/free-tier-sign-in'
 import { notify } from '@/store/notifications'
 import { continueReplyPause, endContinuedReplyPause, markReplyPaused } from '@/store/paused-replies'
 import { flashPetActivity, markPetUnread, setPetActivity } from '@/store/pet'
@@ -465,10 +464,6 @@ export function handleMessageStreamEvent(ctx: GatewayEventContext): boolean {
 
     if (payload?.status === 'interrupted' && payload.paused === true) {
       markReplyPaused(chatOf(ctx, sessionId))
-    }
-
-    if (payload?.status === 'complete') {
-      noteFreeTierTurnComplete()
     }
 
     // Structured billing wall forwarded by the gateway (out of credits /

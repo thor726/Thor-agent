@@ -211,14 +211,6 @@ export const zhHantOverrides = {
   errors: zhHantDiagnostics.errors,
   tips: zhHantChat.tips,
   ui: zhHantCommon.ui,
-  freeTier: {
-    offer: {
-      heading: '繼續使用 Thor',
-      body: '你正在使用免費額度。繼續使用 Thor 的話，你會開始遇到限制。登入免費的 Thor 帳戶，即可獲得更多額度。',
-      signIn: '登入',
-      notNow: '暫不'
-    }
-  }
 } satisfies TranslationOverrides
 
 export const zhHant = defineLocale(zhHantOverrides)

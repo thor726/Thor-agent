@@ -15,7 +15,7 @@ export const arDiagnostics = {
     doneDescription: 'تم رفع الحزمة بشكل خاص. شارك الرابط أدناه في محادثة الدعم لكي يتمكن الفريق من رؤية سجلاتك.',
     failedTitle: 'فشل الرفع',
     failedHint:
-      'يمكنك أيضاً تشغيل `thor debug share --nous` من الطرفية، أو `thor debug share --local` لعرض التقرير دون رفعه.',
+      'يمكنك أيضاً تشغيل `thor debug share --internal` من الطرفية، أو `thor debug share --local` لعرض التقرير دون رفعه.',
     handoffLead: 'تابع النقاش في:',
     links: {
       github: 'GitHub Issues',

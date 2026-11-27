@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { HandoffResult } from '@/components/free-tier/sign-in-dialog'
 import { ModelPickerDialog } from '@/components/model-picker'
 import { Button } from '@/components/ui/button'
 import { ErrorIcon } from '@/components/ui/error-state'
@@ -364,8 +363,8 @@ function ConfirmingModelPanel({
   )
 }
 
-/** Which account the sign-in landed on and what moved: the free-tier result's own lines. */
-function SignedInLines({ leaving, signedIn: { email, handoff } }: { leaving: boolean; signedIn: OnboardingSignedIn }) {
+/** Which account the sign-in landed on. */
+function SignedInLines({ leaving, signedIn: { email } }: { leaving: boolean; signedIn: OnboardingSignedIn }) {
   const { t } = useI18n()
 
   return (
@@ -375,12 +374,7 @@ function SignedInLines({ leaving, signedIn: { email, handoff } }: { leaving: boo
         leaving ? 'opacity-0 saturate-0' : 'opacity-100 saturate-100'
       )}
     >
-      {email ? (
-        <p className="text-sm text-muted-foreground">
-          {t.freeTier.signedInAsLabel} <span className="font-medium text-foreground">{email}</span>
-        </p>
-      ) : null}
-      {handoff ? <HandoffResult handoff={handoff} /> : null}
+      {email ? <p className="text-sm text-muted-foreground">{email}</p> : null}
     </div>
   )
 }

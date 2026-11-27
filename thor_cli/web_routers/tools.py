@@ -502,8 +502,8 @@ async def select_toolset_provider(
 
     ``web`` only: ``capability`` ('search' | 'extract') writes
     ``web.<capability>_backend`` (the override the dispatchers resolve first);
-    omitted -> legacy ``web.backend``.  Managed Thor rows report Portal
-    entitlement (``needs_nous_auth`` + ``feature``): the GUI has no inline
+    omitted -> legacy ``web.backend``.  Managed ThorHub rows report ThorHub
+    entitlement (``needs_thorhub_auth`` + ``feature``): the GUI has no inline
     login, so an unentitled selection would write config and never activate.
     """
     from thor_cli.tools_config import apply_provider_selection, web_provider_capabilities
@@ -540,7 +540,7 @@ async def select_toolset_provider(
                     if body.capability not in web_provider_capabilities(backend):
                         raise _bad_request(f"{body.provider} does not support {body.capability}")
                     # The managed row's web_backend names the vendor serving it ("firecrawl"); writing that
-                    # would read as the user's OWN Firecrawl key. Its pin is "nous" (gateway route).
+                    # would read as the user's OWN Firecrawl key. Its pin is the ThorHub gateway route.
                     from tools.tool_backend_helpers import MANAGED_PROVIDER
 
                     _dict_section(config, "web")[f"{body.capability}_backend"] = (
@@ -555,8 +555,8 @@ async def select_toolset_provider(
                 if body.capability is not None:
                     response["capability"] = body.capability
 
-            # Entitlement check for managed Nous rows (mirrors the CLI's
-            # ensure_thorhub_access gate).  Hits the Portal, so it runs AFTER
+            # Entitlement check for managed ThorHub rows (mirrors the CLI's
+            # ensure_thorhub_access gate).  Hits the ThorHub account read, so it runs AFTER
             # releasing the mutation lock — still in the worker thread + scope.
             row = _provider_row(config)
             managed_feature = (row or {}).get("managed_thorhub_feature")
@@ -572,7 +572,7 @@ async def select_toolset_provider(
                         if category
                         else acct.tool_gateway_entitled))
                 if not entitled:
-                    response["needs_nous_auth"] = True
+                    response["needs_thorhub_auth"] = True
                     response["feature"] = managed_feature
         return response
 

@@ -300,9 +300,9 @@ export function ToolsetConfigDrawer({ toolset, profile, onClose, onChanged }: Pr
                           {provider.badge}
                         </Badge>
                       )}
-                      {provider.requires_nous_auth && (
+                      {provider.requires_thorhub_auth && (
                         <Badge tone="outline" className="text-xs">
-                          Thor Portal
+                          ThorHub
                         </Badge>
                       )}
                     </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useI18n } from '@/i18n'
 import { Check, Loader2, Save, Terminal } from '@/lib/icons'
+import { openThorHubSignIn } from '@/lib/thorhub-sign-in'
 import { cn } from '@/lib/utils'
 import { upsertDesktopActionTask } from '@/store/activity'
 import { confirm } from '@/store/confirm'
@@ -15,14 +16,12 @@ import {
   getActionStatus,
   getToolsetConfig,
   getToolsetModels,
-  pollOAuthSession,
   type ProfileScope,
   revealEnvVar,
   runToolsetPostSetup,
   selectToolsetModel,
   selectToolsetProvider,
-  setEnvVar,
-  startOAuthLogin
+  setEnvVar
 } from '@/thor'
 import type {
   ActionStatusResponse,
@@ -79,7 +78,7 @@ function providerConfigured(provider: ToolProvider, envState: Record<string, boo
 
 /**
  * Resolve the readiness pill state for a provider row. Prefers the honest
- * server-computed `status` (keys ∧ Nous entitlement ∧ post-setup install
+ * server-computed `status` (keys ∧ ThorHub entitlement ∧ post-setup install
  * state). Older backends don't send `status` — fall back to the legacy
  * env-var heuristic, mapped onto the same state space (`ready` /
  * `needs_keys`), so the pill still renders against an outdated runtime.
@@ -102,16 +101,20 @@ function providerStatus(provider: ToolProvider, envState: Record<string, boolean
 /**
  * Whether a web provider row serves a capability right now. The managed
  * "Thor Subscription" row and the BYOK Firecrawl rows resolve to the same
- * backend name, so the server's `*_via_nous` flag decides which one is lit.
+ * backend name, so the server's `*_via_thorhub` flag decides which one is lit.
  */
-function capabilityServedBy(provider: ToolProvider, backend: null | string | undefined, viaNous?: boolean): boolean {
-  if (provider.managed_nous_feature) {
-    return Boolean(viaNous)
+function capabilityServedBy(
+  provider: ToolProvider,
+  backend: null | string | undefined,
+  viaThorHub?: boolean
+): boolean {
+  if (provider.managed_thorhub_feature) {
+    return Boolean(viaThorHub)
   }
 
   // Rows sharing a backend name (cloud vs self-hosted Firecrawl) are told apart by the server's
   // is_active, which knows which one's credential is set.
-  return Boolean(provider.web_backend && backend === provider.web_backend && !viaNous && provider.is_active)
+  return Boolean(provider.web_backend && backend === provider.web_backend && !viaThorHub && provider.is_active)
 }
 
 interface EnvVarFieldProps {
@@ -639,16 +642,16 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
           : current
       )
 
-      if (result.needs_nous_auth) {
-        // Managed Nous row selected without Portal entitlement: the config
+      if (result.needs_thorhub_auth) {
+        // Managed ThorHub row selected without ThorHub entitlement: the config
         // keys are written but the backend won't activate until the user
-        // signs in (the CLI runs this gate inline; the GUI surfaces it as a
-        // sign-in action). Reuses the existing Thor Portal device-code flow.
+        // signs in to ThorHub (the CLI runs this gate inline; the GUI surfaces it as a
+        // sign-in action). Sign-in is the ThorHub static key in Settings → Providers.
         notify({
           kind: 'warning',
           title: copy.nousAuthNeededTitle,
           message: copy.nousAuthNeededMessage(provider.name),
-          action: { label: copy.nousAuthSignIn, onClick: () => void signInToNousPortal() }
+          action: { label: copy.nousAuthSignIn, onClick: openThorHubSignIn }
         })
 
         return
@@ -663,74 +666,6 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
     }
   }
 
-  // Drive the existing Thor Portal OAuth device-code flow (the same session
-  // machinery onboarding uses: start → open verification URL → poll), then
-  // refetch the toolset config so is_active / status flip once entitled.
-  async function signInToNousPortal() {
-    try {
-      const start = await startOAuthLogin('nous', profile)
-
-      if (start.flow !== 'device_code') {
-        notifyNousAuthFailed(`unexpected flow: ${start.flow}`)
-
-        return
-      }
-
-      const url = start.verification_url
-
-      if (window.thorDesktop?.openExternal) {
-        try {
-          await window.thorDesktop.openExternal(url)
-        } catch {
-          window.open(url, '_blank', 'noopener,noreferrer')
-        }
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer')
-      }
-
-      // Poll until the device-code session resolves (~5s cadence, bounded).
-      for (let attempt = 0; attempt < 120 && mountedRef.current; attempt += 1) {
-        await new Promise(resolve => window.setTimeout(resolve, 5000))
-
-        if (!mountedRef.current) {
-          return
-        }
-
-        const polled = await pollOAuthSession('nous', start.session_id, profile)
-
-        if (polled.status === 'approved') {
-          notify({ kind: 'success', title: copy.nousAuthDoneTitle, message: copy.nousAuthDoneMessage })
-          await refresh()
-          onConfiguredChange?.()
-
-          return
-        }
-
-        if (polled.status !== 'pending') {
-          notifyNousAuthFailed(polled.error_message || `Sign-in ${polled.status}`)
-
-          return
-        }
-      }
-    } catch (err) {
-      if (mountedRef.current) {
-        notifyNousAuthFailed(err instanceof Error ? err.message : String(err))
-      }
-    }
-  }
-
-  // Plain failure copy with the raw poll status under Details and a one-click
-  // retry of the same sign-in flow (desktop-26).
-  function notifyNousAuthFailed(detail: string) {
-    notify({
-      kind: 'error',
-      title: copy.nousAuthFailed,
-      message: copy.nousAuthFailedMessage,
-      detail,
-      action: { label: copy.nousAuthTryAgain, onClick: () => void signInToNousPortal() }
-    })
-  }
-
   function patchEnv(key: string, isSet: boolean) {
     setEnvState(c => ({ ...c, [key]: isSet }))
     onConfiguredChange?.()
@@ -742,19 +677,19 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
     try {
       const result = await selectToolsetProvider(toolset, provider.name, capability, profile)
 
-      if (result.needs_nous_auth) {
+      if (result.needs_thorhub_auth) {
         notify({
           kind: 'warning',
           title: copy.nousAuthNeededTitle,
           message: copy.nousAuthNeededMessage(provider.name),
-          action: { label: copy.nousAuthSignIn, onClick: () => void signInToNousPortal() }
+          action: { label: copy.nousAuthSignIn, onClick: openThorHubSignIn }
         })
         await refresh()
 
         return
       }
 
-      // Refetch rather than mirror: whether the capability now rides the Nous
+      // Refetch rather than mirror: whether the capability now rides the ThorHub
       // Tool Gateway or the user's own key is resolved server-side (the
       // managed and BYOK Firecrawl rows share one web_backend).
       await refresh()
@@ -795,7 +730,7 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
   }
 
   // The gateway route is labelled with the managed row's own (server-provided) name.
-  const managedRowName = providers.find(p => p.managed_nous_feature)?.name
+  const managedRowName = providers.find(p => p.managed_thorhub_feature)?.name
 
   return (
     <div className="grid gap-2">
@@ -806,12 +741,12 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
         <div className="flex flex-wrap items-center gap-2 px-1">
           <Pill>
             {copy.webSearchActive(
-              (cfg.search_via_nous && managedRowName) || cfg.active_search_backend || copy.webCapabilityUnset
+              (cfg.search_via_thorhub && managedRowName) || cfg.active_search_backend || copy.webCapabilityUnset
             )}
           </Pill>
           <Pill>
             {copy.webExtractActive(
-              (cfg.extract_via_nous && managedRowName) || cfg.active_extract_backend || copy.webCapabilityUnset
+              (cfg.extract_via_thorhub && managedRowName) || cfg.active_extract_backend || copy.webCapabilityUnset
             )}
           </Pill>
         </div>
@@ -821,8 +756,8 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
         const isBackendActive = provider.is_active || cfg?.active_provider === provider.name
         const status = providerStatus(provider, envState)
         const webCaps = toolset === 'web' ? (provider.capabilities ?? []) : []
-        const isSearchBackend = capabilityServedBy(provider, cfg.active_search_backend, cfg.search_via_nous)
-        const isExtractBackend = capabilityServedBy(provider, cfg.active_extract_backend, cfg.extract_via_nous)
+        const isSearchBackend = capabilityServedBy(provider, cfg.active_search_backend, cfg.search_via_thorhub)
+        const isExtractBackend = capabilityServedBy(provider, cfg.active_extract_backend, cfg.extract_via_thorhub)
 
         return (
           <div className="overflow-hidden rounded-xl bg-background/60" key={provider.name}>
@@ -913,7 +848,7 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
                     )}
                   </div>
                 )}
-                {provider.requires_nous_auth && status === 'needs_auth' && (
+                {provider.requires_thorhub_auth && status === 'needs_auth' && (
                   <p className="text-[0.72rem] text-muted-foreground">{copy.nousIncluded}</p>
                 )}
                 {provider.env_vars.length === 0 ? (

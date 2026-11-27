@@ -2,7 +2,7 @@ import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
 import { translateNow } from '@/i18n'
-import { openFreeTierSignIn } from '@/store/free-tier-sign-in'
+import { openThorHubSignIn } from '@/lib/thorhub-sign-in'
 import { notify } from '@/store/notifications'
 import type { ProfileScope } from '@/thor'
 
@@ -135,7 +135,7 @@ export function HostedConnectorDialog({
       disabledTools={card.ways.hosted?.disabledTools}
       onDisconnect={onDisconnect}
       onRetryRules={hosted.retryRules}
-      onSignIn={() => openFreeTierSignIn()}
+      onSignIn={() => openThorHubSignIn()}
       policy={hosted.policy}
       readOnly={hosted.rulesFailed}
       rulesSignedOut={hosted.rulesSignedOut}

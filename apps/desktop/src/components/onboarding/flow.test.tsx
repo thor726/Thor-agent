@@ -55,7 +55,6 @@ function confirmingModelState(): DesktopOnboardingState {
     firstRunSkipped: false,
     manual: false,
     localEndpoint: false,
-    freeTierReady: false
   }
 }
 
@@ -127,7 +126,7 @@ describe('ConfirmingModelPanel model pick', () => {
 })
 
 describe('ConfirmingModelPanel sign-in result', () => {
-  it('names the account and what moved before Begin', async () => {
+  it('names the account before Begin', async () => {
     $desktopOnboarding.set({
       ...confirmingModelState(),
       flow: {
@@ -135,7 +134,7 @@ describe('ConfirmingModelPanel sign-in result', () => {
         label: 'OpenAI OAuth (ChatGPT)',
         providerSlug: 'openai',
         saving: false,
-        signedIn: { email: 'someone@example.com', handoff: { lines: ['Your apps moved.'], state: 'claimed' } },
+        signedIn: { email: 'someone@example.com' },
         status: 'confirming_model'
       }
     })
@@ -143,7 +142,6 @@ describe('ConfirmingModelPanel sign-in result', () => {
     render(<Harness />)
 
     expect(screen.getByText('someone@example.com')).toBeTruthy()
-    expect(screen.getByText('Your apps moved.')).toBeTruthy()
   })
 })
 

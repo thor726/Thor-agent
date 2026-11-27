@@ -557,11 +557,6 @@ function BillingSettingsContent({
       {view.plan && (
         <SettingsSection icon={Package} title={b.sections.plan}>
           <CurrentPlanCard onViewPlans={() => setSubView('plans')} plan={view.plan} />
-          {view.planFootnote && (
-            <div className="mt-1 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
-              {view.planFootnote}
-            </div>
-          )}
         </SettingsSection>
       )}
 

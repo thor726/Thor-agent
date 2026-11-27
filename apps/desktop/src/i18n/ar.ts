@@ -148,14 +148,6 @@ export const arOverrides = {
   errors: arDiagnostics.errors,
   tips: arChat.tips,
   ui: arCommon.ui,
-  freeTier: {
-    offer: {
-      heading: 'واصل مع Thor',
-      body: 'أنت تستخدم الحصة المجانية. إذا واصلت استخدام Thor فستبدأ بمواجهة حدود الاستخدام. سجّل الدخول بحساب Thor مجاني للحصول على حصة أكبر.',
-      signIn: 'تسجيل الدخول',
-      notNow: 'ليس الآن'
-    }
-  }
 } satisfies TranslationOverrides
 
 export const ar = defineLocale(arOverrides)

@@ -163,9 +163,13 @@ actually run rather than inventing a command; when in doubt, read the scripts.
 
 If any answer is "not sure," that's the part to go verify.
 
-## Nous free tier: state is pulled, never latched in the renderer
+## Nous free tier: retired
 
-`free_tier.status` / `free_tier.ack_notice` are the only source: the ready screen and the own-key
-strip render the same `notice_pending` state, with no localStorage latch, and every entry point
-opens the one sign-in dialog. Branch on `free_tier_row` / `free_tier`, never on provider display
-names. Long form: `ENGINEERING.md`.
+There is no free tier, guest identity, or Nous sign-in in the desktop anymore.
+Sign-in is the ThorHub static key (`thor auth add thor`, or `THORHUB_API_KEY`),
+entered in Settings → Providers. The old free-tier surfaces are gone: the
+statusbar Sign in chip, the first-launch "Thor is ready" screen, the composer
+notice strip, the sign-in dialog, and the Electron challenge window. The
+backend still reports `free_tier_account` / `free_tier_model` on the billing
+wire (always false/empty — wire compat only); the renderer must not branch on
+them. Long form: `ENGINEERING.md` (historical).

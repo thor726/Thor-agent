@@ -6,7 +6,6 @@ import { GATEWAY_NOT_CONNECTED_MESSAGE } from '@/api/client'
 import { translateNow } from '@/i18n'
 import { isMissingRpcMethod, isOutOfSyncRpcParams } from '@/lib/gateway-rpc'
 import { queryClient } from '@/lib/query-client'
-import { $freeTierTurnCompleted, noteFreeTierAppConnected } from '@/store/free-tier-sign-in'
 import { notifyError } from '@/store/notifications'
 import type { ProfileScope } from '@/thor'
 
@@ -107,28 +106,6 @@ export function useHostedConnectors(scope: ProfileScope): HostedConnectorsView {
   // read), so rules are asked for once it has rows.
   const listed = (list.data?.connectors.length ?? 0) > 0
 
-  // The identity can appear outside this page (an agent connect in a chat). Until the list has rows,
-  // every finished turn or connect re-reads the list, catalog and accounts, which then move to the signed-in routes.
-  useEffect(
-    () =>
-      listed
-        ? undefined
-        : $freeTierTurnCompleted.listen(() => invalidateConnectors(scope, 'list', 'catalog', 'accounts')),
-    [listed, scope]
-  )
-
-  // A list read is where the backend first sees an app this page never watched connect (an
-  // authorization past the watch, a connect by link) and arms the sign-in offer; re-read when it is due.
-  // Only after a read from the backend: saved or cached rows arrive before the read that arms it.
-  const anyConnected = list.data?.connectors.some(connector => connector.connected) ?? false
-  const readFromBackend = list.isFetchedAfterMount && !list.isFetching
-
-  useEffect(() => {
-    if (anyConnected && readFromBackend) {
-      noteFreeTierAppConnected()
-    }
-  }, [anyConnected, readFromBackend, list.dataUpdatedAt])
-
   const policy = useQuery({
     ...read('policy'),
     enabled: listed,
@@ -188,7 +165,7 @@ export function useHostedConnectors(scope: ProfileScope): HostedConnectorsView {
     retryRules,
     rows: blanked ? [] : joined.rows,
     rulesFailed,
-    rulesSignedOut: policyError?.reason === 'NEEDS_NOUS_AUTH',
+    rulesSignedOut: policyError?.reason === 'NEEDS_THORHUB_AUTH',
     titles: joined.titles
   }
 }
@@ -254,7 +231,7 @@ export function useConnectorTools(scope: ProfileScope, slug: null | string, list
   return {
     refresh: () => revalidate.mutate(),
     retry: () => invalidateConnectorApp(scope, slug ?? ''),
-    signedOut: reason === 'NEEDS_NOUS_AUTH',
+    signedOut: reason === 'NEEDS_THORHUB_AUTH',
     status:
       slug === null
         ? null

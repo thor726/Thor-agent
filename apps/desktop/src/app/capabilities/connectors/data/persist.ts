@@ -1,6 +1,5 @@
 import { queryClient } from '@/lib/query-client'
 import { readJson, writeJson } from '@/lib/storage'
-import { $freeTierStatus } from '@/store/free-tier'
 import { type ProfileScope, profileScopeKey } from '@/thor'
 
 import { MCP_CATALOG_KEY } from '../../mcp/mcp-status'
@@ -15,11 +14,9 @@ const persists = (read: PersistedRead): boolean =>
 
 const STORAGE_PREFIX = 'thor.connectors.v4.'
 
-const IDENTITY_KEY = 'thor.connectors.identity.v4'
-
 const PERSIST_MAX_BYTES = 256 * 1024
 
-type PersistedIdentity = 'guest' | 'signed-in'
+type PersistedIdentity = 'signed-in'
 
 interface PersistedEntry {
   at: number
@@ -39,12 +36,11 @@ interface PersistedBlob {
 
 const keyFor = (scopeKey: string) => `${STORAGE_PREFIX}${scopeKey}`
 
-const identityOf = (hasGuest: boolean): PersistedIdentity => (hasGuest ? 'guest' : 'signed-in')
-
-function currentIdentity(): PersistedIdentity | null {
-  const status = $freeTierStatus.get()
-
-  return status ? identityOf(status.has_guest) : readJson<PersistedIdentity>(IDENTITY_KEY)
+// No guest identity exists anymore (the Nous free tier is retired), so the
+// connector cache has one identity class. Blobs written under the old 'guest'
+// identity never match and are re-fetched once.
+function currentIdentity(): PersistedIdentity {
+  return 'signed-in'
 }
 
 const READS: ReadonlySet<PersistedValue> = new Set(Object.keys(CONNECTOR_LIFETIMES))
@@ -99,10 +95,6 @@ export interface QuerySeed<T> {
 }
 
 export function seedOptions<T>(scopeKey: ProfileScope, read: PersistedRead, slug?: string): QuerySeed<T> {
-  if (currentIdentity() === null) {
-    return {}
-  }
-
   const blob = readBlob(profileScopeKey(scopeKey))
   const entry = blob ? entryOf(blob, read, slug) : undefined
 
@@ -135,7 +127,7 @@ function trimmed(blob: PersistedBlob): PersistedBlob {
 function store(scopeKey: string, read: PersistedRead, slug: string | undefined, entry: PersistedEntry): void {
   const identity = currentIdentity()
 
-  if (identity === null || !persists(read) || size(entry) > PERSIST_MAX_BYTES) {
+  if (!persists(read) || size(entry) > PERSIST_MAX_BYTES) {
     return
   }
 
@@ -226,17 +218,8 @@ export function startConnectorPersistence(): () => void {
     timer ??= setTimeout(flush, WRITE_DELAY_MS)
   })
 
-  const stopIdentity = $freeTierStatus.listen(status => {
-    const identity = status ? identityOf(status.has_guest) : null
-
-    if (identity !== null && identity !== readJson<PersistedIdentity>(IDENTITY_KEY)) {
-      writeJson(IDENTITY_KEY, identity)
-    }
-  })
-
   return () => {
     stopCache()
-    stopIdentity()
 
     if (timer !== null) {
       clearTimeout(timer)

@@ -39,9 +39,9 @@ export const PROVIDER_DISPLAY_NAMES: Readonly<Record<string, string>> = {
   anthropic: 'Anthropic Account',
   'claude-code': 'Anthropic OAuth: Required Extra Usage Credits to Use Subscription',
   'minimax-oauth': 'MiniMax',
-  nous: 'Thor Portal',
   'openai-codex': 'ChatGPT or Codex Subscription',
   'qwen-oauth': 'Qwen Code',
+  thor: 'ThorHub',
   xai: 'xAI',
   'xai-oauth': 'xAI Grok'
 }

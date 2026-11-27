@@ -250,7 +250,6 @@ export type DesktopOnboardingStep =
   | 'choose_later'
   | 'consent'
   | 'first_message'
-  | 'free_tier_ready'
   | 'guide'
   | 'guide_skip'
   | 'model_pick'
@@ -258,7 +257,6 @@ export type DesktopOnboardingStep =
   | 'provider_local'
   | 'provider_oauth'
   | 'provider_setup'
-  | 'sign_in'
 
 export type DesktopOnboardingEvent = 'abandoned' | 'completed' | 'reached'
 
