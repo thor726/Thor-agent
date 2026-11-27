@@ -1490,7 +1490,7 @@ export default function SystemPage() {
                   <span className="text-xs text-muted-foreground max-w-prose">
                     Uploads a summary (versions, config key names, error counts; no log lines or message text)
                     to a public paste and returns a link for the Thor team. Pastes auto-delete after 6 hours.
-                    Full logs go only to private storage via <code>thor debug share --nous</code>.
+                    Full logs go only to private storage via <code>thor debug share --internal</code>.
                   </span>
                 </div>
               </div>
