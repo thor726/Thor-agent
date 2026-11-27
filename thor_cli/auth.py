@@ -748,7 +748,7 @@ def _load_auth_store(auth_file: Optional[Path] = None) -> dict[str, Any]:
         return raw
 
     if isinstance(raw, dict) and isinstance(raw.get("systems"), dict):  # legacy "systems" format
-        # The old "nous_portal" system held Nous OAuth tokens, which cannot
+        # The legacy "systems" format held OAuth tokens for a retired provider, which cannot
         # authenticate to ThorHub (static keys only) — it is dropped, not migrated.
         return _empty_auth_store()
     return _empty_auth_store()
@@ -1632,14 +1632,14 @@ def resolve_provider(
     # below explicit keys.
     try:
         from agent.bedrock_adapter import has_aws_credentials
-        from thor_cli.anon_auth import on_local_desktop_backend  # a laptop: no EC2 metadata lookup
-        if has_aws_credentials(instance_metadata=not on_local_desktop_backend()):
+        from thor_cli.process_identity import serves_local_desktop_now  # a laptop: no EC2 metadata lookup
+        if has_aws_credentials(instance_metadata=not serves_local_desktop_now()):
             return "bedrock"
     except ImportError:
         pass  # boto3 not installed
     from thor_constants import display_thor_home
     raise AuthError(
-        "Thor is not connected to any AI provider yet. Run `thor model` to pick one, type `/login` in chat, "
+        "Thor is not connected to any AI provider yet. Run `thor model` to pick one, "
         f"or add a key with `thor auth add <provider>`. (Advanced: put an API key such as OPENROUTER_API_KEY in "
         f"{display_thor_home()}/.env.)",
         code="no_provider_configured")

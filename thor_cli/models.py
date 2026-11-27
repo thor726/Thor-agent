@@ -396,9 +396,8 @@ def recommended_thorhub_default_model() -> dict[str, Any]:
     honored), plus the window plan's first featured pick when one is known, else
     :func:`pick_silent_default_model`. ThorHub has no tiers or Portal recommendations.
     Returns ``{"provider": "thor", "model": str, "free_tier": False}``; ``model`` may be ``""``
-    when nothing is selectable (callers degrade). Shared by
-    ``GET /api/model/recommended-default`` and the sign-in completion in ``thor_cli.anon_auth``
-    so both land on the same model.
+    when nothing is selectable (callers degrade). Serves
+    ``GET /api/model/recommended-default``.
     """
     from thor_cli import model_picker_usage, models_pricing as mp
 

@@ -1823,14 +1823,9 @@ def _billing_view(name: str, module: str, builder: str, serializer: str, fallbac
 @method("billing.state")
 @_profile_scoped
 def _(rid, params: dict) -> dict:
-    """Profile-bound read-only billing view; fail-open. The Nous free tier has no account to
-    bill, so its state is answered locally (``free_tier_account`` set, ``logged_in`` false) without a portal
-    round-trip that could only fail."""
+    """Profile-bound read-only billing view; fail-open."""
     try:
-        from agent.billing_view import BillingState, build_billing_state
-        from thor_cli.anon_auth import has_free_tier_account
-        if has_free_tier_account():
-            return _ok(rid, _serialize_billing_state(BillingState(logged_in=False), free_tier_account=True))
+        from agent.billing_view import build_billing_state
         return _ok(rid, _serialize_billing_state(build_billing_state()))
     except Exception:
         return _ok(rid, {"ok": True, "logged_in": False, "free_tier_account": False, "error": "could not load billing state"})

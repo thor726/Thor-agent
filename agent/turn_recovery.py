@@ -859,15 +859,9 @@ def _print_nonretryable_auth_guidance(
 
 def _welcome_tier_guidance(classified: Any, *, model: Any, in_chat: bool, door: bool = True) -> str:
     """Copy for a Thor free-tier refusal the classifier parsed (``welcome_refusal`` /
-    ``welcome_route`` in ``error_context``); empty for every other error."""
-    ctx = getattr(classified, "error_context", None) or {}
-    refusal, route = ctx.get("welcome_refusal"), ctx.get("welcome_route")
-    if not refusal and not route:
-        return ""
-    from thor_cli.anon_auth import welcome_refusal_copy, welcome_route_refusal_copy
-    if refusal:
-        return welcome_refusal_copy(refusal, model=str(model or ""), in_chat=in_chat, door=door)
-    return welcome_route_refusal_copy(str(route), in_chat=in_chat, door=door)
+    ``welcome_route`` in ``error_context``). The free tier is retired, so there is no such copy
+    anymore: always empty."""
+    return ""
 
 
 # Closed table: every card kind the desktop has copy for. An unknown gateway reason lands on
@@ -905,15 +899,9 @@ def _stamp_free_tier(result: dict[str, Any], kind: str, message: str) -> dict[st
 
 
 def _welcome_outage_copy(agent: Any, base_url: Any, classified: Any) -> str:
-    """On the Thor free tier, a transport / server failure that outlived every retry reads as one
-    plain sentence (the free model is having trouble) rather than the technical summary. Empty
-    for every other route and for rate limits / billing, which have their own copy."""
-    from thor_cli.anon_auth import FREE_TIER_OUTAGE_COPY, on_free_model
-    # Not ``unknown``: that is the classifier's catch-all for status-less local failures, which
-    # are not the free model's trouble.
-    if on_free_model(agent, base_url) and classified.reason in (
-            FailoverReason.timeout, FailoverReason.overloaded, FailoverReason.server_error):
-        return FREE_TIER_OUTAGE_COPY
+    """On the Thor free tier, a transport / server failure that outlived every retry read as one
+    plain sentence (the free model is having trouble) rather than the technical summary. The free
+    tier is retired, so there is no such copy anymore: always empty."""
     return ""
 
 
@@ -1411,7 +1399,6 @@ def compute_error_backoff(
         LIVE_RETRY_WAIT_CAP_S, RETRY_AFTER_CAP_S, adaptive_rate_limit_backoff, jittered_backoff,
         provider_retry_after_seconds,
     )
-    from thor_cli.anon_auth import on_free_model
 
     # Respect Retry-After on every retryable provider error, not just 429s. Retryable
     # 5xx responses (e.g. Cloudflare 520/524) also carry the header or a structured
@@ -1428,9 +1415,7 @@ def compute_error_backoff(
             retry_count, base_url=str(base_url), model=model, error=api_error, default_wait=wait_time,
         )
     _reset = reset_hint(api_error) if _adaptive else ""
-    _free_busy = is_rate_limited and on_free_model(agent, base_url)
-    _wait_reason = ("The free model is busy" if _free_busy
-                    else "Provider overloaded" if is_zai_coding_overload and not is_rate_limited else "Rate limited")
+    _wait_reason = ("Provider overloaded" if is_zai_coding_overload and not is_rate_limited else "Rate limited")
     if _adaptive:
         _policy_note = _ZAI_POLICY_NOTES.get(_backoff_policy or "", "")
         _status = (f"⏱️ {_wait_reason}.{f' Resets in {_reset}.' if _reset else ''} Waiting {wait_time:.1f}s "
@@ -1451,7 +1436,7 @@ def compute_error_backoff(
     if _reset:
         _live_reason = f"{_wait_reason.lower()} — resets in {_reset},"
     else:
-        _live_reason = "the free model is busy —" if _free_busy else "waiting on provider —"
+        _live_reason = "waiting on provider —"
     agent._emit_diagnostic_wait(
         f"⏳ {_live_reason} retrying in {wait_time:.0f}s (attempt {retry_count}/{max_retries})"
     )
@@ -1465,18 +1450,10 @@ def compute_error_backoff(
 
 def free_tier_cooldown_ends_turn(agent: Any, api_error: Exception, base_url: Any) -> bool:
     """True when an attended session on the free model meets a cooldown longer than a person
-    sits through. The free tier's pause is service-wide: a 600 s retry met a second 429 while its
-    1069 s window ran, so the caller ends the attempt cycle now (fallback, or the reset time and
-    the sign-in / model doors). Every other provider, and every unattended run (cron, messaging,
-    ``thor chat -q``), waits out its ``Retry-After``: a paid bucket reopens on time, and
+    sits through. The free tier is retired, so no cooldown ever ends a turn: always False.
+    Every run waits out its ``Retry-After``: a paid bucket reopens on time, and
     ``fallback.min_switch_reset_seconds`` relies on that wait."""
-    from agent.retry_utils import LIVE_RETRY_WAIT_CAP_S, provider_retry_after_seconds
-    from agent.session_source import is_attended
-    from thor_cli.anon_auth import on_free_model
-    if not (on_free_model(agent, base_url) and is_attended(agent)):
-        return False
-    cooldown = provider_retry_after_seconds(api_error)
-    return cooldown is not None and cooldown > LIVE_RETRY_WAIT_CAP_S
+    return False
 
 
 def validate_response_shape(agent: Any, response: Any) -> tuple[bool, list[str]]:
