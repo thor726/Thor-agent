@@ -1479,8 +1479,6 @@ def _logged_in_oauth_active_provider(*, skip_free_tier: bool = False) -> Optiona
     """auth.json ``active_provider`` when it is a registry provider that reports logged in."""
     try:
         _maybe = _load_auth_store().get("active_provider")
-        if _maybe == "nous":
-            _maybe = "thor"  # legacy provider id for the ThorHub key
         if _maybe and _maybe in PROVIDER_REGISTRY and get_auth_status(_maybe).get("logged_in"):
             return _maybe
     except Exception as e:
@@ -2186,13 +2184,6 @@ def _reset_config_provider() -> Path:
             model["base_url"] = OPENROUTER_BASE_URL
     atomic_config_replace(config_path, config)
     return config_path
-
-
-def login_command(args) -> None:
-    """Deprecated: use 'thor model' or 'thor setup' instead."""
-    print("The 'thor login' command has been removed.\nUse 'thor auth' to manage credentials,\n"
-          "'thor model' to select a provider, or 'thor setup' for full setup.")
-    raise SystemExit(0)
 
 
 def get_minimax_oauth_auth_status() -> dict[str, Any]:

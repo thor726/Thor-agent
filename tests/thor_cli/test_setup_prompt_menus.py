@@ -165,7 +165,6 @@ def test_section_specific_model_setup_can_go_back_from_model_to_provider(
             reset=False,
             reconfigure=False,
             quick=False,
-            portal=False,
             non_interactive=False,
         )
     )

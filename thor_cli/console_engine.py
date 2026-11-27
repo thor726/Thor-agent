@@ -306,7 +306,6 @@ _CLI_FAMILIES: dict[str, tuple[_CliSurface, str]] = {
         "list, show, info, *create, *use, *describe, *rename, *delete, *export, *import, "
         "*install, *update"),
     "cron": (_sub("cron", "build_cron_parser", "cmd_cron"), "*create, *edit, *remove, *tick"),
-    "portal": (_CliSurface("adder", "thor_cli.portal_cli", "add_parser"), "info, tools"),
     "project": (
         _CliSurface("builder", "thor_cli.projects_cmd", "build_parser", "cmd_project"),
         "list, show, *create, *add-folder, *remove-folder, *rename, *set-primary, *use, "
@@ -350,7 +349,7 @@ def _register_command_family(
 
 
 _BLOCKED_TOP = frozenset(
-    "acp chat claw completion dashboard desktop fallback gateway gui login logout model moa "
+    "acp chat claw completion dashboard desktop fallback gateway gui logout model moa "
     "oneshot proxy serve setup uninstall update whatsapp whatsapp-cloud".split())
 
 _BLOCKED_PAIRS = {
@@ -358,8 +357,6 @@ _BLOCKED_PAIRS = {
     ("profile", "alias"): "`profile alias` creates shell wrappers and is not available in Thor Console.",
     ("skills", "config"): "`skills config` is interactive and is not available in Thor Console.",
     ("skills", "publish"): "`skills publish` is not available in Thor Console.",
-    ("portal", "login"): "`portal login` is interactive and is not available in Thor Console.",
-    ("portal", "open"): "`portal open` opens a browser and is not available in Thor Console.",
     ("kanban", "tail"): "`kanban tail` streams output and is not available in Thor Console.",
     ("kanban", "watch"): "`kanban watch` streams output and is not available in Thor Console.",
     ("kanban", "daemon"): "`kanban daemon` starts a service and is not available in Thor Console.",

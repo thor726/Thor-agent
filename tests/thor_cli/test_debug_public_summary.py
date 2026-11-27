@@ -3,7 +3,7 @@
 Subtractive redaction scrubs credentials but not IPs, room IDs, display names or message bodies,
 so every surface that publishes to the public paste (``thor debug share``, the ``/debug`` gateway
 command, the dashboard ``POST /api/ops/debug-share``) must upload no log line text at all. The
-private ``--nous`` bundle still carries the redacted tails.
+private ``--internal`` bundle still carries the redacted tails.
 """
 
 import gzip
@@ -77,7 +77,7 @@ def test_cli_public_share_uploads_only_the_allowlisted_summary(pii_home, capsys)
             patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)):
         # --no-redact must not be able to put logs on the public paste either.
         for no_redact in (False, True):
-            run_debug_share(SimpleNamespace(lines=200, expire=1, local=False, nous=False,
+            run_debug_share(SimpleNamespace(lines=200, expire=1, local=False, internal=False,
                                             yes=True, no_redact=no_redact))
 
     assert len(uploaded) == 2  # one summary paste per share, no full-log pastes
@@ -133,14 +133,14 @@ async def test_gateway_debug_uploads_only_the_summary(pii_home):
     assert "RateLimitError" in uploaded[0]
 
 
-def test_nous_share_still_carries_redacted_log_tails(pii_home):
+def test_internal_share_still_carries_redacted_log_tails(pii_home):
     from thor_cli.debug import run_debug_share
 
     with patch("thor_cli.diagnostics_upload.share_to_nous",
                return_value={"id": "x", "viewUrl": "https://v"}) as share, \
             patch("thor_cli.debug.upload_to_pastebin") as paste, \
             patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)):
-        run_debug_share(SimpleNamespace(lines=200, expire=1, local=False, nous=True,
+        run_debug_share(SimpleNamespace(lines=200, expire=1, local=False, internal=True,
                                         yes=True, no_redact=False))
 
     paste.assert_not_called()

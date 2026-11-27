@@ -1,6 +1,6 @@
-"""Unit tests for the Nous Portal profile's reasoning wiring.
+"""Unit tests for the ThorHub profile's reasoning wiring.
 
-The Portal honors ``reasoning: {enabled: false}`` — it is the only wire shape
+ThorHub honors ``reasoning: {enabled: false}`` — it is the only wire shape
 that does, and ``extra_body.thinking`` is not forwarded upstream. The profile
 used to drop a disable for every model, which on a thinking-first route like
 ``deepseek/deepseek-v4-pro`` (catalog: ``default_effort: high``) meant the
@@ -20,21 +20,21 @@ import pytest
 
 
 @pytest.fixture
-def nous_profile():
-    """Resolve the registered Nous profile through the real discovery path."""
+def thorhub_profile():
+    """Resolve the registered ThorHub profile through the real discovery path."""
     # ``model_tools`` triggers plugin discovery on import, which is what
-    # registers the Nous profile in the global provider registry.
+    # registers the ThorHub profile in the global provider registry.
     import model_tools
     import providers
 
-    profile = providers.get_provider_profile("nous")
-    assert profile is not None, "nous provider profile must be registered"
+    profile = providers.get_provider_profile("thorhub")
+    assert profile is not None, "thorhub provider profile must be registered"
     return profile
 
 
 @pytest.fixture
-def portal_catalog(monkeypatch):
-    """Prime the Portal reasoning-capability cache with known entries."""
+def thorhub_catalog(monkeypatch):
+    """Prime the ThorHub reasoning-capability cache with known entries."""
     import thor_cli.models as models_mod
 
     monkeypatch.setattr(models_mod, "_thorhub_reasoning_caps_failed_at", None)
@@ -54,12 +54,12 @@ def portal_catalog(monkeypatch):
     })
 
 
-class TestNousReasoningWireShape:
-    """``build_api_kwargs_extras`` produces the Portal's wire format."""
+class TestThorHubReasoningWireShape:
+    """``build_api_kwargs_extras`` produces ThorHub's wire format."""
 
-    def test_disable_reaches_optional_reasoning_model(self, nous_profile, portal_catalog):
-        """The knob the user set is the knob the Portal receives."""
-        extra_body, top_level = nous_profile.build_api_kwargs_extras(
+    def test_disable_reaches_optional_reasoning_model(self, thorhub_profile, thorhub_catalog):
+        """The knob the user set is the knob ThorHub receives."""
+        extra_body, top_level = thorhub_profile.build_api_kwargs_extras(
             reasoning_config={"enabled": False},
             supports_reasoning=True,
             model="deepseek/deepseek-v4-pro",
@@ -67,32 +67,32 @@ class TestNousReasoningWireShape:
         assert extra_body == {"reasoning": {"enabled": False}}
         assert top_level == {}
 
-    def test_disable_dropped_for_mandatory_reasoning_model(self, nous_profile, portal_catalog):
+    def test_disable_dropped_for_mandatory_reasoning_model(self, thorhub_profile, thorhub_catalog):
         """Mandatory routes 400 on a disable — send nothing instead."""
-        extra_body, _ = nous_profile.build_api_kwargs_extras(
+        extra_body, _ = thorhub_profile.build_api_kwargs_extras(
             reasoning_config={"enabled": False},
             supports_reasoning=True,
             model="arcee-ai/trinity-large-thinking",
         )
         assert "reasoning" not in extra_body
 
-    def test_disable_dropped_for_unknown_model(self, nous_profile, portal_catalog):
+    def test_disable_dropped_for_unknown_model(self, thorhub_profile, thorhub_catalog):
         """Unlisted / cold catalog → fail safe, never risk the 400."""
-        extra_body, _ = nous_profile.build_api_kwargs_extras(
+        extra_body, _ = thorhub_profile.build_api_kwargs_extras(
             reasoning_config={"enabled": False},
             supports_reasoning=True,
             model="private/unlisted-route",
         )
         assert "reasoning" not in extra_body
 
-    def test_disable_dropped_for_non_reasoning_route(self, nous_profile, portal_catalog):
+    def test_disable_dropped_for_non_reasoning_route(self, thorhub_profile, thorhub_catalog):
         """A route the catalog says takes no reasoning parameter gets none.
 
-        Thor' own ``supports_reasoning`` can disagree with the Portal about a
+        Thor' own ``supports_reasoning`` can disagree with ThorHub about a
         given route; when it does, the catalog of the service actually serving
         the model wins, and we don't send it a parameter it doesn't accept.
         """
-        extra_body, _ = nous_profile.build_api_kwargs_extras(
+        extra_body, _ = thorhub_profile.build_api_kwargs_extras(
             reasoning_config={"enabled": False},
             supports_reasoning=True,
             model="moonshotai/kimi-k3-instruct",
@@ -103,25 +103,25 @@ class TestNousReasoningWireShape:
         "model",
         ["deepseek/deepseek-v4-pro", "arcee-ai/trinity-large-thinking", "private/unlisted-route"],
     )
-    def test_enabled_config_always_forwarded(self, nous_profile, portal_catalog, model):
+    def test_enabled_config_always_forwarded(self, thorhub_profile, thorhub_catalog, model):
         """Mandatory-ness only gates the disable; an enable always ships."""
-        extra_body, _ = nous_profile.build_api_kwargs_extras(
+        extra_body, _ = thorhub_profile.build_api_kwargs_extras(
             reasoning_config={"enabled": True, "effort": "high"},
             supports_reasoning=True,
             model=model,
         )
         assert extra_body["reasoning"] == {"enabled": True, "effort": "high"}
 
-    def test_no_config_defaults_to_medium(self, nous_profile, portal_catalog):
-        extra_body, _ = nous_profile.build_api_kwargs_extras(
+    def test_no_config_defaults_to_medium(self, thorhub_profile, thorhub_catalog):
+        extra_body, _ = thorhub_profile.build_api_kwargs_extras(
             reasoning_config=None,
             supports_reasoning=True,
             model="deepseek/deepseek-v4-pro",
         )
         assert extra_body["reasoning"] == {"enabled": True, "effort": "medium"}
 
-    def test_nothing_emitted_without_reasoning_support(self, nous_profile, portal_catalog):
-        extra_body, top_level = nous_profile.build_api_kwargs_extras(
+    def test_nothing_emitted_without_reasoning_support(self, thorhub_profile, thorhub_catalog):
+        extra_body, top_level = thorhub_profile.build_api_kwargs_extras(
             reasoning_config={"enabled": False},
             supports_reasoning=False,
             model="deepseek/deepseek-v4-pro",
@@ -129,9 +129,9 @@ class TestNousReasoningWireShape:
         assert extra_body == {}
         assert top_level == {}
 
-    def test_caller_config_not_mutated(self, nous_profile, portal_catalog):
+    def test_caller_config_not_mutated(self, thorhub_profile, thorhub_catalog):
         cfg = {"enabled": False}
-        nous_profile.build_api_kwargs_extras(
+        thorhub_profile.build_api_kwargs_extras(
             reasoning_config=cfg,
             supports_reasoning=True,
             model="deepseek/deepseek-v4-pro",

@@ -267,7 +267,6 @@ from thor_cli.subcommands.setup import build_setup_parser
 
 from thor_cli.subcommands.whatsapp import build_whatsapp_parser, build_whatsapp_cloud_parser
 from thor_cli.subcommands.slack import build_slack_parser
-from thor_cli.subcommands.login import build_login_parser
 from thor_cli.subcommands.logout import build_logout_parser
 from thor_cli.subcommands.auth import build_auth_parser
 from thor_cli.subcommands.status import build_status_parser
@@ -1664,7 +1663,6 @@ def _forward_command(name: str, module: str, attr: str, *, forward_return: bool 
 
 
 cmd_setup = _forward_command("cmd_setup", "thor_cli.setup", "run_setup_wizard", doc='Interactive setup wizard.')
-cmd_login = _forward_command("cmd_login", "thor_cli.auth", "login_command", doc='Authenticate Thor CLI with a provider.')
 cmd_logout = _forward_command("cmd_logout", "thor_cli.auth", "logout_command", doc='Clear provider authentication.')
 cmd_auth = _forward_command("cmd_auth", "thor_cli.auth_commands", "auth_command", doc='Manage pooled credentials.')
 cmd_status = _forward_command("cmd_status", "thor_cli.status", "show_status", doc='Show status of all components.')
@@ -2270,7 +2268,7 @@ def _coalesce_session_name_args(argv: list) -> list:
     """Join unquoted multi-word session names after -c/--continue and -r/--resume: ``thor -c Pokemon
     Agent Dev`` → ``['-c', 'Pokemon Agent Dev']``, up to the next flag or known top-level subcommand."""
     _SUBCOMMANDS = {
-        "chat", "model", "gateway", "setup", "whatsapp", "whatsapp-cloud", "login", "logout",
+        "chat", "model", "gateway", "setup", "whatsapp", "whatsapp-cloud", "logout",
         "auth", "status", "cron", "doctor", "config", "pairing", "skills", "tools", "mcp",
         "sessions", "insights", "update", "uninstall", "profile", "dashboard", "serve", "webapp",
         "desktop", "gui", "claw", "plugins", "security", "acp", "webhook", "peer",
@@ -2573,9 +2571,9 @@ _BUILTIN_SUBCOMMANDS = frozenset(
         "clipboard", "computer-use", "connectors",
         "config", "console", "cron", "curator", "dashboard", "serve", "debug", "doctor",
         "dump", "egress", "fallback", "gateway", "hooks", "import", "insights",
-        "gui", "desktop", "kanban", "login", "logout", "logs", "lsp", "mcp", "memory", "migrate", "moa",
+        "gui", "desktop", "kanban", "logout", "logs", "lsp", "mcp", "memory", "migrate", "moa",
         "journey", "memory-graph", "learning",
-        "model", "monitoring", "pairing", "pause", "peer", "pets", "plugins", "portal", "profile",
+        "model", "monitoring", "pairing", "pause", "peer", "pets", "plugins", "profile",
         "project", "proxy", "prompt-size", "resume", "send", "sessions", "setup",
         "skin", "skills", "slack", "status", "tools", "uninstall", "update",
         "usage", "vault",
@@ -3138,7 +3136,6 @@ def _build_cli_parser():
     from thor_cli.send_cmd import register_send_subparser
     register_send_subparser(subparsers)
 
-    build_login_parser(subparsers, cmd_login=cmd_login)
     build_logout_parser(subparsers, cmd_logout=cmd_logout)
     build_auth_parser(subparsers, cmd_auth=cmd_auth)
     build_status_parser(subparsers, cmd_status=cmd_status)
@@ -3148,9 +3145,6 @@ def _build_cli_parser():
 
     from thor_cli.subcommands.peer import build_peer_parser
     build_peer_parser(subparsers)
-
-    from thor_cli.portal_cli import add_parser as _add_portal_parser
-    _add_portal_parser(subparsers)
 
     from thor_cli.kanban import build_parser as _build_kanban_parser
     _build_kanban_parser(subparsers).set_defaults(func=cmd_kanban)

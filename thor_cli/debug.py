@@ -129,7 +129,7 @@ _PRIVACY_NOTICE = """\
 
 It contains NO log lines, message text, user names/IDs, paths or config
 values. Full (secret-redacted) logs are never sent to the public paste: use
-`thor debug share --nous` to send them to private Thor storage instead.
+`thor debug share --internal` to send them to private Thor storage instead.
 
 Pastes auto-delete after 6 hours. If paste.rs is unreachable the upload
 falls back to dpaste.com, which keeps it for the --expire window
@@ -142,7 +142,7 @@ _GATEWAY_PRIVACY_NOTICE = (
     "⚠️ **Privacy notice:** This uploads an allowlisted debug summary (versions, platform and "
     "toolset names, config key names, error counts) to a public paste service. It contains no "
     "log lines or message text; full logs go only to private storage via "
-    "`thor debug share --nous` from the CLI.\n"
+    "`thor debug share --internal` from the CLI.\n"
     "Pastes auto-delete after 6 hours (dpaste.com fallback pastes: kept for "
     "1 day, cannot be deleted).")
 
@@ -422,8 +422,8 @@ def collect_debug_report(
     return buf.getvalue()
 
 
-# Nous-S3 envelope format id; the discord-support viewer keys off it.
-_NOUS_BUNDLE_FORMAT = "thor-debug-share/1"
+# Thor-S3 envelope format id; the discord-support viewer keys off it.
+_INTERNAL_BUNDLE_FORMAT = "thor-debug-share/1"
 
 
 def collect_share_bundle(log_lines: int = 200, redact: bool = True) -> dict[str, str]:
@@ -449,7 +449,7 @@ def collect_share_bundle(log_lines: int = 200, redact: bool = True) -> dict[str,
 def build_nous_bundle(bundle: dict[str, str], redact: bool = True) -> bytes:
     """Gzip a :func:`collect_share_bundle` mapping into the Thor envelope (shape parsed by the
     discord-support viewer — keep it stable)."""
-    envelope = {"format": _NOUS_BUNDLE_FORMAT, "redacted": bool(redact),
+    envelope = {"format": _INTERNAL_BUNDLE_FORMAT, "redacted": bool(redact),
                 "created": datetime.datetime.now(datetime.UTC).isoformat(),
                 "files": bundle}
     return gzip.compress(json.dumps(envelope).encode("utf-8"))
@@ -472,7 +472,7 @@ def build_debug_share(
 
     Shared by ``thor debug share`` and the dashboard ``POST /api/ops/debug-share``. The public
     paste never carries log text (#46006), so ``redact`` has nothing to act on here and the result
-    always reports ``redacted=True``; full logs go only through ``--nous``. Blocking network I/O —
+    always reports ``redacted=True``; full logs go only through ``--internal``. Blocking network I/O —
     callers inside an event loop must run it in a worker thread.
     """
     from thor_cli.debug_summary import collect_public_summary
@@ -533,11 +533,11 @@ def run_debug_share(args):
                 print(body)
         return
 
-    if getattr(args, "nous", False):
-        return _run_debug_share_nous(args, log_lines=log_lines, redact=redact)
+    if getattr(args, "internal", False):
+        return _run_debug_share_internal(args, log_lines=log_lines, redact=redact)
     print(_PRIVACY_NOTICE)
     if not redact:
-        print("Note: --no-redact only affects --nous; the public summary never carries log text.\n")
+        print("Note: --no-redact only affects --internal; the public summary never carries log text.\n")
     if not _confirm_upload(args):
         return
     print("Collecting debug summary...\nUploading...")
@@ -569,12 +569,12 @@ def run_debug_share(args):
         print(_FULL_LOGS_HINT)
 
 
-_FULL_LOGS_HINT = ("If support needs the full logs, run `thor debug share --nous` "
+_FULL_LOGS_HINT = ("If support needs the full logs, run `thor debug share --internal` "
                    "(private Thor storage, not a public paste).")
 
 
-_NOUS_PRIVACY_NOTICE = """\
-⚠️  --nous: This uploads your debug bundle to Thor-INTERNAL storage (AWS S3),
+_INTERNAL_PRIVACY_NOTICE = """\
+⚠️  --internal: This uploads your debug bundle to Thor-INTERNAL storage (AWS S3),
     NOT a public paste service. The following is included:
   • System info (OS, Python/Thor version, provider, which API keys are
     configured — NOT the actual keys)
@@ -604,18 +604,18 @@ def run_debug_slash(cmd_original: str = "") -> None:
         # The notice must come BEFORE anything leaves the machine: a bare /debug is a request
         # for the report, not consent to publish it (#94876). Only `upload` [+ `nous`] consents,
         # so a refusal that contains the word (`/debug do not upload`) is not consent.
-        print(_NOUS_PRIVACY_NOTICE if nous else _PRIVACY_NOTICE)
+        print(_INTERNAL_PRIVACY_NOTICE if nous else _PRIVACY_NOTICE)
         print(f"Nothing was uploaded. Run `/debug {'nous upload' if nous else 'upload'}` to upload, "
               "or `/debug local` to view the report without uploading.")
         return
     # The explicit `upload` word is the consent (yes=True); input() would hang in prompt_toolkit.
-    run_debug_share(SimpleNamespace(lines=200, expire=1, local=local, nous=nous, yes=True))
+    run_debug_share(SimpleNamespace(lines=200, expire=1, local=local, internal=nous, yes=True))
 
 
-def _run_debug_share_nous(args, *, log_lines: int, redact: bool) -> None:
-    """``thor debug share --nous``: gzip the same bundle into the Thor envelope → Thor-S3."""
+def _run_debug_share_internal(args, *, log_lines: int, redact: bool) -> None:
+    """``thor debug share --internal``: gzip the same bundle into the Thor envelope → Thor-S3."""
     from thor_cli.diagnostics_upload import share_to_nous
-    print(_NOUS_PRIVACY_NOTICE)
+    print(_INTERNAL_PRIVACY_NOTICE)
     if not _confirm_upload(args):
         return
     if not redact:
@@ -624,11 +624,11 @@ def _run_debug_share_nous(args, *, log_lines: int, redact: bool) -> None:
     _best_effort_sweep_expired_pastes()
     bundle = collect_share_bundle(log_lines=log_lines, redact=redact)
     if redact:
-        logger.info("thor debug share --nous: applied force-mode redaction before upload")
+        logger.info("thor debug share --internal: applied force-mode redaction before upload")
     print("Uploading to Thor diagnostics storage...")
     try:
         res = share_to_nous(build_nous_bundle(bundle, redact=redact))
-    except Exception as exc:
+    except Exception as exc:  # health: allow BLE001 -- upload boundary: any network/serialization failure must surface as a redacted user-facing error + exit 1, never a traceback
         from pm.network import edge_block
 
         error = redact_debug_support_text(exc)
@@ -689,16 +689,16 @@ _DEBUG_USAGE = """\
 Usage: thor debug <command>
 
 Commands:
-  share    Upload an allowlisted debug summary to a public paste (full logs: --nous)
+  share    Upload an allowlisted debug summary to a public paste (full logs: --internal)
   delete   Delete a previously uploaded paste
 
 Options (share):
-  --lines N    Log lines per file in the --nous / --local report (default: 200)
+  --lines N    Log lines per file in the --internal / --local report (default: 200)
   --expire N   dpaste.com fallback retention in days (default: 1)
   --local      Print report locally instead of uploading
-  --nous       Upload to Thor-internal storage (private, staff-only,
+  --internal       Upload to Thor-internal storage (private, staff-only,
                auto-deletes in 14 days) instead of a public paste
-  --no-redact  Disable secret redaction of --nous / --local logs (default: redact)
+  --no-redact  Disable secret redaction of --internal / --local logs (default: redact)
 
 Options (delete):
   <url> ...    One or more paste URLs to delete"""

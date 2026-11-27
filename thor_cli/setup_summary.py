@@ -206,7 +206,7 @@ def _print_setup_summary(config: dict, thor_home):
         _setup.print_warning("No inference provider is configured — Thor cannot chat yet.")
         _setup._info("  Finish this one step with either of:",
               "    thor model            (pick any provider/model)",
-              "    thor setup --portal   (Thor Portal OAuth, no API key)")
+              "    thor setup            (pick ThorHub / a provider and add your key)")
 
     print()
     _setup.print_header("Tool Availability Summary")

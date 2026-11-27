@@ -4,7 +4,7 @@ The public paste carries only values Thor itself produces: versions, install kin
 toolset names, the KEY shape of config.yaml, and counts of warnings/errors by logger, exception
 class and HTTP status. Log lines and message text never take this path: subtractive redaction
 cannot recognise IPs, room IDs, display names or message bodies, so the public report is built
-from an allowlist instead. The full redacted logs go only to private storage (``--nous``).
+from an allowlist instead. The full redacted logs go only to private storage (``--internal``).
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ _KNOWN_LOGGER_ROOTS = frozenset({
 PUBLIC_SUMMARY_BANNER = (
     "[thor debug share: PUBLIC SUMMARY. Allowlisted fields only (versions, config key "
     "shape, error counts); no log lines or message text. Full redacted logs go only to "
-    "private storage: thor debug share --nous]\n")
+    "private storage: thor debug share --internal]\n")
 
 
 def _guarded(fn, default: Any = "unknown") -> Any:

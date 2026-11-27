@@ -341,7 +341,7 @@ class TestRunDebugShare:
         """The public share is a single allowlisted summary paste; no full-log pastes (#46006)."""
         from thor_cli.debug import run_debug_share
 
-        args = MagicMock(lines=50, expire=7, local=False, nous=False, no_redact=False)
+        args = MagicMock(lines=50, expire=7, local=False, internal=False, no_redact=False)
         uploaded_content = []
 
         def _mock_upload(content, expiry_days=7):
@@ -354,7 +354,7 @@ class TestRunDebugShare:
         out = capsys.readouterr().out
         assert len(uploaded_content) == 1
         assert "paste.rs/paste1" in out and "Report" in out
-        assert "thor debug share --nous" in out  # where full logs go instead
+        assert "thor debug share --internal" in out  # where full logs go instead
         summary = uploaded_content[0]
         assert "--- thor debug summary ---" in summary
         assert "session started" not in summary and "connection lost" not in summary
@@ -397,7 +397,7 @@ class TestRunDebugShareRedaction:
         args.lines = 50
         args.expire = 7
         args.local = False
-        args.nous = False
+        args.internal = False
         args.no_redact = False
 
         captured: list[str] = []
@@ -482,7 +482,7 @@ class TestRunDebugShareRedaction:
             f"    {field}: {yaml_value}\n", encoding="utf-8")
 
         uploaded: list[str] = []
-        args = MagicMock(lines=20, expire=1, local=False, nous=False, no_redact=False)
+        args = MagicMock(lines=20, expire=1, local=False, internal=False, no_redact=False)
         with patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)), \
              patch("thor_cli.debug._schedule_auto_delete"), \
              patch("thor_cli.debug.upload_to_pastebin",
@@ -552,10 +552,10 @@ class TestRunDebugShareRedaction:
     def test_public_paste_carries_the_summary_banner(
         self, thor_home_with_secret, capsys
     ):
-        """The public paste says what it is: an allowlisted summary, full logs via --nous."""
+        """The public paste says what it is: an allowlisted summary, full logs via --internal."""
         from thor_cli.debug import run_debug_share
 
-        args = MagicMock(lines=50, expire=7, local=False, nous=False, no_redact=False)
+        args = MagicMock(lines=50, expire=7, local=False, internal=False, no_redact=False)
         captured: list[str] = []
 
         def fake_upload(content, expiry_days=7):
@@ -567,12 +567,12 @@ class TestRunDebugShareRedaction:
             run_debug_share(args)
 
         assert len(captured) == 1
-        assert "PUBLIC SUMMARY" in captured[0] and "--nous" in captured[0]
+        assert "PUBLIC SUMMARY" in captured[0] and "--internal" in captured[0]
 
     def test_no_redact_flag_disables_redaction_and_banner_in_the_private_bundle(
         self, thor_home_with_secret
     ):
-        """--no-redact leaves the --nous/--local bundle raw and drops its banner; the default
+        """--no-redact leaves the --internal/--local bundle raw and drops its banner; the default
         bundle is redacted and bannered."""
         from thor_cli.debug import collect_share_bundle
 
@@ -589,7 +589,7 @@ class TestRunDebugShareRedaction:
         from thor_cli.debug import run_debug_share
 
         captured: list[str] = []
-        args = MagicMock(lines=50, expire=7, local=False, nous=False, no_redact=True)
+        args = MagicMock(lines=50, expire=7, local=False, internal=False, no_redact=True)
         with patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)), \
              patch("thor_cli.debug.upload_to_pastebin",
                    side_effect=lambda c, expiry_days=7: captured.append(c) or "https://paste.rs/x"):
@@ -947,13 +947,13 @@ class TestBuildNousBundle:
         assert envelope["redacted"] is False
 
 
-class TestRunDebugShareNous:
+class TestRunDebugShareInternal:
     def _args(self, **over):
         class _A:
             lines = 50
             expire = 7
             local = False
-            nous = True
+            internal = True
             no_redact = False
             yes = True
 
@@ -962,7 +962,7 @@ class TestRunDebugShareNous:
             setattr(a, k, v)
         return a
 
-    def test_nous_success_prints_view_url(self, thor_home, capsys):
+    def test_internal_success_prints_view_url(self, thor_home, capsys):
         from thor_cli.debug import run_debug_share
 
         res = {
@@ -982,7 +982,7 @@ class TestRunDebugShareNous:
         blob = share.call_args[0][0]
         assert isinstance(blob, (bytes, bytearray)) and blob[:2] == b"\x1f\x8b"
 
-    def test_nous_failure_suggests_local(self, thor_home, capsys):
+    def test_internal_failure_suggests_local(self, thor_home, capsys):
         from thor_cli.debug import run_debug_share
 
         with patch("thor_cli.dump.run_dump"), patch(
@@ -995,7 +995,7 @@ class TestRunDebugShareNous:
         err = capsys.readouterr().err
         assert "--local" in err
 
-    def test_nous_does_not_touch_pastebin(self, thor_home):
+    def test_internal_does_not_touch_pastebin(self, thor_home):
         from thor_cli.debug import run_debug_share
 
         res = {"id": "id-1", "viewUrl": "https://v"}
@@ -1049,7 +1049,7 @@ class TestDebugSlashCommand:
 
     def test_debug_upload_is_the_consent(self):
         c = self._captured("/debug upload")
-        assert c["nous"] is False and c["local"] is False
+        assert c["internal"] is False and c["local"] is False
         # The explicit `upload` word IS the consent → skip the [y/N] prompt
         # (input() would hang inside prompt_toolkit's event loop).
         assert c["yes"] is True
@@ -1082,11 +1082,11 @@ class TestDebugSlashCommand:
 
     def test_word_parsing_is_case_insensitive(self):
         c = self._captured("/debug NOUS Upload")
-        assert c["nous"] is True and c["yes"] is True
+        assert c["internal"] is True and c["yes"] is True
 
     def test_local_needs_no_upload_word(self):
         c = self._captured("/debug local")
-        assert c["local"] is True and c["nous"] is False
+        assert c["local"] is True and c["internal"] is False
 
 
 
@@ -1102,7 +1102,7 @@ class TestShareConsentGate:
     def _args(self, **over):
         from types import SimpleNamespace
 
-        base = dict(lines=50, expire=7, local=False, nous=False,
+        base = dict(lines=50, expire=7, local=False, internal=False,
                     no_redact=False, yes=False)
         base.update(over)
         return SimpleNamespace(**base)

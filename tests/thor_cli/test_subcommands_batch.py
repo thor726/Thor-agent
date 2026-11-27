@@ -13,7 +13,6 @@ import argparse
 
 
 from thor_cli.subcommands.config import build_config_parser
-from thor_cli.subcommands.login import build_login_parser
 
 
 
@@ -49,31 +48,32 @@ def test_config_get_unset_subcommands_parse():
 
 
 
-# ── deprecated `thor login` fails gracefully, not with argparse error ────
+# ── removed commands: `thor login` / `thor portal` ────
 #
-# `thor login` is a removed command; its handler (`login_command` in
-# `thor_cli/auth.py`) prints a deprecation notice pointing at `thor auth` /
-# `thor model` and exits 0.  Two behavior contracts guard the UX:
-#   1. ANY `--provider <value>` (including ones the user actually wants, like
-#      `anthropic`) must parse and reach the handler — never crash in argparse
-#      with `invalid choice` before the friendly redirect is printed (#24756).
-#   2. The subcommand must not advertise itself in the parser help row.
+# Both were removed with the Nous Portal retirement (nous-removal Fase 1):
+# `thor login` was a deprecated stub and `thor portal` was the Portal
+# entry point. The parser must reject them as unknown subcommands and must
+# not advertise them in `thor --help`.
 
 
+def test_removed_login_and_portal_subcommands_are_rejected():
+    """`thor login` / `thor portal` parse as invalid choices (exit 2)."""
+    import pytest
+
+    from thor_cli.main import _build_cli_parser
+
+    parser, _subparsers = _build_cli_parser()
+    for argv in (["login"], ["login", "--provider", "thor"], ["portal"], ["portal", "info"]):
+        with pytest.raises(SystemExit) as exc:
+            parser.parse_args(argv)
+        assert exc.value.code == 2
 
 
+def test_removed_login_and_portal_absent_from_help():
+    """Neither removed subcommand appears in `thor --help`."""
+    from thor_cli.main import _build_cli_parser
 
-
-def test_login_subparser_help_is_suppressed():
-    """The deprecated `login` row must not appear in `thor --help`.
-
-    Must hold without leaking argparse's literal `==SUPPRESS==` placeholder,
-    which `help=argparse.SUPPRESS` emits for a top-level subparser on 3.12+.
-    The fix omits the `help=` kwarg entirely instead.
-    """
-    parser = argparse.ArgumentParser(prog="thor")
-    sub = parser.add_subparsers(dest="command")
-    build_login_parser(sub, cmd_login=_h("login"))
+    parser, _subparsers = _build_cli_parser()
     help_text = parser.format_help()
-    # No leaked SUPPRESS placeholder row.
-    assert "==SUPPRESS==" not in help_text
+    assert "\n  portal " not in help_text
+    assert "\n  login " not in help_text

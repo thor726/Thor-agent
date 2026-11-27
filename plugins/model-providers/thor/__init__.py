@@ -3,8 +3,10 @@
 Thor's own LLM gateway: OpenAI-compatible ``/v1`` served from a static
 ``sk-thor-...`` API key (``THORHUB_API_KEY``). No OAuth, no device-code login.
 
-The ``nous*`` aliases are a deprecated migration bridge only: configs that
-still name provider ``nous`` keep resolving to ThorHub instead of failing.
+The legacy ``nous*`` aliases were removed in the nous-provider removal
+(Fase 1): configs that still name provider ``nous`` no longer resolve to
+ThorHub. (The ``nous``→``thor`` mapping in the static model catalog is a
+separate Fase 3 item.)
 
 Wire behavior kept from the old Nous Portal profile: product tags on every call
 (``product=thor-agent`` + client + conversation tags, plus a sticky
@@ -85,7 +87,7 @@ class ThorHubProfile(ProviderProfile):
 
 
 thor = ThorHubProfile(
-    name="thor", aliases=("thorhub", "nous", "nous-portal", "nousresearch"),
+    name="thor", aliases=("thorhub",),
     env_vars=("THORHUB_API_KEY",),
     display_name="ThorHub", description="ThorHub — Thor's own LLM gateway",
     signup_url="https://llm.thormarket.site",

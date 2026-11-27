@@ -1,8 +1,7 @@
-"""Streamlined setup flows: the Thor Portal one-shot (`thor portal`), first-time quick setup,
+"""Streamlined setup flows: ThorHub guidance, first-time quick setup,
 Blank Slate setup and the `--quick` missing-items pass. Names from setup.py are imported lazily
 per function so test patches on ``thor_cli.setup`` take effect."""
 
-import contextlib
 import logging
 import os
 import sys
@@ -54,31 +53,6 @@ def _run_thorhub_flow(config: dict, *, context: str, cancel_exc: tuple, cancel_l
     return False
 
 
-def _run_portal_one_shot(config: dict) -> None:
-    """One-shot ThorHub setup (``thor setup --portal`` / ``thor portal``).
-
-    Panduan ThorHub / provider langsung — tidak ada login portal.
-    """
-    from thor_cli.setup import _info, _print_banner, _record_setup_completed, print_success
-    _print_banner("│     ☤ Thor Setup — ThorHub (one-shot)                 │")
-    # Tampilkan panduan ThorHub / provider langsung.
-    _info(None, "  Thor sekarang berdiri sendiri — tidak ada login portal.",
-          "  Beli key token di: https://llm.thormarket.site/beli", None,
-          "  Lalu pasang di Thor kamu (pilih sendiri, tanpa default bawaan):",
-          "    - jalankan `thor setup` dan pilih provider / model sendiri, atau",
-          "    - tambah ThorHub sebagai custom provider",
-          "      (base URL https://llm.thormarket.site/v1) dengan key kamu, lalu",
-          "      ganti model dengan `/model thorhub`.",
-          "  Cek saldo: /skill saldo — beli / top-up: /skill beli.", None)
-    # Re-sync from disk so a caller's later save_config(config) can't clobber a save.
-    with contextlib.suppress(Exception):
-        _reload_config_into(config, dict_only=True)
-    print()
-    print_success("ThorHub setup guidance shown.")
-    _info("  Run `thor portal info` to inspect routing.", "  Run `thor` to start chatting.")
-    _record_setup_completed(config)
-
-
 def _imported_model_label(config: dict) -> str:
     """``"<provider> · <model>"`` when *config* (just written by an agent import) names a model
     Thor has credentials for, else ``""``."""
@@ -98,7 +72,7 @@ def _imported_model_label(config: dict) -> str:
 
 def _keep_imported_model(config: dict, imported_from: str) -> bool:
     """After an import that brought a model, ask whether to keep it (the default) or switch to
-    Thor Portal; True keeps it."""
+    ThorHub / a direct provider; True keeps it."""
     from thor_cli.setup import _info, print_header, prompt_choice
     label = _imported_model_label(config) if imported_from else ""
     if not label:
@@ -132,9 +106,9 @@ def _quick_setup_thorhub(config: dict) -> None:
 
 
 def _run_first_time_quick_setup(config: dict, thor_home, is_existing: bool, imported_from: str = ""):
-    """Streamlined first-time setup via Thor Portal: OAuth, model, terminal & messaging;
+    """Streamlined first-time setup via ThorHub guidance: model, terminal & messaging;
     everything else gets defaults. A model brought by an agent import (*imported_from* names the
-    agents) is offered first and kept by default, which skips the Thor Portal step."""
+    agents) is offered first and kept by default, which skips the ThorHub step."""
     from thor_cli.setup import (
         _apply_default_agent_settings, _info, print_info, _print_setup_summary, print_success,
         prompt_choice, save_config, setup_gateway, setup_terminal_backend

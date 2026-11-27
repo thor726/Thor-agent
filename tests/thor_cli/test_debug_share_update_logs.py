@@ -145,7 +145,7 @@ class TestCollectDebugReport:
 
 
 class TestCollectShareBundle:
-    """The upload bundle (paste.rs + --nous) carries the full update logs."""
+    """The upload bundle (paste.rs + --internal) carries the full update logs."""
 
     def test_bundle_includes_update_logs_when_present(self, home_with_update_logs):
         from thor_cli.debug import collect_share_bundle
@@ -172,7 +172,7 @@ class TestCollectShareBundle:
 
 
 class TestFullLogUploadLabels:
-    """--local prints every bundle log — including the new pair (--nous ships the bundle)."""
+    """--local prints every bundle log — including the new pair (--internal ships the bundle)."""
 
     def test_local_print_label_list_includes_update_logs(self):
         """run_debug_share --local prints bundle logs by the same contract."""

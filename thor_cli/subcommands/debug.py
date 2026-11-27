@@ -12,7 +12,7 @@ def build_debug_parser(subparsers, *, cmd_debug: Callable) -> None:
         "debug", help="Debug tools — upload logs and system info for support",
         description="Debug utilities for Thor Agent. Use 'thor debug share' to "
         "upload an allowlisted debug summary (versions, config key names, error "
-        "counts; no log text) to a public paste, or 'thor debug share --nous' "
+        "counts; no log text) to a public paste, or 'thor debug share --internal' "
         "to send full redacted logs to private Thor storage.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
@@ -22,17 +22,17 @@ Examples:
     thor debug share --lines 500  Scan/include more log lines
     thor debug share --expire 30  Keep dpaste.com fallback pastes for 30 days
     thor debug share --local      Print report locally (no upload)
-    thor debug share --nous --no-redact  Send unredacted logs to Thor storage
-    thor debug share --nous       Upload to Thor-internal storage (private)
+    thor debug share --internal --no-redact  Send unredacted logs to Thor storage
+    thor debug share --internal       Upload to Thor-internal storage (private)
     thor debug delete <url>       Delete a previously uploaded paste
 """)
     debug_sub = debug_parser.add_subparsers(dest="debug_command")
     share_parser = debug_sub.add_parser(
-        "share", help="Upload an allowlisted debug summary to a public paste (full logs: --nous)")
+        "share", help="Upload an allowlisted debug summary to a public paste (full logs: --internal)")
     share_parser.add_argument(
         "--lines", type=int, default=200,
         help="Log lines per file: scanned for the public summary's error counts, "
-            "included verbatim (redacted) with --nous / --local (default: 200)")
+            "included verbatim (redacted) with --internal / --local (default: 200)")
     share_parser.add_argument(
         "--expire", type=int, default=1,
         help="dpaste.com fallback retention in days (minimum 1; default: 1). "
@@ -48,11 +48,11 @@ Examples:
             "no TTY on stdin, the command refuses rather than upload silently.")
     share_parser.add_argument(
         "--no-redact", action="store_true",
-        help="Disable secret redaction of the logs sent with --nous or printed "
+        help="Disable secret redaction of the logs sent with --internal or printed "
             "with --local (default: redact). The public paste never carries log "
             "text, so this flag cannot put logs there.")
     share_parser.add_argument(
-        "--nous", action="store_true",
+        "--internal", action="store_true",
         help="Upload the debug bundle to Thor-internal storage (AWS S3) instead "
             "of a public paste service. The bundle is private — viewable only "
             "by Thor staff (and allowlisted Discord mods) via a Google-login-"
