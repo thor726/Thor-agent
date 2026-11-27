@@ -979,96 +979,6 @@
       }
     },
     {
-      "name": "free_tier.ack_notice",
-      "summary": "Mark the one-time availability notice as shown on the free-tier identity.",
-      "params": [
-        {
-          "name": "params",
-          "schema": {
-            "$ref": "#/components/schemas/ProfileParams"
-          }
-        }
-      ],
-      "result": {
-        "name": "result",
-        "schema": {
-          "$ref": "#/components/schemas/FreeTierAckNoticeResult"
-        }
-      }
-    },
-    {
-      "name": "free_tier.challenge_result",
-      "summary": "Report a browser window outcome for the matching pending attempt; mint remains authoritative.",
-      "params": [
-        {
-          "name": "params",
-          "schema": {
-            "$ref": "#/components/schemas/FreeTierChallengeResultParams"
-          }
-        }
-      ],
-      "result": {
-        "name": "result",
-        "schema": {
-          "$ref": "#/components/schemas/FreeTierChallengeResult"
-        }
-      }
-    },
-    {
-      "name": "free_tier.claim_nudge",
-      "summary": "Claim the due sign-in offer; true for exactly one caller each time an offer comes due.",
-      "params": [
-        {
-          "name": "params",
-          "schema": {
-            "$ref": "#/components/schemas/FreeTierClaimNudgeParams"
-          }
-        }
-      ],
-      "result": {
-        "name": "result",
-        "schema": {
-          "$ref": "#/components/schemas/FreeTierClaimNudgeResult"
-        }
-      }
-    },
-    {
-      "name": "free_tier.provision",
-      "summary": "Explicit retry of the free-tier identity mint when the boot bootstrap could not create it.",
-      "params": [
-        {
-          "name": "params",
-          "schema": {
-            "$ref": "#/components/schemas/ProfileParams"
-          }
-        }
-      ],
-      "result": {
-        "name": "result",
-        "schema": {
-          "$ref": "#/components/schemas/FreeTierProvisionResult"
-        }
-      }
-    },
-    {
-      "name": "free_tier.status",
-      "summary": "Pure read of the focused profile's free-tier identity state (no network, no side effects).",
-      "params": [
-        {
-          "name": "params",
-          "schema": {
-            "$ref": "#/components/schemas/ProfileParams"
-          }
-        }
-      ],
-      "result": {
-        "name": "result",
-        "schema": {
-          "$ref": "#/components/schemas/FreeTierStatusResult"
-        }
-      }
-    },
-    {
       "name": "gateway.capabilities",
       "summary": "What THIS build enforces (a client withholds a feature unless advertised).",
       "params": [
@@ -8285,45 +8195,6 @@
         "title": "CanonicalBotDeliverResult",
         "type": "object"
       },
-      "CanonicalClientIdentity": {
-        "additionalProperties": false,
-        "description": "A client naming itself: ``name`` matches ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64\nprintable ASCII without spaces, ``kind`` is 1-32 characters (``desktop``, ``webapp``, ``tui`` and\n``mobile`` are known; another is kept off the label, not refused). Attribution only: on\n``session.create`` (owners advertising ``session-client-v1``) and in the per-connection hello\n(``client.capabilities`` ``client``).",
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Version"
-          },
-          "kind": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Kind"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "title": "CanonicalClientIdentity",
-        "type": "object"
-      },
       "CanonicalClientLabel": {
         "additionalProperties": false,
         "description": "The client a session's creator declared itself as (``session.create`` ``client``).",
@@ -9066,7 +8937,7 @@
           "client": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/CanonicalClientIdentity"
+                "$ref": "#/components/schemas/tui_gateway_contracts_canonical_sessions_CanonicalClientIdentity"
               },
               {
                 "type": "null"
@@ -12543,6 +12414,17 @@
             "default": false,
             "title": "Desktop Local",
             "type": "boolean"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/tui_gateway_contracts_common_CanonicalClientIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
           }
         },
         "title": "ClientCapabilitiesParams",
@@ -19095,23 +18977,9 @@
         "title": "ForeignTurn",
         "type": "object"
       },
-      "FreeTierAckNoticeResult": {
-        "additionalProperties": false,
-        "properties": {
-          "acked": {
-            "title": "Acked",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "acked"
-        ],
-        "title": "FreeTierAckNoticeResult",
-        "type": "object"
-      },
       "FreeTierChallengePayload": {
         "additionalProperties": true,
-        "description": "``thor_cli/anon_challenge.py::BrowserChallenge.as_payload``: the ``free_tier.challenge``\nevent, and ``free_tier.status``'s ``challenge`` field for a client that connected after it.",
+        "description": "``thor_cli/anon_challenge.py::BrowserChallenge.as_payload``: the ``free_tier.challenge``\nevent's payload.",
         "properties": {
           "type": {
             "const": "browser",
@@ -19148,297 +19016,6 @@
           "message"
         ],
         "title": "FreeTierChallengePayload",
-        "type": "object"
-      },
-      "FreeTierChallengeResult": {
-        "additionalProperties": false,
-        "properties": {
-          "accepted": {
-            "title": "Accepted",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "accepted"
-        ],
-        "title": "FreeTierChallengeResult",
-        "type": "object"
-      },
-      "FreeTierChallengeResultParams": {
-        "additionalProperties": false,
-        "properties": {
-          "profile": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Profile"
-          },
-          "url": {
-            "title": "Url",
-            "type": "string"
-          },
-          "attempt": {
-            "default": 0,
-            "title": "Attempt",
-            "type": "integer"
-          },
-          "outcome": {
-            "enum": [
-              "done",
-              "failed",
-              "closed",
-              "timeout",
-              "refused",
-              "error",
-              "unsupported"
-            ],
-            "title": "Outcome",
-            "type": "string"
-          }
-        },
-        "required": [
-          "url",
-          "outcome"
-        ],
-        "title": "FreeTierChallengeResultParams",
-        "type": "object"
-      },
-      "FreeTierClaimNudgeParams": {
-        "additionalProperties": false,
-        "properties": {
-          "profile": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Profile"
-          },
-          "kind": {
-            "default": "trial",
-            "enum": [
-              "trial",
-              "connector"
-            ],
-            "title": "Kind",
-            "type": "string"
-          }
-        },
-        "title": "FreeTierClaimNudgeParams",
-        "type": "object"
-      },
-      "FreeTierClaimNudgeResult": {
-        "additionalProperties": false,
-        "properties": {
-          "claimed": {
-            "title": "Claimed",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "claimed"
-        ],
-        "title": "FreeTierClaimNudgeResult",
-        "type": "object"
-      },
-      "FreeTierProvisionResult": {
-        "additionalProperties": false,
-        "properties": {
-          "has_guest": {
-            "title": "Has Guest",
-            "type": "boolean"
-          },
-          "enabled": {
-            "title": "Enabled",
-            "type": "boolean"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Error"
-          },
-          "error_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Error Code"
-          },
-          "retryable": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Retryable"
-          },
-          "retry_after": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Retry After"
-          }
-        },
-        "required": [
-          "has_guest",
-          "enabled"
-        ],
-        "title": "FreeTierProvisionResult",
-        "type": "object"
-      },
-      "FreeTierStatusResult": {
-        "additionalProperties": false,
-        "description": "``available`` = an identity exists AND the tier is on; whether inference runs on it is\n``setup.runtime_check.free_tier_route``'s question.",
-        "properties": {
-          "has_guest": {
-            "title": "Has Guest",
-            "type": "boolean"
-          },
-          "enabled": {
-            "title": "Enabled",
-            "type": "boolean"
-          },
-          "available": {
-            "title": "Available",
-            "type": "boolean"
-          },
-          "notice_pending": {
-            "title": "Notice Pending",
-            "type": "boolean"
-          },
-          "model": {
-            "title": "Model",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Error"
-          },
-          "error_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Error Code"
-          },
-          "retryable": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Retryable"
-          },
-          "retry_after": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Retry After"
-          },
-          "challenge": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/FreeTierChallengePayload"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          },
-          "nudge_due_in": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Nudge Due In"
-          },
-          "connector_nudge_due_in": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Connector Nudge Due In"
-          }
-        },
-        "required": [
-          "has_guest",
-          "enabled",
-          "available",
-          "notice_pending",
-          "model",
-          "label"
-        ],
-        "title": "FreeTierStatusResult",
         "type": "object"
       },
       "GatewayCapabilitiesResult": {
@@ -25945,154 +25522,6 @@
           "kind"
         ],
         "title": "NotificationShowPayload",
-        "type": "object"
-      },
-      "NousUsageBar": {
-        "additionalProperties": false,
-        "description": "``agent.billing_usage.UsageBar``: one dollar bar (``topup`` has no cap, so total == remaining).",
-        "properties": {
-          "kind": {
-            "enum": [
-              "plan",
-              "topup"
-            ],
-            "title": "Kind",
-            "type": "string"
-          },
-          "remaining_usd": {
-            "title": "Remaining Usd",
-            "type": "number"
-          },
-          "total_usd": {
-            "title": "Total Usd",
-            "type": "number"
-          },
-          "spent_usd": {
-            "default": 0.0,
-            "title": "Spent Usd",
-            "type": "number"
-          }
-        },
-        "required": [
-          "kind",
-          "remaining_usd",
-          "total_usd"
-        ],
-        "title": "NousUsageBar",
-        "type": "object"
-      },
-      "NousUsageDollars": {
-        "additionalProperties": false,
-        "description": "``agent.billing_usage.UsageModel`` in numbers: the classic CLI's two-bar Nous balance block.",
-        "properties": {
-          "available": {
-            "title": "Available",
-            "type": "boolean"
-          },
-          "status": {
-            "default": "free",
-            "title": "Status",
-            "type": "string"
-          },
-          "plan_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Plan Name"
-          },
-          "renews_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Renews At"
-          },
-          "renews_display": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Renews Display"
-          },
-          "subscription_remaining_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Subscription Remaining Usd"
-          },
-          "topup_remaining_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Topup Remaining Usd"
-          },
-          "total_spendable_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Total Spendable Usd"
-          },
-          "plan_bar": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/NousUsageBar"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          },
-          "topup_bar": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/NousUsageBar"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          }
-        },
-        "required": [
-          "available"
-        ],
-        "title": "NousUsageDollars",
         "type": "object"
       },
       "OkResult": {
@@ -36901,7 +36330,7 @@
       },
       "SessionAccountUsage": {
         "additionalProperties": false,
-        "description": "``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the\nroute's provider plan limits. ``nous_lines``: the Nous balance whenever Nous is signed in on the\nprofile, after them (headed as a separate account off a Nous route). ``nous_route``: the route is\nNous inference, so the ``/topup`` CTA applies. ``nous_usage``: on a Nous route, the same account\nread's dollar model, so the CLI draws its two bars without reading the account again.",
+        "description": "``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the\nroute's provider plan limits. ``nous_lines``: the ThorHub balance whenever a ThorHub key is configured on the\nprofile, after them (headed as a separate account off a ThorHub route). ``nous_route``: the route is\nThorHub inference, so the ``/topup`` CTA applies. ``nous_usage``: on a ThorHub route, the same account\nread's dollar model, so the CLI draws its two bars without reading the account again.",
         "properties": {
           "lines": {
             "items": {
@@ -36925,7 +36354,7 @@
           "nous_usage": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/NousUsageDollars"
+                "$ref": "#/components/schemas/ThorHubUsageDollars"
               },
               {
                 "type": "null"
@@ -46485,6 +45914,154 @@
         "title": "ThemeValues",
         "type": "object"
       },
+      "ThorHubUsageBar": {
+        "additionalProperties": false,
+        "description": "``agent.billing_usage.UsageBar``: one dollar bar (``topup`` has no cap, so total == remaining).",
+        "properties": {
+          "kind": {
+            "enum": [
+              "plan",
+              "topup"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "remaining_usd": {
+            "title": "Remaining Usd",
+            "type": "number"
+          },
+          "total_usd": {
+            "title": "Total Usd",
+            "type": "number"
+          },
+          "spent_usd": {
+            "default": 0.0,
+            "title": "Spent Usd",
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "remaining_usd",
+          "total_usd"
+        ],
+        "title": "ThorHubUsageBar",
+        "type": "object"
+      },
+      "ThorHubUsageDollars": {
+        "additionalProperties": false,
+        "description": "``agent.billing_usage.UsageModel`` in numbers: the classic CLI's two-bar ThorHub balance block.",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "status": {
+            "default": "free",
+            "title": "Status",
+            "type": "string"
+          },
+          "plan_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Plan Name"
+          },
+          "renews_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Renews At"
+          },
+          "renews_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Renews Display"
+          },
+          "subscription_remaining_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subscription Remaining Usd"
+          },
+          "topup_remaining_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Topup Remaining Usd"
+          },
+          "total_spendable_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Spendable Usd"
+          },
+          "plan_bar": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThorHubUsageBar"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "topup_bar": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThorHubUsageBar"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "title": "ThorHubUsageDollars",
+        "type": "object"
+      },
       "TipShowPayload": {
         "additionalProperties": false,
         "description": "``tools/tip_tool.py``.",
@@ -50434,6 +50011,72 @@
           }
         },
         "title": "_SessionScoped",
+        "type": "object"
+      },
+      "tui_gateway_contracts_canonical_sessions_CanonicalClientIdentity": {
+        "additionalProperties": false,
+        "description": "A client naming itself: ``name`` matches ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64\nprintable ASCII without spaces. Attribution only (owners advertising ``session-client-v1``).",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Version"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CanonicalClientIdentity",
+        "type": "object"
+      },
+      "tui_gateway_contracts_common_CanonicalClientIdentity": {
+        "additionalProperties": false,
+        "description": "A client naming itself: ``name`` matches ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64\nprintable ASCII without spaces, ``kind`` is 1-32 characters (``desktop``, ``webapp``, ``tui`` and\n``mobile`` are known; another is kept off the label, not refused). Attribution only: on\n``session.create`` (owners advertising ``session-client-v1``) and in the per-connection hello\n(``client.capabilities`` ``client``).",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Version"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kind"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CanonicalClientIdentity",
         "type": "object"
       },
       "ConnectorErrorReason": {
