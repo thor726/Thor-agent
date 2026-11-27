@@ -666,59 +666,6 @@ export interface DiagnosticsShareNousResult {
   expires_at?: string | null
   error?: string | null
 }
-/** ``available`` = an identity exists AND the tier is on; whether inference runs on it is ``setup.runtime_check.free_tier_route``'s question. */
-export interface FreeTierStatusResult {
-  has_guest: boolean
-  enabled: boolean
-  available: boolean
-  notice_pending: boolean
-  model: string
-  label: string
-  error?: string | null
-  error_code?: string | null
-  retryable?: boolean | null
-  retry_after?: number | null
-  challenge?: FreeTierChallengePayload | null
-  nudge_due_in?: number | null
-  connector_nudge_due_in?: number | null
-}
-/** ``thor_cli/anon_challenge.py::BrowserChallenge.as_payload``: the ``free_tier.challenge`` event, and ``free_tier.status``'s ``challenge`` field for a client that connected after it. */
-export interface FreeTierChallengePayload {
-  type: 'browser'
-  url: string
-  required: boolean
-  expires_in: number
-  message: string
-  attempt?: number
-  [key: string]: unknown
-}
-export interface FreeTierChallengeResultParams {
-  profile?: string | null
-  url: string
-  attempt?: number
-  outcome: 'done' | 'failed' | 'closed' | 'timeout' | 'refused' | 'error' | 'unsupported'
-}
-export interface FreeTierChallengeResult {
-  accepted: boolean
-}
-export interface FreeTierProvisionResult {
-  has_guest: boolean
-  enabled: boolean
-  error?: string | null
-  error_code?: string | null
-  retryable?: boolean | null
-  retry_after?: number | null
-}
-export interface FreeTierAckNoticeResult {
-  acked: boolean
-}
-export interface FreeTierClaimNudgeParams {
-  profile?: string | null
-  kind?: 'trial' | 'connector'
-}
-export interface FreeTierClaimNudgeResult {
-  claimed: boolean
-}
 /** The focused profile's ``telemetry.shared_metrics`` opt-ins. ``send`` is never true while ``enabled`` is false; ``decided`` = either key is written in config.yaml (the shipped defaults are not an answer) and it is not a ``reask``: an "off" from before the type-ahead fix, offered once more with the reason. */
 export interface SharedMetricsConsentResult {
   enabled: boolean
@@ -2004,6 +1951,13 @@ export interface GatewayCapabilitiesResult {
 export interface ClientCapabilitiesParams {
   server_requests?: boolean
   desktop_local?: boolean
+  client?: tui_gateway_contracts_common_CanonicalClientIdentity | null
+}
+/** A client naming itself: ``name`` matches ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64 printable ASCII without spaces, ``kind`` is 1-32 characters (``desktop``, ``webapp``, ``tui`` and ``mobile`` are known; another is kept off the label, not refused). Attribution only: on ``session.create`` (owners advertising ``session-client-v1``) and in the per-connection hello (``client.capabilities`` ``client``). */
+export interface tui_gateway_contracts_common_CanonicalClientIdentity {
+  name: string
+  version?: string | null
+  kind?: string | null
 }
 export interface ClientCapabilitiesResult {
   server_requests: string[]
@@ -4949,15 +4903,15 @@ export interface SessionStats {
 export interface SessionAccountUsageParams {
   session_id: string
 }
-/** ``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the route's provider plan limits. ``nous_lines``: the Nous balance whenever Nous is signed in on the profile, after them (headed as a separate account off a Nous route). ``nous_route``: the route is Nous inference, so the ``/topup`` CTA applies. ``nous_usage``: on a Nous route, the same account read's dollar model, so the CLI draws its two bars without reading the account again. */
+/** ``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the route's provider plan limits. ``nous_lines``: the ThorHub balance whenever a ThorHub key is configured on the profile, after them (headed as a separate account off a ThorHub route). ``nous_route``: the route is ThorHub inference, so the ``/topup`` CTA applies. ``nous_usage``: on a ThorHub route, the same account read's dollar model, so the CLI draws its two bars without reading the account again. */
 export interface SessionAccountUsage {
   lines: string[]
   nous_lines?: string[]
   nous_route: boolean
-  nous_usage?: NousUsageDollars | null
+  nous_usage?: ThorHubUsageDollars | null
 }
-/** ``agent.billing_usage.UsageModel`` in numbers: the classic CLI's two-bar Nous balance block. */
-export interface NousUsageDollars {
+/** ``agent.billing_usage.UsageModel`` in numbers: the classic CLI's two-bar ThorHub balance block. */
+export interface ThorHubUsageDollars {
   available: boolean
   status?: string
   plan_name?: string | null
@@ -4966,11 +4920,11 @@ export interface NousUsageDollars {
   subscription_remaining_usd?: number | null
   topup_remaining_usd?: number | null
   total_spendable_usd?: number | null
-  plan_bar?: NousUsageBar | null
-  topup_bar?: NousUsageBar | null
+  plan_bar?: ThorHubUsageBar | null
+  topup_bar?: ThorHubUsageBar | null
 }
 /** ``agent.billing_usage.UsageBar``: one dollar bar (``topup`` has no cap, so total == remaining). */
-export interface NousUsageBar {
+export interface ThorHubUsageBar {
   kind: 'plan' | 'topup'
   remaining_usd: number
   total_usd: number
@@ -5216,13 +5170,12 @@ export interface CanonicalCreateParams {
   run_budget?: number | null
   verbose?: boolean
   client_env?: Record<string, string> | null
-  client?: CanonicalClientIdentity | null
+  client?: tui_gateway_contracts_canonical_sessions_CanonicalClientIdentity | null
 }
 /** A client naming itself: ``name`` matches ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64 printable ASCII without spaces. Attribution only (owners advertising ``session-client-v1``). */
-export interface CanonicalClientIdentity {
+export interface tui_gateway_contracts_canonical_sessions_CanonicalClientIdentity {
   name: string
   version?: string | null
-  kind?: string | null
 }
 export interface CanonicalSnapshot {
   session_id: string
@@ -5951,6 +5904,16 @@ export interface SetupReadyPayload {
   finished_at: number
   [key: string]: unknown
 }
+/** ``thor_cli/anon_challenge.py::BrowserChallenge.as_payload``: the ``free_tier.challenge`` event's payload. */
+export interface FreeTierChallengePayload {
+  type: 'browser'
+  url: string
+  required: boolean
+  expires_in: number
+  message: string
+  attempt?: number
+  [key: string]: unknown
+}
 /** Every ``_emit("error", …)`` site sets exactly ``message``. */
 export interface ErrorPayload {
   message: string
@@ -6480,16 +6443,6 @@ export interface RpcMethods {
   'display.thumbnail': { params: ProfileParams; result: DisplayThumbnailResult }
   /** Stage a non-image file into the session workspace and hand back its @file: ref. */
   'file.attach': { params: FileAttachParams; result: FileAttachResult }
-  /** Mark the one-time availability notice as shown on the free-tier identity. */
-  'free_tier.ack_notice': { params: ProfileParams; result: FreeTierAckNoticeResult }
-  /** Report a browser window outcome for the matching pending attempt; mint remains authoritative. */
-  'free_tier.challenge_result': { params: FreeTierChallengeResultParams; result: FreeTierChallengeResult }
-  /** Claim the due sign-in offer; true for exactly one caller each time an offer comes due. */
-  'free_tier.claim_nudge': { params: FreeTierClaimNudgeParams; result: FreeTierClaimNudgeResult }
-  /** Explicit retry of the free-tier identity mint when the boot bootstrap could not create it. */
-  'free_tier.provision': { params: ProfileParams; result: FreeTierProvisionResult }
-  /** Pure read of the focused profile's free-tier identity state (no network, no side effects). */
-  'free_tier.status': { params: ProfileParams; result: FreeTierStatusResult }
   /** What THIS build enforces (a client withholds a feature unless advertised). */
   'gateway.capabilities': { params: PingParams; result: GatewayCapabilitiesResult }
   /** Resolve one exact pending approval raised by a local or peer room member. */
@@ -6955,11 +6908,6 @@ export const RPC_METHODS = [
   'display.switchSandboxImage',
   'display.thumbnail',
   'file.attach',
-  'free_tier.ack_notice',
-  'free_tier.challenge_result',
-  'free_tier.claim_nudge',
-  'free_tier.provision',
-  'free_tier.status',
   'gateway.capabilities',
   'groups.approve',
   'groups.attachment.download',

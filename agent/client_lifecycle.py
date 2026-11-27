@@ -879,11 +879,6 @@ class ClientLifecycleMixin:
             from thor_cli.auth import normalize_actual_base_url
             runtime_base = normalize_actual_base_url(runtime_base)
         stripped_base = runtime_base.rstrip("/") if isinstance(runtime_base, str) else runtime_base
-        # Refuse BEFORE any state changes below: a refused swap must leave the agent exactly as it was.
-        from thor_cli.anon_auth import route_can_serve_model
-        if not route_can_serve_model(getattr(self, "provider", None), stripped_base, getattr(self, "model", None)):
-            logger.info("Credential %s skipped: its route cannot serve model %s", getattr(entry, "id", "?"), self.model)
-            return False
         if getattr(self, "provider", None) == "anthropic" and base_url_host_matches(str(stripped_base or ""), "azure.com"):
             from thor_cli.runtime_provider import anthropic_foundry_entry_ok
             if not anthropic_foundry_entry_ok(entry, stripped_base):  # an OAuth/unbound row never reaches Foundry (#154242)

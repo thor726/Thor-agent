@@ -1607,9 +1607,8 @@ class _CronJobConfig:
 
 def _load_cron_job_config(job: dict, job_id: str, job_name: str) -> _CronJobConfig:
     """Load config.yaml and resolve the run's model: per-job pin > cron.model (fleet default) >
-    the main agent model (config ``model:``, then THOR_MODEL) > the claimed welcome trial's. Re-read
+    the main agent model (config ``model:``, then THOR_MODEL). Re-read
     every tick (no cache) so ``thor cron edit --model`` and ``thor model`` both apply next tick."""
-    from thor_cli.anon_auth import trial_model
     model = job.get("model") or cron_env_setting("THOR_MODEL") or ""
     _cron_default_provider = ""
     _cfg: dict = {}
@@ -1638,7 +1637,7 @@ def _load_cron_job_config(job: dict, job_id: str, job_name: str) -> _CronJobConf
                     model = str(_main or "").strip() or model
     except Exception as e:  # ConfigBackendUnavailable is not one: run_job fails this fire, never defaults
         logger.warning("Job '%s': failed to load config.yaml, using defaults: %s", job_id, e)
-    model = (model if isinstance(model, str) else "").strip() or trial_model()
+    model = (model if isinstance(model, str) else "").strip()
     # Fail fast: an empty model otherwise reaches the provider as an opaque 400 (#23979).
     if not model:
         raise RuntimeError(

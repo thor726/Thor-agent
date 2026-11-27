@@ -685,7 +685,7 @@ DEFAULT_CONFIG = {
     # Anthropic prompt caching (Claude via OpenRouter or native API). cache_ttl: "5m" | "1h" | "auto"
     # (auto = 1h for human-paced sessions — cli/tui/desktop/messaging — and 5m for subagent, cron,
     # oneshot, webhook, kanban, api, tool, batch); falsy (false, null, "off", "disabled", ...) disables caching.
-    # route_ttl_ceilings {<provider>: "5m"|"1h"} overrides a profile's prompt_cache_max_ttl (Nous ships "5m").
+    # route_ttl_ceilings {<provider>: "5m"|"1h"} overrides a profile's prompt_cache_max_ttl.
     "prompt_caching": {"cache_ttl": "5m", "route_ttl_ceilings": {}},
     # OpenRouter settings. response_cache: X-OpenRouter-Cache header — identical requests return
     # cached responses at zero billing; independent of Anthropic prompt caching. response_cache_ttl:
@@ -2673,7 +2673,6 @@ from thor_cli.config_defaults_env import OptionalEnvVars, _base_url, _env, _msg,
 # tools=[...] lists the model tools the key unlocks. Provider entries: config_provider_env (on first read).
 OPTIONAL_ENV_VARS = OptionalEnvVars({
     # ── Provider (handled in provider selection, not shown in checklists) ──
-    "NOUS_BASE_URL": _base_url("Thor Portal"),
     "THOR_ANON_API_SECRET": _env(
         "Shared secret for the Thor free-tier sign-up endpoints while they are in their gated "
         "integration phase (not needed once the gate is removed)",
