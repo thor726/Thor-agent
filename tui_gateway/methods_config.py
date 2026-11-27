@@ -394,7 +394,6 @@ def _(rid, params: dict) -> dict:
     The record's fields ride along additively (``ready``, ``free_tier_account``, ``free_tier_route``,
     ``other_providers``)."""
     try:
-        from thor_cli.anon_auth import free_tier_route
         from thor_cli.main import _has_any_provider_configured
         from thor_cli.free_tier_bootstrap import wait_for_record
 
@@ -402,16 +401,15 @@ def _(rid, params: dict) -> dict:
             record = None if profile else wait_for_record()
             if record is None:
                 # ``ready`` = this process's boot bootstrap has settled (a named profile has no
-                # record of its own; the launch record says whether the free tier is minted).
+                # record of its own; the launch record says whether inference is configured).
                 # Since one host backend serves every profile (#118246), the desktop's
                 # named-profile probe lands here too.
                 launch = wait_for_record() if profile else None
                 return {"provider_configured": bool(_has_any_provider_configured(strict_profile_scope=bool(profile))),
                         **({"ready": True, "free_tier_account": launch.free_tier_account,
-                            "free_tier_route": free_tier_route()} if launch is not None else {}),
+                            "free_tier_route": False} if launch is not None else {}),
                         **scoped}
-            # ``failure_fields`` rides along only when the free-tier mint did not happen: the code,
-            # the sentence, and whether / when a retry can succeed (``free_tier.provision``).
+            # ``failure_fields`` rides along (always empty now: the free-tier mint is retired).
             return {"provider_configured": record.provider_configured, "ready": True,
                     "free_tier_account": record.free_tier_account, "free_tier_route": record.free_tier_route,
                     "other_providers": record.other_providers,
@@ -467,12 +465,11 @@ def _(rid, params: dict) -> dict:
             if not runtime_has_credentials(runtime):
                 return fail(f"No usable credentials found for {blamed}.{missing_credentials_suffix(blamed)}",
                             runtime.get("source"))
-            from thor_cli.anon_auth import route_is_welcome_host
-            # free_tier_route is keyed on the SELECTED route (the welcome host serves only nous/welcome), not
-            # on profile state: a paid Nous key beside a free-tier identity must not read as free.
+            # free_tier_route is always False now (the Nous free tier is retired); the field
+            # stays for the wire shape the desktop reads.
             return {"ok": True, "provider": runtime.get("provider"), "model": model,
                     "source": runtime.get("source"),
-                    "free_tier_route": provider == "nous" and route_is_welcome_host(runtime.get("base_url")),
+                    "free_tier_route": False,
                     **scoped}
         return _readiness_check(rid, params, probe, probe_key=f"runtime:{requested or ''}",
                                 wait_seconds=_READINESS_SHARE_WAIT_SECONDS)

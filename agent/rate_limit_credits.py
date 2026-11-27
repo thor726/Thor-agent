@@ -59,17 +59,10 @@ class RateLimitCreditsMixin:
         return self._rate_limit_state
 
     def _capture_nous_model_switch(self, http_response: Any) -> None:
-        """Record the Thor gateway's ``x-nous-model-switch`` header (a named account asked for the
-        free tier's model; the gateway served its backing model and named it). Applied between
-        calls by ``thor_cli.anon_auth.apply_model_switch``. Fail-open."""
-        headers = _response_headers(http_response)
-        if not headers:
-            return
-        try:
-            from thor_cli.anon_auth import note_model_switch
-            note_model_switch(self, headers)
-        except Exception:
-            pass  # Never let header parsing break the agent loop
+        """Retired with the Nous free tier: the Thor gateway's ``x-nous-model-switch`` header is no
+        longer captured, so no model switch is ever recorded here. Kept (a no-op) because the
+        response-header capture calls it; the credits path it fed is Fase 3's."""
+        return
 
     def _capture_anthropic_response_headers(self, http_response: Any) -> None:
         """Capture rate-limit + credits state from Anthropic Messages response headers (the SDK's

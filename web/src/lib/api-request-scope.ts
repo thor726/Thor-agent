@@ -39,7 +39,6 @@ export const PROFILE_SCOPED_PREFIXES = [
   "/api/webhooks",
   "/api/ops",
   "/api/logs",
-  "/api/portal",
   // Pool entries live in the profile's home, and DELETE /api/credentials/pool/{provider}/{index}
   // is destructive — without this prefix the dashboard's remove button never named a profile and
   // a multi-profile host refused it outright.

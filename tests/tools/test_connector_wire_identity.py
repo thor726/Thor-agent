@@ -136,7 +136,6 @@ def test_each_connect_path_names_its_initiator(monkeypatch):
     from tools.connectors.run import reissue
 
     transport = _Transport(_mint_ok(["gmail"]), _mint_ok(["gmail"]), _mint_ok(["gmail"]))
-    monkeypatch.setattr(managed, "ensure_guest_identity", lambda: None)
     real = ConnectorClient
     monkeypatch.setattr("tools.connectors.gateway.client.ConnectorClient", lambda **kw: real(
         transport=transport, endpoint_resolver=lambda: "https://gw.test",
@@ -239,7 +238,6 @@ def test_try_again_keeps_the_opening_calls_ids(monkeypatch, caplog):
 
     _consent(True)
     transport = _Transport(_mint_ok(["gmail"]))
-    monkeypatch.setattr(managed, "ensure_guest_identity", lambda: None)
     real = ConnectorClient
     monkeypatch.setattr("tools.connectors.gateway.client.ConnectorClient", lambda **kw: real(
         transport=transport, endpoint_resolver=lambda: "https://gw.test",

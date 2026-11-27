@@ -12,13 +12,11 @@ import pytest
 
 
 def test_first_connector_action_in_a_test_home_mints_no_portal_guest():
-    from thor_cli import anon_auth
+    """The guest tier is retired: the first hosted connector action creates no identity at all
+    (``ensure_guest_identity`` is a no-op returning None), and no guest state is ever written."""
     from tools.connectors.gateway.config import ensure_guest_identity
 
-    failure = ensure_guest_identity()
-
-    assert failure and failure.startswith("Hosted connectors could not be set up.")
-    assert not anon_auth.has_guest()
+    assert ensure_guest_identity() is None
 
 
 @pytest.mark.parametrize("host", [

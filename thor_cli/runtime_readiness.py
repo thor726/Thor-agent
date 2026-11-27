@@ -99,8 +99,7 @@ def check_runtime_readiness(requested=None, *, strict_profile_scope=False, resol
         return fail('No Thor provider is configured.', source)
     if not runtime_has_credentials(runtime):
         return fail(f'No usable credentials found for {blamed}.{missing_credentials_suffix(blamed)}', runtime.get('source'))
-    from thor_cli.anon_auth import route_is_welcome_host
-    # free_tier_route is keyed on the SELECTED route (the welcome host serves only nous/welcome), not
-    # on profile state: a paid Nous key beside a free-tier identity must not read as free.
+    # free_tier_route is always False now (the Nous free tier is retired); the field stays for
+    # the wire shape the desktop reads.
     return {'ok': True, 'provider': runtime.get('provider'), 'model': model, 'source': runtime.get('source'),
-            'free_tier_route': provider == 'nous' and route_is_welcome_host(runtime.get('base_url'))}
+            'free_tier_route': False}

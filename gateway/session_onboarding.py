@@ -132,16 +132,16 @@ def _choose_run(authority, request):
 def _claim_before_run(*, assume_fresh):
     """``onboarding.run: true`` on disk before the welcome-trial claim, so a crash after the claim still
     opens onboarding next launch."""
-    from thor_cli import anon_auth
     from thor_cli.onboarding_run import set_run
+    from thor_cli.process_identity import serves_local_desktop_now
     from thor_cli.welcome_trial import claim_desktop_free_tier, provider_configured
-    if not anon_auth.on_local_desktop_backend():
+    if not serves_local_desktop_now():
         # A CLI or TUI holds a native ticket too: its start schedules nothing. A rerun (Settings, any
         # Desktop) never claims and never reaches here.
         raise _NoModelForTheRun('First-run onboarding starts only in the Desktop app on this machine.')
     set_run(True)
     claimed = claim_desktop_free_tier(assume_fresh=assume_fresh)
-    if claimed is None and not (anon_auth.free_inference_active() or provider_configured()):
+    if claimed is None and not provider_configured():
         raise _NoModelForTheRun('The welcome trial is not available here, and no provider is set up.')
     return claimed
 

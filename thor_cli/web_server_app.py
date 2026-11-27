@@ -154,7 +154,7 @@ async def standalone_lifespan(app: "FastAPI"):
 
     threading.Thread(target=_boot_local_runtime, daemon=True, name="local-runtime-boot").start()
 
-    # Records who carries inference for setup.status / free_tier.status and broadcasts `setup.ready`
+    # Records who carries inference for setup.status and broadcasts `setup.ready`
     # (no identity is created at boot). Off-thread; the desktop's first setup.status waits on the
     # record (bounded) instead.
     from thor_cli.free_tier_bootstrap import start_background_bootstrap

@@ -134,6 +134,13 @@ def _external_process_cli_command(provider_id: str, default: str) -> str:
 # the Anthropic credential-status card and the synthetic ``claude-code`` row.
 # ``flow``: ``device_code`` = show code + URL + poll; ``external`` = delegated to a terminal/CLI.
 _OAUTH_PROVIDER_CATALOG: tuple[dict[str, Any], ...] = (
+    # ThorHub first: the System page and the desktop cloud bridge read the `thor` card for
+    # ThorHub status (``GET /api/portal`` is retired). Its status comes from the hand-written
+    # card in ``web_routers/oauth.py::_PROVIDER_STATUS`` (refresh-free local snapshot);
+    # flow == "external" because ThorHub login is a static key (`thor auth add thor`).
+    {"id": "thor", "name": "ThorHub", "flow": "external",
+     "cli_command": "thor auth add thor", "docs_url": "https://llm.thormarket.site",
+     "status_fn": None},
     # status_fn None → dispatched via auth.get_<provider>_auth_status.
     {"id": "openai-codex", "name": "ChatGPT or Codex Subscription", "flow": "device_code",
      "cli_command": "thor auth add openai-codex", "docs_url": "https://platform.openai.com/docs",
@@ -202,42 +209,6 @@ def _oauth_poller(label: str):
                     sess["error_message"] = str(e)
         return poller
     return deco
-
-
-def _record_sign_in_state(sess: dict[str, Any], state: Any) -> None:
-    """Write one ``anon_auth.SignInState`` onto the dashboard session, under the sessions lock.
-
-    The whole desktop mapping lives here: the state carries its own copy, so nothing below turns a
-    reason into a string. ``completed`` deliberately leaves ``status`` on ``"pending"`` so the
-    :func:`_oauth_poller` wrapper stamps ``"approved"`` when the poller returns.
-    """
-    kind = getattr(state, "kind", "")
-    if kind in ("code", "waiting"):
-        return          # the start route already published the code
-    with _oauth_sessions_lock:
-        if kind == "completed":
-            sess["account_email"] = state.email or None
-            # None when the config was left on the user's own model, as the poll route documents.
-            sess["model"] = state.model if state.model_changed else None
-            # What the free tier's handoff did (moved apps, apps to reconnect); empty without one.
-            sess["handoff"] = list(state.handoff)
-            # The same result as fields, so the desktop can name the apps and follow a retry.
-            sess["handoff_status"] = state.handoff_status
-            return
-        if kind == "cancelled":
-            sess["status"] = "cancelled"
-            return
-        if kind == "timed_out":
-            sess["status"], sess["reason"] = "error", "timeout"
-            # The enriched device-auth guidance, which the dashboard has room for.
-            sess["error_message"] = state.detail or state.copy
-            return
-        sess["status"] = "error"
-        sess["reason"] = getattr(state, "reason", "") or kind or "error"
-        sess["error_message"] = state.copy    # the chat form: no raw exception reaches the UI
-        # Whether a later attempt can succeed, and the wait the service named (seconds).
-        sess["retryable"] = bool(getattr(state, "retryable", False))
-        sess["retry_after"] = int(getattr(state, "retry_after", 0) or 0)
 
 
 @_oauth_poller("minimax")

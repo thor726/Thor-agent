@@ -54,9 +54,8 @@ def resolve_thorhub_access_token(
 ) -> str:
     """The ThorHub bearer token: the static key itself.
 
-    Drop-in for the old ``resolve_nous_access_token`` at the managed-gateway /
-    connectors / account-read call sites. No refresh, no guest minting — a missing
-    key raises ``AuthError`` (``thorhub_auth_missing``, relogin) instead of
+    Used at the managed-gateway / connectors / account-read call sites. No refresh, no guest
+    minting — a missing key raises ``AuthError`` (``thorhub_auth_missing``, relogin) instead of
     returning a guest token.
     """
     from thor_cli.thorhub_account import thorhub_api_key
@@ -80,10 +79,9 @@ def resolve_thorhub_runtime_credentials(
 ) -> dict[str, Any]:
     """ThorHub inference credentials for runtime use.
 
-    Drop-in for the old ``resolve_nous_runtime_credentials``: the same result
-    shape, minus expiry (a static key does not expire) and minus the OAuth
-    machinery. ``force_refresh`` / ``stale_access_token`` / TLS kwargs are
-    accepted and ignored — there is nothing to refresh.
+    The result shape of the old provider credential resolver, minus expiry (a static key does
+    not expire) and minus the OAuth machinery. ``force_refresh`` / ``stale_access_token`` /
+    TLS kwargs are accepted and ignored — there is nothing to refresh.
     """
     from thor_cli.auth import _auth_file_path
     from thor_cli.thorhub_account import resolve_thorhub_base_url, thorhub_api_key
@@ -119,7 +117,7 @@ def get_thorhub_auth_status_local() -> dict[str, Any]:
     key = thorhub_api_key()
     base_url = resolve_thorhub_base_url()
     try:
-        state = get_provider_auth_state("thor") or get_provider_auth_state("nous")
+        state = get_provider_auth_state("thor")
     except Exception:
         state = None
     return {

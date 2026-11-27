@@ -19,7 +19,7 @@ const PAGE_REQUESTS = [
   "GET /api/ops/checkpoints",
   "GET /api/ops/hooks",
   "GET /api/curator",
-  "GET /api/portal",
+  "GET /api/providers/oauth",
   "GET /api/thor/update/check",
   "GET /api/gateway/migrate/plan",
 ];

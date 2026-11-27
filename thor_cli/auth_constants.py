@@ -52,7 +52,7 @@ AUTH_LOCK_TIMEOUT_SECONDS = 15.0
 
 # On every guest minted since the welcome trial: True when the desktop's first install claimed it
 # (``thor_cli.welcome_trial``), False for a connector mint. Absent = minted before the trial existed.
-# Kept: the retired guest shim in ``thor_cli.anon_auth`` still re-exports it.
+# Kept for reading legacy auth stores; no new guest is ever minted.
 WELCOME_CLAIM_FLAG = "welcome_claim"
 ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120       # refresh 2 min before expiry
 DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS = 1     # poll at most every 1s

@@ -118,7 +118,7 @@ async def test_a_desktop_chat_runs_its_turns_as_work_for_the_local_desktop(tmp_p
     from contextlib import nullcontext
     from gateway.session_local_recovery import local_source
     from gateway.session_policy import local_desktop_turn
-    from thor_cli.anon_auth import on_local_desktop_backend
+    from thor_cli.process_identity import serves_local_desktop_now
 
     conn = await _connect(tmp_path, monkeypatch,
                           config="model:\n  provider: openrouter\n  default: anthropic/claude-sonnet-4\n")
@@ -131,11 +131,11 @@ async def test_a_desktop_chat_runs_its_turns_as_work_for_the_local_desktop(tmp_p
         def inside_turn(stored):
             source = local_source(conn.authority, stored, conn.connection.actor.subject)
             with local_desktop_turn(conn.runner, source, nullcontext()):
-                return on_local_desktop_backend()
+                return serves_local_desktop_now()
 
         assert inside_turn(desktop["stored_session_id"]) is True
         assert inside_turn(tui["stored_session_id"]) is False
-        assert on_local_desktop_backend() is False
+        assert serves_local_desktop_now() is False
     finally:
         await conn.connection.close()
 
@@ -162,10 +162,11 @@ async def test_a_fresh_launch_with_a_thorhub_key_opens_onboarding_on_it(tmp_path
 
 @pytest.mark.asyncio
 async def test_the_first_local_desktop_connection_runs_the_desktop_boot_work(tmp_path, monkeypatch):
-    from thor_cli import anon_auth, free_tier_bootstrap, onboarding_run
+    from thor_cli import free_tier_bootstrap, onboarding_run
+    from thor_cli.process_identity import serves_local_desktop_now
     from tui_gateway import server
     seen = []
-    monkeypatch.setattr(onboarding_run, "latch_first_install", lambda: seen.append(anon_auth.on_local_desktop_backend()))
+    monkeypatch.setattr(onboarding_run, "latch_first_install", lambda: seen.append(serves_local_desktop_now()))
     monkeypatch.setattr(server, "_local_desktop_boot_started", False)
     free_tier_bootstrap.reset_for_tests()
     conn = await _connect(tmp_path, monkeypatch)
@@ -214,7 +215,7 @@ async def test_an_exact_create_retry_from_a_socket_not_yet_declared_local_resume
     from contextlib import nullcontext
     from gateway.session_local_recovery import local_source
     from gateway.session_policy import local_desktop_turn
-    from thor_cli.anon_auth import on_local_desktop_backend
+    from thor_cli.process_identity import serves_local_desktop_now
 
     conn = await _connect(tmp_path, monkeypatch,
                           config="model:\n  provider: openrouter\n  default: anthropic/claude-sonnet-4\n")
@@ -230,7 +231,7 @@ async def test_an_exact_create_retry_from_a_socket_not_yet_declared_local_resume
 
         source = local_source(conn.authority, stored, conn.connection.actor.subject)
         with local_desktop_turn(conn.runner, source, nullcontext()):
-            assert on_local_desktop_backend() is True
+            assert serves_local_desktop_now() is True
         from gateway.session_local import local_session_info
         from gateway.session_contract import SessionRef
         info = local_session_info(conn.authority, SessionRef(conn.authority.profile_id, stored))
@@ -280,7 +281,7 @@ async def test_a_desktop_chat_saved_before_the_mark_moved_still_resumes_and_runs
     from gateway.session_local import publish_local_policy
     from gateway.session_local_recovery import local_source
     from gateway.session_policy import local_desktop_turn
-    from thor_cli.anon_auth import on_local_desktop_backend
+    from thor_cli.process_identity import serves_local_desktop_now
     from thor_state_local import POLICY_PREFIX
 
     conn = await _connect(tmp_path, monkeypatch,
@@ -310,6 +311,6 @@ async def test_a_desktop_chat_saved_before_the_mark_moved_still_resumes_and_runs
         assert retry["result"]["stored_session_id"] == stored
         source = local_source(conn.authority, stored, conn.connection.actor.subject)
         with local_desktop_turn(conn.runner, source, nullcontext()):
-            assert on_local_desktop_backend() is True
+            assert serves_local_desktop_now() is True
     finally:
         await conn.connection.close()

@@ -126,8 +126,7 @@ class TestApplySessionModelOverride:
 
 class TestIsIntentionalModelSwitch:
     """The fallback-eviction check must not evict a session whose model differs from the config
-    default for a reason the system produced: a /model override, or the Nous gateway moving the
-    session off the ``nous/welcome`` alias the config still carries."""
+    default for a reason the system produced: a /model override naming that model."""
 
     def test_matches_override(self):
         runner = _make_runner()
@@ -143,18 +142,6 @@ class TestIsIntentionalModelSwitch:
 
         agent = SimpleNamespace(model="gpt-5.4")
         assert runner._is_intentional_model_switch(sk, agent, "openai/gpt-5") is True
-
-    def test_server_model_switch_off_the_welcome_alias_is_intentional(self):
-        runner = _make_runner()
-        sk = build_session_key(_make_source())
-        # apply_model_switch moved the session and recorded the move (alias -> backing).
-        agent = SimpleNamespace(model="z-ai/glm-5.3-flash", _nous_model_switch=("nous/welcome", "z-ai/glm-5.3-flash"))
-        assert runner._is_intentional_model_switch(sk, agent, "nous/welcome") is True
-        # A config that names something else is real drift, not the server's move.
-        assert runner._is_intentional_model_switch(sk, agent, "openai/gpt-5") is False
-        # A later fallback onto a third model is drift too, even with the config still on the alias.
-        agent.model = "fallback/model"
-        assert runner._is_intentional_model_switch(sk, agent, "nous/welcome") is False
 
     def test_plain_drift_is_not_intentional(self):
         runner = _make_runner()
@@ -202,24 +189,6 @@ class TestFallbackEvictionHonorsChannelOverrides:
 
     _WELCOME = "https://welcome-api.thor-agent.local/v1"
 
-    @pytest.mark.parametrize("global_model", ["nous/welcome", "default/model"])
-    def test_the_welcome_host_pins_its_model_over_the_channel_model(self, monkeypatch, global_model):
-        """AIAgent.__init__ runs a welcome-host agent on ``nous/welcome`` whatever the chat configured."""
-        from thor_cli.anon_auth import pin_model_for_route
-
-        agent_model = pin_model_for_route("nous", self._WELCOME, "chan/model")
-        assert agent_model == "nous/welcome"
-        assert self._evicted_after_turn(
-            monkeypatch, _make_source(), agent_model, global_model=global_model,
-            provider="nous", base_url=self._WELCOME,
-        ) is False
-
-    def test_the_recorded_welcome_alias_switch_keeps_the_cached_agent(self, monkeypatch):
-        assert self._evicted_after_turn(
-            monkeypatch, _make_source(), "backing/model", provider="nous", base_url=self._WELCOME,
-            _nous_model_switch=("nous/welcome", "backing/model"),
-        ) is False
-
     def test_a_fallback_onto_the_welcome_host_still_evicts(self, monkeypatch):
         """The pin applies to the agent's primary route, not the fallback route it is on now."""
         assert self._evicted_after_turn(
@@ -227,20 +196,21 @@ class TestFallbackEvictionHonorsChannelOverrides:
             _primary_runtime={"provider": "openrouter", "base_url": "https://openrouter.ai/api/v1"},
         ) is True
 
-    @pytest.mark.parametrize("agent_model, session_provider, switch, evicted", [
-        ("backing/model", "nous", ("nous/welcome", "backing/model"), False),  # the server's recorded move
-        ("chan/model", "nous", None, True),  # a fallback that happens to land on the channel's model
-        # The override's provider was unavailable, so this turn ran on the channel's model.
-        ("chan/model", "openai-codex", None, False),
-    ], ids=["recorded-switch-off-the-session-model", "fallback-onto-the-channel-model", "override-unavailable"])
-    def test_a_session_model_override_outranks_the_channel_model(
-        self, monkeypatch, agent_model, session_provider, switch, evicted,
+    @pytest.mark.parametrize("agent_model, session_provider, evicted", [
+        ("chan/model", "nous", True),  # a fallback that happens to land on the channel's model
+        # The override's provider was unavailable, so this turn ran on the channel's model — and
+        # with the welcome pin retired the override no longer shields it: the fallback evicts,
+        # so the next turn retries the session's model.
+        ("chan/model", "openai-codex", True),
+    ], ids=["fallback-onto-the-channel-model", "override-unavailable"])
+    def test_an_agent_off_the_session_override_evicts(
+        self, monkeypatch, agent_model, session_provider, evicted,
     ):
-        """The agent was built on the session's /model choice, so drift is measured from it."""
+        """The agent is not running the session's /model choice, so it is a fallback off it —
+        even when the override's provider was the reason this turn ran elsewhere."""
         assert self._evicted_after_turn(
             monkeypatch, _make_source(), agent_model, global_model="backing/model", session_model="nous/welcome",
             session_provider=session_provider, provider="nous", base_url="https://inference-api.thor-agent.local/v1",
-            **({"_nous_model_switch": switch} if switch else {}),
         ) is evicted
 
     @pytest.mark.parametrize("session_model", [None, "chan/model"], ids=["channel-model", "session-model"])

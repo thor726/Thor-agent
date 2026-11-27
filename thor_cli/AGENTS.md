@@ -207,10 +207,15 @@ change to install/restart/status regenerates and diffs every kind; both user and
 recorded when both exist. Process liveness is `(pid, start_time)` or the canonical matchers
 (`gateway.status.live_gateway_pid_for_home`), never bare PID existence.
 
-## Nous free tier (`thor_cli/anon_auth.py`)
+## Nous free tier — retired
 
-`anon_auth.run_sign_in()` is the one sign-in composition: it yields `SignInState`s that carry their
-own `.copy` / `.copy_terminal`, persists only after a completed promotion AND a token grant, and runs
-`settle_after_upgrade` exactly once per completion. `thor auth upgrade`, the CLI and gateway
-`/login` and the desktop poller are renderers over it; the desktop's plain device-code login
-(`_nous_plain_poller`) stays a separate path. Long form: `cli-internals.md` § Nous free tier sign-in.
+The Nous free tier is retired: `thor_cli/anon_auth.py` (the guest shim), `anon_sign_in.py`,
+`anon_sign_in_cli.py` and `free_tier_offer.py` are deleted, and with them `thor auth upgrade`,
+the CLI and gateway `/login`, the `free_tier.*` RPCs and `GET /api/portal`. There is no guest
+sign-in anymore. Sign-in is a ThorHub static key: `thor auth add thor` (or `THORHUB_API_KEY`).
+What stays: `thor_cli/welcome_trial.py` (the trial claim is always blocked now — its
+`claim_blocker` names the retirement), `thor_cli/free_tier_bootstrap.py` (the `setup.status` /
+`setup.ready` record; its free-tier fields are always false / empty, kept for the wire shape),
+`thor_cli/anon_challenge.py` (standalone; the `free_tier.challenge` event contract stays so its
+test oracle keeps passing) and `thor_cli/guest_handoff.py` (legacy handoff state reads).
+Long form: `cli-internals.md` § Nous free tier sign-in (historical).

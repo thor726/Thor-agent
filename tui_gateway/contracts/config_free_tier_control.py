@@ -1,8 +1,8 @@
-"""Contracts: config, setup readiness, free tier, model inventory, connectors, diagnostics,
+"""Contracts: config, setup readiness, model inventory, connectors, diagnostics,
 image generation and structured session control.
 
 Handlers: ``tui_gateway/methods_config.py`` (``config.get``, ``setup.*``, ``diagnostics.share_nous``),
-``methods_config_set.py`` (``config.set``), ``methods_free_tier.py``, ``methods_shared_metrics.py``,
+``methods_config_set.py`` (``config.set``), ``methods_shared_metrics.py``,
 ``methods_complete.py``
 (``model.options``), ``methods_connectors.py``, ``methods_images.py``, ``methods_session_control.py``
 and ``methods_session.py`` (``verification.status``).
@@ -174,12 +174,15 @@ method("diagnostics.share_nous", params=DiagnosticsShareNousParams, result=Diagn
        doc="Upload a force-redacted debug bundle to Nous-internal diagnostics storage.")
 
 
-# ── free tier ─────────────────────────────────────────────────────────────────────────────────
+# ── free tier (retired) ─────────────────────────────────────────────────────────────────────────
+# The ``free_tier.*`` RPCs are gone with the Nous free tier (``tui_gateway/methods_free_tier.py``
+# deleted). Only ``FreeTierChallengePayload`` stays: it is the ``free_tier.challenge`` event's
+# payload (``thor_cli/anon_challenge.py``), and the contract oracle scans that event.
 
 
 class FreeTierChallengePayload(OpenModel):
     """``thor_cli/anon_challenge.py::BrowserChallenge.as_payload``: the ``free_tier.challenge``
-    event, and ``free_tier.status``'s ``challenge`` field for a client that connected after it."""
+    event's payload."""
 
     type: Literal["browser"]
     url: str
@@ -188,80 +191,6 @@ class FreeTierChallengePayload(OpenModel):
     expires_in: int
     message: str
     attempt: int = 0
-
-
-class FreeTierStatusResult(Result):
-    """``available`` = an identity exists AND the tier is on; whether inference runs on it is
-    ``setup.runtime_check.free_tier_route``'s question."""
-
-    has_guest: bool
-    enabled: bool
-    available: bool
-    notice_pending: bool
-    model: str
-    label: str
-    error: str | None = None
-    error_code: str | None = None
-    retryable: bool | None = None
-    retry_after: int | None = None
-    # A browser challenge the account service is waiting on (``thor_cli/anon_challenge.py``).
-    challenge: FreeTierChallengePayload | None = None
-    # Seconds until the sign-in offer after a finished task is due (0 = due now); absent when none is
-    # pending (no finished task since the last offer, or not on the free tier).
-    nudge_due_in: int | None = None
-    # The same for the connector offer: a guest with no trial that has connected an app.
-    connector_nudge_due_in: int | None = None
-
-
-method("free_tier.status", params=ProfileParams, result=FreeTierStatusResult,
-       doc="Pure read of the focused profile's free-tier identity state (no network, no side effects).")
-
-
-class FreeTierChallengeResultParams(ProfileParams):
-    url: str
-    attempt: int = 0
-    outcome: Literal["done", "failed", "closed", "timeout", "refused", "error", "unsupported"]
-
-
-class FreeTierChallengeResult(Result):
-    accepted: bool
-
-
-method("free_tier.challenge_result", params=FreeTierChallengeResultParams, result=FreeTierChallengeResult,
-       doc="Report a browser window outcome for the matching pending attempt; mint remains authoritative.")
-
-
-class FreeTierProvisionResult(Result):
-    has_guest: bool
-    enabled: bool
-    error: str | None = None
-    error_code: str | None = None
-    retryable: bool | None = None
-    retry_after: int | None = None
-
-
-method("free_tier.provision", params=ProfileParams, result=FreeTierProvisionResult,
-       doc="Explicit retry of the free-tier identity mint when the boot bootstrap could not create it.")
-
-
-class FreeTierAckNoticeResult(Result):
-    acked: bool
-
-
-method("free_tier.ack_notice", params=ProfileParams, result=FreeTierAckNoticeResult,
-       doc="Mark the one-time availability notice as shown on the free-tier identity.")
-
-
-class FreeTierClaimNudgeParams(ProfileParams):
-    kind: Literal["trial", "connector"] = "trial"
-
-
-class FreeTierClaimNudgeResult(Result):
-    claimed: bool
-
-
-method("free_tier.claim_nudge", params=FreeTierClaimNudgeParams, result=FreeTierClaimNudgeResult,
-       doc="Claim the due sign-in offer; true for exactly one caller each time an offer comes due.")
 
 
 # ── shared metrics consent ────────────────────────────────────────────────────────────────────

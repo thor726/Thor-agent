@@ -23,9 +23,18 @@ export function createBrowserCloudBridge({
   relays: BrowserSavedConnections | null
 }): Window['thorDesktop']['cloud'] {
   const status = async (): Promise<DesktopCloudStatus> => {
-    const portal = await api<{ logged_in?: boolean; portal_url?: string }>({ path: '/api/portal' })
+    // `/api/portal` is retired: the ThorHub status comes from the `thor` card of
+    // `/api/providers/oauth` (logged_in + source_label, the portal base URL).
+    const { providers } = await api<{
+      providers: Array<{ id: string; status: { logged_in?: boolean; source_label?: string | null } }>
+    }>({ path: '/api/providers/oauth' })
+    const thor = providers.find((p) => p.id === 'thor')
+    const portalUrl =
+      thor?.status.source_label && thor.status.source_label.startsWith('http')
+        ? thor.status.source_label
+        : ''
 
-    return { portalBaseUrl: portal.portal_url || '', signedIn: Boolean(portal.logged_in) }
+    return { portalBaseUrl: portalUrl, signedIn: Boolean(thor?.status.logged_in) }
   }
 
   return {

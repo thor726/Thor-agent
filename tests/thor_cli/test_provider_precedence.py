@@ -87,18 +87,11 @@ def portal(monkeypatch, tmp_path):
     return install_portal(monkeypatch, tmp_path)
 
 
-def _never_mint(monkeypatch):
-    """The resolver is a READ: any call into the creator from inside it is a bug."""
-    monkeypatch.setattr("thor_cli.anon_auth.ensure_portal_identity",
-                        lambda **kw: (_ for _ in ()).throw(AssertionError("resolve_provider must not mint")))
-
-
 def _thorhub_key_with_aws(monkeypatch):
     """A ThorHub key in the env, then a leftover ~/.aws profile."""
     from tests.thor_cli.anon_portal import as_local_desktop_backend
     _clear_provider_env(monkeypatch)
     as_local_desktop_backend(monkeypatch)
-    _never_mint(monkeypatch)
     monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-test")
     monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: True)
 
@@ -122,7 +115,6 @@ class TestThorhubKeyBeatsImplicitHostCredentials:
 
     def test_an_explicit_env_key_beats_the_bedrock_chain(self, monkeypatch):
         _clear_provider_env(monkeypatch)
-        _never_mint(monkeypatch)
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key")
         monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: True)
         assert resolve_provider("auto") == "openai-api"
@@ -134,6 +126,5 @@ class TestThorhubKeyBeatsImplicitHostCredentials:
 
     def test_without_a_key_the_ladder_falls_through_to_bedrock(self, monkeypatch):
         _clear_provider_env(monkeypatch)
-        _never_mint(monkeypatch)
         monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: True)
         assert resolve_provider("auto") == "bedrock"

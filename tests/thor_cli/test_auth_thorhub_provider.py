@@ -351,21 +351,6 @@ class TestRetiredGuestSurface:
 
         assert "retired" in claim_blocker()
 
-    def test_anon_sign_in_fails_without_a_key_and_reports_signed_in_with_one(
-        self, thor_home, monkeypatch,
-    ):
-        from thor_cli.anon_sign_in import run_sign_in
-
-        states = list(run_sign_in())
-        assert len(states) == 1
-        assert states[0].kind == "failed"
-        assert states[0].reason == "thorhub_no_free_tier"
-
-        monkeypatch.setenv("THORHUB_API_KEY", "sk-thor-x")
-        states = list(run_sign_in())
-        assert len(states) == 1
-        assert states[0].kind == "already_signed_in"
-
     def test_device_auth_timeout_message_defaults_to_thorhub(self):
         from thor_cli.auth_device_flow import _device_auth_timeout_message
 

@@ -1,9 +1,13 @@
-"""The fake NAS anonymous surface shared by the free-tier tests.
+"""The fake NAS anonymous surface shared by the tests that still route ThorHub HTTP at it.
 
 One ``FakePortal`` and one ``install_portal`` behind every ``portal`` fixture: the wire contract is
 exercised through Thor' real client code, never mocked away. Scenarios flip its behaviour
 (``gate_closed``, ``dead_tokens``, a canned ``create_response`` / ``token_response``, or a
 ``raise_transport`` that makes the wire itself fail).
+
+The free tier the fixture was built for is retired (``thor_cli.anon_auth`` deleted): what stays
+is the transport seam (every ThorHub HTTP client routed at the fake) and the store isolation.
+``claimed_trial`` is gone with it — the welcome trial can no longer be claimed.
 """
 
 from __future__ import annotations
@@ -117,7 +121,7 @@ def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> Fak
 
     One transport seam: ``httpx.Client`` itself, which ``resolve_thorhub_access_token``
     constructs."""
-    from thor_cli import anon_auth, free_tier_bootstrap
+    from thor_cli import free_tier_bootstrap
     from thor_cli import auth as auth_mod
 
     fake = fake or FakePortal()
@@ -135,7 +139,6 @@ def install_portal(monkeypatch, tmp_path, fake: FakePortal | None = None) -> Fak
             super().__init__(*a, **kw)
     monkeypatch.setattr(httpx, "Client", _RoutedClient)
     monkeypatch.setattr("agent.bedrock_adapter.has_aws_credentials", lambda *_a, **_kw: False)
-    anon_auth.reset_mint_memo_for_tests()
     free_tier_bootstrap.reset_for_tests()
     from thor_cli import anon_challenge
     anon_challenge.reset_for_tests()
@@ -157,14 +160,3 @@ def off_local_desktop(monkeypatch) -> None:
     from contextvars import ContextVar
     from thor_cli import process_identity
     monkeypatch.setattr(process_identity, "_SERVING_LOCAL_DESKTOP", ContextVar("serving_local_desktop_test", default=False))
-
-
-def claimed_trial(monkeypatch) -> dict:
-    """A guest that claimed the welcome trial, read on the desktop's local backend: the state every
-    free-model surface needs. Mints through the fake portal installed by ``install_portal``."""
-    from thor_cli import welcome_trial
-
-    as_local_desktop_backend(monkeypatch)
-    state = welcome_trial.claim_desktop_free_tier()
-    assert state is not None, welcome_trial.claim_blocker()
-    return state

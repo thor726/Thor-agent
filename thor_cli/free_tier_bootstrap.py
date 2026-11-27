@@ -7,8 +7,9 @@ hosted connector action are the only creators. For the desktop's local backend i
 fresh install's onboarding decision (``onboarding_run.latch_first_install``) and settles a claim cut
 off before its marker write (``welcome_trial.settle_interrupted_claim``). Then it inventories
 credentials cheap-first, resolves which provider carries inference, records the answer in process
-memory, and tells every connected client with one ``setup.ready`` event. ``free_tier.status`` and
-``setup.status`` read the record; provider resolution never reaches the portal.
+memory, and tells every connected client with one ``setup.ready`` event. ``setup.status`` reads the
+record; provider resolution never reaches the portal. (The Nous free tier is retired: the record's
+free-tier fields are always false / empty now, kept for the wire shape the desktop reads.)
 """
 
 from __future__ import annotations
@@ -31,21 +32,19 @@ class SetupRecord:
     """What the bootstrap found. One shape for every reader; no version field (renderer and backend
     ship together)."""
 
-    provider_configured: bool      # some provider can carry inference (free tier included)
+    provider_configured: bool      # some provider can carry inference
     inference_provider: str        # ``resolve_provider("auto")``'s answer, "" when nothing resolves
-    free_tier_account: bool        # the identity that exists is a guest that carries inference here
-    has_identity: bool             # a Nous identity (free tier or account) is on disk
-    other_providers: bool          # the inventory found something usable BESIDES the free tier
+    free_tier_account: bool        # always False now (the Nous free tier is retired; wire compat)
+    has_identity: bool             # always False now (no guest identity is ever on disk; wire compat)
+    other_providers: bool          # the inventory found something usable
     error: str = ""                # why the last trial claim failed, when it did; "" otherwise
-    # The mint memo's verdict, verbatim (``anon_auth.MintFailure.as_payload``):
-    # ``{error, error_code, retryable, retry_after}`` after a failed claim, else ``{}``.
-    # One wire shape: every status RPC spreads it as is.
+    # Always ``{}`` now (the free-tier mint is retired); kept so every status RPC keeps its shape.
     failure: dict[str, Any] = field(default_factory=dict)
     finished_at: float = field(default_factory=time.time)
 
     @property
     def free_tier_route(self) -> bool:
-        return self.free_tier_account and self.inference_provider == "nous"
+        return False
 
     def as_payload(self) -> dict[str, Any]:
         # The broadcast carries the failure block flat, the same shape ``setup.status`` spreads,
@@ -147,12 +146,10 @@ def _config_stamp() -> tuple:
 
 
 def _inventory_other_providers() -> bool:
-    """Is anything usable configured BESIDES the free tier? Asks the resolver ladder itself (the
-    thing that picks the provider for a turn) with the free-tier rung hidden: an explicit key, a
-    config pin, a sign-in or a host credential answers; nothing else falls through to
-    ``no_provider_configured``. Not ``_has_any_provider_configured``: that first-run guard also
-    counts host credentials (gh auth, Claude Code) and a config pin, and it does not hide the
-    free-tier rung.
+    """Is anything usable configured? Asks the resolver ladder itself (the thing that picks the
+    provider for a turn): an explicit key, a config pin, a sign-in or a host credential answers;
+    nothing else falls through to ``no_provider_configured``. Not ``_has_any_provider_configured``:
+    that first-run guard also counts host credentials (gh auth, Claude Code) and a config pin.
 
     Stamps the config files BEFORE reading them, so a write that lands during the inventory is
     seen by the next :func:`reconcile_record`.
@@ -161,7 +158,9 @@ def _inventory_other_providers() -> bool:
     from thor_cli.auth import resolve_provider
     _inventory_stamp = _config_stamp()
     try:
-        return resolve_provider("auto", skip_free_tier=True) != "nous"
+        # "" = nothing resolves; "nous" can never be a real answer anymore, but a legacy
+        # config pin naming it must not read as a usable provider either.
+        return resolve_provider("auto", skip_free_tier=True) not in ("", "nous")
     except Exception as exc:
         logger.debug("free tier bootstrap: nothing else carries inference (%s)", exc)
         return False
@@ -176,20 +175,17 @@ def _resolve_inference() -> str:
 
 
 def _build_record(*, other: bool) -> SetupRecord:
-    """One inventory pass into a record. Reads only: no identity is created here."""
-    from thor_cli import anon_auth
-
-    state: Optional[dict[str, Any]] = anon_auth.current_nous_state()
-    failure: dict[str, Any] = {} if state else (anon_auth.last_mint_failure() or {})
-    free_tier_account = anon_auth.free_inference_active(state) if state else False
+    """One inventory pass into a record. Reads only: no identity is created here. The Nous free
+    tier is retired, so there is no guest identity to read: the free-tier fields are always
+    false / empty, and ``provider_configured`` is the inventory's answer alone."""
     return SetupRecord(
-        provider_configured=other or free_tier_account or (bool(state) and not anon_auth.is_guest_state(state)),
+        provider_configured=other,
         inference_provider=_resolve_inference(),
-        free_tier_account=free_tier_account,
-        has_identity=bool(state),
+        free_tier_account=False,
+        has_identity=False,
         other_providers=other,
-        error=str(failure.get("error") or ""),
-        failure=failure,
+        error="",
+        failure={},
     )
 
 
@@ -218,13 +214,13 @@ def run_bootstrap(*, announce: bool = True) -> SetupRecord:
 
 
 def _settle_install() -> bool:
-    """Record a fresh install and settle the guest's claim; True when neither step failed. A failure is
+    """Record a fresh install and settle the trial claim; True when neither step failed. A failure is
     logged: onboarding.state still answers live, and the record still says who carries inference."""
     settled = True
     try:
-        from thor_cli import anon_auth
         from thor_cli.onboarding_run import latch_first_install
-        if anon_auth.on_local_desktop_backend():
+        from thor_cli.process_identity import serves_local_desktop_now
+        if serves_local_desktop_now():
             latch_first_install()
     except Exception:
         settled = False

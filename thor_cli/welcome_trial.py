@@ -11,7 +11,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Optional
 
-from thor_cli import anon_auth
 from thor_cli.auth_constants import AuthError
 
 logger = logging.getLogger("thor_cli.auth")

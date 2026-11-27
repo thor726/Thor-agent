@@ -272,8 +272,10 @@ def _prompt_model_selection(
     """
     from thor_cli.cli_output import line_input
     _unavailable = unavailable_models or []
-    # Sale chrome is Nous Portal-only, even if pricing.original is present for another provider.
-    sale_chrome = (confirm_provider or "").strip().lower() == "nous"
+    # Sale chrome was Nous Portal-only; the Portal is retired, so no provider gets it anymore
+    # (even if pricing.original is present). Kept as a constant False so the picker rows keep
+    # their shape; the ThorHub plan gauges stay dark until a provider re-enables them.
+    sale_chrome = False
 
     def _confirmed_selection(mid: str) -> Optional[str]:
         if not mid:
@@ -292,7 +294,8 @@ def _prompt_model_selection(
             return None
         return _confirmed_selection(custom) if custom else None
 
-    # All models for column-width computation (selectable + unavailable). Plan usage is Nous-only chrome.
+    # All models for column-width computation (selectable + unavailable). Plan usage was
+    # Nous-only chrome, retired with it.
     window_usage = usage if sale_chrome else None
     ordered, sections, start = _picker_order(model_ids, current_model, window_usage)
 

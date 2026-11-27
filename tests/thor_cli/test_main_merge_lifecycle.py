@@ -7,11 +7,13 @@ import pytest
 
 
 @pytest.mark.parametrize('provider,host,expected', [
-    ('nous', 'https://welcome-api.thor-agent.local/v1', True),
+    ('nous', 'https://welcome-api.thor-agent.local/v1', False),
     ('nous', 'https://inference-api.thor-agent.local/v1', False),
     ('custom', 'https://welcome-api.thor-agent.local/v1', False),
 ])
-def test_readiness_reports_selected_free_route(monkeypatch, provider, host, expected):
+def test_readiness_reports_no_free_route(monkeypatch, provider, host, expected):
+    """The free tier is retired: no selected route is a free route anymore — not even
+    provider ``nous`` on the old welcome host."""
     from thor_cli.runtime_readiness import check_runtime_readiness
     monkeypatch.setattr('thor_cli.main._has_any_provider_configured', lambda **kw: True)
     monkeypatch.setattr('thor_cli.runtime_provider.resolve_runtime_provider', lambda **kw: {

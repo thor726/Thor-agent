@@ -33,10 +33,10 @@ def _run_state(*, assume_fresh: bool = False) -> dict:
     remote backends answer at once and run onboarding only from Settings. On the local backend the
     answer comes from the boot computation (``onboarding_due``); ``--fresh-install`` asks live."""
     from thor_cli import onboarding_due
-    from thor_cli.anon_auth import on_local_desktop_backend
     from thor_cli.onboarding_run import should_run
+    from thor_cli.process_identity import serves_local_desktop_now
 
-    if not on_local_desktop_backend():
+    if not serves_local_desktop_now():
         return {"run": should_run(assume_fresh=assume_fresh), "eligible": False, **_active_run()}
     due = _due_now(assume_fresh=True) if assume_fresh else onboarding_due.read(_due_now, stamp=_due_stamp)
     return {**due, **_active_run()}
@@ -144,15 +144,15 @@ def _claim_before_run(scope: dict, *, assume_fresh: bool):
     a refused claim (error 5079) leaves no guest and no chat, and the install still due. A blocked claim
     (another install took the trial since the due check) with no trial or provider to run on is error
     5080, with no chat either: the desktop lands on provider setup and sign-in, not a chat that fails."""
-    from thor_cli import anon_auth
     from thor_cli.onboarding_run import set_run
+    from thor_cli.process_identity import serves_local_desktop_now
     from thor_cli.welcome_trial import claim_desktop_free_tier, provider_configured
-    if not anon_auth.on_local_desktop_backend():  # gateway/session_onboarding.py::_claim_before_run
+    if not serves_local_desktop_now():  # gateway/session_onboarding.py::_claim_before_run
         raise _NoModelForTheRun("First-run onboarding starts only in the Desktop app on this machine.")
     set_run(True)
     with _session_profile_runtime_scope(scope):
         claimed = claim_desktop_free_tier(assume_fresh=assume_fresh)
-        if claimed is None and not (anon_auth.free_inference_active() or provider_configured()):
+        if claimed is None and not provider_configured():
             raise _NoModelForTheRun("The welcome trial is not available here, and no provider is set up.")
     return claimed
 

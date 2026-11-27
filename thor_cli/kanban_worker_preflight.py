@@ -7,12 +7,11 @@ logger = logging.getLogger(__name__)
 
 def task_model(task, config) -> tuple[str, bool]:
     """``(model, unresolved)`` the card runs: its ``--model`` (a card's ``--provider`` never comes
-    without one); else the profile's own (``model.default``, the claimed welcome trial), the named
+    without one); else the profile's own (``model.default``), the named
     endpoint's model, then the provider's catalog default. ``auto`` and a self-hosted (loopback, LAN)
     server stay ``''`` for the turn to resolve, as the gateway does, before any catalog default, and a
     fallback chain answers an empty primary: nothing here probes a credential or a server."""
     from gateway.session_route_identity import profile_route_identity
-    from thor_cli.anon_auth import trial_model
     from thor_cli.fallback_config import get_fallback_chain
     from thor_cli.models import get_default_model_for_provider
     from thor_cli.runtime_provider_custom import _get_named_custom_provider
@@ -24,7 +23,7 @@ def task_model(task, config) -> tuple[str, bool]:
         return block.strip(), False
     held = dict(block) if isinstance(block, dict) else {}
     model = held.get('default') or held.get('model')
-    model = (model.strip() if isinstance(model, str) else '') or trial_model()
+    model = model.strip() if isinstance(model, str) else ''
     if model:
         return model, False
     identity = profile_route_identity(dict(config, model=held))

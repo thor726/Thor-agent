@@ -373,36 +373,6 @@ def _poll(provider, status, body):
     return run
 
 
-def _guest_sign_in(token_status, token_body):
-    """The Desktop sign-in over a free tier: the real ``run_sign_in`` generator recorded onto a
-    dashboard session; the token poll gets ``token_*`` until expiry."""
-    def run(monkeypatch):
-        import httpx
-
-        from thor_cli import anon_auth, auth_device_flow
-        from thor_cli.web_server_oauth import _record_sign_in_state
-
-        clock = [0.0]
-        fake_time = SimpleNamespace(monotonic=lambda: clock[0], sleep=lambda s: clock.__setitem__(0, clock[0] + max(s, 1)))
-        monkeypatch.setattr(auth_device_flow, "time", fake_time)
-        monkeypatch.setattr(anon_auth, "current_nous_state", lambda: {
-            "auth_method": anon_auth.ANON_AUTH_METHOD, "anon_token": "t", "portal_base_url": "https://p"})
-        monkeypatch.setattr(anon_auth, "_anon_headers", dict)
-        replies = {
-            "/api/oauth/device/code": (200, {"device_code": "d", "user_code": "U", "verification_uri": "https://p/v",
-                                             "verification_uri_complete": "https://p/v?c=U", "expires_in": 30, "interval": 1}),
-            "/api/oauth/token": (token_status, token_body)}
-
-        def reply(request):
-            status, body = replies[request.url.path]
-            return httpx.Response(status, **({"json": body} if isinstance(body, dict) else {"text": body}))
-        sess = {"status": "pending"}
-        for state in anon_auth.run_sign_in(client_factory=lambda *_: httpx.Client(transport=httpx.MockTransport(reply))):
-            _record_sign_in_state(sess, state)
-        return sess
-    return run
-
-
 def _codex_start(status, body):
     """The dashboard start route: the worker thread's failure crosses into an HTTPException."""
     def run(monkeypatch):
@@ -425,14 +395,12 @@ def _codex_start(status, body):
     (_codex_start(401, {"error": "invalid_client"}), ("failed", "auth")),
     (_codex_start(0, ConnectionRefusedError("down")), ("failed", "network")),
     (_codex_start(503, "<html>503</html>"), ("failed", "network")),
-    (_guest_sign_in(400, {"error": "authorization_pending"}), ("abandoned", "none")),
-    (_guest_sign_in(503, "<html>503 unavailable</html>"), ("failed", "network")),
 ], ids=["nous-pending", "nous-503", "xai-denied", "xai-expired", "xai-refused", "codex-401", "codex-down",
-        "codex-503", "guest-pending", "guest-503"])
+        "codex-503"])
 def test_wire_failures_keep_the_producers_class_to_the_recorded_end(marks, monkeypatch, producer, ending):
-    """Real poll loops / start route / free-tier sign-in against wire responses: a lapse or a decline
-    is a walk-away, an outage or a refusal stays a failure, across the worker -> HTTPException and
-    sign-in state -> session boundaries too."""
+    """Real poll loops / start route against wire responses: a lapse or a decline
+    is a walk-away, an outage or a refusal stays a failure, across the worker -> HTTPException
+    boundary too."""
     import asyncio
 
     import thor_cli.web_routers.oauth as routes

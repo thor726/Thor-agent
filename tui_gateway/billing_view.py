@@ -78,11 +78,9 @@ def _serialize_auto_reload(ar, format_money) -> dict | None:
 
 
 def _serialize_billing_state(state, *, free_tier_account: bool = False) -> dict:
-    """Serialize a BillingState for the wire (Decimals → strings, money-safe). ``free_tier_account`` marks the
-    Nous free tier: no account, no balance, nothing to pay; the renderer branches on it before
-    ``logged_in``."""
+    """Serialize a BillingState for the wire (Decimals → strings, money-safe). ``free_tier_account``
+    is always False now (the Nous free tier is retired); the field stays for the wire shape."""
     from agent.billing_view import format_money
-    from thor_cli.anon_auth import GUEST_MODEL
 
     card = mc = None
     if state.card is not None:
@@ -98,7 +96,7 @@ def _serialize_billing_state(state, *, free_tier_account: bool = False) -> dict:
               "is_default_ceiling": m.is_default_ceiling}
     return {
         "ok": True, "logged_in": state.logged_in,
-        "free_tier_account": bool(free_tier_account), "free_tier_model": GUEST_MODEL if free_tier_account else None,
+        "free_tier_account": bool(free_tier_account), "free_tier_model": None,
         "org_name": state.org_name,
         "org_slug": state.org_slug, "role": state.role, "is_admin": state.is_admin,
         "can_change_plan": state.can_change_plan, "can_charge": state.can_charge,

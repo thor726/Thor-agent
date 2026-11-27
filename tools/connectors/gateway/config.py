@@ -89,20 +89,13 @@ def connectors_available(
 
     The one gate for the connectors surface, and the tool's ``check_fn``: outside it the tool is
     not in the schema at all, so the model never narrates a gateway 404 to a user the portal has
-    not enabled. Free-tier identities are always in, and so is a user with no identity who may get
-    one; accounts are in only when the portal says so via the token claim."""
+    not enabled. Accounts are in only when the portal says so via the token claim (the guest
+    tier that used to let free-tier identities in is retired)."""
     try:
         resolved_loader = config_loader or load_config
         if not resolved_loader().enabled:
             return False
         if entitlement_check is None:
-            from thor_cli.anon_auth import is_guest_state
-            from tools.managed_tool_gateway import _read_thorhub_provider_state
-
-            # Availability must not mint or refresh an identity.
-            if is_guest_state(_read_thorhub_provider_state()) or guest_identity_pending():
-                return True
-
             entitlement_check = managed_tools_rolled_out
         return bool(entitlement_check())
     except Exception as e:
@@ -111,45 +104,24 @@ def connectors_available(
 
 
 def guest_identity_pending() -> bool:
-    """No Nous identity or bearer yet, and a guest one may be created (``nous.guest`` is not false
-    and no earlier mint was refused for good). No network: this feeds the ``check_fn``."""
-    from thor_cli.anon_auth import guest_allowed, last_mint_failure
-    from tools.managed_tool_gateway import _read_thorhub_provider_state, peek_thorhub_api_key
-
-    if not guest_allowed() or _read_thorhub_provider_state() is not None or peek_thorhub_api_key():
-        return False
-    failure = last_mint_failure()
-    return not failure or bool(failure["retryable"])
-
-
-_SETUP_FAILED = "Hosted connectors could not be set up. "
+    """Whether a guest identity may still be created for this profile. The guest tier is retired,
+    so no guest is ever created: always False. Kept because the connectors gate and the tool
+    check it; they now always take the no-guest path."""
+    return False
 
 
 def guest_setup_failure() -> Optional[str]:
-    """The last failed guest creation for this profile, worded with the wait still left, or None."""
-    from thor_cli.anon_auth import anon_failure_copy, last_mint_failure
-
-    if not (failure := last_mint_failure()):
-        return None
-    return _SETUP_FAILED + anon_failure_copy(failure["error_code"], retry_after=failure["retry_after"])
+    """The last failed guest creation for this profile, worded with the wait still left, or None.
+    No guest is ever created anymore, so there is no failure to report: always None."""
+    return None
 
 
 def ensure_guest_identity() -> Optional[str]:
     """Create the guest identity on the first hosted connector action, synchronously.
 
-    Returns None when an identity exists or was just created, else the failure copy for the model:
-    a refusal, a rate limit or an unreachable portal, with the wait when there is one."""
-    if not guest_identity_pending():
-        return None
-    from thor_cli.anon_auth import ensure_portal_identity
-    from thor_cli.auth_constants import AuthError
-
-    try:
-        if ensure_portal_identity(explicit=True) is not None:
-            return None
-    except AuthError as exc:
-        return _SETUP_FAILED + str(exc)
-    return guest_setup_failure() or _SETUP_FAILED + "Try again shortly."
+    The guest tier is retired, so nothing is ever created: always None (no identity to create,
+    no failure). Kept because the connectors call sites check its return for a setup failure."""
+    return None
 
 
 def operation_session_key(session_id: Optional[str]) -> str:

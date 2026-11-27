@@ -13,8 +13,6 @@ from tui_gateway import server
 def remote_backend(monkeypatch):
     monkeypatch.delenv("THOR_DESKTOP", raising=False)
     monkeypatch.setattr("tools.connectors.connectors_available", lambda: True)
-    monkeypatch.setattr("tools.connectors.ensure_guest_identity", lambda: None)
-    monkeypatch.setattr("tools.connectors.managed.ensure_guest_identity", lambda: None)
     live._open.clear()
     yield
     live._open.clear()

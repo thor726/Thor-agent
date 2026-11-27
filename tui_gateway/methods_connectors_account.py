@@ -16,8 +16,9 @@ _profile_scoped = _registry.profile_scoped
 
 def _account_method(params_model=None, *, creates_guest, invalid="", invalid_reason=ConnectorErrorReason.invalid_params,
                     unavailable, unavailable_message):
-    """``creates_guest``: whether this entry point may create the guest identity when the user has
-    none. The page's reads never do; they answer from what a caller without a token can see."""
+    """``creates_guest``: accepted for call-site compatibility; the guest identity is retired, so
+    it no longer creates anything. The page's reads never did; they answer from what a caller
+    without a token can see."""
     def decorate(fn):
         def handler(rid, params):
             from pydantic import ValidationError
@@ -30,8 +31,6 @@ def _account_method(params_model=None, *, creates_guest, invalid="", invalid_rea
                     request = params if params_model is None else params_model.model_validate(params)
                 except ValidationError:
                     return _connector_rpc_error(rid, 4000, invalid_reason, invalid)
-                if creates_guest and (identity_error := _account_identity_error(rid)):
-                    return identity_error
                 try:
                     return fn(rid, request)
                 except GatewayAuthError as exc:
