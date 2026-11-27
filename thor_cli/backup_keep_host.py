@@ -15,7 +15,7 @@ included), under the same ``exclusive_maintenance`` reservation, so nothing here
   comment-preserving config writer onto the archive's own document.
 * The root home's ``.env``: names :func:`host_env_key` matches keep the destination's line.
 * ``auth.json`` at the root and at each ``profiles/<name>/``: the destination's Thor Portal rows
-  (``providers.nous``, the ``nous`` pool rows, ``active_provider`` when either side used ``nous``);
+  (``providers.thor``, the ``thor`` pool rows, ``active_provider`` when either side used ``thor``);
   every other provider comes from the archive. Merged under the auth-store lock against the live
   store, so a token refresh racing the restore is never rolled back.
 * A named profile's ``config.yaml`` and ``.env`` arrive whole: only the root home is the host's.
@@ -65,18 +65,18 @@ from thor_cli.home_data_layout import HOME_ENV_FILES
 logger = logging.getLogger(__name__)
 
 # Top-level config.yaml sections the hosting platform provisions. Thor Cloud seeds the model and
-# provider (Nous), the Nous tool gateway routing (web/image_gen/video_gen/tts/stt), the dashboard's
+# provider (ThorHub), the ThorHub tool gateway routing (web/image_gen/video_gen/tts/stt), the dashboard's
 # portal OAuth client (``dashboard.oauth``) and Web Access listener, and the container's scheduler and
 # session caps. Keep this ONE list: the import, its docs and the Desktop confirmation name this set.
 HOST_CONFIG_KEYS = (
-    "model", "providers", "fallback_providers", "fallback", "auxiliary", "nous", "auth",
+    "model", "providers", "fallback_providers", "fallback", "auxiliary", "auth",
     "web", "image_gen", "video_gen", "tts", "stt", "dashboard", "webapp", "cron",
     "max_concurrent_sessions", "max_live_sessions",
 )
 
-# .env names the host provisions: the Tool Gateway, Thor's
+# .env names the host provisions: the ThorHub sign-in key, the Tool Gateway, Thor's
 # own deployment switches, and the container's generated API server key (docker/stage2-hook.sh).
-_HOST_ENV_PREFIXES = ("THOR_", "TOOL_GATEWAY_")
+_HOST_ENV_PREFIXES = ("THOR_", "THORHUB_", "TOOL_GATEWAY_")
 _HOST_ENV_NAMES = frozenset({"API_SERVER_KEY"})
 
 # The machine's identity: a copy would make two installs report as one.
@@ -117,7 +117,7 @@ GATEWAY_DOWN_LINE = "Gateway did not start again: "
 # Inbound HTTP endpoints, not bots: two agents can serve them at once, and the API server is the host's.
 _NOT_BOTS = frozenset({"api_server", "webhook", "msgraph_webhook", "local"})
 _EXTERNAL = "_external/"
-_NOUS = "nous"
+_THOR = "thor"
 
 
 class KeepHostRefused(RuntimeError):
@@ -169,20 +169,23 @@ def merge_config(archive_cfg: dict[str, Any], host_cfg: dict[str, Any]) -> dict[
 
 
 def merge_auth(archive_store: dict[str, Any], host_store: dict[str, Any]) -> dict[str, Any]:
-    """The archive's auth store with the destination's Thor Portal sign-in in place of its own."""
+    """The archive's auth store with the destination's Thor Portal sign-in in place of its own.
+
+    Rows for a retired provider in an old archive pass through untouched: nothing live reads
+    them, and the restore must not crash on old state."""
     merged = copy.deepcopy(archive_store)
     for section in ("providers", "credential_pool"):
         raw_ours = host_store.get(section)
         ours: dict[str, Any] = raw_ours if isinstance(raw_ours, dict) else {}
         theirs = merged.get(section)
         if not isinstance(theirs, dict):
-            if _NOUS not in ours:
+            if _THOR not in ours:
                 continue
             theirs = merged[section] = {}
-        theirs.pop(_NOUS, None)
-        if _NOUS in ours:
-            theirs[_NOUS] = copy.deepcopy(ours[_NOUS])
-    if _NOUS in (merged.get("active_provider"), host_store.get("active_provider")):
+        theirs.pop(_THOR, None)
+        if _THOR in ours:
+            theirs[_THOR] = copy.deepcopy(ours[_THOR])
+    if _THOR in (merged.get("active_provider"), host_store.get("active_provider")):
         merged["active_provider"] = host_store.get("active_provider")
     return merged
 
@@ -297,7 +300,7 @@ def kept_summary(root: Path) -> list[str]:
         return [f"  (this agent's settings could not be read: {exc})"]
     env = _live(root / ".env").decode("utf-8", "replace")
     names = sorted({n for n in map(_env_name, env.splitlines()) if n and host_env_key(n)})
-    signed_in = _NOUS in (store.get("providers") or {})
+    signed_in = _THOR in (store.get("providers") or {})
     return [f"  config.yaml: {', '.join(k for k in HOST_CONFIG_KEYS if k in cfg) or '(none set here)'}",
             f"  .env: {', '.join(names) or '(none set here)'}",
             f"  auth.json: {'its Thor Portal sign-in' if signed_in else '(not signed in to Thor Portal)'}"]

@@ -206,7 +206,7 @@ def route_ttl_ceiling(provider: str, base_url: str = "") -> str | None:
     Data, not code: config ``prompt_caching.route_ttl_ceilings: {<provider>: 5m|1h}`` wins, else the
     provider profile's ``prompt_cache_max_ttl``. Thor Portal ships ``5m`` because its upstream
     currently drops 1h entries after ~7 minutes and bills them at the 5m rate; once that is fixed,
-    lifting the ceiling is ``route_ttl_ceilings: {nous: 1h}`` or a one-field profile change.
+    lifting the ceiling is ``route_ttl_ceilings: {thor: 1h}`` or a one-field profile change.
     """
     from thor_cli.config import load_config_readonly
     from providers import get_provider_profile

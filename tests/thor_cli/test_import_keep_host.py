@@ -1,7 +1,7 @@
 """``thor import --keep-host``: the backup replaces the agent, the host's own setup stays.
 
 Real ``thor backup`` of a source home, real ``thor import --keep-host`` into a destination home
-that looks like a Thor Cloud agent (Nous sign-in, platform config, NOUS_* keys), then the undo.
+that looks like a Thor Cloud agent (ThorHub sign-in, platform config, THORHUB_* keys), then the undo.
 """
 
 import hashlib
@@ -39,8 +39,8 @@ def _write(root: Path, rel: str, text: str) -> None:
     (root / rel).write_text(text)
 
 
-DST_CONFIG = ("# Provisioned by Thor Cloud\nmodel:\n  provider: nous  # host routing\n  default: Thor-4\n"
-              "nous:\n  guest: false\ncron:\n  preflight: true\ndashboard:\n  oauth:\n    client_id: agent:abc\n"
+DST_CONFIG = ("# Provisioned by Thor Cloud\nmodel:\n  provider: thor  # host routing\n  default: Thor-4\n"
+              "cron:\n  preflight: true\ndashboard:\n  oauth:\n    client_id: agent:abc\n"
               "display:\n  skin: mono  # my pick\n")
 
 
@@ -50,9 +50,9 @@ def homes(tmp_path, monkeypatch):
     src, dst = tmp_path / "src", tmp_path / "dst"
     _write(src, "config.yaml", "model:\n  provider: openrouter\n  default: x/y\ndisplay:\n  skin: ares\n"
                                "platforms:\n  telegram:\n    enabled: true\n")
-    _write(src, ".env", "OPENROUTER_API_KEY=SRC-OR\nTELEGRAM_BOT_TOKEN=SRC-TG\nNOUS_API_KEY=SRC-NOUS\n")
+    _write(src, ".env", "OPENROUTER_API_KEY=SRC-OR\nTELEGRAM_BOT_TOKEN=SRC-TG\nTHORHUB_API_KEY=SRC-THORHUB\n")
     _write(src, "auth.json", json.dumps({"version": 1, "active_provider": "openrouter", "providers": {
-        "nous": {"access_token": "SRC-NOUS", "refresh_token": "SRC-NOUS-RT"},
+        "thor": {"access_token": "SRC-THOR", "refresh_token": "SRC-THOR-RT"},
         "anthropic": {"access_token": "SRC-ANT"}}}))
     _write(src, "SOUL.md", "source persona\n")
     _write(src, "memories/MEMORY.md", "source memory\n")
@@ -61,9 +61,9 @@ def homes(tmp_path, monkeypatch):
     _db(src / "state.db", ["src-chat"])
 
     _write(dst, "config.yaml", DST_CONFIG)
-    _write(dst, ".env", "NOUS_API_KEY=DST-NOUS\nAPI_SERVER_KEY=DST-API\nOPENROUTER_API_KEY=DST-OR\n")
-    _write(dst, "auth.json", json.dumps({"version": 1, "active_provider": "nous", "providers": {
-        "nous": {"access_token": "DST-NOUS", "refresh_token": "DST-NOUS-RT"}}}))
+    _write(dst, ".env", "THORHUB_API_KEY=DST-THORHUB\nAPI_SERVER_KEY=DST-API\nOPENROUTER_API_KEY=DST-OR\n")
+    _write(dst, "auth.json", json.dumps({"version": 1, "active_provider": "thor", "providers": {
+        "thor": {"access_token": "DST-THOR", "refresh_token": "DST-THOR-RT"}}}))
     _write(dst, "SOUL.md", "cloud persona\n")
     _write(dst, "memories/MEMORY.md", "cloud memory\n")
     _write(dst, "skills/cloud-only/SKILL.md", "# cloud only\n")
@@ -109,7 +109,7 @@ def _tree(root: Path) -> dict[str, str]:
     return out
 
 
-def test_keep_host_replaces_the_agent_but_keeps_its_nous_signin_and_platform_settings(homes, monkeypatch):
+def test_keep_host_replaces_the_agent_but_keeps_its_thorhub_signin_and_platform_settings(homes, monkeypatch):
     src, dst, tmp = homes
     archive = _backup(monkeypatch, src, tmp / "src.zip")
     host_cfg = _yaml(dst / "config.yaml")
@@ -123,25 +123,47 @@ def test_keep_host_replaces_the_agent_but_keeps_its_nous_signin_and_platform_set
     assert _ids(dst / "state.db") == ["src-chat"]
     cfg = _yaml(dst / "config.yaml")
     assert cfg["display"] == {"skin": "ares"} and cfg["platforms"] == {"telegram": {"enabled": True}}
-    for key in ("model", "nous", "cron", "dashboard"):
+    for key in ("model", "cron", "dashboard"):
         assert cfg[key] == host_cfg[key]
     env = dict(line.split("=", 1) for line in (dst / ".env").read_text().split())
     assert env == {"OPENROUTER_API_KEY": "SRC-OR", "TELEGRAM_BOT_TOKEN": "SRC-TG",
-                   "NOUS_API_KEY": "DST-NOUS", "API_SERVER_KEY": "DST-API"}
+                   "THORHUB_API_KEY": "DST-THORHUB", "API_SERVER_KEY": "DST-API"}
     auth = json.loads((dst / "auth.json").read_text())
     assert auth["providers"]["anthropic"] == {"access_token": "SRC-ANT"}
-    assert auth["providers"]["nous"] == {"access_token": "DST-NOUS", "refresh_token": "DST-NOUS-RT"}
-    assert auth["active_provider"] == "nous"
-    assert "SRC-NOUS" not in (dst / "auth.json").read_text() + (dst / ".env").read_text()
+    assert auth["providers"]["thor"] == {"access_token": "DST-THOR", "refresh_token": "DST-THOR-RT"}
+    assert auth["active_provider"] == "thor"
+    assert "SRC-THOR" not in (dst / "auth.json").read_text() + (dst / ".env").read_text()
+
+
+def test_keep_host_round_trip_ignores_legacy_nous_state(homes, monkeypatch):
+    """A backup from before the provider retirement still restores: its retired-provider
+    rows and shared store file arrive inert, and the host's ThorHub sign-in survives."""
+    src, dst, tmp = homes
+    _write(src, "auth.json", json.dumps({"version": 1, "active_provider": "nous", "providers": {
+        "nous": {"access_token": "SRC-NOUS", "refresh_token": "SRC-NOUS-RT"},
+        "anthropic": {"access_token": "SRC-ANT"}}}))
+    _write(src, "shared/nous_auth.json", '{"providers": {"nous": {}}}')
+    _write(src, ".env", "OPENROUTER_API_KEY=SRC-OR\nNOUS_API_KEY=SRC-NOUS\n")
+
+    _import(monkeypatch, dst, _backup(monkeypatch, src, tmp / "src.zip"), keep_host=True)
+
+    auth = json.loads((dst / "auth.json").read_text())
+    assert auth["providers"]["thor"] == {"access_token": "DST-THOR", "refresh_token": "DST-THOR-RT"}
+    assert auth["active_provider"] == "thor"
+    assert auth["providers"]["anthropic"] == {"access_token": "SRC-ANT"}
+    # Retired rows pass through untouched (nothing live reads them); the restore must not crash.
+    assert auth["providers"]["nous"] == {"access_token": "SRC-NOUS", "refresh_token": "SRC-NOUS-RT"}
+    assert (dst / "shared/nous_auth.json").exists()
 
 
 def test_keep_host_only_merges_the_root_home(homes, monkeypatch):
     """The host set up the root home only: a profile it never had and a skill's own config.yaml
-    arrive whole, while a profile's Nous tokens still never land."""
+    arrive whole, while a profile's ThorHub tokens still never land."""
     src, dst, tmp = homes
     _write(src, "profiles/writer/config.yaml", "model:\n  provider: anthropic\ntts:\n  provider: elevenlabs\n")
     _write(src, "profiles/writer/.env", "ANTHROPIC_API_KEY=SRC-ANT\nTHOR_MAX_ITERATIONS=200\n")
     _write(src, "profiles/writer/auth.json", json.dumps({"version": 1, "providers": {
+        "thor": {"access_token": "SRC-THOR-P"},
         "nous": {"access_token": "SRC-NOUS-P"}, "anthropic": {"access_token": "SRC-ANT-P"}}}))
     _write(src, "skills/tool/templates/config.yaml", "model: gpt-x\nweb: true\n")
     _write(src, "skills/tool/auth.json", '{"providers": {"nous": {}}}')
@@ -153,7 +175,10 @@ def test_keep_host_only_merges_the_root_home(homes, monkeypatch):
     assert (dst / "skills/tool/templates/config.yaml").read_text() == "model: gpt-x\nweb: true\n"
     assert (dst / "skills/tool/auth.json").read_text() == '{"providers": {"nous": {}}}'
     profile_auth = json.loads((dst / "profiles/writer/auth.json").read_text())["providers"]
-    assert profile_auth == {"anthropic": {"access_token": "SRC-ANT-P"}}
+    # The host-owned ThorHub row never lands in a profile the host never had; a retired
+    # provider's row passes through inert.
+    assert profile_auth == {"nous": {"access_token": "SRC-NOUS-P"},
+                            "anthropic": {"access_token": "SRC-ANT-P"}}
 
 
 @pytest.mark.parametrize("member", ["../escaped/auth.json", "/abs/auth.json", "profiles/../auth.json"])
@@ -191,7 +216,7 @@ def test_keep_host_refuses_a_linked_folder_and_deletes_nothing(homes, monkeypatc
 
 
 def test_keep_host_clears_logins_the_backup_does_not_carry(homes, monkeypatch):
-    """Replace: a backup without auth.json/.env leaves only the host's Nous sign-in and keys."""
+    """Replace: a backup without auth.json/.env leaves only the host's ThorHub sign-in and keys."""
     src, dst, tmp = homes
     (src / "auth.json").unlink()
     (src / ".env").unlink()
@@ -202,8 +227,8 @@ def test_keep_host_clears_logins_the_backup_does_not_carry(homes, monkeypatch):
     _import(monkeypatch, dst, _backup(monkeypatch, src, tmp / "src.zip"), keep_host=True)
 
     assert json.loads((dst / "auth.json").read_text())["providers"] == {
-        "nous": {"access_token": "DST-NOUS", "refresh_token": "DST-NOUS-RT"}}
-    assert (dst / ".env").read_text() == "NOUS_API_KEY=DST-NOUS\nAPI_SERVER_KEY=DST-API\n"
+        "thor": {"access_token": "DST-THOR", "refresh_token": "DST-THOR-RT"}}
+    assert (dst / ".env").read_text() == "THORHUB_API_KEY=DST-THORHUB\nAPI_SERVER_KEY=DST-API\n"
 
 
 def test_keep_host_keeps_the_backups_config_comments(homes, monkeypatch):
@@ -216,7 +241,7 @@ def test_keep_host_keeps_the_backups_config_comments(homes, monkeypatch):
 
     text = (dst / "config.yaml").read_text()
     assert text.startswith("# my agent\n") and "skin: ares  # dark" in text
-    assert _yaml(dst / "config.yaml")["model"] == {"provider": "nous", "default": "Thor-4"}
+    assert _yaml(dst / "config.yaml")["model"] == {"provider": "thor", "default": "Thor-4"}
 
 
 def test_transfer_then_undo_returns_the_agent_byte_for_byte(homes, monkeypatch):
@@ -274,7 +299,7 @@ def test_a_transfer_brings_the_bots_switched_off_and_its_undo_brings_the_cloud_b
     _write(src, "profiles/writer/config.yaml", "platforms:\n  telegram:\n    enabled: true\n")
     _write(src, "profiles/writer/.env", "TELEGRAM_BOT_TOKEN=WRITER-TG\n")
     _write(dst, "config.yaml", DST_CONFIG + "platforms:\n  discord:\n    enabled: true\n")
-    _write(dst, ".env", "NOUS_API_KEY=DST-NOUS\nDISCORD_BOT_TOKEN=DST-DC\n")
+    _write(dst, ".env", "THORHUB_API_KEY=DST-THORHUB\nDISCORD_BOT_TOKEN=DST-DC\n")
     before = _tree(dst)
     archive = _backup(monkeypatch, src, tmp / "src.zip")
 
@@ -399,11 +424,11 @@ def test_a_retry_after_a_failed_restore_keeps_the_first_undo_point(homes, monkey
 
 
 def test_plain_import_is_unchanged(homes, monkeypatch):
-    """Without --keep-host the archive's own Nous sign-in and config win, as before."""
+    """Without --keep-host the archive's own ThorHub sign-in and config win, as before."""
     src, dst, tmp = homes
     _import(monkeypatch, dst, _backup(monkeypatch, src, tmp / "src.zip"))
     assert _yaml(dst / "config.yaml")["model"]["provider"] == "openrouter"
-    assert "NOUS_API_KEY=SRC-NOUS" in (dst / ".env").read_text()
+    assert "THORHUB_API_KEY=SRC-THORHUB" in (dst / ".env").read_text()
     assert (dst / "skills/cloud-only/SKILL.md").exists()  # a plain import never removes files
     assert not (dst / "backups").exists() or not list((dst / "backups").glob("pre-transfer-*"))
 

@@ -134,18 +134,16 @@ def thorhub_api_key() -> str:
 
 
 def thorhub_base_url_env_override() -> Optional[str]:
-    """Profile-scoped THORHUB_BASE_URL override (legacy NOUS_INFERENCE_BASE_URL
-    accepted), bare origin or None.
+    """Profile-scoped THORHUB_BASE_URL override, bare origin or None.
 
     Read through thor_cli.config.get_env_value so a multiplexed profile uses its own
     override instead of the default profile process-wide value (#65941).
     """
     from thor_cli.config import get_env_value
 
-    for name in ("THORHUB_BASE_URL", "NOUS_INFERENCE_BASE_URL"):
-        raw = (get_env_value(name) or "").strip()
-        if raw:
-            return raw.rstrip("/").removesuffix("/v1")
+    raw = (get_env_value("THORHUB_BASE_URL") or "").strip()
+    if raw:
+        return raw.rstrip("/").removesuffix("/v1")
     return None
 
 

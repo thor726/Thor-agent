@@ -53,7 +53,7 @@ def _turn_provider(held, identity) -> str:
 
 
 # Overrides the runtime reads in a provider's own resolver rather than through its registry ``base_url_env_var``.
-_RUNTIME_BASE_URL_ENV = {'openai-codex': 'THOR_CODEX_BASE_URL', 'nous': 'NOUS_INFERENCE_BASE_URL',
+_RUNTIME_BASE_URL_ENV = {'openai-codex': 'THOR_CODEX_BASE_URL',
                          'qwen-oauth': 'THOR_QWEN_BASE_URL'}
 
 

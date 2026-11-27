@@ -200,7 +200,7 @@ _GLOBAL_ENV_EXACT = frozenset({
     # Thor runtime / deployment
     "THOR_HOME", "THOR_PROFILE", "THOR_GATEWAY_LOCK_DIR",
     "THOR_MAX_ITERATIONS", "THOR_API_TIMEOUT",
-    "THOR_REDACT_SECRETS", "THOR_NOUS_TIMEOUT_SECONDS",
+    "THOR_REDACT_SECRETS",
     "_THOR_GATEWAY",
     # Managed-scope bootstrap: launch-only (see thor_constants.LAUNCH_ONLY_ENV_KEYS) —
     # every process must resolve the SAME directory or a routed child silently loses
