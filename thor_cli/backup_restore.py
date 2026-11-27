@@ -30,6 +30,16 @@ from utils import (
 
 logger = logging.getLogger(__name__)
 
+# The database files the storage backend owns, by the names they keep in backups and snapshots: each profile's
+# state.db and the root shared-state.db. Their copies, checks and restores go through the store admin.
+_STORE_FILE_NAMES = frozenset({"state.db", "shared-state.db"})
+
+
+def _is_store_file(path: Path) -> bool:
+    """Whether *path* names a file the storage backend owns, as given or once resolved."""
+    return path.name in _STORE_FILE_NAMES or path.resolve().name in _STORE_FILE_NAMES
+
+
 def _foreign_db_holder_pids(db_path: Path) -> Optional[list[int]]:
     """PIDs of OTHER processes holding *db_path* or its WAL/SHM open.
 
