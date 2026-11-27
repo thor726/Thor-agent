@@ -20,11 +20,13 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import random
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import threading
+import time
 from typing import Callable
 
 from scripts.releases.pages import file_sha256, relative_artifact_path
@@ -192,8 +194,36 @@ def asset_info(key: str, *, tag: str | None = None,
     return {"size": asset.get("size"), "sha256": _digest(asset)}
 
 
+# Retries after a rate-limit failure: the first waits ~30s, then ~90s, then
+# ~240s, each plus up to 30s of jitter so a burst of jobs does not retry in
+# lockstep. Three retries (four attempts total); a fourth rate-limit failure
+# still raises.
+_RATE_LIMIT_BACKOFF_SECONDS = (30.0, 90.0, 240.0)
+_RATE_LIMIT_JITTER_SECONDS = 30.0
+
+
+def _is_rate_limit_error(error: ArchiveError) -> bool:
+    """True when `gh` failed on the installation API rate limit (HTTP 403)."""
+    return "api rate limit exceeded" in str(error).lower()
+
+
+def _retry_upload_after_rate_limit(runner: Runner, name: str, staged: Path,
+                                   asset: str,
+                                   sleep: Callable[[float], None]) -> None:
+    """Retry an upload that died on the API rate limit, with growing backoff."""
+    for attempt, delay in enumerate(_RATE_LIMIT_BACKOFF_SECONDS):
+        sleep(delay + random.uniform(0.0, _RATE_LIMIT_JITTER_SECONDS))
+        try:
+            _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
+            return
+        except ArchiveError as error:
+            if not _is_rate_limit_error(error) or attempt == len(_RATE_LIMIT_BACKOFF_SECONDS) - 1:
+                raise
+
+
 def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
-        runner: Runner = subprocess.run) -> None:
+        runner: Runner = subprocess.run,
+        sleep: Callable[[float], None] = time.sleep) -> None:
     """Upload one archive object; identical bytes are an idempotent retry."""
     name = release_tag(tag)
     asset = asset_name_for(key)
@@ -215,7 +245,13 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
         shutil.copyfile(source, staged)
         try:
             _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
-        except ArchiveError:
+        except ArchiveError as error:
+            if _is_rate_limit_error(error):
+                # The installation API quota is exhausted (many jobs staging
+                # pinned inputs at once): wait it out with growing backoff
+                # instead of failing fast. A fresh listing here would only
+                # spend more of the exhausted quota.
+                _retry_upload_after_rate_limit(runner, name, staged, asset, sleep)
             # A concurrent run's --clobber upload can replace the asset
             # while this upload is in flight (HTTP 404 on the old asset
             # id), or land first and make ours fail with HTTP 422
@@ -224,7 +260,7 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
             # predates the race): if the asset is already there with our
             # digest, the other run landed identical bytes and this put
             # has succeeded. Otherwise one retry re-resolves it by name.
-            if not _landed_by_concurrent_upload(name, asset, source, runner):
+            elif not _landed_by_concurrent_upload(name, asset, source, runner):
                 _run(runner, ["release", "upload", name, f"{staged}#{asset}", "--clobber"])
     with _assets_lock:
         cached = _assets_cache.get((runner, name))

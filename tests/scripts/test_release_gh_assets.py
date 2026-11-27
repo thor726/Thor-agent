@@ -349,3 +349,75 @@ def test_put_retries_when_existing_asset_digest_differs(tmp_path, monkeypatch):
     gh_assets.put(key, str(source), immutable=True, runner=gh)
     assert gh.uploads == 2
     assert gh.releases["ci-archive"] == {gh_assets.asset_name_for(key): b"pinned bytes"}
+
+
+class RateLimitedUploadGh(RecordingGh):
+    """RecordingGh whose first uploads die on the installation API rate
+    limit (HTTP 403), then succeed — the rc.2 stable-release failure."""
+
+    def __init__(self, failures=2):
+        super().__init__()
+        self.failures = failures
+        self.uploads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        if args[1:3] == ["release", "upload"]:
+            self.uploads += 1
+            if self.uploads <= self.failures:
+                return subprocess.CompletedProcess(
+                    args, 1, "", "HTTP 403: API rate limit exceeded for installation")
+        return super().__call__(args, capture_output=capture_output, text=text)
+
+
+def test_put_retries_rate_limit_with_growing_backoff(tmp_path, monkeypatch):
+    # Regression (stable release rc.2-v0.23.6, run 46017070348, 2026-11-27):
+    # many jobs staging pinned inputs into ci-archive at once exhausted
+    # the installation API quota, and every upload died with HTTP 403 —
+    # the old code treated it like a lost --clobber race (one fresh-listing
+    # check, one retry) and failed. A rate-limit failure must wait and
+    # retry with growing backoff instead of failing fast.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RateLimitedUploadGh(failures=2)
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    key = "upstream/sha256/aaaa"
+    delays = []
+    gh_assets.put(key, str(source), immutable=True, runner=gh, sleep=delays.append)
+    assert gh.uploads == 3
+    assert gh.releases["ci-archive"] == {gh_assets.asset_name_for(key): b"pinned bytes"}
+    assert len(delays) == 2
+    assert delays[0] < delays[1]
+    assert 30.0 <= delays[0] <= 60.0
+    assert 90.0 <= delays[1] <= 120.0
+
+
+class Always422UploadGh(RecordingGh):
+    """RecordingGh whose uploads always die with HTTP 422 — a rival's
+    --clobber upload landed first every time."""
+
+    def __init__(self):
+        super().__init__()
+        self.uploads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        if args[1:3] == ["release", "upload"]:
+            self.uploads += 1
+            return subprocess.CompletedProcess(
+                args, 1, "", "HTTP 422: ReleaseAsset.name already exists")
+        return super().__call__(args, capture_output=capture_output, text=text)
+
+
+def test_put_does_not_backoff_on_non_rate_limit_error(tmp_path, monkeypatch):
+    # A 422 "already exists" is a lost --clobber race, not a rate limit:
+    # it must keep the existing path (fresh listing, then one retry) and
+    # still raise — no sleeping, no extra retries.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = Always422UploadGh()
+    source = tmp_path / "input"
+    source.write_bytes(b"pinned bytes")
+    key = "upstream/sha256/aaaa"
+    delays = []
+    with pytest.raises(gh_assets.ArchiveError):
+        gh_assets.put(key, str(source), immutable=True, runner=gh, sleep=delays.append)
+    assert gh.uploads == 2
+    assert delays == []

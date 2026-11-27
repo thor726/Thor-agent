@@ -8,6 +8,8 @@ let
       (lib.fileset.fileFilter (file: file.hasExt "svg") ../assets)
       # The DMG volume icon is hand-made raster artwork, not rendered from the svgs.
       ../assets/dmg-volume.png
+      # The hammer mark is hand-made raster artwork the generator embeds as a data URI.
+      ../assets/thor-hammer.png
     ];
   };
 in
