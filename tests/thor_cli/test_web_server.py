@@ -2881,8 +2881,8 @@ class TestNewEndpoints:
         assert by_name["ElevenLabs"]["status"] == "needs_keys"
 
 
-    def test_select_managed_thorhub_provider_reports_needs_nous_auth(self, monkeypatch):
-        """Selecting a managed ThorHub row while logged out flags needs_nous_auth.
+    def test_select_managed_thorhub_provider_reports_needs_thorhub_auth(self, monkeypatch):
+        """Selecting a managed ThorHub row while logged out flags needs_thorhub_auth.
 
         Regression: the GUI PUT wrote browser.cloud_provider + use_gateway
         but skipped the ThorHub entitlement handshake the CLI runs inline
@@ -2906,7 +2906,7 @@ class TestNewEndpoints:
         assert resp.status_code == 200
         data = resp.json()
         assert data["ok"] is True
-        assert data["needs_nous_auth"] is True
+        assert data["needs_thorhub_auth"] is True
         assert data["feature"] == "browser"
         # The selection is still persisted — activation is what's gated.
         # Managed rows store the single 'nous' provider string (the runtime

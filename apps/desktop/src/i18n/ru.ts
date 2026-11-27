@@ -1828,16 +1828,14 @@ export const ruOverrides = {
       sectionTitle: 'Доступно для установки',
       badges: { official: 'Официальный', verified: 'Проверенный' },
       notInstalled: 'Не установлен',
-      intro: (name: string) =>
-        `${name} — плагин из каталога Thor. Установка включит его, затем здесь можно ввести учётные данные.`,
+      intro: (name: string) => `${name} — плагин из каталога Thor. Установка включит его, затем здесь можно ввести учётные данные.`,
       disclosure: 'Раскрытие:',
       install: 'Установить',
       installing: 'Установка…',
       installed: (name: string) => `${name} установлен`,
       installedDetail: 'Введите учётные данные, чтобы подключить его.',
       installFailed: (name: string) => `Не удалось установить ${name}`,
-      lazyOff:
-        'Автоматическая установка плагинов отключена (security.allow_lazy_installs), поэтому Thor не устанавливает его отсюда.',
+      lazyOff: 'Автоматическая установка плагинов отключена (security.allow_lazy_installs), поэтому Thor не устанавливает его отсюда.',
       runCommand: 'Установите из терминала:'
     },
     search: 'Поиск в сообщениях...',
@@ -3951,14 +3949,6 @@ export const ruOverrides = {
       toggle: open => `${open ? 'Показать' : 'Скрыть'} боковую панель`
     }
   },
-  freeTier: {
-    offer: {
-      heading: 'Продолжайте с Thor',
-      body: 'Вы пользуетесь бесплатным лимитом. Если продолжите работать с Thor, скоро начнёте упираться в ограничения. Войдите с бесплатной учётной записью Thor, чтобы получить больший лимит.',
-      signIn: 'Войти',
-      notNow: 'Не сейчас'
-    }
-  }
 } satisfies TranslationOverrides
 
 export const ru = defineLocale(ruOverrides)

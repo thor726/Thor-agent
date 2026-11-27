@@ -524,7 +524,7 @@ export const en: Translations = {
       'Your bundle was uploaded privately. Share the link below in your support thread so the team can see your logs.',
     failedTitle: 'Upload failed',
     failedHint:
-      'You can also run `thor debug share --nous` from a terminal, or `thor debug share --local` to print the report without uploading.',
+      'You can also run `thor debug share --internal` from a terminal, or `thor debug share --local` to print the report without uploading.',
     handoffLead: 'Pick up the discussion in:',
     links: {
       github: 'GitHub Issues',
@@ -1582,20 +1582,6 @@ export const en: Translations = {
       perMonth: amount => `${amount}/mo`,
       creditsPerMonth: amount => `${amount} credits/mo`,
       usageLabel: label => `${label} usage`,
-      freeTier: {
-        signIn: 'Sign in',
-        title: "You're on the Thor free tier",
-        message: 'Sign in with a Thor account to unlock more models and tools.',
-        caption:
-          'Runs on nous/welcome with connectors included. Signing in keeps your connectors and adds the tools that need an account and every other model.',
-        name: 'Thor · free tier',
-        footnote:
-          'The free tier has no balance and nothing to pay. Payment and usage appear when you sign in with a Thor account.',
-        plan: 'Free tier',
-        model: 'Model',
-        connectors: 'Connectors',
-        included: 'Included'
-      },
       amountValidation: {
         reloadTo: 'Reload-to',
         greaterThanThreshold: 'Reload-to amount must be greater than the threshold.',
@@ -2538,16 +2524,14 @@ export const en: Translations = {
       sectionTitle: 'Available to install',
       badges: { official: 'Official', verified: 'Verified' },
       notInstalled: 'Not installed',
-      intro: (name: string) =>
-        `${name} is a plugin from the Thor catalog. Install turns it on, then you can enter its credentials here.`,
+      intro: (name: string) => `${name} is a plugin from the Thor catalog. Install turns it on, then you can enter its credentials here.`,
       disclosure: 'Disclosure:',
       install: 'Install',
       installing: 'Installing…',
       installed: (name: string) => `${name} installed`,
       installedDetail: 'Enter its credentials to connect it.',
       installFailed: (name: string) => `Could not install ${name}`,
-      lazyOff:
-        'Automatic plugin installs are off (security.allow_lazy_installs), so Thor does not install it from here.',
+      lazyOff: 'Automatic plugin installs are off (security.allow_lazy_installs), so Thor does not install it from here.',
       runCommand: 'Install it from a terminal:'
     },
     search: 'Search messaging...',
@@ -3999,75 +3983,6 @@ export const en: Translations = {
 
   onboarding: enOnboarding,
 
-  freeTier: {
-    providerRowTitle: 'Thor · free tier',
-    providerRowPitch: 'Sign in with a Thor account to unlock more models and tools.',
-    readyTitle: 'Thor is ready.',
-    readyCaption: 'Free · connectors included',
-    begin: 'Begin',
-    signInInstead: 'Sign in with a Thor account instead',
-    otherProviders: 'Other providers',
-    stripTitle: 'Free Thor inference and connectors are now available.',
-    stripBody: 'Open the model picker to try them, or sign in with a Thor account.',
-    openModelPicker: 'Open model picker',
-    dismiss: 'Dismiss',
-    providerName: 'Thor',
-    statusLabel: model => `Thor · ${model}`,
-    signIn: 'Sign in',
-    signInHeading: 'Sign in with a Thor account to unlock more models and tools.',
-    settingUp: 'Setting up free inference…',
-    finishInBrowser: 'Finish in your browser',
-    doNotShare: 'Do not share it.',
-    openPageAgain: 'Open page again',
-    waiting: 'Waiting for sign-in…',
-    finishingHeading: 'Finishing sign-in…',
-    finishingBody: 'Approved in the browser. Collecting your account tokens.',
-    signedInAsLabel: 'Signed in as',
-    signedIn: 'Signed in.',
-    completedBody: 'Your account now carries inference and tools.',
-    reconnect: 'Reconnect',
-    openConnectors: 'Open Connectors',
-    defaultModel: 'Default model',
-    change: 'Change',
-    done: 'Done',
-    notNow: 'Not now',
-    tryAgain: 'Try again',
-    didNotComplete: "Sign-in didn't finish",
-    timedOutHeading: 'That sign-in link has expired',
-    timedOutBody: "Start again whenever you're ready. You're still on the free Thor service.",
-    errorBody: "Sign-in didn't finish. Try again whenever you're ready.",
-    busyHeading: 'Almost there',
-    busyBody: wait =>
-      `Thor couldn't finish signing you in because the Thor service is busy. Try again in ${wait}. Your session is still here in the meantime.`,
-    unreachableBody:
-      "Thor couldn't reach the Thor service to finish signing you in. Check your internet connection and try again. Your session is still here.",
-    alreadySignedInHeading: 'Already signed in.',
-    alreadySignedInBody: 'This Thor is already signed in to a Thor account.',
-    offer: {
-      heading: 'Keep going with Thor',
-      body: "You're on the free allowance. If you keep using Thor, you'll start running into limits. Sign in with a free Thor account for a bigger allowance.",
-      signIn: 'Sign in',
-      notNow: 'Not now'
-    },
-    setupFailed: {
-      gateClosed:
-        "This version of Thor can't start without a Thor account. Sign in or create one, it's free and only takes a minute.",
-      paused:
-        'Using Thor without signing in is paused for a moment. Thor will keep checking. Signing in is free and gets you going right now.',
-      rateLimited: wait =>
-        `Lots of people are getting started right now, so Thor will try again in ${wait}. Signing in is free and skips the wait.`,
-      unreachable:
-        "Thor couldn't reach the Thor service. Check your internet connection, then tap Try again. Or connect another provider for now.",
-      serverError: 'The Thor service had a hiccup. Tap Try again in a moment, or connect another provider for now.',
-      powRequired:
-        "The Thor server asked for a proof of work, but that isn't implemented in your Agent yet. Sign in or create a free Thor account to continue.",
-      locked: "This session can't continue without signing in. Sign in or create a free Thor account to keep going.",
-      generic: "Thor couldn't set up free access without signing in. Signing in is free, or connect another provider.",
-      signInBelow: 'Signing in is free. Pick Thor below.',
-      tryAgain: 'Try again',
-      retrying: 'Trying again…'
-    }
-  },
 
   modelPicker: {
     title: 'Switch model',
@@ -4226,7 +4141,6 @@ export const en: Translations = {
       toggleTerminal: 'Terminal',
       toggleTokensPerSecond: 'Tokens per second',
       toggleVersion: 'Version & updates',
-      toggleFreeTier: 'Free tier',
       toggleWorkspace: 'Workspace',
       cacheHitRateTitle: 'Prompt cache hit rate this session — cached tokens cost less, so higher is cheaper',
       tokensPerSecondTitle: 'Output tokens per second, averaged over the last 10 model calls',
