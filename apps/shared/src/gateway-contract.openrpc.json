@@ -50092,7 +50092,7 @@
           "REISSUE_REFUSED",
           "UNKNOWN_OPERATION",
           "INVALID_ANSWER",
-          "NEEDS_NOUS_AUTH",
+          "NEEDS_THORHUB_AUTH",
           "CONNECTOR_NOT_FOUND",
           "TOOLS_UNAVAILABLE",
           "CONNECTORS_UNAVAILABLE",
