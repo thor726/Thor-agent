@@ -7,7 +7,7 @@
   <a href="https://github.com/thor726/Thor-agent/">Thor Agent</a> | <a href="https://github.com/thor726/Thor-agent/">Thor Desktop</a>
 </p>
 <p align="center">
-  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-thor--agent.thor-agent.local-FFD700?style=for-the-badge" alt="Documentación"></a>
+  <a href="https://thor726.github.io/Thor-agent/docs/"><img src="https://img.shields.io/badge/Docs-GitHub-FFD700?style=for-the-badge" alt="Documentación"></a>
   <a href="https://github.com/thor726/thor-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge" alt="Licencia: MIT"></a>
   <a href="https://github.com/thor726/Thor-agent"><img src="https://img.shields.io/badge/Creado%20por-Thor%20Labs-blueviolet?style=for-the-badge" alt="Creado por Thor Labs"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-blue?style=for-the-badge" alt="English"></a>
@@ -119,7 +119,7 @@ Para las listas de comandos completas, consulta la [guía de CLI](https://thor72
 
 ## Documentación
 
-Toda la documentación está en **[thor-agent.thor-agent.local/docs](https://thor726.github.io/Thor-agent/docs/)**:
+Toda la documentación está en **[el sitio de documentación](https://thor726.github.io/Thor-agent/docs/)**:
 
 | Sección                                                                                             | Contenido                                                    |
 | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |

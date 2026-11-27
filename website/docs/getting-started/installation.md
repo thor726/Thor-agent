@@ -51,18 +51,18 @@ For a command-line only install without Thor Desktop, run:
 
 #### Linux / macOS / WSL2
 ```bash
-curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 > That one-liner installs the latest version — including the ThorHub billing integration, where `/topup` shows your ThorHub balance.
 >
-> Already installed? Switch to the latest version with `thor update --set-channel main`.
+> Already installed? Update to the latest version with `thor update`.
 
 #### Windows (native)
 
 Run in powershell:
 ```powershell
-iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) } -Channel main"
+iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) }"
 ```
 
 If you want to install & run Thor Desktop after a command-line only install, simply run

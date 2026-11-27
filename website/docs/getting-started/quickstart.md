@@ -61,16 +61,16 @@ For aarch64 Android devices, use the separate [Termux APT guide](./termux.md).
 
 #### Linux / macOS / WSL2
 ```bash
-curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
-> That one-liner installs the latest version — including the ThorHub billing integration. Already installed? Switch to the latest version with `thor update --set-channel main`.
+> That one-liner installs the latest version — including the ThorHub billing integration. Already installed? Update to the latest version with `thor update`.
 
 #### Windows (native)
 
 Run in powershell:
 ```powershell
-iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) } -Channel main"
+iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) }"
 ```
 
 After it finishes, reload your shell:

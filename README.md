@@ -36,12 +36,12 @@ Use any model you want — [ThorHub](https://llm.thormarket.site), OpenRouter, O
 ### Linux, macOS, WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash -s -- --channel main
+curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.sh | bash
 ```
 
 > That one-liner installs the latest version — including the ThorHub billing integration, where `/topup` shows your ThorHub balance.
 >
-> Already installed? Switch to the latest version with `thor update --set-channel main`.
+> Already installed? Update to the latest version with `thor update`.
 
 ### Windows (native, PowerShell)
 
@@ -50,7 +50,7 @@ curl -fsSL https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/ins
 Run this in PowerShell:
 
 ```powershell
-iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) } -Channel main"
+iex "& { $(irm https://raw.githubusercontent.com/thor726/Thor-agent/main/scripts/install.ps1) }"
 ```
 
 The source installer delegates Python 3.14, Node.js, npm, pnpm, ripgrep, FFmpeg,
@@ -59,7 +59,7 @@ for Windows archive in Thor' tool store. It does not replace your system Git.
 See [installation methods](https://thor726.github.io/Thor-agent/docs/getting-started/installation)
 for the separate MSIX/App Installer package and its update ownership.
 
-> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Note: the Termux package is currently broken — a fix is in progress; see the Termux guide for the current status. Use the [Termux guide](https://thor726.github.io/Thor-agent/docs/getting-started/termux), not the desktop/server installer script.
+> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Use the [Termux guide](https://thor726.github.io/Thor-agent/docs/getting-started/termux), not the desktop/server installer script.
 >
 > **Windows:** Native Windows is fully supported — the PowerShell one-liner above installs everything. If you'd rather use WSL2, the Linux command works there too. Native Windows install lives under `%LOCALAPPDATA%\thor`; WSL2 installs under `~/.thor` as on Linux.
 
