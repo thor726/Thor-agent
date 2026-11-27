@@ -15,7 +15,6 @@ import sys
 import time
 from fastapi import APIRouter
 from thor_cli.web_deps import LateState, late
-from thor_cli.thorhub_account import THORHUB_TOPUP_URL
 from thor_cli.web_server_gateway import _display_system_platform
 from starlette.concurrency import run_in_threadpool
 from fastapi import HTTPException, Request
@@ -60,7 +59,6 @@ get_install_id = late("get_install_id")
 get_running_pid_cached = late("get_running_pid_cached", "gateway.status")
 get_runtime_status_running_pid = late("get_runtime_status_running_pid", "gateway.status")
 served_profile_runtime = late("served_profile_runtime", "gateway.status_served")
-load_config = late("load_config", "thor_cli.config")
 read_runtime_status = late("read_runtime_status", "gateway.status")
 _open_session_db_for_profile = late("_open_session_db_for_profile", "thor_cli.web_server_sessions")
 
@@ -832,16 +830,6 @@ async def update_learning_node(body: LearningNodeEdit, profile: Optional[str] = 
         body.profile or profile, lambda: edit_node(body.id, body.content), 400, "edit failed")
 
 
-# Portal — Nous Portal auth + Tool Gateway routing status (read-only).
-
-
-@router.get("/api/portal")
-async def get_portal_status(profile: Optional[str] = None):
-    # load_config() + auth/subscription snapshots are disk reads on a polled endpoint —
-    # keep them off the event loop.
-    return await config_scoped_to_thread(profile, _get_portal_status_sync)
-
-
 @router.get("/api/cloud/agents")
 async def list_cloud_agents(org: Optional[str] = None, profile: Optional[str] = None):
     """The signed-in Thor account's Thor Cloud agents, for a client with no portal session of its
@@ -851,46 +839,6 @@ async def list_cloud_agents(org: Optional[str] = None, profile: Optional[str] = 
         return await config_scoped_to_thread(profile, lambda: discover(org))
     except CloudAgentsError as exc:
         raise HTTPException(status_code=exc.status, detail={"code": exc.code, "message": str(exc)}) from None
-
-
-def _feature_state(feat) -> str:
-    if getattr(feat, "managed_by_thorhub", False):
-        return "via ThorHub"
-    if getattr(feat, "active", False):
-        return getattr(feat, "current_provider", None) or "active"
-    return "not configured"
-
-
-def _get_portal_status_sync():
-    cfg = load_config() or {}
-    auth: dict[str, Any] = {}
-    try:
-        from thor_cli.auth_thorhub import get_thorhub_auth_status_local
-        # Refresh-free snapshot so polling never touches the network.
-        auth = get_thorhub_auth_status_local() or {}
-    except Exception:
-        auth = {}
-
-    features = []
-    try:
-        from thor_cli.thorhub_subscription import get_thorhub_subscription_features
-        feats = get_thorhub_subscription_features(cfg)
-        if feats is not None:
-            features = [{"label": getattr(feat, "label", ""), "state": _feature_state(feat)}
-                        for feat in feats.items()]
-    except Exception:
-        _log.exception("portal features failed")
-
-    model_cfg = cfg.get("model") if isinstance(cfg.get("model"), dict) else {}
-    return {
-        "logged_in": bool(auth.get("logged_in")), "portal_url": auth.get("portal_base_url"),
-        "inference_url": auth.get("inference_base_url"),
-        "provider": str((model_cfg or {}).get("provider") or ""),
-        # Free tier: a token exists, so logged_in stays true for callers that only ask "is there a
-        # credential"; surfaces that render an account must branch on free_tier first.
-        "free_tier": bool(auth.get("free_tier")), "account_tier": auth.get("account_tier"),
-        "subscription_url": THORHUB_TOPUP_URL,
-        "features": features}
 
 
 # Diagnostics: text-output actions spawned in the background, tailed via /api/actions/<name>.

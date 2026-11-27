@@ -325,8 +325,6 @@ COMMAND_REGISTRY: list[CommandDef] = [
                args_hint="[reset [--force]]"),
     CommandDef("subscription", "View ThorHub token packages and buy at llm.thormarket.site/beli", "Info",
                cli_only=True, aliases=("upgrade",)),
-    CommandDef("login", "Set up ThorHub access with your own API key (Nous login is retired)", "Info",
-               busy_policy="dispatch", desktop="settings"),
     CommandDef("topup", "Show your ThorHub token balance and top up at llm.thormarket.site", "Info"),
     CommandDef("insights", "Show usage insights and analytics", "Info",
                args_hint="[days]", desktop="advanced"),

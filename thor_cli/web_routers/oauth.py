@@ -883,25 +883,6 @@ async def poll_oauth_session(provider_id: str, session_id: str, profile: Optiona
     }
 
 
-@router.get("/api/providers/oauth/nous/handoff")
-async def nous_handoff_status(
-    request: Request, profile: Optional[str] = None, since: Optional[str] = None, wait: float = 0,
-):
-    """The profile's latest free-tier handoff (``guest_handoff.wire_status``). Token-protected. A
-    long-poll: given *since* (the ``updated_at`` the caller already shows) and *wait*, it answers once
-    the record changes. The keepalive retries a move in the background; this only reads."""
-    _require_token(request)
-    profile_name = _validate_oauth_profile(profile)
-
-    def _read() -> dict[str, Any]:
-        from thor_cli.guest_handoff import handoff_status, wire_status
-        return wire_status(handoff_status())
-
-    return await _long_poll(
-        lambda: config_scoped_to_thread(profile_name, _read),
-        lambda status: since is None or status.get("updated_at") != since, wait, tick=1.0)
-
-
 @router.delete("/api/providers/oauth/sessions/{session_id}")
 async def cancel_oauth_session(session_id: str, request: Request, profile: Optional[str] = None):
     """Cancel a pending OAuth session. Token-protected.

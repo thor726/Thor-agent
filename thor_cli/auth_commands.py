@@ -460,17 +460,6 @@ def auth_priority_command(args) -> None:
     _report_priority(provider, pool, moved, requested, "Set", "to")
 
 
-def _free_tier_lines() -> tuple[str, str]:
-    """The two-line free-tier rendering shared by every auth display surface (R-USR-1)."""
-    from thor_cli.anon_auth import FREE_TIER_LABEL, GUEST_MODEL, UPGRADE_HINT
-    return f"{FREE_TIER_LABEL} · {GUEST_MODEL}", UPGRADE_HINT
-
-
-def _is_free_tier_entry(entry) -> bool:
-    from thor_cli.anon_auth import is_guest_state
-    return is_guest_state(getattr(entry, "extra", None))
-
-
 def auth_list_command(args) -> None:
     provider_filter = _normalize_provider(getattr(args, "provider", "") or "")
     if provider_filter:
@@ -632,12 +621,6 @@ def auth_status_command(args) -> None:
         load_pool(provider)  # runs the forked-grant heal first so the report reflects the consolidated grant
     status = auth_mod.get_auth_status(provider)
     _print_oauth_heal_notices()
-    if status.get("free_tier"):
-        # Free tier: not an account login, so no account fields; point at the upgrade path.
-        label, hint = _free_tier_lines()
-        print(f"{provider}: {label}")
-        print(f"  {hint}")
-        return
     if not status.get("logged_in"):
         reason = status.get("error")
         print(f"{provider}: logged out" + (f" ({reason})" if reason else ""))
@@ -839,18 +822,10 @@ def _interactive_strategy() -> None:
     print(f"Set {provider} strategy to: {strategy}")
 
 
-def auth_upgrade_command(args) -> None:
-    """``thor auth upgrade``: sign the free tier into a Thor account, keeping its connectors."""
-    from thor_cli.anon_auth import upgrade_guest
-    code = upgrade_guest(args)
-    if code:
-        raise SystemExit(code)
-
-
 _AUTH_ACTIONS = {
     "add": auth_add_command, "list": auth_list_command, "remove": auth_remove_command,
     "reset": auth_reset_command, "priority": auth_priority_command, "refresh": auth_refresh_command, "status": auth_status_command,
-    "logout": auth_logout_command, "upgrade": auth_upgrade_command}
+    "logout": auth_logout_command}
 
 
 def auth_command(args) -> None:

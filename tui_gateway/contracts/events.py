@@ -76,7 +76,7 @@ class SetupReadyPayload(OpenPayload):
     has_identity: bool
     other_providers: bool
     error: str = ""
-    # Present only when the free-tier mint did not happen (``anon_auth.MintFailure.as_payload``).
+    # Always absent now (the free-tier mint is retired); kept for the wire shape.
     error_code: str | None = None
     retryable: bool | None = None
     retry_after: int | None = None

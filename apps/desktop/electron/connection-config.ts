@@ -763,7 +763,6 @@ const LOCAL_PRIMARY_SCOPED_ROUTES = new Set([
   'PUT /api/curator/paused',
   'POST /api/curator/run',
   'GET /api/logs',
-  'GET /api/portal',
   'GET /api/thor/update/check',
   'POST /api/local-models/activate',
   'GET /api/dashboard/themes',

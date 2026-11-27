@@ -68,7 +68,6 @@ import type {
   SystemStats,
   UpdateCheckResponse,
   CuratorStatus,
-  PortalStatus,
   DebugShareResponse,
   GatewayMigratePlan,
 } from "@/lib/api";
@@ -261,6 +260,38 @@ function DebugShareButton({
   );
 }
 
+/** ThorHub status for the System page, sourced from the `thor` OAuth provider card. */
+export interface ThorhubStatus {
+  logged_in: boolean;
+  portal_url: string | null;
+  inference_url: string | null;
+  provider: string;
+  subscription_url: string;
+  features: { label: string; state: string }[];
+}
+
+/**
+ * `/api/portal` is retired: the ThorHub status comes from the `thor` card of
+ * `/api/providers/oauth`, mapped onto the shape this page renders. Lives here (not in
+ * `lib/api.ts`) so the shared API module does not grow past its line cap.
+ */
+async function getThorhubStatus(): Promise<ThorhubStatus> {
+  const { providers } = await api.getOAuthProviders();
+  const thor = providers.find((p) => p.id === "thor");
+  const portalUrl =
+    thor?.status.source_label && thor.status.source_label.startsWith("http")
+      ? thor.status.source_label
+      : null;
+  return {
+    logged_in: Boolean(thor?.status.logged_in),
+    portal_url: portalUrl,
+    inference_url: portalUrl ? `${portalUrl.replace(/\/$/, "")}/v1` : null,
+    provider: "",
+    subscription_url: "https://llm.thormarket.site/beli/topup",
+    features: [],
+  };
+}
+
 export default function SystemPage() {
   const { toast, showToast } = useToast();
 
@@ -273,7 +304,7 @@ export default function SystemPage() {
   );
   const [hooks, setHooks] = useState<HooksResponse | null>(null);
   const [curator, setCurator] = useState<CuratorStatus | null>(null);
-  const [portal, setPortal] = useState<PortalStatus | null>(null);
+  const [portal, setPortal] = useState<ThorhubStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -334,7 +365,7 @@ export default function SystemPage() {
       api.getCheckpoints(),
       api.getHooks(),
       api.getCurator(),
-      api.getPortal(),
+      getThorhubStatus(),
       // Cached (non-forced) check so the version row shows update status on
       // load without a separate effect / a forced network round-trip.
       api.checkThorUpdate(false),
@@ -1081,10 +1112,10 @@ export default function SystemPage() {
         </Card>
       </section>
 
-      {/* ── Portal ────────────────────────────────────────────────── */}
+      {/* ── ThorHub ───────────────────────────────────────────────── */}
       <section className="flex flex-col gap-3">
         <H2 variant="sm" className="flex items-center gap-2 text-muted-foreground">
-          <Globe className="h-4 w-4" /> Thor Portal
+          <Globe className="h-4 w-4" /> ThorHub
         </H2>
         <Card>
           <CardContent className="flex flex-col gap-3 py-4">
@@ -1121,7 +1152,7 @@ export default function SystemPage() {
             )}
             {!portal?.logged_in && (
               <p className="text-xs text-muted-foreground">
-                Log in with <span className="font-mono">thor portal</span>.
+                Log in with <span className="font-mono">thor auth add thor</span>.
               </p>
             )}
           </CardContent>

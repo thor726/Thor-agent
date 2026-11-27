@@ -33,7 +33,7 @@ SINGLE_USE_OAUTH_SINGLETON_FILES = (".anthropic_oauth.json",)
 # Providers whose device-code grants live under ``providers.<id>`` (not only the pool).
 # Only a block carrying a refresh token is a forkable grant: an agent_key-only ``nous`` block is
 # not single-use and must survive.
-_DEVICE_CODE_BLOCK_PROVIDERS = ("openai-codex", "xai-oauth", "nous")
+_DEVICE_CODE_BLOCK_PROVIDERS = ("openai-codex", "xai-oauth")
 
 
 def _block_tokens(block: dict[str, Any]) -> dict[str, Any]:

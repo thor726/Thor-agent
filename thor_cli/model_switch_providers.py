@@ -495,28 +495,11 @@ def _thorhub_picker_model_ids(curated: dict, force_fresh_thorhub_tier: bool) -> 
 def _free_tier_nous_row(row: dict) -> dict | None:
     """The one free-tier rule for a Thor picker row, shared by every row builder.
 
-    ``row`` carries at least ``name`` and ``models``. A guest identity carrying inference turns
-    it into "Thor · free tier" with the single model ``nous/welcome`` (the welcome host serves
-    nothing else). A guest that ``nous.guest: false`` has switched off yields ``None``: no Thor
-    row at all, since there is nothing selectable. A real account (or no Thor state) passes the
-    row through untouched. Builders that compute the full catalog lazily should pass
-    ``models=[]`` and only compute when the returned row still has no models."""
-    from thor_cli import anon_auth
-    if not anon_auth.has_guest():
-        return row
-    if not anon_auth.guest_allowed():
-        return None
-    if not anon_auth.free_inference_active():
-        return row  # a guest without the welcome trial here: the row is whatever real Nous login exists
-    out = dict(row)
-    out["name"] = anon_auth.FREE_TIER_LABEL
-    out["models"] = [anon_auth.GUEST_MODEL]
-    out["total_models"] = 1
-    # The explicit flag every consumer keys on (pricing, badges): never the display name. It also
-    # tells the picker this is the free tier's identity, distinct from ``free_tier`` (an account on
-    # the free plan) which pricing sets from the Portal's entitlement read.
-    out["free_tier_row"] = True
-    return out
+    The Nous free tier is retired, so there is no guest identity to turn a row into a
+    free-tier row anymore: every row passes through untouched. Kept so the row builders keep
+    one call site for the (now empty) rule. Builders that compute the full catalog lazily
+    should pass ``models=[]`` and only compute when the returned row still has no models."""
+    return row
 
 
 def _cap_models(model_ids: list, max_models: int | None, slug: str = "") -> list:

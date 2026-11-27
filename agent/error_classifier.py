@@ -809,7 +809,6 @@ class _Ctx:
     context_length: int
     num_messages: int
     base_url: str = ""  # the route the call went to; "" when the caller did not say
-    anonymous: bool = False
 
     def __post_init__(self) -> None:
         self.error_type = type(self.error).__name__
@@ -1084,9 +1083,7 @@ def classify_api_error(
 
     ``base_url`` (optional) is the route the call went to; the Thor welcome tier keys its
     dark-tier 403 on it because that refusal carries no distinguishing message.
-    ``api_key`` identifies an anonymous request; a host or fairshare reason alone does not.
     The credential is never included in the returned context."""
-    from thor_cli.anon_auth import is_anonymous_request
     status_code = _extract_status_code(error)
     # Some SDK RateLimitError / AuthenticationError classes set no .status_code; the class names it.
     if status_code is None:
@@ -1096,7 +1093,6 @@ def classify_api_error(
     c = _Ctx(
         error, status_code, body, _build_error_msg(error, body), provider, model,
         approx_tokens, context_length, num_messages, str(base_url or ""),
-        anonymous=is_anonymous_request(provider, api_key),
     )
     stage, verdict = next(((s, v) for s in _STAGES if (v := s(c)) is not None), (None, _V_UNKNOWN))
     extra = _shape_context(c, verdict, hooked=stage in (_plugin_verdict, _profile_verdict))

@@ -24,7 +24,7 @@ included), under the same ``exclusive_maintenance`` reservation, so nothing here
   switch off (the flag the Messaging page writes), its token and settings kept, so the source
   computer keeps answering until the user switches the bot over. Written into the same merged
   ``config.yaml`` the restore publishes.
-* Never taken from the archive: ``shared/nous_auth.json``, ``webapp/`` (the Webapp's sign-in
+* Never taken from the archive: ``webapp/`` (the Webapp's sign-in
   state), ``install_id`` and lock files.
 * Replace, not merge: in the root home and in every profile the archive carries, a file the archive
   lacks is removed (except the root's ``workspace/``, ``home/`` and non-Thor dot-entries: HOME's,
@@ -74,12 +74,11 @@ HOST_CONFIG_KEYS = (
     "max_concurrent_sessions", "max_live_sessions",
 )
 
-# .env names the host provisions: the Nous sign-in and portal endpoints, the Tool Gateway, Thor'
+# .env names the host provisions: the Tool Gateway, Thor's
 # own deployment switches, and the container's generated API server key (docker/stage2-hook.sh).
-_HOST_ENV_PREFIXES = ("NOUS_", "THOR_", "TOOL_GATEWAY_")
+_HOST_ENV_PREFIXES = ("THOR_", "TOOL_GATEWAY_")
 _HOST_ENV_NAMES = frozenset({"API_SERVER_KEY"})
 
-_SHARED_NOUS_STORE = ("shared", "nous_auth.json")
 # The machine's identity: a copy would make two installs report as one.
 _HOST_ROOT_FILES = frozenset({"install_id"})
 # The Webapp's sign-in state (its browser credential, native grants, the Portal callback): the
@@ -449,7 +448,7 @@ class KeepHostImport:
     def skips(self, parts: tuple[str, ...]) -> bool:
         """Members the destination keeps its own copy of."""
         home = _home_parts(parts)
-        return (parts[-2:] == _SHARED_NOUS_STORE or (len(parts) == 1 and parts[0] in _HOST_ROOT_FILES)
+        return ((len(parts) == 1 and parts[0] in _HOST_ROOT_FILES)
                 or parts == (_PROFILES_MANIFEST,)
                 or (len(parts) > 1 and parts[0] in _HOST_ROOT_DIRS)
                 or (parts[-1].endswith(".lock") and home[0] not in _CONTENT_TREES))
