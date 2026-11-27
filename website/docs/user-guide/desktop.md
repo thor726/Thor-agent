@@ -1016,7 +1016,7 @@ Build installers:
 
 ```bash
 pnpm run dist:mac     # DMG + zip
-pnpm run dist:win     # NSIS + MSI
+pnpm run dist:win     # MSIX
 pnpm run dist:linux   # AppImage + deb + rpm
 pnpm run pack         # unpacked app under release/ (no installer)
 ```
