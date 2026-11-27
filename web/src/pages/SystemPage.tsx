@@ -42,6 +42,7 @@ import { useConfirmDelete } from "@thor/ui/hooks/use-confirm-delete";
 import { ConfirmDialog } from "@thor/ui/ui/components/confirm-dialog";
 import { useModalBehavior } from "@/hooks/useModalBehavior";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { BackendMigrationCard } from "@/components/BackendMigrationCard";
 import { ThorConsoleModal } from "@/components/ThorConsoleModal";
 import { cn, themedBody } from "@/lib/utils";
 import { useI18n } from "@/i18n";
@@ -1239,6 +1240,7 @@ export default function SystemPage() {
             </CardContent>
           )}
         </Card>
+        <BackendMigrationCard />
       </section>
 
       {/* ── Memory ────────────────────────────────────────────────── */}

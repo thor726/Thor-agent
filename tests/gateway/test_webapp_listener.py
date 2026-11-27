@@ -1,8 +1,8 @@
 """The browser-hosted Desktop on the gateway's own listener: config, bind address and browser credential.
 
 ``webapp.enabled`` in the gateway home's ``config.yaml`` turns it on; the gateway then binds its one HTTP
-listener to ``webapp.port`` on a loopback or wildcard ``webapp.host``, and native clients keep dialling a
-loopback address.
+listener to ``webapp.port`` on a loopback, wildcard or one specific ``webapp.host`` address, and native
+clients keep dialling a loopback address.
 """
 import asyncio
 import errno
@@ -43,7 +43,7 @@ def test_an_enabled_webapp_binds_its_configured_address(tmp_path):
     "webapp:\n  enabled: true\n  port: http\n",
     "webapp:\n  enabled: true\n  host: ''\n",
     "webapp:\n  enabled: 'true'\n",
-    "webapp:\n  enabled: true\n  host: 192.168.1.20\n",
+    "webapp:\n  enabled: true\n  host: 127.0.0.2\n",
     "webapp:\n  enabled: true\n  host: thor.example.net\n",
 ])
 def test_a_malformed_webapp_block_keeps_the_listener_private(tmp_path, block):
@@ -56,6 +56,9 @@ def test_a_malformed_webapp_block_keeps_the_listener_private(tmp_path, block):
     ("::1", "::1"),
     ("0.0.0.0", "127.0.0.1"),
     ("::", "::1"),
+    ("192.168.1.10", "127.0.0.1"),  # one specific IPv4: no listener on it, dial loopback
+    ("2001:db8::5", "::1"),  # one specific IPv6: the listener also binds ::1, dial that
+    ("example.invalid", "127.0.0.1"),  # a non-loopback name: no listener on it, dial loopback
 ])
 def test_native_clients_dial_loopback_whatever_the_browser_bind(bind, dial):
     assert webapp.dial_host(bind) == dial
@@ -66,9 +69,27 @@ def test_native_clients_dial_loopback_whatever_the_browser_bind(bind, dial):
     ("0.0.0.0", "http://127.0.0.1:9120"),
     ("::", "http://[::1]:9120"),
     ("::1", "http://[::1]:9120"),
+    ("2001:db8::5", "http://[::1]:9120"),  # specific IPv6: the origin is the ::1 companion
+    ("192.168.1.10", "http://127.0.0.1:9120"),
 ])
 def test_the_advertised_api_origin_is_the_loopback_dial_address(bind, origin):
     assert webapp.dial_origin(bind, 9120) == origin
+
+
+@pytest.mark.parametrize(("bind", "companion"), [
+    ("100.64.1.5", "127.0.0.1"),  # one specific IPv4: the listener also binds loopback
+    ("fd7a::5", "::1"),  # one specific IPv6: the loopback companion is ::1
+    ("127.0.0.1", None),  # already loopback: no companion
+    ("::1", None),
+    ("0.0.0.0", None),  # wildcard: dialled on loopback already
+    ("::", None),
+    ("localhost", None),  # a name is not one specific address
+    ("8.8.8.8", "127.0.0.1"),  # routable or not, the shape is what decides
+])
+def test_a_specific_address_bind_gets_a_loopback_companion(bind, companion):
+    """Backport slice for migrate --backends (plan.verify_hosts): the gateway must answer on
+    loopback too when it binds one specific IP, so Desktop and the CLI can attach."""
+    assert webapp.loopback_companion(bind) == companion
 
 
 def test_a_gateway_restart_keeps_the_browser_credential(tmp_path):
@@ -442,3 +463,37 @@ def test_a_fixed_port_binds_again_while_the_last_gateways_connections_linger():
     first.close()
     with run_api._listener_socket(socket.AF_INET, socket.SOCK_STREAM, 0, port) as second:
         second.bind(("127.0.0.1", port))
+
+
+def test_a_specific_ip_bind_is_accepted_for_the_webapp(tmp_path):
+    """Fase 2 (A1): a backend bound to one IP of this machine migrates to a gateway
+    that binds the same address, so the Webapp accepts a specific-IP host."""
+    settings = webapp.webapp_settings(_home(
+        tmp_path, "webapp:\n  enabled: true\n  host: 192.168.1.20\n  port: 9333\n"))
+    assert (settings.enabled, settings.bind, settings.reason) == (
+        True, ("192.168.1.20", 9333), None)
+
+
+@pytest.mark.parametrize(("bind", "origin"), [
+    ("192.168.1.20", "http://192.168.1.20:9119"),
+    ("fd7a::5", "http://[fd7a::5]:9119"),
+    ("127.0.0.1", None),  # loopback: a browser opens the loopback dial origin, not this
+    ("0.0.0.0", None),  # wildcard: no single browser address
+    ("::", None),
+    ("localhost", None),
+])
+def test_bind_origin_names_the_browser_address_of_a_specific_bind(bind, origin):
+    """Fase 2 (A1): ``bind_origin`` is the http:// address a browser opens for a
+    specific-address bind, else None."""
+    assert webapp.bind_origin(bind, 9119) == origin
+
+
+def test_webapp_settings_judges_a_given_document_without_reading_the_home(tmp_path):
+    """Fase 2 (A2): a caller that already resolved the config passes it in, so the
+    settings are judged without the side effects of loading the home's config —
+    here the home does not even exist."""
+    settings = webapp.webapp_settings(
+        tmp_path / "no-such-home",
+        document={"webapp": {"enabled": True, "host": "127.0.0.1", "port": 9555}})
+    assert (settings.enabled, settings.bind, settings.reason) == (
+        True, ("127.0.0.1", 9555), None)

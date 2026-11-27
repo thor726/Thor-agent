@@ -304,6 +304,66 @@ def test_home_ownership_is_reported_against_this_thor_home(host, no_writes, monk
     assert (items[4501].this_home, items[4502].this_home) == (True, False)
 
 
+def test_report_lists_this_process_when_it_is_a_backend(host, no_writes):
+    """Upstream behaviour: a ``thor dashboard`` running the scan is itself the backend being
+    asked about, so the report lists it instead of excluding its own pid."""
+    host.proc(os.getpid(), _argv("serve", "--port", "9119"), ppid=1)
+
+    items = {i.pid: i for i in gmb.collect_backends()}
+
+    assert os.getpid() in items
+    assert items[os.getpid()].supervisor == "detached"
+
+
+def test_run_elsewhere_backend_gets_a_note_not_to_move(host, no_writes, monkeypatch):
+    from thor_cli import profiles_run_elsewhere as pre
+    host.proc(4501, _argv("dashboard", "--port", "9119"), ppid=1)
+    monkeypatch.setattr("thor_cli.dashboard_procs._thor_home_for_pid", lambda pid: str(host.home))
+    monkeypatch.setattr(pre, "run_elsewhere_for_home",
+                        lambda home: pre.RunElsewhere("default", host.home / "profiles_run_elsewhere"
+                                                      / "default.json", plugin="sandbox-plugin"))
+
+    (item,) = gmb.collect_backends()
+
+    assert any("sandbox-plugin" in n and "does not move" in n for n in item.notes)
+
+
+def test_display_argv_hides_multiline_inline_launcher_source(monkeypatch):
+    """On macOS the report shows ``<inline launcher source>`` instead of the install
+    launcher's multi-line ``-c`` bootstrap."""
+    monkeypatch.setattr(gmb, "os_family", lambda: "darwin")
+    argv = ["/opt/venv/bin/python", "-I", "-c", "import os\nimport sys\nfrom thor_cli.main import main",
+            "dashboard", "--port", "9119"]
+    item = gmb.BackendItem(supervisor="manual", running=True, pid=4242, argv=argv,
+                           not_applied="Report only: changes no service.")
+    lines = gmb.format_report([item])
+    assert "    runs:    /opt/venv/bin/python -I -c '<inline launcher source>' dashboard --port 9119" in lines
+    assert "import os\nimport sys" not in "\n".join(lines)
+
+    monkeypatch.setattr(gmb, "os_family", lambda: "linux")
+    lines = gmb.format_report([gmb.BackendItem(supervisor="manual", running=True, pid=4242,
+                                               argv=["thor", "dashboard", "--port", "9119"])])
+    assert lines[3] == "    runs:    thor dashboard --port 9119"
+
+
+def test_report_footer_points_at_dry_run_plan_unless_profile_runs_elsewhere(host, no_writes, monkeypatch):
+    """The report's last line offers the read-only dry-run plan for this home's backend — unless
+    a plugin runs this profile elsewhere, in which case there is no move to offer."""
+    from thor_cli import profiles_run_elsewhere as pre
+    host.proc(4501, _argv("dashboard", "--port", "9119"), ppid=1)
+    monkeypatch.setattr("thor_cli.dashboard_procs._thor_home_for_pid", lambda pid: str(host.home))
+    monkeypatch.setattr(pre, "run_elsewhere_for_home", lambda home: None)
+
+    lines = gmb.format_report(gmb.collect_backends())
+    assert any("gateway migrate --backends --apply --dry-run" in line for line in lines)
+
+    monkeypatch.setattr(pre, "run_elsewhere_for_home",
+                        lambda home: pre.RunElsewhere("default", host.home / "profiles_run_elsewhere"
+                                                      / "default.json", plugin="sandbox-plugin"))
+    lines = gmb.format_report(gmb.collect_backends())
+    assert not any("--apply --dry-run" in line for line in lines)
+
+
 @pytest.mark.platforms("linux")  # "detached" needs a non-launchd init as ppid 1
 def test_cli_json_mode_exits_zero_and_never_applies(host, no_writes, capsys):
     host.proc(4601, _argv("dashboard", "--port", "9119"), ppid=1)
@@ -316,7 +376,7 @@ def test_cli_json_mode_exits_zero_and_never_applies(host, no_writes, capsys):
     (backend,) = report["backends"]
     assert not {"would", "advice"} & backend.keys()
     assert backend["argv"] == _argv("dashboard", "--port", "9119")
-    assert "migration is not available yet" in backend["not_applied"]
+    assert backend["not_applied"] == "Report only: changes no service."
 
     gm.cmd_migrate(SimpleNamespace(backends=True, json=False, dry_run=True, yes=False, multiplex=False))
     text = capsys.readouterr().out

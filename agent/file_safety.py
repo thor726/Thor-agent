@@ -318,6 +318,12 @@ def resolved_home_credential_stores() -> tuple[set[str], list[str]]:
     return files, dirs
 
 
+def thor_credential_homes() -> list[Path]:
+    """Every resolved Thor home the credential guards cover (the active home, the root, each profile home),
+    for a caller that anchors a Thor-only store name to them instead of matching it anywhere."""
+    return _credential_store_dirs()
+
+
 def build_write_denied_prefixes(home: str) -> list[str]:
     """Return sensitive directory prefixes that must never be written."""
     paths = [

@@ -147,3 +147,18 @@ def test_only_the_hosts_pid_dials_its_control_socket(homes, monkeypatch):
     monkeypatch.setattr(status, 'get_running_pid', lambda **kw: HOST_PID)
     assert gw.find_gateway_pids() == []
     assert dials == []
+
+
+def test_thor_home_for_pid_uses_injected_argv_reader(homes, monkeypatch):
+    """Adaptation A5 (migrate --backends report): on Windows without wmic the report passes the
+    exact psutil argv, so a profile flag the process-table text lost still resolves the home."""
+    from thor_cli import main_dashboard, profiles
+    root, secondary = homes
+    monkeypatch.setattr(dashboard_procs, '_pid_environ',
+                        lambda pid: {'THOR_HOME': str(root), 'HOME': str(root.parent)})
+    monkeypatch.setattr(main_dashboard, '_dashboard_cmdline_for_pid', lambda pid: None)
+    monkeypatch.setattr(profiles, 'get_active_profile', lambda root_: 'default')
+
+    assert dashboard_procs._thor_home_for_pid(4242) == str(root)
+    assert dashboard_procs._thor_home_for_pid(
+        4242, argv_reader=lambda pid: ['thor', '-p', 'worker', 'serve', '--port', '9119']) == str(secondary)

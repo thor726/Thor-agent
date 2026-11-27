@@ -246,6 +246,49 @@ Login auto-start is only ever installed on an explicit answer: `thor gateway ins
 
 Services require admin rights to install and tie the gateway's lifecycle to machine boot, not user login. The typical Thor user wants: log in → gateway available, log out → gateway gone. Scheduled Tasks do exactly that without elevation. If you genuinely want a service, use `nssm` or `sc create` manually — but you probably don't. If you do, name it `Thor*` or point its binary path inside the Thor install (`venv\Scripts\thor.exe`, the checkout, or `gateway-service\`): `thor update` stops and restarts only services it can positively identify as Thor-owned through the Service Control Manager, and pauses a Scheduled-Task-launched gateway by PID (Task Scheduler itself is never touched).
 
+## Moving a dashboard backend to the gateway {#moving-a-dashboard-backend-to-the-gateway}
+
+Thor never sets up `thor dashboard` or `thor serve` to start by itself, so a dashboard that runs at sign-in on Windows is a Task Scheduler task or a Startup-folder entry you made. It is a second copy of Thor beside the gateway: chats started in it run in its own process. The gateway's Webapp can serve its address instead. Automatic migration is not available on Windows: this command exits 6, changes nothing and prints the steps for the backend it found, one command per line, each valid as typed in PowerShell or Command Prompt (with `--detach` too, which starts nothing here). When it exits 3 instead, something blocks the move and it prints no steps: fix what it names and run it again.
+
+```powershell
+thor gateway migrate --backends --apply
+```
+
+Run them one at a time, in the order printed; lines that start with `#` tell you what to do instead of being run. Every `thor` command names the profile (`thor -p default ...` for the default one), so a profile chosen with `thor profile use` does not redirect it. Under a Thor root other than the standard one, every `thor` line also sets it (`$env:THOR_HOME='C:\Teams\thor'; thor -p work ...`) and the steps start with `# these lines set THOR_HOME for this Thor root: run them in PowerShell, not Command Prompt`: those steps are PowerShell only. For a Task Scheduler task named `Thor Dashboard` that runs `thor dashboard --no-open --host 0.0.0.0 --port 9119` in the default profile, they are:
+
+```powershell
+thor -p default webapp --build-only
+thor -p default config set webapp.enabled true
+thor -p default config set webapp.host 0.0.0.0
+thor -p default config set webapp.port 9119
+schtasks /End /TN "Thor Dashboard"
+schtasks /Change /TN "Thor Dashboard" /DISABLE
+thor -p default gateway status
+# then by what it prints: 'Gateway is not running' (no service installed) -> thor -p default gateway install; 'No gateway process detected' -> thor -p default gateway start; 'Gateway process running' or 'Running manually' -> thor -p default gateway restart
+# the gateway takes a few seconds to serve the address: if the next line prints 'The gateway is not running', wait 5 seconds and run it again
+thor -p default webapp --status
+```
+
+For a shortcut in the Startup folder, the two `schtasks` lines are replaced by these (Windows tries to open any file left in the Startup folder, even a renamed one, so the shortcut is moved into the Thor home instead):
+
+```powershell
+taskkill /PID <pid> /T /F
+# this Startup-folder entry starts the same command; if it is what starts this backend at sign-in, move it out of the Startup folder (Windows tries to open any file left there, even a renamed one):
+mkdir "<home>\backend_migration"
+# (an 'already exists' error from mkdir is fine)
+move "<shortcut>.lnk" "<home>\backend_migration\<shortcut>.lnk"
+# to undo later: move "<home>\backend_migration\<shortcut>.lnk" "<shortcut>.lnk"
+```
+
+The printed steps hold the real PID, the Thor home and the full path of the shortcut.
+
+Pick the gateway line by what `thor gateway status` prints. Whenever it shows a gateway process running ('Gateway process running' or 'Running manually'), run `thor -p default gateway restart`, whether or not a Scheduled Task or Startup entry is registered: `thor gateway start` only reports a gateway that already runs, and a running gateway reads `webapp.*` only when it restarts, so it would never take the port the old backend freed. Only with no gateway process: 'Gateway is not running' (no service installed) means `install`, and 'No gateway process detected' (a task or entry, stopped) means `start`. When `thor webapp --status` shows the gateway serving the address, open the old address in a browser (the public `https://` one when there is one) and sign in.
+
+- The sign-in stays: a username and password in `config.yaml` (`dashboard.basic_auth`) apply to the Webapp too. When the old backend got sign-in settings from its own environment, the steps name the `THOR_DASHBOARD_*` variables to copy into the Thor `.env` file (never their values). OAuth sign-in is never carried over: if the old backend signs in through Nous Portal OAuth, the plan refuses it instead of silently losing the sign-in — set up username/password sign-in on the old backend first.
+- A public address stays only if you copy it. The Webapp builds its sign-in callback on `webapp.public_url` and never reads `THOR_DASHBOARD_PUBLIC_URL` or `dashboard.public_url`. The old backend used the first of these that is an `http://` or `https://` URL (a blank or malformed value is skipped): `THOR_DASHBOARD_PUBLIC_URL` in the Thor `.env` file (it overrides the environment), then `THOR_DASHBOARD_PUBLIC_URL` in the environment the task or shortcut gave it, then `dashboard.public_url` (`thor -p default config get dashboard.public_url`). When it had one and `webapp.public_url` is unset, the steps add a line that says to copy it: open `config.yaml` with `thor -p default config edit` and set `webapp.public_url` under `webapp:` to that address, before the gateway line. The steps never put the address on a command line, because PowerShell expands `$` inside double quotes.
+- When a chat turn is running on the old backend, the command says how many: stopping it interrupts them, so let them finish first.
+- Afterwards the task stays disabled (or the shortcut set aside) across restarts. Started by hand later on the same address, the old `thor dashboard` finds the port taken and its message names the gateway. See [What clients notice after the move](./features/web-dashboard.md#after-the-move).
+
 ## Data layout
 
 | Path | Contents |

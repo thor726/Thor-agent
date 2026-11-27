@@ -479,19 +479,25 @@ def _action_targets_system_gateway(subcommand: list[str]) -> bool:
 
 
 def _spawn_thor_action(
-    subcommand: list[str], name: str, *, env_overrides: Optional[dict[str, str]] = None
+    subcommand: list[str], name: str, *, env_overrides: Optional[dict[str, str]] = None,
+    output: Optional[Any] = None,
 ) -> subprocess.Popen:
-    """Spawn ``thor <subcommand>`` detached (via ``thor_cli.main``) and record the handle."""
+    """Spawn ``thor <subcommand>`` detached (via ``thor_cli.main``) and record the handle.
+
+    With *output* (an open binary file the caller owns, reads and closes), the child writes there instead
+    of the shared action log and nothing is recorded in the shared action tables, so the generic
+    action-status route never sees it."""
     from thor_cli.web_server import PROJECT_ROOT
-    _ACTION_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_file = open(_ACTION_LOG_DIR / _ACTION_LOG_FILES[name], "ab", buffering=0)
+    if output is None:
+        _ACTION_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    log_file = output if output is not None else open(_ACTION_LOG_DIR / _ACTION_LOG_FILES[name], "ab", buffering=0)
     section_start = os.fstat(log_file.fileno()).st_size
     # The header carries the action id durably: the update's completion marker lands in the ROOT
     # update.log every profile shares, and only this id ties one to the action THIS log started.
     action_id = (env_overrides or {}).get("THOR_ACTION_ID")
     stamp = time.strftime('%Y-%m-%d %H:%M:%S') + (f" {action_id}" if action_id else "")
     log_file.write(f"\n=== {name} started {stamp} ===\n".encode())
-    if action_id:
+    if action_id and output is None:
         # ...and a sidecar keeps it once build output pushes the header past the status route's
         # bounded tail, or the log rotates: a restarted dashboard still knows which action it ran.
         from thor_cli.runtime_state import _atomic_bytes
@@ -554,6 +560,8 @@ def _spawn_thor_action(
         log_file.write(f"{name}: spawn failed: {exc}\n".encode())
         log_file.close()
         raise
+    if output is not None:
+        return proc
     log_file.close()  # child holds its own dup'd fd; keeping ours leaks one per action
     _ACTION_RESULTS.pop(name, None)
     _ACTION_COMMANDS[name] = tuple(subcommand)

@@ -163,12 +163,16 @@ def _pid_passwd_home(pid: int) -> str | None:
     return None
 
 
-def _thor_home_for_pid(pid: int, *, require_launch_identity: bool = False) -> str | None:
+def _thor_home_for_pid(pid: int, *, require_launch_identity: bool = False,
+                       argv_reader=None) -> str | None:
     """Resolve a process home for discovery, or require pinned launch identity for termination.
 
     By default, ``None`` means an unreadable environment (another user, hardened ``/proc``).
     ``require_launch_identity`` also refuses missing argv, relative/missing home anchors and
     any profile selection that would depend on today's sticky ``active_profile``.
+    ``argv_reader`` (a ``pid -> argv | None`` callable, default the dashboard cmdline reader)
+    lets a caller that already holds the exact argv supply it — the migrate report on Windows
+    without wmic passes the psutil argv, which the process-table text loses.
 
     A readable environment always resolves, replaying ``_apply_profile_override`` on the target's
     exec-time env + argv (``thor -p X serve`` rewrites ``THOR_HOME`` in ``os.environ`` AFTER
@@ -185,7 +189,7 @@ def _thor_home_for_pid(pid: int, *, require_launch_identity: bool = False) -> st
         return None
     from thor_cli.main_dashboard import _dashboard_cmdline_for_pid
     from thor_cli.profiles import get_active_profile, normalize_profile_name, profile_root_for_env_home
-    argv = _dashboard_cmdline_for_pid(pid)
+    argv = argv_reader(pid) if argv_reader is not None else _dashboard_cmdline_for_pid(pid)
     if require_launch_identity and argv is None:
         # The dashboard argv reader has no Windows implementation; psutil does.
         import psutil
@@ -378,6 +382,19 @@ _WRAPPER_HEAD_COMMANDS = frozenset({
     "env", "nohup", "nice", "stdbuf", "timeout", "watch", "xargs",
     "screen", "tmux", "sudo",
 })
+
+
+def _process_listens_on(pid: int, port: int) -> bool | None:
+    """Whether *pid* itself holds a TCP listener on *port*; None when the OS will not say."""
+    try:
+        import psutil
+    except ImportError:
+        return None
+    try:
+        connections = psutil.Process(pid).net_connections(kind="inet")
+    except (psutil.Error, OSError):  # gone, access denied, or the OS has no per-process table
+        return None
+    return any(c.status == psutil.CONN_LISTEN and c.laddr and c.laddr.port == port for c in connections)
 
 
 def _caller_ancestor_pids() -> set[int]:
