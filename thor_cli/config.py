@@ -3424,7 +3424,8 @@ def _cmd_config_set(args):
     value = getattr(args, 'value', None)
     if not key or value is None:
         _usage_exit(*_USAGE_SET)
-    _run_write_command(set_config_value, key, value, bool(getattr(args, 'force', False)))
+    from thor_cli.gateway_platform_live import set_config_value_live  # a running gateway applies it now
+    _run_write_command(set_config_value_live, key, value, bool(getattr(args, 'force', False)))
 
 
 def _cmd_config_unset(args):

@@ -1088,6 +1088,7 @@ class GatewayAdapterLifecycleMixin(GatewaySecondaryReconnectMixin):
             _own_policy_open_startup_violation, _profile_runtime_scope,
         )
         from gateway.config import load_gateway_config
+        from gateway.run_platform_reconcile import load_platform_config_strict
         from thor_cli.env_loader import hydrate_profile_secret_sources
         # Hydrate external secret sources off-loop ONCE: sync hydration would stall every heartbeat.
         await asyncio.to_thread(hydrate_profile_secret_sources, profile_home)
@@ -1103,7 +1104,10 @@ class GatewayAdapterLifecycleMixin(GatewaySecondaryReconnectMixin):
             self._register_config_hooks(
                 "shell-hook/webhook registration failed for profile '%s'", profile_name, level=logging.WARNING,
             )
-            profile_cfg = load_gateway_config()
+            # A rescan never swaps a served profile's config for the env-only fallback of an unreadable
+            # YAML: it raises, and the profile keeps the last good one (run_platform_reconcile).
+            rescan = profile_name in (getattr(self, "_profile_configs", None) or {})
+            profile_cfg = load_platform_config_strict() if rescan else load_gateway_config()
             violation = _own_policy_open_startup_violation(profile_cfg)
         self._snapshot_profile_busy_modes(profile_name, profile_runtime_cfg)
         if violation:
@@ -1289,7 +1293,10 @@ class GatewayAdapterLifecycleMixin(GatewaySecondaryReconnectMixin):
         configs = getattr(self, "_profile_configs", None)
         if configs is None:
             configs = self._profile_configs = {}
+        rescan = profile_name in configs
         configs[profile_name] = profile_cfg
+        if rescan:  # retire what is no longer wanted or was built from inputs that changed since
+            await self._retire_stale_profile_platforms(profile_name, profile_home, profile_cfg, claimed)
         multiplex = self._multiplex_on()
         profile_map = self._profile_adapters.setdefault(profile_name, {})
         connected = 0
@@ -1328,6 +1335,8 @@ class GatewayAdapterLifecycleMixin(GatewaySecondaryReconnectMixin):
                 )
                 continue
             with _profile_runtime_scope(profile_home, hydrate_secrets=False):
+                build_print = await self._run_in_executor_with_context(
+                    self._secondary_build_print, profile_home, platform, platform_config)
                 try:
                     adapter = await self._create_adapter_off_loop_deps(platform, platform_config)
                 except Exception:
@@ -1339,6 +1348,7 @@ class GatewayAdapterLifecycleMixin(GatewaySecondaryReconnectMixin):
             if not adapter:
                 self._note_unbuilt_secondary_platform(profile_name, platform, heals)
                 continue
+            self._note_secondary_build(profile_name, platform, build_print)
 
             # Same-token / same-listener conflict detection — refuse a duplicate poll or bind.
             # Held claims too (a profile earlier in the sweep whose connect failed, or one healing, still owns

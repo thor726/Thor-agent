@@ -833,7 +833,16 @@ def moved_plugin_hint(name: str) -> str:
 
 
 _attempted: set[str] = set()
+# The :func:`settings_fingerprint` each home in ``_attempted`` was last tried with.
+_attempted_with: dict[str, str] = {}
 _installs_held: ContextVar[bool] = ContextVar("left_core_installs_held", default=False)
+# An agent start waits this long for another installer (the detached default-plugin child) to finish.
+_STARTUP_LOCK_WAIT = 300.0
+# A gateway start waits at most this long IN ALL (every row, every home) for another installer: past it,
+# the gateway serves the platforms that are ready, and a plugin that installer still fetches arrives once
+# it lands (where the running gateway applies it) or at the next start. Never minutes of nothing served.
+_GATEWAY_START_LOCK_WAIT = 30.0
+_lock_deadline: ContextVar[Optional[float]] = ContextVar("left_core_lock_deadline", default=None)
 
 
 @contextmanager
@@ -845,6 +854,42 @@ def installs_held():
         yield
     finally:
         _installs_held.reset(token)
+
+
+@contextmanager
+def gateway_start_lock_budget():
+    """One :data:`_GATEWAY_START_LOCK_WAIT` for every installer-lock wait inside (a gateway start's homes and
+    rows share it, so two homes or two rows never add up to minutes)."""
+    import time
+    token = _lock_deadline.set(time.monotonic() + _GATEWAY_START_LOCK_WAIT)
+    try:
+        yield
+    finally:
+        _lock_deadline.reset(token)
+
+
+def startup_lock_wait(*, gateway_start: bool) -> float:
+    """Seconds a start may still wait for another installer's lock: an agent start the long wait, a gateway
+    start what is left of its :func:`gateway_start_lock_budget` (or one :data:`_GATEWAY_START_LOCK_WAIT`)."""
+    import time
+    if not gateway_start:
+        return _STARTUP_LOCK_WAIT
+    deadline = _lock_deadline.get()
+    return _GATEWAY_START_LOCK_WAIT if deadline is None else max(0.0, deadline - time.monotonic())
+
+
+def settings_fingerprint(home: Path) -> str:
+    """Digest of *home*'s ``.env`` and its config layer's cache signature (``config_backend``: a remote layer
+    changes with no local file change, a same-tick rewrite of a local file still counts). A
+    process that already tried this home tries again once it changed (credentials added while it runs)."""
+    import hashlib
+    from thor_cli.config_backend import config_cache_version_or_none
+    digest = hashlib.sha256(repr(config_cache_version_or_none(home / "config.yaml")).encode())
+    try:
+        digest.update((home / ".env").read_bytes())
+    except OSError:
+        pass
+    return digest.hexdigest()
 
 
 def defer_startup_notice(message: str, *, log: bool = True) -> None:

@@ -229,6 +229,10 @@ def _machine_lock(wait: float):
                       "another default plugin install is running")
 
 
+# The gateway-start catalog platform install holds the same lock under its upstream name.
+installer_lock = _machine_lock
+
+
 # ── detached child: first start, profile create ──────────────────────────────
 
 def _state(root: Path, name: str) -> Path:

@@ -193,3 +193,8 @@ def _first_sentence(text: str) -> str:
     text = " ".join(str(text or "").split())
     head, dot, _rest = text.partition(". ")
     return f"{head}." if dot else text
+
+
+# Public names: the catalog platform listing reads a description's first sentence and disclosure.
+disclosure = _disclosure
+first_sentence = _first_sentence

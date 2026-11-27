@@ -20,11 +20,11 @@ import re
 import sys
 import threading
 import types
-from contextlib import suppress
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Set, Tuple, Union
 
 from thor_constants import get_thor_home, get_process_thor_home, thor_home_key
 from registration_lifecycle import replacement_coordinator
@@ -1070,6 +1070,15 @@ def _loaded_registry_nowait(check: Callable[[PluginManager], bool]) -> bool:
 def hook_unused_nowait(hook_name: str) -> bool:
     """True when this home's plugins are loaded and none handles *hook_name*; safe on an event loop."""
     return _loaded_registry_nowait(lambda manager: not manager.has_hook(hook_name))
+
+
+@contextmanager
+def settled_plugin_registrations() -> Iterator[None]:
+    """Hold this home's plugin discovery lock, so registrations read inside are never a force reload's
+    midpoint (it unregisters every plugin's platforms and tools first, then re-registers them as it loads
+    each plugin). Blocking: waits out a sweep in flight, so never call it on an event loop."""
+    with get_plugin_manager()._discovery_lock:
+        yield
 
 
 def plugin_command_absent_nowait(name: str) -> bool:
