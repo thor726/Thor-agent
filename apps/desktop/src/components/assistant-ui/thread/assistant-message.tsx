@@ -85,7 +85,7 @@ import { cn } from '@/lib/utils'
 import { playSpeechText, stopVoicePlayback } from '@/lib/voice-playback'
 import { $billingBlock, requestBillingSettings, runBillingRecovery } from '@/store/billing-block'
 import { DESKTOP_BUTTON_ACTIONS, recordAction } from '@/store/desktop-metrics'
-import { openFreeTierSignIn } from '@/store/free-tier-sign-in'
+import { openThorHubSignIn } from '@/lib/thorhub-sign-in'
 import { notifyError } from '@/store/notifications'
 import { startManualProviderOAuth } from '@/store/onboarding'
 import { useReplyAwaitingContinuation } from '@/store/paused-replies'
@@ -1188,7 +1188,7 @@ const ERROR_ACTION_RENDERERS: Record<ErrorActionId, (ctx: ErrorActionContext) =>
       copy.errorSignInAgain(surface.providerLabel || surface.provider)
     )
   },
-  sign_in_free_tier: ({ className, copy }) => textButton(className, openFreeTierSignIn, copy.errorSignInFreeTier),
+  sign_in_free_tier: ({ className, copy }) => textButton(className, openThorHubSignIn, copy.errorSignInFreeTier),
   switch_provider: ({ className, copy, inRouter }) =>
     inRouter ? <SwitchProviderAction className={className} label={copy.errorSwitchProvider} /> : null,
   open_model_settings: ({ className, copy, inRouter }) =>

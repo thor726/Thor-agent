@@ -536,7 +536,7 @@ export const esOverrides = {
       'Tu paquete se subió de forma privada. Comparte el enlace de abajo en tu hilo de soporte para que el equipo pueda ver tus registros.',
     failedTitle: 'Error al subir',
     failedHint:
-      'También puedes ejecutar `thor debug share --nous` desde una terminal, o `thor debug share --local` para mostrar el informe sin subirlo.',
+      'También puedes ejecutar `thor debug share --internal` desde una terminal, o `thor debug share --local` para mostrar el informe sin subirlo.',
     handoffLead: 'Continúa la conversación en:',
     links: {
       github: 'Issues de GitHub',
@@ -1927,20 +1927,6 @@ export const esOverrides = {
       perMonth: (amount: string) => `${amount}/mes`,
       creditsPerMonth: (amount: string) => `${amount} créditos/mes`,
       usageLabel: (label: string) => `Uso de ${label}`,
-      freeTier: {
-        signIn: 'Iniciar sesión',
-        title: 'Estás en el plan gratuito de Thor',
-        message: 'Inicia sesión con una cuenta de Thor para desbloquear más modelos y herramientas.',
-        caption:
-          'Funciona con nous/welcome, con conectores incluidos. Al iniciar sesión conservas tus conectores y se añaden las herramientas que requieren cuenta y todos los demás modelos.',
-        name: 'Thor · plan gratuito',
-        footnote:
-          'El plan gratuito no tiene saldo ni nada que pagar. El pago y el uso aparecen al iniciar sesión con una cuenta de Thor.',
-        plan: 'Plan gratuito',
-        model: 'Modelo',
-        connectors: 'Conectores',
-        included: 'Incluidos'
-      },
       amountValidation: {
         reloadTo: 'Recargar hasta',
         greaterThanThreshold: 'El importe de recarga debe ser mayor que el umbral.',
@@ -2919,16 +2905,14 @@ export const esOverrides = {
       sectionTitle: 'Disponibles para instalar',
       badges: { official: 'Oficial', verified: 'Verificado' },
       notInstalled: 'No instalado',
-      intro: (name: string) =>
-        `${name} es un plugin del catálogo de Thor. Al instalarlo se activa y luego puedes introducir sus credenciales aquí.`,
+      intro: (name: string) => `${name} es un plugin del catálogo de Thor. Al instalarlo se activa y luego puedes introducir sus credenciales aquí.`,
       disclosure: 'Aviso:',
       install: 'Instalar',
       installing: 'Instalando…',
       installed: (name: string) => `${name} instalado`,
       installedDetail: 'Introduce sus credenciales para conectarlo.',
       installFailed: (name: string) => `No se pudo instalar ${name}`,
-      lazyOff:
-        'Las instalaciones automáticas de plugins están desactivadas (security.allow_lazy_installs), así que Thor no lo instala desde aquí.',
+      lazyOff: 'Las instalaciones automáticas de plugins están desactivadas (security.allow_lazy_installs), así que Thor no lo instala desde aquí.',
       runCommand: 'Instálalo desde una terminal:'
     },
     search: 'Buscar mensajería...',
@@ -4425,78 +4409,6 @@ export const esOverrides = {
     openLogs: 'Abrir registros'
   },
   onboarding: esOnboarding,
-  freeTier: {
-    providerRowTitle: 'Thor · plan gratuito',
-    providerRowPitch: 'Inicia sesión con una cuenta de Thor para desbloquear más modelos y herramientas.',
-    readyTitle: 'Thor está listo.',
-    readyCaption: 'Gratis · conectores incluidos',
-    begin: 'Empezar',
-    signInInstead: 'Iniciar sesión con una cuenta de Thor',
-    otherProviders: 'Otros proveedores',
-    stripTitle: 'Ya están disponibles la inferencia y los conectores gratuitos de Thor.',
-    stripBody: 'Abre el selector de modelos para probarlos o inicia sesión con una cuenta de Thor.',
-    openModelPicker: 'Abrir selector de modelos',
-    dismiss: 'Descartar',
-    providerName: 'Thor',
-    statusLabel: (model: string) => `Thor · ${model}`,
-    signIn: 'Iniciar sesión',
-    signInHeading: 'Inicia sesión con una cuenta de Thor para desbloquear más modelos y herramientas.',
-    settingUp: 'Configurando la inferencia gratuita…',
-    finishInBrowser: 'Termina en tu navegador',
-    doNotShare: 'No compartas este código.',
-    openPageAgain: 'Abrir la página de nuevo',
-    waiting: 'Esperando el inicio de sesión…',
-    finishingHeading: 'Terminando el inicio de sesión…',
-    finishingBody: 'Aprobado en el navegador. Obteniendo los tokens de tu cuenta.',
-    signedInAsLabel: 'Sesión iniciada como',
-    signedIn: 'Sesión iniciada.',
-    completedBody: 'Tu cuenta ya incluye inferencia y herramientas.',
-    reconnect: 'Reconectar',
-    openConnectors: 'Abrir Conectores',
-    defaultModel: 'Modelo predeterminado',
-    change: 'Cambiar',
-    done: 'Listo',
-    notNow: 'Ahora no',
-    tryAgain: 'Reintentar',
-    didNotComplete: 'No se completó el inicio de sesión',
-    timedOutHeading: 'Ese enlace de inicio de sesión caducó',
-    timedOutBody: 'Empieza de nuevo cuando quieras. Sigues en el servicio gratuito de Thor.',
-    errorBody: 'No se completó el inicio de sesión. Vuelve a intentarlo cuando quieras.',
-    busyHeading: 'Ya casi está',
-    busyBody: (wait: string) =>
-      `Thor no pudo terminar de iniciar tu sesión porque el servicio de Thor está ocupado. Vuelve a intentarlo en ${wait}. Mientras tanto, tu sesión sigue aquí.`,
-    unreachableBody:
-      'Thor no pudo llegar al servicio de Thor para terminar de iniciar tu sesión. Comprueba tu conexión a internet y vuelve a intentarlo. Tu sesión sigue aquí.',
-    alreadySignedInHeading: 'Ya has iniciado sesión.',
-    alreadySignedInBody: 'Este Thor ya tiene la sesión iniciada en una cuenta de Thor.',
-    offer: {
-      heading: 'Sigue adelante con Thor',
-      body: 'Estás usando el uso gratuito. Si sigues usando Thor, empezarás a encontrarte con límites. Inicia sesión con una cuenta gratuita de Thor para tener un uso mayor.',
-      signIn: 'Iniciar sesión',
-      notNow: 'Ahora no'
-    },
-    setupFailed: {
-      gateClosed:
-        'Esta versión de Thor no puede iniciarse sin una cuenta de Thor. Inicia sesión o crea una: es gratis y solo lleva un minuto.',
-      paused:
-        'El uso de Thor sin iniciar sesión está en pausa por un momento. Thor seguirá comprobándolo. Iniciar sesión es gratis y te permite empezar ahora mismo.',
-      rateLimited: (wait: string) =>
-        `Mucha gente está empezando ahora mismo, así que Thor volverá a intentarlo en ${wait}. Iniciar sesión es gratis y te ahorra la espera.`,
-      unreachable:
-        'Thor no pudo llegar al servicio de Thor. Comprueba tu conexión a internet y pulsa Reintentar. O conecta otro proveedor por ahora.',
-      serverError:
-        'El servicio de Thor tuvo un fallo. Pulsa Reintentar en un momento o conecta otro proveedor por ahora.',
-      powRequired:
-        'El servidor de Thor pidió una prueba de trabajo, pero tu agente todavía no la implementa. Inicia sesión o crea una cuenta gratuita de Thor para continuar.',
-      locked:
-        'Esta sesión no puede continuar sin iniciar sesión. Inicia sesión o crea una cuenta gratuita de Thor para seguir.',
-      generic:
-        'Thor no pudo configurar el acceso gratuito sin iniciar sesión. Iniciar sesión es gratis; también puedes conectar otro proveedor.',
-      signInBelow: 'Iniciar sesión es gratis. Elige Thor abajo.',
-      tryAgain: 'Reintentar',
-      retrying: 'Reintentando…'
-    }
-  },
   modelPicker: {
     title: 'Cambiar modelo',
     current: 'actual:',
@@ -4648,7 +4560,6 @@ export const esOverrides = {
       toggleTerminal: 'Terminal',
       toggleTokensPerSecond: 'Tokens por segundo',
       toggleVersion: 'Versión y actualizaciones',
-      toggleFreeTier: 'Plan gratuito',
       toggleWorkspace: 'Espacio de trabajo',
       cacheHitRateTitle:
         'Tasa de aciertos de la caché de prompts en esta sesión: los tokens en caché cuestan menos, así que cuanto más alta, más barato',
