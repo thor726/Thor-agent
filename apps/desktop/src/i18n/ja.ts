@@ -223,7 +223,7 @@ export const jaOverrides = {
       'バンドルは非公開でアップロードされました。サポートスレッドで以下のリンクを共有すると、チームがログを確認できます。',
     failedTitle: 'アップロードに失敗しました',
     failedHint:
-      'ターミナルから `thor debug share --nous` を実行するか、`thor debug share --local` でアップロードせずにレポートを表示することもできます。',
+      'ターミナルから `thor debug share --internal` を実行するか、`thor debug share --local` でアップロードせずにレポートを表示することもできます。',
     handoffLead: '続きは次の場所で:',
     links: {
       github: 'GitHub Issues',
@@ -1621,16 +1621,14 @@ export const jaOverrides = {
       sectionTitle: 'インストール可能',
       badges: { official: '公式', verified: '検証済み' },
       notInstalled: '未インストール',
-      intro: (name: string) =>
-        `${name} は Thor カタログのプラグインです。インストールすると有効になり、ここで認証情報を入力できます。`,
+      intro: (name: string) => `${name} は Thor カタログのプラグインです。インストールすると有効になり、ここで認証情報を入力できます。`,
       disclosure: '開示:',
       install: 'インストール',
       installing: 'インストール中…',
       installed: (name: string) => `${name} をインストールしました`,
       installedDetail: '認証情報を入力して接続してください。',
       installFailed: (name: string) => `${name} をインストールできませんでした`,
-      lazyOff:
-        'プラグインの自動インストールがオフ (security.allow_lazy_installs) のため、ここからはインストールしません。',
+      lazyOff: 'プラグインの自動インストールがオフ (security.allow_lazy_installs) のため、ここからはインストールしません。',
       runCommand: 'ターミナルでインストール:'
     },
     search: 'メッセージングを検索...',
@@ -3856,14 +3854,6 @@ export const jaOverrides = {
       toggle: open => `サイドバーを${open ? '表示' : '非表示'}`
     }
   },
-  freeTier: {
-    offer: {
-      heading: 'Thor を使い続ける',
-      body: '現在は無料枠をご利用中です。Thor を使い続けると、いずれ上限に達します。無料の Thor アカウントでサインインすると、より多くの利用枠が使えます。',
-      signIn: 'サインイン',
-      notNow: '今はしない'
-    }
-  }
 } satisfies TranslationOverrides
 
 export const ja = defineLocale(jaOverrides)

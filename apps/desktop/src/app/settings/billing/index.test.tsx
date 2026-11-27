@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type I18nContextValue, I18nProvider, useI18n } from '@/i18n'
-import { $freeTierSignIn } from '@/store/free-tier-sign-in'
 
 import { formatMoney } from './billing-amounts'
 import {
@@ -617,18 +616,18 @@ describe('BillingSettings', () => {
     )
   })
 
-  it('renders logged-out as a connect card whose sign-in opens the shared dialog', async () => {
+  it('renders logged-out as a connect card whose sign-in opens ThorHub sign-in in Settings', async () => {
     apiMocks.fetchBillingState.mockResolvedValue(okBilling(loggedOutBillingState))
     apiMocks.fetchSubscriptionState.mockResolvedValue(okSubscription(loggedOutSubscriptionState))
-    $freeTierSignIn.set({ status: 'closed' })
+    window.location.hash = ''
 
     renderBilling()
 
-    expect(await screen.findByText('Connect your Nous account')).toBeTruthy()
+    expect(await screen.findByText('Connect your Thor account')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
-    expect($freeTierSignIn.get()).toEqual({ status: 'requested' })
+    expect(window.location.hash).toBe('#/settings?tab=providers')
+    window.location.hash = ''
     expect(apiMocks.openExternal).not.toHaveBeenCalled()
-    $freeTierSignIn.set({ status: 'closed' })
     expect(screen.queryByText('Payment method')).toBeNull()
     expect(screen.queryByText('Usage')).toBeNull()
   })

@@ -40,8 +40,6 @@ const deleteEnvVar = vi.fn()
 const revealEnvVar = vi.fn()
 const runToolsetPostSetup = vi.fn()
 const getActionStatus = vi.fn()
-const startOAuthLogin = vi.fn()
-const pollOAuthSession = vi.fn()
 const getThorConfigRecord = vi.fn()
 const getThorConfigSchema = vi.fn()
 const saveThorConfig = vi.fn()
@@ -64,8 +62,6 @@ vi.mock('@/thor', () => ({
   revealEnvVar: (key: string) => revealEnvVar(key),
   runToolsetPostSetup: (name: string, key: string) => runToolsetPostSetup(name, key),
   getActionStatus: (name: string, lines?: number) => getActionStatus(name, lines),
-  startOAuthLogin: (providerId: string) => startOAuthLogin(providerId),
-  pollOAuthSession: (providerId: string, sessionId: string) => pollOAuthSession(providerId, sessionId),
   getThorConfigRecord: () => getThorConfigRecord(),
   getThorConfigSchema: () => getThorConfigSchema(),
   saveThorConfig: (config: unknown) => saveThorConfig(config),
@@ -105,7 +101,7 @@ function config(overrides: Partial<ToolsetConfig> = {}): ToolsetConfig {
         tag: 'No API key needed',
         env_vars: [],
         post_setup: null,
-        requires_nous_auth: false,
+        requires_thorhub_auth: false,
         is_active: false
       },
       {
@@ -116,7 +112,7 @@ function config(overrides: Partial<ToolsetConfig> = {}): ToolsetConfig {
           { key: 'ELEVENLABS_API_KEY', prompt: 'ElevenLabs API key', url: 'https://x', default: null, is_set: false }
         ],
         post_setup: null,
-        requires_nous_auth: false,
+        requires_thorhub_auth: false,
         is_active: false
       }
     ],
@@ -190,7 +186,7 @@ describe('ToolsetConfigPanel', () => {
               { key: 'VOICE_TOOLS_OPENAI_KEY', prompt: 'OpenAI API key', url: 'https://x', default: null, is_set: true }
             ],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true,
             tts_provider: 'openai'
           }
@@ -230,7 +226,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'High quality voices',
             env_vars: [],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true,
             tts_provider: 'openai'
           }
@@ -308,7 +304,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'Multi-model image generation',
             env_vars: [],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true
           }
         ]
@@ -374,7 +370,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'No API key needed',
             env_vars: [],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: false
           },
           {
@@ -391,7 +387,7 @@ describe('ToolsetConfigPanel', () => {
               }
             ],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true
           }
         ]
@@ -420,7 +416,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'Zig headless browser spawned by Thor, text-only (no screenshots)',
             env_vars: [],
             post_setup: 'lightpanda',
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true
           }
         ]
@@ -468,7 +464,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'Zig headless browser spawned by Thor, text-only (no screenshots)',
             env_vars: [],
             post_setup: 'lightpanda',
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true
           }
         ]
@@ -501,7 +497,7 @@ describe('ToolsetConfigPanel', () => {
 
   describe('readiness pills', () => {
     it('renders the server status instead of assuming keyless rows are Ready', async () => {
-      // The false-Ready bug: a logged-out Nous Subscription row and a
+      // The false-Ready bug: a logged-out ThorHub Subscription row and a
       // never-installed local TTS both have zero env vars — the old client
       // heuristic pilled every such row "Ready". The server now sends an
       // honest per-provider status; the pill must follow it.
@@ -514,17 +510,17 @@ describe('ToolsetConfigPanel', () => {
               tag: 'No API key needed',
               env_vars: [],
               post_setup: null,
-              requires_nous_auth: false,
+              requires_thorhub_auth: false,
               is_active: true,
               status: 'ready'
             },
             {
-              name: 'Nous Subscription',
+              name: 'ThorHub Subscription',
               badge: 'subscription',
               tag: 'Managed OpenAI TTS',
               env_vars: [],
               post_setup: null,
-              requires_nous_auth: true,
+              requires_thorhub_auth: true,
               is_active: false,
               status: 'needs_auth'
             },
@@ -534,7 +530,7 @@ describe('ToolsetConfigPanel', () => {
               tag: 'Lightweight local ONNX TTS',
               env_vars: [],
               post_setup: 'kittentts',
-              requires_nous_auth: false,
+              requires_thorhub_auth: false,
               is_active: false,
               status: 'needs_setup'
             }
@@ -585,7 +581,7 @@ describe('ToolsetConfigPanel', () => {
                 }
               ],
               post_setup: null,
-              requires_nous_auth: false,
+              requires_thorhub_auth: false,
               is_active: false,
               status: 'needs_keys'
             }
@@ -627,7 +623,7 @@ describe('ToolsetConfigPanel', () => {
               tag: 'Zig headless browser spawned by Thor, text-only (no screenshots)',
               env_vars: [],
               post_setup: 'lightpanda',
-              requires_nous_auth: false,
+              requires_thorhub_auth: false,
               is_active: true,
               status: 'ready'
             }
@@ -655,7 +651,7 @@ describe('ToolsetConfigPanel', () => {
               tag: 'Zig headless browser spawned by Thor, text-only (no screenshots)',
               env_vars: [],
               post_setup: 'lightpanda',
-              requires_nous_auth: false,
+              requires_thorhub_auth: false,
               is_active: true,
               status: 'ready'
             }
@@ -679,50 +675,50 @@ describe('ToolsetConfigPanel', () => {
     })
   })
 
-  describe('managed Nous provider activation', () => {
-    const nousBrowserConfig = () =>
+  describe('managed ThorHub provider activation', () => {
+    const thorhubBrowserConfig = () =>
       config({
         name: 'browser',
         active_provider: null,
         providers: [
           {
-            name: 'Nous Subscription (Browser Use cloud)',
+            name: 'ThorHub Subscription (Browser Use cloud)',
             badge: 'subscription',
             tag: 'Managed Browser Use billed to your subscription',
             env_vars: [],
             post_setup: null,
-            requires_nous_auth: true,
+            requires_thorhub_auth: true,
             is_active: false,
             status: 'needs_auth'
           }
         ]
       })
 
-    it('surfaces a sign-in notice when the PUT reports needs_nous_auth', async () => {
+    it('surfaces a sign-in notice when the PUT reports needs_thorhub_auth', async () => {
       // Regression (Windows 11 Capabilities journey): the GUI wrote
-      // browser.cloud_provider but skipped the Portal entitlement handshake,
+      // browser.cloud_provider but skipped the ThorHub entitlement handshake,
       // so the managed row silently never activated. The endpoint now
-      // reports needs_nous_auth and the panel must surface a sign-in action
+      // reports needs_thorhub_auth and the panel must surface a sign-in action
       // instead of the misleading "provider selected" success toast.
       const { notify } = await import('@/store/notifications')
 
-      getToolsetConfig.mockResolvedValue(nousBrowserConfig())
+      getToolsetConfig.mockResolvedValue(thorhubBrowserConfig())
       selectToolsetProvider.mockResolvedValue({
         ok: true,
         name: 'browser',
-        provider: 'Nous Subscription (Browser Use cloud)',
-        needs_nous_auth: true,
+        provider: 'ThorHub Subscription (Browser Use cloud)',
+        needs_thorhub_auth: true,
         feature: 'browser'
       })
 
       render(<ToolsetConfigPanel onConfiguredChange={vi.fn()} toolset="browser" />)
 
-      // The single Nous row auto-expands; activate via the explicit button.
-      await screen.findByRole('button', { name: /Nous Subscription/ })
+      // The single ThorHub row auto-expands; activate via the explicit button.
+      await screen.findByRole('button', { name: /ThorHub Subscription/ })
       fireEvent.click(await screen.findByRole('button', { name: /Use this backend/ }))
 
       await waitFor(() =>
-        expect(selectToolsetProvider).toHaveBeenCalledWith('browser', 'Nous Subscription (Browser Use cloud)')
+        expect(selectToolsetProvider).toHaveBeenCalledWith('browser', 'ThorHub Subscription (Browser Use cloud)')
       )
       await waitFor(() =>
         expect(notify).toHaveBeenCalledWith(
@@ -736,78 +732,57 @@ describe('ToolsetConfigPanel', () => {
       expect(notify).not.toHaveBeenCalledWith(expect.objectContaining({ kind: 'success' }))
     })
 
-    it('drives the existing Nous OAuth device-code flow from the sign-in action and refetches', async () => {
+    it('opens ThorHub sign-in in Settings from the sign-in action', async () => {
       const { notify } = await import('@/store/notifications')
 
-      getToolsetConfig.mockResolvedValue(nousBrowserConfig())
+      getToolsetConfig.mockResolvedValue(thorhubBrowserConfig())
       selectToolsetProvider.mockResolvedValue({
         ok: true,
         name: 'browser',
-        provider: 'Nous Subscription (Browser Use cloud)',
-        needs_nous_auth: true,
+        provider: 'ThorHub Subscription (Browser Use cloud)',
+        needs_thorhub_auth: true,
         feature: 'browser'
       })
-      startOAuthLogin.mockResolvedValue({
-        flow: 'device_code',
-        session_id: 'sess-1',
-        user_code: 'NOUS-1234',
-        verification_url: 'https://portal.thor-agent.local/device?user_code=NOUS-1234',
-        poll_interval: 5,
-        expires_in: 600
-      })
-      pollOAuthSession.mockResolvedValue({ session_id: 'sess-1', status: 'approved' })
-      const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+      window.location.hash = ''
 
-      try {
-        render(<ToolsetConfigPanel onConfiguredChange={vi.fn()} toolset="browser" />)
+      render(<ToolsetConfigPanel onConfiguredChange={vi.fn()} toolset="browser" />)
 
-        await screen.findByRole('button', { name: /Nous Subscription/ })
-        fireEvent.click(await screen.findByRole('button', { name: /Use this backend/ }))
+      await screen.findByRole('button', { name: /ThorHub Subscription/ })
+      fireEvent.click(await screen.findByRole('button', { name: /Use this backend/ }))
 
-        // Grab the sign-in action off the warning notification and invoke it —
-        // this is the affordance the toast renders as a button.
-        await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.objectContaining({ kind: 'warning' })))
+      // Grab the sign-in action off the warning notification and invoke it —
+      // this is the affordance the toast renders as a button.
+      await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.objectContaining({ kind: 'warning' })))
 
-        const warning = vi
-          .mocked(notify)
-          .mock.calls.map(call => call[0])
-          .find(input => input.kind === 'warning')
+      const warning = vi
+        .mocked(notify)
+        .mock.calls.map(call => call[0])
+        .find(input => input.kind === 'warning')
 
-        expect(warning?.action).toBeTruthy()
-        getToolsetConfig.mockClear()
-        warning!.action!.onClick()
+      expect(warning?.action).toBeTruthy()
+      warning!.action!.onClick()
 
-        await waitFor(() => expect(startOAuthLogin).toHaveBeenCalledWith('nous'))
-        expect(openSpy).toHaveBeenCalledWith(
-          'https://portal.thor-agent.local/device?user_code=NOUS-1234',
-          '_blank',
-          'noopener,noreferrer'
-        )
-        // Approved poll → the panel refetches the config so status flips.
-        await waitFor(() => expect(pollOAuthSession).toHaveBeenCalledWith('nous', 'sess-1'), { timeout: 8000 })
-        await waitFor(() => expect(getToolsetConfig).toHaveBeenCalled(), { timeout: 8000 })
-      } finally {
-        openSpy.mockRestore()
-      }
-    }, 20000)
+      // ThorHub sign-in is the static key in Settings → Providers, not an OAuth flow.
+      expect(window.location.hash).toBe('#/settings?tab=providers')
+      window.location.hash = ''
+    })
 
     it('shows the plain success toast when the managed row is already entitled', async () => {
       const { notify } = await import('@/store/notifications')
 
-      getToolsetConfig.mockResolvedValue(nousBrowserConfig())
+      getToolsetConfig.mockResolvedValue(thorhubBrowserConfig())
       selectToolsetProvider.mockResolvedValue({
         ok: true,
         name: 'browser',
-        provider: 'Nous Subscription (Browser Use cloud)'
+        provider: 'ThorHub Subscription (Browser Use cloud)'
       })
 
       render(<ToolsetConfigPanel onConfiguredChange={vi.fn()} toolset="browser" />)
 
-      await screen.findByRole('button', { name: /Nous Subscription/ })
+      await screen.findByRole('button', { name: /ThorHub Subscription/ })
       fireEvent.click(await screen.findByRole('button', { name: /Use this backend/ }))
 
       await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.objectContaining({ kind: 'success' })))
-      expect(startOAuthLogin).not.toHaveBeenCalled()
     })
   })
 
@@ -831,7 +806,7 @@ describe('ToolsetConfigPanel', () => {
                 }
               ],
               post_setup: null,
-              requires_nous_auth: false,
+              requires_thorhub_auth: false,
               is_active: true,
               status: 'ready'
             }
@@ -883,7 +858,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'Free metasearch',
             env_vars: [],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true,
             status: 'ready',
             web_backend: 'searxng',
@@ -895,7 +870,7 @@ describe('ToolsetConfigPanel', () => {
             tag: 'Full search + extract',
             env_vars: [],
             post_setup: null,
-            requires_nous_auth: false,
+            requires_thorhub_auth: false,
             is_active: true,
             status: 'ready',
             web_backend: 'firecrawl',
@@ -929,15 +904,15 @@ describe('ToolsetConfigPanel', () => {
       await waitFor(() => expect(screen.getByText('Search: firecrawl')).toBeTruthy())
     })
 
-    it('lights the Nous row for a gateway-served capability and the BYOK row for the own-key one', async () => {
-      const nous = {
-        name: 'Nous Subscription',
+    it('lights the ThorHub row for a gateway-served capability and the BYOK row for the own-key one', async () => {
+      const thorhub = {
+        name: 'ThorHub Subscription',
         badge: 'subscription',
         tag: 'Managed web search and extract billed to your subscription',
         env_vars: [],
         post_setup: null,
-        requires_nous_auth: true,
-        managed_nous_feature: 'web',
+        requires_thorhub_auth: true,
+        managed_thorhub_feature: 'web',
         is_active: false,
         status: 'ready' as const,
         web_backend: 'firecrawl',
@@ -945,25 +920,25 @@ describe('ToolsetConfigPanel', () => {
       }
 
       // Search through the gateway, extract on the user's own Firecrawl key:
-      // both rows share web_backend 'firecrawl', only the *_via_nous flags tell them apart.
+      // both rows share web_backend 'firecrawl', only the *_via_thorhub flags tell them apart.
       getToolsetConfig.mockResolvedValue(
         webConfig({
           active_search_backend: 'perplexity',
           active_extract_backend: 'firecrawl',
-          search_via_nous: true,
-          extract_via_nous: false,
-          providers: [...webConfig().providers, nous]
+          search_via_thorhub: true,
+          extract_via_thorhub: false,
+          providers: [...webConfig().providers, thorhub]
         })
       )
 
       render(<ToolsetConfigPanel onConfiguredChange={vi.fn()} toolset="web" />)
 
-      expect(await screen.findByText('Search: Nous Subscription')).toBeTruthy()
+      expect(await screen.findByText('Search: ThorHub Subscription')).toBeTruthy()
       expect(screen.getByText('Extract: firecrawl')).toBeTruthy()
-      const nousRow = screen.getByRole('button', { name: /Nous Subscription/ })
+      const thorhubRow = screen.getByRole('button', { name: /ThorHub Subscription/ })
       const byokRow = screen.getByRole('button', { name: /^Firecrawl/ })
-      expect(within(nousRow).getByText('Search backend')).toBeTruthy()
-      expect(within(nousRow).queryByText('Extract backend')).toBeNull()
+      expect(within(thorhubRow).getByText('Search backend')).toBeTruthy()
+      expect(within(thorhubRow).queryByText('Extract backend')).toBeNull()
       expect(within(byokRow).getByText('Extract backend')).toBeTruthy()
       expect(within(byokRow).queryByText('Search backend')).toBeNull()
     })

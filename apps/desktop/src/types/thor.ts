@@ -1,4 +1,4 @@
-import type { ConnectionRequestPayload, FreeTierChallengePayload, ToolLabel } from '@thor/shared'
+import type { ConnectionRequestPayload, ToolLabel } from '@thor/shared'
 
 import type { ToolResultMetadata } from '@/lib/tool-result-metadata'
 import type { ApprovalKindFields } from '@/types/thor-approval'
@@ -139,7 +139,7 @@ export interface OAuthPollResponse {
   account_email?: null | string
   error_message?: null | string
   expires_at?: null | number
-  /** Approved Nous sign-ins only: the free tier's handoff the sign-in ran
+  /** Approved sign-ins only: the free tier's handoff the sign-in ran
    *  (what moved, what to reconnect). Null when it replaced no free tier. */
   handoff_status?: AppHandoffStatus | null
   /** Approved sign-ins only: the default model the backend settled on. Null
@@ -150,10 +150,10 @@ export interface OAuthPollResponse {
    *  the account service's `anon_*` verdicts (status `error`). `error_message`
    *  carries the matching user-facing text. */
   reason?: null | string
-  /** Failed Nous sign-ins: the seconds the account service asked the client
+  /** Failed sign-ins: the seconds the account service asked the client
    *  to wait before trying again (0 or absent when none). */
   retry_after?: null | number
-  /** Failed Nous sign-ins: whether a later attempt can succeed. */
+  /** Failed sign-ins: whether a later attempt can succeed. */
   retryable?: boolean | null
   session_id: string
   status: 'approved' | 'denied' | 'error' | 'expired' | 'pending'
@@ -171,37 +171,6 @@ export interface AppHandoffStatus {
   probably_moved?: boolean
   state: 'claimed' | 'failed' | 'gone' | 'idle' | 'pending' | 'retrying'
   updated_at?: null | string
-}
-
-/** Result of the `free_tier.status` RPC. Pull-only: it reads local auth state
- *  and makes no network call, so it is safe to refresh on the ambient status
- *  cadence. */
-export interface FreeTierStatus {
-  /** An identity exists AND the free tier is on: connectors ride on it, and so
-   *  does inference when nothing else carries it. Whether inference actually
-   *  runs on it is the ROUTE's answer (`setup.runtime_check.free_tier_route`). */
-  available: boolean
-  enabled: boolean
-  has_guest: boolean
-  /** Display name for the route, e.g. "Nous · free tier". */
-  label: string
-  model: string
-  /** True until the one-time introduction has been acknowledged. */
-  notice_pending: boolean
-  /** Present only while `enabled` and no identity exists: why the last attempt
-   *  to create one failed. `error_code` is one of the backend's `anon_*` codes
-   *  (`thor_cli/anon_auth.py`), `error` its sentence, `retryable` whether a
-   *  later attempt can succeed, `retry_after` the seconds still to wait. */
-  error?: string
-  error_code?: string
-  retryable?: boolean
-  retry_after?: number
-  /** Present while the backend is waiting on a browser challenge. */
-  challenge?: FreeTierChallengePayload | null
-  /** Seconds until the one-time first-task sign-in offer is due (0 = now); null when none is owed. */
-  nudge_due_in?: number | null
-  /** The same for the connector offer: no trial, and apps connected on the free tier. */
-  connector_nudge_due_in?: number | null
 }
 
 export interface MemoryProviderOAuthStatus {
@@ -1312,11 +1281,11 @@ export interface ToolProvider {
   tag: string
   env_vars: ToolEnvVar[]
   post_setup: string | null
-  requires_nous_auth: boolean
+  requires_thorhub_auth: boolean
   /** True when this is the provider currently written to config (mirrors the
    *  CLI `thor tools` active-provider detection). */
   is_active: boolean
-  /** Honest readiness computed server-side (keys ∧ Nous entitlement ∧
+  /** Honest readiness computed server-side (keys ∧ ThorHub entitlement ∧
    *  post-setup install state). Optional for older backends. */
   status?: ToolProviderStatus
   /** Web toolset only: the backend key written to web.*backend config
@@ -1331,8 +1300,8 @@ export interface ToolProvider {
    *  providers (ddgs, brave-free) report ['search']. */
   capabilities?: WebCapability[]
   /** Set on the "Thor Subscription" rows (e.g. 'web'): served through the
-   *  Nous Tool Gateway rather than the user's own key. */
-  managed_nous_feature?: null | string
+   *  ThorHub Tool Gateway rather than the user's own key. */
+  managed_thorhub_feature?: null | string
 }
 
 /** A web toolset capability — the runtime dispatches web_search and
@@ -1350,10 +1319,10 @@ export interface ToolsetConfig {
   active_search_backend?: string | null
   /** Web toolset only: backend the web_extract tool resolves to right now. */
   active_extract_backend?: string | null
-  /** Web toolset only: web_search / web_extract currently go through the Nous
+  /** Web toolset only: web_search / web_extract currently go through the ThorHub
    *  Tool Gateway (billed to the subscription) instead of the user's own key. */
-  search_via_nous?: boolean
-  extract_via_nous?: boolean
+  search_via_thorhub?: boolean
+  extract_via_thorhub?: boolean
 }
 
 /** Health status of a terminal execution backend row.
