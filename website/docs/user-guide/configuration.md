@@ -895,6 +895,17 @@ thor config set skills.config.myplugin.path ~/myplugin-data
 
 For details on declaring config settings in your own skills, see [Creating Skills — Config Settings](../developer-guide/creating-skills.md#config-settings-configyaml).
 
+### Skill index description width
+
+The system prompt lists every skill as `name: description`, and that description is the main signal the model uses to pick a skill. Each row shows the first 60 characters by default. Raise it when your skills put their trigger phrases past character 60:
+
+```yaml
+skills:
+  index_desc_limit: 200   # default: 60; accepted range 60–1024
+```
+
+Longer rows cost prompt tokens on every session (about one token per four extra characters, per skill whose description is longer than 60). `skill_manage`, `/learn` and the curator use the same width, so the agent may write descriptions up to it. Bundled skills still follow the 60-character authoring standard. Applies to new sessions; profile-scoped.
+
 ### Auto-loading skills every session
 
 Pin skills so they are fully loaded at the start of every new session, on every surface:

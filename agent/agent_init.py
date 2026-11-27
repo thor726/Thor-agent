@@ -1797,9 +1797,8 @@ def _compressor_max_tokens(agent):
     if agent.max_tokens is not None:
         return agent.max_tokens
     with suppress(Exception):
-        from agent.gemini_native_adapter import (
-            GEMINI_DEFAULT_MAX_OUTPUT_TOKENS, is_native_gemini_base_url
-        )
+        from agent.gemini_model_family import GEMINI_DEFAULT_MAX_OUTPUT_TOKENS
+        from agent.gemini_urls import is_native_gemini_base_url
         _gemini_provider = str(agent.provider or "").strip().lower() in {
             "gemini", "google", "google-gemini", "google-ai-studio",
         }

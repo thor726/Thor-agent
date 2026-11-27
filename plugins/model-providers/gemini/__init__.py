@@ -14,43 +14,28 @@ from providers.base import ProviderProfile
 logger = logging.getLogger(__name__)
 
 
-# Models that take the ``xhigh`` thinking level; Gemini 4 Argon and Carbon answer 400 to it.
-_XHIGH_MODELS = ("gemini-4-hydrogen",)
-_XHIGH_EFFORTS = {"xhigh", "max", "ultra"}
-
-
-def _with_top_thinking_level(model: str, reasoning_config: Any, thinking_config: dict[str, Any]) -> dict[str, Any]:
-    """Send ``xhigh`` where the model has it: the shared mapping stops at ``high``, the top level of the
-    other thinking-level models."""
-    name = (model or "").strip().lower().removeprefix("google/")
-    effort = str(reasoning_config.get("effort") or "").strip().lower() if isinstance(reasoning_config, dict) else ""
-    if name.startswith(_XHIGH_MODELS) and effort in _XHIGH_EFFORTS and thinking_config.get("thinkingLevel") == "high":
-        return {**thinking_config, "thinkingLevel": "xhigh"}
-    return thinking_config
-
-
 class GeminiProfile(ProviderProfile):
     """Gemini — translate reasoning_config to thinking_config in extra_body."""
 
     def build_extra_body(self, *, session_id: str | None = None, **context: Any) -> dict[str, Any]:
         """Native: ``thinking_config``; OpenAI-compat /openai subpath:
         ``extra_body.google.thinking_config`` (snake_case)."""
-        from agent.transports.chat_completions import (
-            _build_gemini_thinking_config,
-            _is_gemini_openai_compat_base_url,
-            _snake_case_gemini_thinking_config,
+        from agent.gemini_model_family import (
+            build_gemini_thinking_config,
+            snake_case_gemini_thinking_config,
         )
+        from agent.gemini_urls import is_gemini_openai_compat_base_url, is_native_gemini_base_url
+        from agent.reasoning_effort import gemini_top_thinking_level
 
-        raw = _build_gemini_thinking_config(context.get("model") or "", context.get("reasoning_config"))
+        raw = build_gemini_thinking_config(context.get("model") or "", context.get("reasoning_config"))
         if not raw:
             return {}
-        raw = _with_top_thinking_level(context.get("model") or "", context.get("reasoning_config"), raw)
+        raw = gemini_top_thinking_level(context.get("model") or "", context.get("reasoning_config"), raw)
         base_url = context.get("base_url") or self.base_url
-        if self.name == "gemini" and _is_gemini_openai_compat_base_url(base_url):
-            thinking_config = _snake_case_gemini_thinking_config(raw)
+        if self.name == "gemini" and is_gemini_openai_compat_base_url(base_url):
+            thinking_config = snake_case_gemini_thinking_config(raw)
             return {"extra_body": {"google": {"thinking_config": thinking_config}}} if thinking_config else {}
         from agent.gemini_long_decode import long_decode_max_output_tokens
-        from agent.gemini_native_adapter import is_native_gemini_base_url
 
         # Long decode exists only on native generateContent (not /openai, not proxies).
         budget = long_decode_max_output_tokens(context.get("model") or "", context.get("reasoning_config"))
@@ -59,7 +44,7 @@ class GeminiProfile(ProviderProfile):
     def create_client(self, **client_kwargs: Any) -> Any:
         """The plugin's client (Interactions or generateContent per model) on a native Gemini base; None on
         the OpenAI-compatible ``/openai`` surface and proxies, which keep the standard OpenAI client."""
-        from agent.gemini_native_adapter import is_native_gemini_base_url
+        from agent.gemini_urls import is_native_gemini_base_url
 
         base_url = str(client_kwargs.get("base_url") or self.base_url or "")
         if not is_native_gemini_base_url(base_url):

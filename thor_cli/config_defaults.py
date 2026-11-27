@@ -1397,6 +1397,7 @@ DEFAULT_CONFIG = {
     # and resolved; read-only — creation goes to ~/.thor/skills/ unless create_dir redirects it.
     "skills": {
         "external_dirs": [],   # e.g. ["~/.agents/skills", "/shared/team-skills"]
+        "index_desc_limit": 60,  # skill-index description chars (60..1024); wider routes better, costs tokens
         # Where skill_manage-created skills go (empty = profile-local dir). When set, new skills
         # land here AND agent-facing instructions name this path; expanded (~, ${VAR}), relative to
         # THOR_HOME, scanned alongside the local dir.

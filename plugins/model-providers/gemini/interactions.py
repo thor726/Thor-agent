@@ -22,6 +22,10 @@ import uuid
 from types import SimpleNamespace
 from typing import Any, Iterator, Optional
 
+from agent.gemini_model_family import (
+    effective_gemini_max_output_tokens as _effective_gemini_max_output_tokens,
+    normalize_gemini_thinking_config as _normalize_thinking_config,
+)
 from agent.gemini_native_adapter import (
     _FREE_TIER_GUIDANCE,
     _SKIP_SIGNATURE,
@@ -29,12 +33,10 @@ from agent.gemini_native_adapter import (
     _response_text,
     gemini_http_error,
     _coerce_content_to_text,
-    _effective_gemini_max_output_tokens,
     _envelope,
     _function_declaration,
     _looks_like_json_schema,
     _make_stream_chunk,
-    _normalize_thinking_config,
     _text_of,
     _tool_call_extra_from_part,
     _tool_call_extra_signature,

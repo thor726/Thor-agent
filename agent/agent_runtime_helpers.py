@@ -1919,7 +1919,8 @@ def _ensure_route_client_headers(client_kwargs: dict, provider: str) -> None:
 
 def _gemini_native_client(agent, client_kwargs: dict, httpx_verify, *, reason: str, shared: bool):
     """Native Gemini client when the base_url is the Gemini API, else None."""
-    from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+    from agent.gemini_native_adapter import GeminiNativeClient
+    from agent.gemini_urls import is_native_gemini_base_url
     base_url = str(client_kwargs.get("base_url", "") or "")
     if not is_native_gemini_base_url(base_url):
         return None

@@ -14,12 +14,14 @@ import { atom, host, randomUuid } from '@thor/plugin-sdk'
 import { $botMeta, $lastRoster, botRosterKey } from './data'
 import type { GroupEngine } from './group-engine'
 import { gatewayGroupEngine, gatewayGroupIdentityConflicts, stickyGroupEngine } from './group-engine'
+import { durableGroupChatRoom } from './group-chat-record'
 import { groupMemberReferencesConnection, markOrphanedGroupMemberDescriptor } from './hygiene'
 import { displayName } from './labels'
 import { botRosterMeta } from './routing'
 import { getPluginCtx } from './shared'
 import type {
   Attachment,
+  DurableGroupChat,
   GroupChat,
   GroupHold,
   GroupMember,
@@ -953,7 +955,7 @@ export function mergeRemoteGroupChatSnapshotIntoRooms(
 }
 
 export function durableGroupChatRooms(all: Record<string, GroupChat> = $groupChats.get()) {
-  const durable: Record<string, GroupChat> = {}
+  const durable: Record<string, DurableGroupChat> = {}
 
   for (const [name, room] of Object.entries(all || {})) {
     if (!room || !Array.isArray(room.log)) {
@@ -968,29 +970,7 @@ export function durableGroupChatRooms(all: Record<string, GroupChat> = $groupCha
       continue
     }
 
-    durable[name] = {
-      log: room.log,
-      holdDetection: room.holdDetection !== false,
-      heldMessages: room.heldMessages || {},
-      watermarks: room.watermarks || {},
-      sessions: room.sessions || {},
-      stranded: room.stranded || {},
-      externalCursors: room.externalCursors || {},
-      members: Array.isArray(room.members) ? room.members : [],
-      // Immutable room identity: without this, a room merged in via the
-      // remote-sync path (the only caller of this function) loses its
-      // roomId on the next cold hydrate and falls back to legacy
-      // name-keyed identity — same field updateGroupChat's inline map
-      // already carries.
-      roomId: typeof room.roomId === 'string' && room.roomId ? room.roomId : null,
-      ...stickyGroupEngine(room),
-      image: room.image || null,
-      rosterOrder: room.rosterOrder,
-      pinned: room.pinned,
-      // Sidebar filing (user-sections) is room-local; keep it across sync.
-      sectionId: room.sectionId ?? null,
-      syncRevision: Math.max(0, Number(room.syncRevision || 0))
-    }
+    durable[name] = durableGroupChatRoom(room)
   }
 
   return durable

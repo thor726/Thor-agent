@@ -68,6 +68,17 @@ def rotate_worker_log(
         pass
 
 
+def open_task_worker_log(task, board: Optional[str]):
+    """Append-mode per-task log (a re-run on unblock appends, never overwrites),
+    rotated first. Anchored at the board root (not the shared kanban root) so
+    `thor kanban log` reads its own file and boards sharing task ids don't
+    collide. Reached as ``kanban_db_dispatch._open_worker_log``."""
+    from thor_cli import kanban_db as _kb
+    log_path = _kb.worker_log_path(task.id, board=board)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    return open_worker_log(log_path)
+
+
 def open_worker_log(log_path: Path):
     """Rotate ``log_path``, then open it for binary append as the worker's stdout/stderr."""
     rotate_worker_log(log_path, *worker_log_rotation_config())

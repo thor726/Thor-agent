@@ -673,7 +673,7 @@ def _fixed_temperature_for_model(
     if _is_kimi_model(model):
         logger.debug("Omitting temperature for Kimi model %r (server-managed)", model)
         return OMIT_TEMPERATURE
-    from agent.gemini_native_adapter import gemini_sampling_deprecated
+    from agent.gemini_model_family import gemini_sampling_deprecated
     if _is_openai_default_temperature_only(model) or gemini_sampling_deprecated(_bare_model(model)):
         logger.debug("Omitting temperature for %r (default-only, or Gemini 3.6+ ignores sampling)", model)
         return OMIT_TEMPERATURE
@@ -2120,7 +2120,8 @@ def _resolve_api_key_provider() -> tuple[Optional[OpenAI], Optional[str]]:
         # Native Gemini, else OpenAI-wire + Anthropic rewrap.
         base_url = _to_openai_base_url(raw_base_url)
         if provider_id == "gemini":
-            from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+            from agent.gemini_native_adapter import GeminiNativeClient
+            from agent.gemini_urls import is_native_gemini_base_url
             if is_native_gemini_base_url(base_url):
                 return _tag_backend(GeminiNativeClient(api_key=api_key, base_url=base_url), provider_id), model
         if base_url_host_matches(base_url, "api.kimi.com"):
@@ -5053,7 +5054,8 @@ def _resolve_api_key_branch(req: _ResolveRequest, pconfig: Any, resolve_creds: C
         logger.debug("resolve_provider_client: %s native client from provider profile (%s)", provider, final_model)
         return _route_client(req, profile_client, final_model)
     if provider == "gemini":
-        from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
+        from agent.gemini_native_adapter import GeminiNativeClient
+        from agent.gemini_urls import is_native_gemini_base_url
         if is_native_gemini_base_url(base_url):
             client = GeminiNativeClient(api_key=api_key, base_url=base_url)
             logger.debug("resolve_provider_client: %s (%s)", provider, final_model)
@@ -6301,7 +6303,7 @@ def _is_gemini_native_route(provider_norm: str, effective_base: str) -> bool:
     if not effective_base:
         return False
     try:
-        from agent.gemini_native_adapter import is_native_gemini_base_url
+        from agent.gemini_urls import is_native_gemini_base_url
         return is_native_gemini_base_url(effective_base)
     except Exception:
         return False
