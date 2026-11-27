@@ -437,24 +437,24 @@ class TestBuildCallKwargsMaxTokens:
         assert "max_tokens" not in kw3
 
 
-class TestNousTagsScoping:
-    def test_tags_injected_when_provider_is_nous(self):
+class TestThorHubTagsScoping:
+    def test_tags_injected_when_provider_is_thorhub(self):
         import agent.auxiliary_client as aux
 
         kwargs = aux._build_call_kwargs(
-            provider="nous",
-            model="thor-4",
+            provider="thor",
+            model="deepseek-v4-pro",
             messages=[{"role": "user", "content": "hi"}],
         )
 
-        assert kwargs["extra_body"]["tags"] == aux._nous_portal_tags()
+        assert kwargs["extra_body"]["tags"] == aux._thorhub_portal_tags()
 
-    def test_tags_not_injected_for_non_nous_provider_when_main_is_nous(self):
+    def test_tags_not_injected_for_non_thorhub_provider_when_main_is_thorhub(self):
         import agent.auxiliary_client as aux
 
         with aux.scoped_runtime_main({
-            "provider": "nous", "model": "Thor-4",
-            "base_url": "https://inference-api.thor-agent.local/v1", "api_key": "nous-key",
+            "provider": "thor", "model": "deepseek-v4-pro",
+            "base_url": "https://llm.thormarket.site/v1", "api_key": "sk-thor-test",
         }):
             kwargs = aux._build_call_kwargs(
                 provider="gemini",

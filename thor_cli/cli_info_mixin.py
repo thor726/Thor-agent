@@ -245,13 +245,6 @@ class CLIInfoMixin:
                 fix = t("cli.banner.fix_config")
             self._console_print(f"[dim]   {fix}[/]")
 
-        from thor_cli.model_switch import is_nous_thor_non_agentic
-        if is_nous_thor_non_agentic(getattr(self, "model", "") or ""):
-            self._console_print()
-            self._console_print(f"[bold yellow]{t('cli.banner.thor_models_not_agentic')}[/]")
-            self._console_print(f"[dim]   {t('cli.banner.thor_models_lack_tools')}[/]")
-            self._console_print(f"[dim]   {t('cli.banner.thor_models_switch_hint')}[/]")
-
         # Project-local skills one-liner: trusted → count; untrusted-with-skills → point at
         # `thor skills trust`. Never raises.
         try:

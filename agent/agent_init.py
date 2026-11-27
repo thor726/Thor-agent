@@ -462,8 +462,9 @@ _TURN_STATE: dict[str, Any] = {
     # a stale rebuild instead of clobbering a newer one.
     "_tool_snapshot_generation": 0,
     "_rate_limit_state": None,  # from x-ratelimit-* headers; read by /usage
-    # Credits tracking (dev-only, THOR_DEV_CREDITS) from x-nous-credits-* headers; session
-    # start is latched on the first header so cumulative spend can be reported.
+    # Credits tracking (dev-only, THOR_DEV_CREDITS) from the ThorHub credits response
+    # headers (``x-nous-credits-*`` wire names); session start is latched on the
+    # first header so cumulative spend can be reported.
     "_credits_state": None,
     "_credits_session_start_micros": None,
     "_or_cache_hits": 0,  # X-OpenRouter-Cache-Status: HIT count
@@ -1926,25 +1927,6 @@ def _enforce_minimum_context(agent):
         )
 
 
-def _warn_nonagentic_thor_model(agent):
-    # Nous Thor 3/4 are chat models, not tool-call-tuned. cli.py show_banner() already
-    # warns on the CLI, so skip platform=="cli"; non-quiet non-CLI surfaces still get it.
-    if agent.quiet_mode or (agent.platform or "cli") == "cli":
-        return
-    with suppress(Exception):
-        from thor_cli.model_switch import _check_thor_model_warning
-        _thor_warn = _check_thor_model_warning(agent.model or "")
-        if _thor_warn:
-            _user_msg = (
-                "⚠ Thor Labs Thor 3 & 4 models are NOT agentic — they "
-                "lack reliable tool-calling for agent workflows (delegation, "
-                "cron, proactive tools). Consider an agentic model instead "
-                "(Claude, GPT, Gemini, Qwen-Coder, etc.)."
-            )
-            agent._emit_warning(_user_msg)
-            _ra().logger.warning(_thor_warn)
-
-
 def _inject_context_engine_tools(agent):
     # Context engine tool schemas (lcm_*), deduped against existing names (plugins may
     # register the same schemas; duplicates 400 provider-side) and gated on enabled_toolsets
@@ -2183,7 +2165,6 @@ def init_agent(
     _build_context_engine(agent, _agent_cfg, cs, _custom_providers, _effective_context_length, session_db)
     _configure_ollama_num_ctx(agent, _model_cfg, _config_context_length)
     _enforce_minimum_context(agent)
-    _warn_nonagentic_thor_model(agent)
     _inject_context_engine_tools(agent)
     _init_usage_state(agent)
     _clamp_compressor_to_ollama_num_ctx(agent)

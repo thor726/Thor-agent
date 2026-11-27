@@ -188,8 +188,8 @@ _ai_gateway_catalog_cache: list[tuple[str, str]] | None = None
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal free-model helpers — the Portal models endpoint is the source of truth for what is
-# offered (free or paid); we surface it as-is, no local allowlist filtering.
+# ThorHub model helpers — the ThorHub models endpoint is the source of truth for what is
+# offered; we surface it as-is, no local allowlist filtering.
 # ---------------------------------------------------------------------------
 
 
@@ -457,7 +457,7 @@ def _openrouter_model_supports_tools(item: Any) -> bool:
     return "tools" in params if isinstance(params, list) else True
 
 
-# Reasoning-capability cache slots, one set per catalog (OpenRouter, Nous Portal). The logic
+# Reasoning-capability cache slots, one set per catalog (OpenRouter, ThorHub). The logic
 # lives in models_reasoning_caps and reads/writes these by name so tests can reset them here.
 # ``*_cache``: model id → parsed caps for the process lifetime; ``*_failed_at``: monotonic time
 # of the last failed fetch (60s re-fetch suppression); the flags are once-per-process guards.
@@ -804,7 +804,7 @@ def curated_models_for_provider(
     if normalized == "openrouter":
         return fetch_openrouter_models(force_refresh=force_refresh)
 
-    # Try live API first (Codex, Nous, etc. all support /models)
+    # Try live API first (Codex, ThorHub, etc. all support /models)
     live = provider_model_ids(normalized)
     if live:
         # StepFun's Step Plan /models merge now lives in its provider fetcher

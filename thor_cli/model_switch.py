@@ -96,21 +96,6 @@ def _bare_custom_provider_def(current_base_url: str) -> Optional[ProviderDef]:
         base_url=base_url, is_aggregator=False, auth_type="api_key", source="model-config")
 
 
-# --- Non-agentic model warning
-
-_THOR_MODEL_WARNING = (
-    "Thor Labs Thor 3 & 4 models are NOT agentic and are not designed "
-    "for use with Thor Agent. They lack the tool-calling capabilities "
-    "required for agent workflows. Consider using an agentic model instead "
-    "(Claude, GPT, Gemini, DeepSeek, etc.).")
-
-# Match only the real Thor Labs Thor 3 / 4 chat families; a bare substring check
-# false-positived on tool-capable local Modelfiles like ``thor-brain:qwen3-14b-ctx16k``.
-#   match:    thor726/Thor-3-Llama-3.1-70B, thor-4-405b, openrouter/thor3:70b
-#   no match: thor-brain:qwen3-14b-ctx16k, qwen3:14b, claude-opus-4-6
-_NOUS_THOR_NON_AGENTIC_RE = re.compile(r"(?:^|[/:])thor[-_ ]?[34](?:[-_.:]|$)", re.IGNORECASE)
-
-
 # Opaque proxy model IDs (Palantir Foundry: ``ri.language-model-service..language-model.<slug>``)
 # are noise in status output; the provider_label already carries the routing context. Stripped
 # for DISPLAY ONLY — never for wire-side comparison, persistence, config writes or alias lookup.
@@ -123,16 +108,6 @@ def format_model_for_display(model_name: str) -> str:
         if model_name and model_name.startswith(prefix):
             return model_name[len(prefix):] or model_name
     return model_name
-
-
-def is_nous_thor_non_agentic(model_name: str) -> bool:
-    """True if *model_name* is a real Thor Thor 3/4 chat model (single owner; cli.py uses it too)."""
-    return bool(model_name and _NOUS_THOR_NON_AGENTIC_RE.search(model_name))
-
-
-def _check_thor_model_warning(model_name: str) -> str:
-    """Warning string if *model_name* is a Thor Thor 3/4 chat model, else ""."""
-    return _THOR_MODEL_WARNING if is_nous_thor_non_agentic(model_name) else ""
 
 
 # --- Model aliases -- short names -> (vendor, family) with NO version numbers,
@@ -883,12 +858,12 @@ def get_authenticated_provider_slugs(
 def _resolve_alias_fallback(
     raw_input: str, authenticated_providers: list[str] = (), user_providers: Optional[dict] = None,
     custom_providers: Optional[list] = None) -> Optional[tuple[str, str, str]]:
-    """Resolve an alias on the user's authenticated providers (``("openrouter", "nous")`` when none given).
+    """Resolve an alias on the user's authenticated providers (``("openrouter", "thor")`` when none given).
 
     AmbiguousAliasError propagates: the alias exists on this provider, the user just has to
     choose — trying the next provider would silently switch them somewhere they didn't ask for."""
     results = (resolve_alias(raw_input, p, user_providers, custom_providers)
-               for p in authenticated_providers or ("openrouter", "nous"))
+               for p in authenticated_providers or ("openrouter", "thor"))
     return next((r for r in results if r is not None), None)
 
 
@@ -1770,7 +1745,7 @@ def _build_switch_result(st: _Switch) -> ModelSwitchResult:
         is_codex_backend=st.target_provider.strip().lower() == "openai-codex")
     model_info = get_model_info(st.target_provider, st.new_model, allow_network=True)
 
-    warnings = [w for w in (st.validation.get("message"), _check_thor_model_warning(st.new_model)) if w]
+    warnings = [w for w in (st.validation.get("message"),) if w]
     from thor_cli.model_picker_usage import large_model_notice
     usage_notice = large_model_notice(st.new_model, st.target_provider, fetch=True) or ""
 

@@ -246,7 +246,7 @@ class CLIBillingMixin:
         if not self._open_url_in_browser(url):
             print(f"  {t('cli.billing.open_this_url', url=url)}")
 
-    # ── /usage — Nous balance block ──
+    # ── /usage — ThorHub balance block ──
 
     def _print_thorhub_balance(self, usage, lines: list[str]) -> bool:
         """Thor dollar balance block (two bars) from *usage* (``UsageModel`` or None), else *lines* (the
@@ -675,7 +675,7 @@ class CLIBillingMixin:
     def _show_thorhub_billing(self) -> bool:
         """ThorHub ``/topup`` (CLI): bila THORHUB_API_KEY terpasang, tampilkan saldo
         token ThorHub + link top-up, lalu True. Gagal/tidak ada key -> False dan
-        pemanggil jatuh ke alur Nous lama."""
+        pemanggil lanjut ke tampilan billing umum di bawah."""
         try:
             from thor_cli.thorhub_account import (
                 fetch_thorhub_balance,
@@ -698,7 +698,7 @@ class CLIBillingMixin:
         """`/topup` — ZERO sub-commands (argument ignored; Overview is the only route). Non-interactive never
         prompts. Money is Decimal end-to-end; the terminal never collects card details."""
         # ThorHub dulu: bila key ThorHub terpasang, /topup menampilkan saldo token
-        # ThorHub. Gagal -> alur Nous lama di bawah.
+        # ThorHub. Gagal -> tampilan billing umum di bawah.
         if self._show_thorhub_billing():
             return
         from agent.billing_view import build_billing_state

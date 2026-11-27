@@ -164,52 +164,33 @@ def _model_flow_moa(config, current_model=""):
     )
 
 
-def _thorhub_model_catalog(free_tier: bool, portal_url: str, model_ids: list, pricing: dict):
-    """Free/paid-tier catalog for the Thor picker: ``(model_ids, pricing, unavailable_models,
-    unavailable_message, policy_narrowed)`` or None (message already printed) when nothing is selectable."""
+def _thorhub_model_catalog(portal_url: str, model_ids: list, pricing: dict):
+    """ThorHub catalog for the Thor picker: ``(model_ids, pricing, unavailable_models,
+    unavailable_message, policy_narrowed)`` or None (message already printed) when nothing is selectable.
+
+    ThorHub has no free tier, so there is no free/paid split here: every account sees the
+    paid recommendations plus every model on sale right now, narrowed only by org policy.
+    """
     from thor_cli.models_pricing import thorhub_policy_allowed_ids, restrict_to_thorhub_policy
     from thor_cli.models import (
-        partition_thorhub_models_by_tier,
         union_with_thorhub_on_sale_models,
-        union_with_portal_free_recommendations,
         union_with_portal_paid_recommendations,
     )
 
-    # Free users: union with the Portal's freeRecommendedModels (newly launched free models appear
-    # before the curated list catches up), then partition selectable/unavailable by Portal pricing.
-    # Paid users: paidRecommendedModels plus every model on sale right now, no partition. Org policy
-    # narrows BEFORE the tier split so a rescued id still has to pass the free/paid predicate.
+    # Paid recommendations plus every model on sale right now, no partition. Org policy
+    # narrows the list so a rescued id still has to pass the policy predicate.
     unavailable_models: list[str] = []
     unavailable_message = ""
     _policy_allowed = thorhub_policy_allowed_ids()
-    if free_tier:
-        try:
-            from thor_cli.thorhub_account import format_thorhub_entitlement_message, get_thorhub_account_info
-            _account_info = get_thorhub_account_info(force_fresh=True)
-            unavailable_message = format_thorhub_entitlement_message(_account_info, capability="paid Thor models") or ""
-        except Exception:
-            unavailable_message = ""
-        model_ids, pricing = union_with_portal_free_recommendations(model_ids, pricing, portal_url)
-    else:
-        model_ids, pricing = union_with_portal_paid_recommendations(model_ids, pricing, portal_url)
-        model_ids = union_with_thorhub_on_sale_models(model_ids, pricing)
+    model_ids, pricing = union_with_portal_paid_recommendations(model_ids, pricing, portal_url)
+    model_ids = union_with_thorhub_on_sale_models(model_ids, pricing)
     _before_policy = model_ids
     model_ids = restrict_to_thorhub_policy(model_ids, _policy_allowed, rescue_empty=True)
     _policy_narrowed = model_ids != _before_policy
-    if free_tier:
-        model_ids, unavailable_models = partition_thorhub_models_by_tier(model_ids, pricing, free_tier=True)
 
     if not model_ids and not unavailable_models:
-        print("No models available for Thor Portal after filtering.")
+        print("No models available for ThorHub after filtering.")
         _note_setup_failure("no_models")
-        return None
-    if free_tier and not model_ids:
-        # ThorHub has no free tier, so this is unreachable in practice; kept as a
-        # guard so a stale free-tier flag cannot select nothing silently.
-        print("No free models currently available.")
-        if unavailable_models:
-            from thor_cli.thorhub_account import THORHUB_TOPUP_URL
-            print(unavailable_message or f"Top up at {THORHUB_TOPUP_URL} to access paid models.")
         return None
     return model_ids, pricing, unavailable_models, unavailable_message, _policy_narrowed
 
@@ -291,7 +272,7 @@ def _model_flow_thorhub(config, current_model="", args=None):
     # penalty guard (a flat token charge on the buyer's key). The curated list
     # is only the offline fallback when the live fetch fails.
     from thor_cli.model_switch_providers import _live_thorhub_model_ids
-    from thor_cli.models import check_thorhub_free_tier, get_curated_thorhub_model_ids
+    from thor_cli.models import get_curated_thorhub_model_ids
     from thor_cli.models_pricing import get_pricing_for_provider
     live_ids = _live_thorhub_model_ids()
     model_ids = live_ids or get_curated_thorhub_model_ids()
@@ -306,20 +287,19 @@ def _model_flow_thorhub(config, current_model="", args=None):
 
     pricing = get_pricing_for_provider("thor")
     # Force fresh account data so recent credit purchases are reflected immediately.
-    free_tier = check_thorhub_free_tier(force_fresh=True)
-    if not free_tier:
-        from thor_cli.auth_thorhub import resolve_thorhub_runtime_credentials
-        try:
-            creds = resolve_thorhub_runtime_credentials(force_refresh=True) or creds
-        except Exception:
-            # Runtime inference has its own paid-entitlement recovery; don't block.
-            pass
+    # ThorHub has no free tier, so the runtime-credential refresh always runs.
+    from thor_cli.auth_thorhub import resolve_thorhub_runtime_credentials
+    try:
+        creds = resolve_thorhub_runtime_credentials(force_refresh=True) or creds
+    except Exception:
+        # Runtime inference has its own paid-entitlement recovery; don't block.
+        pass
 
     # ThorHub URL is needed for upgrade links.
     from thor_cli.thorhub_account import resolve_thorhub_base_url
     _thorhub_portal_url = resolve_thorhub_base_url()
 
-    catalog = _thorhub_model_catalog(free_tier, _thorhub_portal_url, model_ids, pricing)
+    catalog = _thorhub_model_catalog(_thorhub_portal_url, model_ids, pricing)
     if catalog is None:
         return
     model_ids, pricing, unavailable_models, unavailable_message, _policy_narrowed = catalog
