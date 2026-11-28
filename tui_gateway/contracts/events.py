@@ -255,7 +255,7 @@ class BillingBlock(Payload):
     provider_label: str
     model: str
     billing_url: str | None
-    is_nous: bool
+    is_thorhub: bool
     message: str
     unverified: bool | None = None
 

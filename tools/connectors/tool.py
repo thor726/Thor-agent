@@ -79,7 +79,7 @@ MANAGE_CONNECTIONS_SCHEMA = {
         "re-ask on your own: continue without the app or ask in chat. A later request from the "
         "USER for that same app is not a re-ask — run it. This tool can NOT disconnect, delete, "
         "or revoke an account — that is deliberately user-only. When asked, say so and direct the "
-        "user to the Nous Portal (their org's Connectors page) or the desktop app."
+        "user to the Thor Portal (their org's Connectors page) or the desktop app."
     ),
     "parameters": {
         "type": "object",

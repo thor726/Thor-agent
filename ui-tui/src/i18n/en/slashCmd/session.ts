@@ -90,7 +90,7 @@ export const slashCmdSessionEn = {
       lowBalanceFallback: 'under $5',
       lowNote: (left: string) => `! Low balance · ${left} left. Run /topup or /subscription.`,
       noCalls: 'no API calls yet',
-      nousBalanceTitle: 'ThorHub balance',
+      thorhubBalanceTitle: 'ThorHub balance',
       plan: (plan: string) => `Plan: ${plan}`,
       // {0}=plan name, {1}=renewal date display
       planRenews: (plan: string, renews: string) => `Plan: ${plan} · renews ${renews}`,

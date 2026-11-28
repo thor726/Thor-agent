@@ -238,7 +238,7 @@ interface CommittedResult {
   total_tokens?: number
 }
 
-const NO_ROUTE: SessionAccountUsage = { lines: [], nous_lines: [], nous_route: false }
+const NO_ROUTE: SessionAccountUsage = { lines: [], thorhub_lines: [], thorhub_route: false }
 
 /** `/usage`: main's session totals panel. The owner's `session.stats` is the same session-cumulative
  * dict its `session.usage` ticks carry (`gateway/session_usage.py`), mapped onto main's `Usage` shape
@@ -275,11 +275,11 @@ export function canonicalUsage(ctx: SlashRunCtx) {
       }
 
       // The route's provider limits, then the Nous section (signed in only; its own heading off a Nous route).
-      for (const line of [...(account.lines ?? []), ...(account.nous_lines ?? [])]) {
+      for (const line of [...(account.lines ?? []), ...(account.thorhub_lines ?? [])]) {
         ctx.transcript.sys(line)
       }
 
-      if (account.nous_route) {
+      if (account.thorhub_route) {
         ctx.transcript.sys(t('slashCmd.session.usage.cta'))
       }
     })

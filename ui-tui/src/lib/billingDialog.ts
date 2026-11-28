@@ -19,12 +19,12 @@ export interface BillingDialogCopy {
  * the wording is unit-tested without driving the gateway.
  */
 export function billingDialogCopy(block: BillingBlock): BillingDialogCopy {
-  if (block.is_nous) {
+  if (block.is_thorhub) {
     return {
       cancelLabel: t('libText.billingDialog.dismiss'),
       confirmLabel: t('libText.billingDialog.topUp'),
-      detail: t('libText.billingDialog.nousDetail'),
-      title: t('libText.billingDialog.nousTitle')
+      detail: t('libText.billingDialog.thorhubDetail'),
+      title: t('libText.billingDialog.thorhubTitle')
     }
   }
 

@@ -60,8 +60,8 @@ export const libTextEn = {
     billingDialog: {
       dismiss: 'Dismiss',
       topUp: 'Top up',
-      nousDetail: 'Your Thor credit balance is exhausted — top up to keep going.',
-      nousTitle: 'Out of Thor credits',
+      thorhubDetail: 'Your Thor credit balance is exhausted — top up to keep going.',
+      thorhubTitle: 'Out of Thor credits',
       yourProvider: 'your provider',
       openBillingPage: 'Open billing page',
       switchProvider: 'Switch provider',

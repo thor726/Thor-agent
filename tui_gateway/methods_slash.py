@@ -144,7 +144,7 @@ def _usage_route(session: dict) -> dict:
         return {}
 
 
-def _usage_on_nous_route(route: dict) -> bool:
+def _usage_on_thorhub_route(route: dict) -> bool:
     """Legacy helper: there is no Nous route anymore, so this is always False."""
     return False
 
@@ -152,7 +152,7 @@ def _usage_on_nous_route(route: dict) -> bool:
 def _usage_nous_fields(session: dict) -> dict:
     """``session.usage``'s legacy Nous fields: kept for shape-compat, always empty now.
     The ThorHub balance lives on /topup."""
-    return {"nous_route": False}
+    return {"thorhub_route": False}
 
 
 def _usage_account_blocks(session: dict) -> list[str]:

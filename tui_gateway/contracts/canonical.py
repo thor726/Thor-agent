@@ -290,15 +290,15 @@ class ThorHubUsageDollars(Result):
 
 class SessionAccountUsage(Result):
     """``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the
-    route's provider plan limits. ``nous_lines``: the ThorHub balance whenever a ThorHub key is configured on the
-    profile, after them (headed as a separate account off a ThorHub route). ``nous_route``: the route is
-    ThorHub inference, so the ``/topup`` CTA applies. ``nous_usage``: on a ThorHub route, the same account
+    route's provider plan limits. ``thorhub_lines``: the ThorHub balance whenever a ThorHub key is configured on the
+    profile, after them (headed as a separate account off a ThorHub route). ``thorhub_route``: the route is
+    ThorHub inference, so the ``/topup`` CTA applies. ``thorhub_usage``: on a ThorHub route, the same account
     read's dollar model, so the CLI draws its two bars without reading the account again."""
 
     lines: list[str]
-    nous_lines: list[str] = []
-    nous_route: bool
-    nous_usage: ThorHubUsageDollars | None = None
+    thorhub_lines: list[str] = []
+    thorhub_route: bool
+    thorhub_usage: ThorHubUsageDollars | None = None
 
 
 canonical_method("session.account_usage", params=SessionAccountUsageParams, result=SessionAccountUsage,

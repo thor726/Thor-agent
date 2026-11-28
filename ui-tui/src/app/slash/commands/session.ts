@@ -897,13 +897,13 @@ export const sessionCommands: SlashCommand[] = [
 
             showedBalance = windowLines.length > 0
           } else if (creditsLines.length) {
-            ctx.transcript.panel(t('slashCmd.session.usage.nousBalanceTitle'), [{ text: creditsLines.join('\n') }])
+            ctx.transcript.panel(t('slashCmd.session.usage.thorhubBalanceTitle'), [{ text: creditsLines.join('\n') }])
             showedBalance = true
           }
         }
 
         // The /topup CTA belongs to a Nous route only (an older backend sends no flag).
-        const cta = () => r?.nous_route !== false && sys(t('slashCmd.session.usage.cta'))
+        const cta = () => r?.thorhub_route !== false && sys(t('slashCmd.session.usage.cta'))
 
         if (!r?.calls) {
           if (!showedBalance) {
