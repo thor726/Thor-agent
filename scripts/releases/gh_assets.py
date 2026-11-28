@@ -299,7 +299,12 @@ def _download_asset(runner: Runner, name: str, asset: str, directory: str,
     (see _is_transient_download_error); any other failure raises after
     the immediate retry.
     """
-    args = ["release", "download", name, "--pattern", asset, "--dir", directory]
+    args = ["release", "download", name, "--pattern", asset, "--dir", directory,
+            # --clobber: attempt 0 may have written the file before failing, and
+            # the immediate retry downloads into the same temp dir — without
+            # it gh refuses ("already exists"). The temp dir is fresh per
+            # download() and size + sha256 still bind the bytes that land.
+            "--clobber"]
     # Sleep before each attempt after the first: no sleep before the
     # initial attempt, no sleep before the immediate retry, then put()'s
     # growing backoff before each further retry.

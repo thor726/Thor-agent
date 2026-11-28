@@ -264,6 +264,56 @@ def test_download_retries_once_on_transient_failure(tmp_path, monkeypatch):
     assert gh.downloads == 2
 
 
+class PartialDownloadGh:
+    """Fake `gh` modelling rc.4's termux pre-build failure: the first
+    download writes the asset then dies, so the immediate retry re-runs
+    `gh release download` into a temp dir where the file already exists.
+    Real gh refuses that unless --clobber is passed."""
+
+    def __init__(self, data):
+        self.data = data
+        self.downloads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        assert args[0] == "gh"
+        cmd = args[1:]
+        if cmd[:1] == ["api"]:
+            assets = [{"name": "upstream__sha256__aaaa", "size": len(self.data),
+                       "digest": "sha256:" + hashlib.sha256(self.data).hexdigest()}]
+            return subprocess.CompletedProcess(args, 0, json.dumps(assets), "")
+        if cmd[:2] == ["release", "download"]:
+            self.downloads += 1
+            directory = cmd[cmd.index("--dir") + 1]
+            target = Path(directory) / "upstream__sha256__aaaa"
+            if self.downloads > 1 and target.is_file() and "--clobber" not in cmd:
+                return subprocess.CompletedProcess(
+                    args, 1, "",
+                    "upstream__sha256__aaaa already exists (use --clobber to overwrite)")
+            target.write_bytes(self.data)
+            if self.downloads == 1:
+                return subprocess.CompletedProcess(args, 1, "", "HTTP 500: Internal Server Error")
+            return subprocess.CompletedProcess(args, 0, "", "")
+        raise AssertionError(f"unexpected gh call: {cmd}")
+
+
+def test_download_retries_over_a_partially_written_asset(tmp_path, monkeypatch):
+    # Regression (stable release rc.4-v0.23.6, run 46123512806, 2026-11-28):
+    # the termux pre-build job died in archive_inputs with
+    # "upstream__sha256__fab38e47... already exists (use --clobber...)".
+    # _download_asset retries attempt 0 unconditionally, so when attempt 0
+    # wrote the file before failing, attempt 1 re-ran `gh release download`
+    # into the same temp dir and gh refused. --clobber lets the retry
+    # overwrite; size + sha256 still bind the bytes that land.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = PartialDownloadGh(b"pinned bytes")
+    target = tmp_path / "out"
+    gh_assets.download("upstream/sha256/aaaa", target, expected_size=12,
+                       expected_sha256=hashlib.sha256(b"pinned bytes").hexdigest(),
+                       runner=gh)
+    assert target.read_bytes() == b"pinned bytes"
+    assert gh.downloads == 2
+
+
 class FlakyUploadGh(RecordingGh):
     """RecordingGh whose first upload dies the way a lost --clobber race
     does: HTTP 404 on the asset id another run just replaced."""
