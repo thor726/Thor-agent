@@ -5012,7 +5012,7 @@ export const deOverrides = {
         },
         free_tier_route: {
           title: 'Kostenloses Modell nicht erreichbar',
-          body: 'Melden Sie sich mit einem Thor-Konto an – es ist kostenlos – oder prüfen Sie die Einstellung NOUS_INFERENCE_BASE_URL.'
+          body: 'Melden Sie sich mit einem Thor-Konto an – es ist kostenlos.'
         },
         free_tier_outage: {
           title: 'Kostenloses Modell hat Probleme',

@@ -202,7 +202,7 @@ export const zhHantAssistant = {
         },
         free_tier_route: {
           title: '無法連線到免費模型',
-          body: '請使用 Thor 帳戶登入（完全免費），或檢查 NOUS_INFERENCE_BASE_URL 設定。'
+          body: '請使用 Thor 帳戶登入（完全免費）。'
         },
         free_tier_outage: {
           title: '免費模型發生問題',

@@ -92,7 +92,7 @@ export const jaErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_route: {
     title: '無料モデルに接続できません',
-    body: 'Thor アカウントで無料でサインインするか、NOUS_INFERENCE_BASE_URL の設定を確認してください。'
+    body: 'Thor アカウントで無料でサインインしてください。'
   },
   free_tier_outage: {
     title: '無料モデルで問題が発生しています',

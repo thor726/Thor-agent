@@ -5015,7 +5015,7 @@ export const frOverrides = {
         },
         free_tier_route: {
           title: 'Modèle gratuit injoignable',
-          body: 'Connectez-vous avec un compte Thor gratuit ou vérifiez le paramètre NOUS_INFERENCE_BASE_URL.'
+          body: 'Connectez-vous avec un compte Thor gratuit.'
         },
         free_tier_outage: {
           title: 'Modèle gratuit en difficulté',

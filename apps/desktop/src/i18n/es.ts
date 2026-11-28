@@ -4991,7 +4991,7 @@ export const esOverrides = {
         },
         free_tier_route: {
           title: 'Sin acceso al modelo gratuito',
-          body: 'Inicia sesión con una cuenta de Thor (es gratis) o revisa el ajuste NOUS_INFERENCE_BASE_URL.'
+          body: 'Inicia sesión con una cuenta de Thor (es gratis).'
         },
         free_tier_outage: {
           title: 'El modelo gratuito tiene problemas',

@@ -164,7 +164,7 @@ export const enErrorCodes: ThreadCopy['errorCodes'] = {
   },
   free_tier_route: {
     title: "Can't reach the free model",
-    body: "Sign in with a Thor account, it's free, or check the NOUS_INFERENCE_BASE_URL setting."
+    body: "Sign in with a Thor account, it's free."
   },
   free_tier_outage: {
     title: 'Free model is having trouble',

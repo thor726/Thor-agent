@@ -75,7 +75,7 @@ export const zhErrorCodes: Partial<ThreadCopy['errorCodes']> = {
   },
   free_tier_route: {
     title: '无法连接免费模型',
-    body: '使用 Thor 账户免费登录，或检查 NOUS_INFERENCE_BASE_URL 设置。'
+    body: '使用 Thor 账户免费登录。'
   },
   free_tier_outage: {
     title: '免费模型出现问题',

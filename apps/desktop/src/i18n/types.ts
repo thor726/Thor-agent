@@ -3951,7 +3951,7 @@ export interface Translations extends NoticeTranslations {
       errorAddCredits: string
       /** Error card button: opens Settings → Billing in-app (Keep going, buy credits). */
       errorOpenBillingSettings: string
-      /** Error card body when a Nous account is out of credits (its button opens Settings → Billing). */
+      /** Error card body when a ThorHub account is out of credits (its button opens Settings → Billing). */
       errorCompressConversation: string
       errorCompressFailed: string
       errorOpenThorFolder: string

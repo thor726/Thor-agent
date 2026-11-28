@@ -183,7 +183,7 @@ export const arAssistant = {
         },
         free_tier_route: {
           title: 'تعذّر الوصول إلى النموذج المجاني',
-          body: 'سجّل الدخول بحساب Thor، فهو مجاني، أو تحقّق من إعداد NOUS_INFERENCE_BASE_URL.'
+          body: 'سجّل الدخول بحساب Thor، فهو مجاني.'
         },
         free_tier_outage: {
           title: 'النموذج المجاني يواجه مشكلة',
