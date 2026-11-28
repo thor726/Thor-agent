@@ -1,0 +1,7 @@
+{"entries": {
+  "x-dashboard": {"sha":"795dcfc0ed1a204eb223daf2b17b0c0da03b9f65","imports":[["agent.secret_scope","get_secret","dashboard/plugin_api.py:31"],["plugins.plugin_storage","plugin_data_dir","dashboard/plugin_api.py:32"]],"choices":[[[["tools.registry","registry","dashboard/plugin_api.py:412"]],[]],[[["tools.registry","registry","dashboard/plugin_api.py:1026"]],[]]]},
+  "xchat": {"sha":"e7a218f26db88426ab3e7376f0e000b6e356f5e7","subdir":"xchat","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "xmemo": {"sha":"499a383778647e897d30db3e92e8c8ad4397c799","subdir":"src/thor_xmemo/xmemo","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "xray": {"sha":"21ca5f6fb5e46fb6d1a0ec2e179d055b96c69f52","subdir":"xray","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "xscapes": {"sha":"3a12d11bdc4e7fd917b256014e7efcf4e79c9e3d","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"}
+}}

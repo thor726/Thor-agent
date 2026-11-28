@@ -1,0 +1,16 @@
+{"entries": {
+  "qdrant": {"sha":"c16cf4473ed3051686b9283f1cd2e8941d9d140f","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "qdrant-memory": {"sha":"b8c1d8babe125470d9278404454728d4426f1dc3","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "qeemah-zatca": {"sha":"fc8696db3579360ed226e52db6fd8b6d7e9f0515","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "qmd-workspaces": {"sha":"6c356e8cac6fbb0422c5eab8a63fc1bf80461845","imports":[["plugins.plugin_storage","plugin_data_dir","qmd_workspaces_core.py:38"],["utils","atomic_json_write","qmd_workspaces_core.py:40"],["utils","read_json_or_empty","qmd_workspaces_core.py:40"]]},
+  "qqq-ai-visibility": {"sha":"38c9b83dd77540923bafd25542704402a8026e33"},
+  "qrblox": {"sha":"da68c941d725e38e7c6812a67df6648a7ac5169f"},
+  "quegly": {"sha":"6a16be804680eeeef98043675d708f591b27a001"},
+  "quick-eval": {"sha":"ebd73221b6a966f55ab4c2128aa44aaac64007a4","subdir":"plugins/quick-eval"},
+  "quick-prompts": {"sha":"d2aa72f3a4dc340dc68ee6d6f73755a84588b52c","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "quiroads-clinic-marketing": {"sha":"2c4718e6eb2656f4ea9df8db19bc341b793f0d07"},
+  "quota": {"sha":"89a2ca39a28dddcdcf01cf587519ea3861274b7a","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "quote-ask": {"sha":"194f1715a623f2ca185469047452365e36cb8972"},
+  "quote-selection": {"sha":"3037e696b2a7535f72b6e8db5182abc24b5e421d","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "quotum": {"sha":"7f0d7a726b3a14ec0d97a1b5a1f5581be6a70da2","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"}
+}}

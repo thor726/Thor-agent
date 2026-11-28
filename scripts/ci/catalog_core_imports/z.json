@@ -1,0 +1,16 @@
+{"entries": {
+  "z-midi-console": {"sha":"99c79706d23eeaeb9911e4431e98b1426717a1c4","choices":[[[["agent.redact","redact_sensitive_text","__init__.py:522"]],[]],[[["plugins.plugin_storage","plugin_data_dir","profile_store.py:177"]],[]]]},
+  "z0live": {"sha":"23a89749d286ad04c0a67d3c6e588c9c286921b6","imports":[["agent.secret_scope","get_secret","__init__.py:210"],["gateway.config","PlatformConfig","desktop/hermes_host.py:71"],["gateway.platforms.api_server","APIServerAdapter","desktop/hermes_host.py:72"],["agent.auxiliary_client","call_llm","voice-adapter/lane_server.py:19"],["gateway.session_pending_controls","PendingControls","voice-adapter/probe_call_approvals.py:21"],["tools.approval","observe_gateway_settle","voice-adapter/probe_call_approvals.py:23"],["tools.approval_gateway_wait","_await_gateway_decision","voice-adapter/probe_call_approvals.py:24"],["agent.redact","redact_approval_display","voice-adapter/probe_call_approvals.py:71"],["tools.approval","resolve_gateway_approval","voice-adapter/probe_call_approvals.py:91"],["pm.environments","selected_venv","voice-adapter/probe_call_approvals.py:102"],["pm.environments","site_packages","voice-adapter/probe_call_approvals.py:102"],["pm.environments","venv_python_version","voice-adapter/probe_call_approvals.py:102"]],"choices":[[[["agent.auxiliary_client","resolve_provider_client","desktop/liaison_host.py:42"]],[]]]},
+  "zalo-platform": {"sha":"5a989368d0877c930e76fcc75ea125e7af7ea872","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "zalodesk": {"sha":"ddb81049ef4b92dc14d36b3d44ccd19ed93d35ec"},
+  "zambo-receipts": {"sha":"5da9e11cb3bc22a4b567e135b0330addc55de55f","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "zaprite": {"sha":"2422546b20ed0d4b59e931061d0017e8f9004583","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "zedmode": {"sha":"0e6ebbacb1696e49d28181c37ff382ca41b05ec1","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "zerofactory": {"sha":"a8e1e6308e10a74f98dd413f065e8cfd77a2e2d0"},
+  "zeromem": {"sha":"1c3bd5e8135271930c611a3449c82a17d4f3bf33","subdir":"thor/zeromem"},
+  "zerosignal": {"sha":"ce1ba1f1603b4f191d3cd1aad284879df51a9f4a","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "ziztu": {"sha":"02ae9c7d3dc11bb1e113eadd8c9965c5ba59f290"},
+  "zolva": {"sha":"17516f666abcc422f0302bae7be3ca2d9f6d2139","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "zotero": {"sha":"ee8a7ad87bcda0f98250eba7e9b0385fd77b3a75","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "zoth": {"sha":"4e7f2ecac6d7bf98b42fba4dd66d5cdb8be468cd","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"}
+}}
