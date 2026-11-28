@@ -1262,14 +1262,14 @@ export const jaOverrides = {
       activeBackend: '使用中',
       activeBackendHint: 'これが現在アクティブなバックエンドです',
       useBackend: 'このバックエンドを使う',
-      nousIncluded: 'Thor サブスクリプションに含まれています。有効にするには Thor Portal にサインインしてください。',
-      nousAuthNeededTitle: 'Thor Portal にサインイン',
-      nousAuthNeededMessage: provider =>
+      thorIncluded: 'Thor サブスクリプションに含まれています。有効にするには Thor Portal にサインインしてください。',
+      thorAuthNeededTitle: 'Thor Portal にサインイン',
+      thorAuthNeededMessage: provider =>
         `${provider} は保存されましたが、Thor Portal にサインインするまで有効になりません。`,
-      nousAuthSignIn: 'サインイン',
-      nousAuthDoneTitle: 'Thor Portal に接続しました',
-      nousAuthDoneMessage: 'サブスクリプションのバックエンドが有効になりました。',
-      nousAuthFailed: 'Thor Portal のサインインが完了しませんでした',
+      thorAuthSignIn: 'サインイン',
+      thorAuthDoneTitle: 'Thor Portal に接続しました',
+      thorAuthDoneMessage: 'サブスクリプションのバックエンドが有効になりました。',
+      thorAuthFailed: 'Thor Portal のサインインが完了しませんでした',
       noApiKeyRequired: 'API キーは不要です。',
       postSetupHint: step =>
         `このバックエンドは一度だけインストールが必要です (${step})。このマシン上で実行され、数分かかる場合があります。`,
