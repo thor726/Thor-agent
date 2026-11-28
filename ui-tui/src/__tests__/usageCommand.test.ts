@@ -92,12 +92,14 @@ describe('/usage slash command', () => {
     const nonThorhub = buildCtx({
       'session.usage': baseUsage({ calls: 0, credits_lines: [], thorhub_route: false })
     })
+
     await nonThorhub.run('')
     expect(printed(nonThorhub.sys)).not.toContain(t('slashCmd.session.usage.cta'))
 
     const thorhub = buildCtx({
       'session.usage': baseUsage({ calls: 0, credits_lines: [], thorhub_route: true })
     })
+
     await thorhub.run('')
     expect(printed(thorhub.sys)).toContain(t('slashCmd.session.usage.cta'))
   })
