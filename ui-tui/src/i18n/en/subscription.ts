@@ -40,7 +40,7 @@ export const subscriptionEn = {
     },
     // Typed denials from the remote-spending step-up.
     stepUpDenial: {
-      sessionRevoked: 'Your session expired — run /portal to log in again, then top up on ThorHub.',
+      sessionRevoked: 'Your session expired — run `thor auth add thor` to sign in again, then top up on ThorHub.',
       remoteSpendingRevoked: 'Remote spending is not available on ThorHub — top up your balance instead.',
       rateLimited: 'Too many attempts — wait a moment, then try again.',
       notAllowed: 'Remote Spending was not allowed — top up your balance on ThorHub instead.'

@@ -944,28 +944,29 @@ briefs are labelled user turns appended at a turn boundary, preserving role alte
 conversation — ntfy, raft and a2a all report `chat_type="dm"` for a broadcast topic, a channel and
 an agent peer, so posting a sign-in link and code there would publish them.
 
-**It binds the whole install.** The sign-in writes the singleton `providers.nous`, so whoever
-approves the code owns this gateway's inference and connectors for every chat it serves. Slash
-gating is opt-in (`gateway/slash_access.py`): with no `allow_admin_from` set, every user allowed to
+**Sign-in itself is retired.** The device-code login the handler used to run is gone with the
+Thor Portal: `run_sign_in` now only reports whether a ThorHub key is already present
+(`AlreadySignedIn`) or fails telling the user to add one (`thor auth add thor`). No token is ever
+written, so `/login` binds nothing anymore — the sign-in no longer writes the `providers.nous`
+singleton it used to, and there is no free-tier handoff to move. Slash
+gating is still opt-in (`gateway/slash_access.py`): with no `allow_admin_from` set, every user allowed to
 DM the bot can run it. Operators of shared gateways must set it.
 
 The handler returns its ack at once and drains `anon_auth.run_sign_in` on a **private single-worker
-executor** (`_login_executor`), never the shared 10-thread gateway pool — the token poll can last
-the code's full expiry, and a live worker in the shared pool makes shutdown skip the SessionDB
-close/checkpoint. One attempt per process, stamped with the identity that started it: the same
-identity's second `/login` cancels the first (the loser ends with the cancelled copy pushed into its
-own chat); a different identity is refused. `task.cancel()` cannot interrupt a blocking poll inside
-a worker thread, so shutdown and the replacement both work through `attempt.cancelled`, which the
-token poll checks on a ≤1 s tick and once more before the save. A cancelled attempt saves nothing.
+executor** (`_login_executor`), never the shared 10-thread gateway pool — a live worker in the shared
+pool makes shutdown skip the SessionDB close/checkpoint. One attempt per process, stamped with the
+identity that started it: the same identity's second `/login` cancels the first (the loser ends with
+the cancelled copy pushed into its own chat); a different identity is refused. `task.cancel()` cannot
+interrupt a blocking call inside a worker thread, so shutdown and the replacement both work through
+`attempt.cancelled`.
 A shutdown-cancelled attempt pushes nothing — the task is dying and its adapters may already be
-gone. The completion copy carries what the free tier's handoff moved.
+gone.
 
-On completion the handler **evicts** every cached agent still on `nous/welcome` and clears any
-session model override pinned to it. It does not switch agents in place and does not write a model
-override: `settle_after_upgrade` already moved `model.default`/`model.base_url` in the config, every
-turn re-resolves the config and the credentials, and `_agent_config_signature` already forces a
-rebuild when the route changes — so an in-place swap buys no cache warmth and an override would pin
-an expiring access token that nothing refreshes.
+On completion the handler still **evicts** every cached agent still on `nous/welcome` and clears any
+session model override pinned to it — but only when the sign-in reports a model change, which the
+retired flow never does anymore, so the sweep is dead code in practice. It does not switch agents in
+place and does not write a model override: every turn re-resolves the config and the credentials, and
+`_agent_config_signature` already forces a rebuild when the route changes.
 
 ## Multiplexed profiles
 

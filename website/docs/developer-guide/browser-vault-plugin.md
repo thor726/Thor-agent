@@ -7,7 +7,7 @@ description: Add a password manager to browser_vault with ctx.register_login_bac
 
 A plugin can add a password manager (KeePass, a team vault, a hardware-backed store) as a login
 source for the `browser_vault` tool, when it comes from a verified source: the manager's vendor
-through the plugin catalog, or Nous (see [Who can register a backend](#who-can-register-a-backend)). The agent then lists and fills that manager's logins the same way
+through the plugin catalog, or Thor (see [Who can register a backend](#who-can-register-a-backend)). The agent then lists and fills that manager's logins the same way
 it does for the built-in Thor vault, 1Password and Bitwarden: it sees handles and metadata, never a password.
 
 Browser login backends are separate from [secret sources](./secret-source-plugin.md). A `SecretSource`
@@ -60,7 +60,7 @@ accepted from:
 - a plugin bundled with Thor, or
 - a plugin installed from the [Thor plugin catalog](./plugins/catalog-submission.md) at
   `tier: verified` (published by the password-manager vendor itself) or `tier: official`
-  (maintained by Nous), at the catalog's reviewed pin.
+  (maintained by Thor), at the catalog's reviewed pin.
 
 Every other plugin is refused at registration with a log line naming this rule: a plugin dropped
 into `~/.thor/plugins/` by hand, a Git URL install, a community-tier catalog entry, a catalog
@@ -71,7 +71,7 @@ a repository that ships its own `.thor-catalog.json` gains nothing. No config ke
 
 If you build a password manager and want it in Thor, submit the plugin to the catalog from your
 own repository and ask for `verified` tier (catalog admission rule 18). Integrations for managers
-whose vendor has not published one come from Nous as `official` entries.
+whose vendor has not published one come from Thor as `official` entries.
 
 ## Isolation rules
 

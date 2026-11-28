@@ -164,13 +164,13 @@ gateway:
     upload_failed: "✗ 无法上传调试报告：{error}"
     header: "**调试报告已上传：**"
     auto_delete: "⏱ 粘贴内容将在 6 小时后自动删除。"
-    full_logs_hint: "如需上传完整日志，请在 CLI 中使用 `thor debug share --nous`。"
+    full_logs_hint: "如需上传完整日志，请在 CLI 中使用 `thor debug share --internal`。"
     share_hint: "请将这些链接分享给 Thor 团队以获得支持。"
     report_label: "报告"
     local_refused: "`/debug local` 会把报告留在运行 Thor 的机器上，因此无法在聊天中使用。发送 `/debug upload` 可上传摘要报告。"
     upload_hint: "未上传任何内容。发送 `/debug upload` 可上传摘要报告。"
     upload_hint_local: "未上传任何内容。发送 `/debug upload` 可上传摘要报告，或发送 `/debug local` 在此查看。"
-    nous_refused: "未上传任何内容。此处无法使用 Nous 私有上传：请在终端运行 `thor debug share --nous`，或使用桌面应用中的 Send diagnostics。`/debug upload` 则会将摘要上传到公开的粘贴服务。"
+    nous_refused: "未上传任何内容。此处无法使用 Thor 私有上传：请在终端运行 `thor debug share --internal`，或使用桌面应用中的 Send diagnostics。`/debug upload` 则会将摘要上传到公开的粘贴服务。"
   deny:
     stale: "❌ 命令已拒绝（批准已过期）。"
     no_pending: "没有待拒绝的命令。"
@@ -975,7 +975,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ 无法加载配置：{error}"
   topup:
-    header: "💳 **Nous 余额**"
+    header: "💳 **ThorHub 余额**"
     portal_link: "在门户管理账单：{url}"
     hint: "在浏览器中充值并管理账单——之后余额会在此处更新。"
   login:
@@ -1722,11 +1722,11 @@ slash:
   usage:
     description: "显示 token 用量与速率限制；`reset` 兑换已存下的 Codex 限额重置"
   subscription:
-    description: "查看你的 Nous 套餐并在浏览器中更改"
+    description: "查看你的 ThorHub 套餐并在浏览器中更改"
   login:
-    description: "使用 Nous 账号登录（保留你的连接器）"
+    description: "使用 ThorHub 账号登录（保留你的连接器）"
   topup:
-    description: "显示你的 Nous 余额并在门户中管理账单"
+    description: "显示你的 ThorHub 余额并在门户中管理账单"
   platforms:
     description: "显示网关/消息平台状态"
   platform:
@@ -3793,8 +3793,8 @@ tips:
   t181: "Camofox（反检测 Firefox）现已改为插件：thor plugins install camofox。"
   t182: "browser_exec 在一次 Python 调用中执行多个浏览器步骤——导航、提取和点击一次完成。"
   t183: "browser.dialog_policy 决定如何处理页面的原生对话框：must_respond（代理用 browser_dialog 回应）、auto_dismiss 或 auto_accept。"
-  t184: "thor mcp 打开一个交互式选择器，列出 Nous 认证的 MCP，一键即可安装。"
-  t185: "thor mcp catalog 列出随仓库分发的 Nous 认证 MCP 服务器。"
+  t184: "thor mcp 打开一个交互式选择器，列出 Thor 认证的 MCP，一键即可安装。"
+  t185: "thor mcp catalog 列出随仓库分发的 Thor 认证 MCP 服务器。"
   t186: "thor mcp install <name> 安装目录中的条目，提示输入凭据，并让你选择要启用哪些工具。"
   t187: "MCP 服务器在 config.yaml 中配置——同时支持 stdio 和 HTTP 传输。"
   t188: "按服务器过滤工具：tools.include 设置白名单，tools.exclude 设置黑名单。"
@@ -3821,7 +3821,7 @@ tips:
   t209: "自定义提供方：在 config.yaml 的 custom_providers 下保存命名端点。"
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT 注入一段永不写入历史记录的系统提示词。"
   t211: "credential_pool_strategies 支持 fill_first、round_robin、least_used 和 random 轮换策略。"
-  t212: "thor auth add nous 或 thor auth add openai-codex 可配置基于 OAuth 的提供方。"
+  t212: "thor auth add thor 或 thor auth add openai-codex 可配置基于 OAuth 的提供方。"
   t213: "API 服务器同时支持 Chat Completions 和带服务端状态的 Responses API。"
   t214: "在配置中设置 tool_preview_length: 0，加载动画的活动信息流会显示完整文件路径。"
   t215: "thor status --deep 会对所有组件运行更深入的诊断检查。"
@@ -3917,7 +3917,7 @@ tips:
   t305: "thor curator rollback 从运行前快照恢复技能——备份位于 skills/.curator_backups/。"
   t306: "thor auth reset <provider> [target] 清除整个凭据池的冷却和耗尽标记，也可按索引、id 或标签只清除某一条凭据。"
   t307: "credential_pool_strategies.<provider>: round_robin 会均匀轮换密钥，而不是默认的 fill_first。"
-  t308: "按工具设置 use_gateway: true，可让 web、image、tts 或 browser 走你的 Nous 订阅——无需额外密钥。"
+  t308: "按工具设置 use_gateway: true，可让 web、image、tts 或 browser 走你的 ThorHub 订阅——无需额外密钥。"
   t309: "provider_routing.data_collection: deny 会在 OpenRouter 上排除存储数据的提供方。"
   t310: "provider_routing.require_parameters: true 只路由到支持你请求中每个参数的提供方。"
   t311: "THOR_TUI_RESUME=1 启动时自动重新连接最近的 TUI 会话——SSH 掉线后很方便。"
@@ -4000,7 +4000,7 @@ tips:
     p10: "设置提醒或安排一个定时任务"
     p11: "输入 / 浏览命令，或按 Ctrl+P 打开命令面板"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (ThorHub subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "免费"
   level_top_tier: "大"

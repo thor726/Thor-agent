@@ -23,7 +23,7 @@ Source: `ui-tui/src/components/billingOverlay.tsx` (`OverviewScreen`,
 
 | State shape | Render |
 |---|---|
-| Logged out (`s.logged_in === false`) | Overlay never opens. `sys`: `💳 Not logged into Nous Portal — run /portal to log in, then /topup.` |
+| Logged out (`s.logged_in === false`) | Overlay never opens. `sys`: `💳 Not signed in to ThorHub — run `thor auth add thor` to sign in, then /topup.` |
 | `billing.state` RPC fetch fails (transport/timeout) | **Fail-closed**: `.catch(ctx.guardedErr)` — overlay never opens, no state is assumed. `sys`: `error: <message or "request failed">`. Never renders "no card" or any other guessed state; user must retry `/topup`. |
 | `card: null` (no saved card), full menu (`is_admin && cli_billing_enabled`) | Overview shows `No saved card on file — "Add funds" walks you through adding one.` "Add funds" opens the **add-card path**: `Add a card on the portal` / `I've added it — check again` / `Back` (never an amount picker, which would 403 `no_payment_method`). |
 | `card` present, `resolved_via` set | `Card: {display}` (e.g. `Visa ····4242 — the card on your subscription`) using the provenance-aware `display` field. |
@@ -50,8 +50,8 @@ Source: `renderBillingError` in `ui-tui/src/app/slash/commands/topup.ts:37-149`.
 | `error` code | Copy | Portal URL | `retry_after` |
 |---|---|:-:|:-:|
 | `insufficient_scope` | `This needs Remote Spending allowed. Start a top-up to allow it, then retry.` | if present | — |
-| `remote_spending_revoked` (CF-4) | `{An admin stopped remote spending for this terminal. \| You stopped remote spending for this terminal.}` (by `actor`) `Reconnect to restore — run /portal to re-authorize this terminal.` Also clears `billing` overlay state immediately (doesn't wait for token refresh). | if present | — |
-| `session_revoked` | `Your session was logged out. Run /portal to log in again.` Also clears `billing` overlay state. | if present | — |
+| `remote_spending_revoked` (CF-4) | `{An admin stopped remote spending for this terminal. \| You stopped remote spending for this terminal.}` (by `actor`) `Reconnect to restore — run `thor auth add thor` to re-authorize this terminal.` Also clears `billing` overlay state immediately (doesn't wait for token refresh). | if present | — |
+| `session_revoked` | `Your session was logged out. Run `thor auth add thor` to sign in again.` Also clears `billing` overlay state. | if present | — |
 | `cli_billing_disabled` / `remote_spending_disabled` (dual-emitted) | `Remote spending is off for this account — a billing admin can turn it on from the portal's Thor Agent page.` | if present | — |
 | `role_required` | `Adding funds needs someone with billing permissions (owner, admin, or finance admin), or manage this on the portal.` | if present | — |
 | `consent_required` | `This action needs a one-time card confirmation and consent step on the portal before it can proceed.` | if present | — |
@@ -140,7 +140,7 @@ just because NAS hasn't caught up yet.
 
 | `error` | Copy |
 |---|---|
-| `session_revoked` | `Your session expired — run /portal to log in again, then retry the change.` |
+| `session_revoked` | `Your session expired — run `thor auth add thor` to sign in again, then top up on ThorHub.` |
 | `remote_spending_revoked` | `{message}` or `Remote spending was stopped for this terminal — reconnect from the portal, then retry.` |
 | `rate_limited` | `Too many attempts — wait a moment, then try again.` |
 | other/unknown | `{message}` or `Remote Spending was not allowed — someone with billing permissions (owner, admin, or finance admin) must approve it. You can also make this change on the portal.` |
