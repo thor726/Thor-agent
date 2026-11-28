@@ -1,5 +1,5 @@
 import {
-  type CanonicalClientIdentity,
+  type tui_gateway_contracts_common_CanonicalClientIdentity as CanonicalClientIdentity,
   type ConnectionState,
   type GatewayEvent,
   type GatewayEventName,

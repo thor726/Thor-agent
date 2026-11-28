@@ -1,4 +1,4 @@
-import type { CanonicalClientIdentity } from '@thor/shared'
+import type { tui_gateway_contracts_common_CanonicalClientIdentity as CanonicalClientIdentity } from '@thor/shared'
 
 import { isBrowserHostedDesktop } from '@/lib/platform'
 
