@@ -320,7 +320,7 @@ class PagesScope:
             raise ValueError("Invalid disposable Pages namespace")
 
     @classmethod
-    def configured(cls, repository: str | None = None) -> "PagesScope":
+    def configured(cls, repository: str | None = None) -> PagesScope:
         run = os.environ.get("PAGES_DISPOSABLE_RUN", "")
         if not run:
             return cls()
@@ -449,7 +449,7 @@ def publish_worktree(repo_dir: str | Path, message: str, *, push: bool = False) 
     """
     worktree = Path(repo_dir)
     staged = subprocess.run(["git", "-C", str(worktree), "diff", "--cached", "--quiet"],
-                            capture_output=True, text=True)
+                            capture_output=True, text=True, check=False)
     if staged.returncode == 0:
         return None
     subprocess.run(["git", "-C", str(worktree), "commit", "-m", message],

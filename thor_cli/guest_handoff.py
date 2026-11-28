@@ -20,7 +20,7 @@ CLAIM_TIMEOUT_SECONDS = 10.0
 
 def note_store_write(auth_store: dict[str, Any], provider_id: str, state: Any) -> None:
     """No-op: there is no guest state to hand off anymore."""
-    return None
+    return
 
 
 def note_replacement(previous: Any, new: Any) -> None:

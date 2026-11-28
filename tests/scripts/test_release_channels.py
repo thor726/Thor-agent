@@ -264,7 +264,7 @@ def test_concurrent_allocations_reverse_completion_retirement_and_readback():
 
 def test_list_bootstrap_protected_roles_and_qualification_gate():
     from thor_cli.release_channels import ChannelError
-    with object_server() as (url, objects, _headers, requests, faults):
+    with object_server() as (url, objects, _headers, _requests, _faults):
         pub = publisher(url)
         main = {"schema": 1, "name": "main", "repository": "example/thor-agent", "policy": "source-branch", "state": "active", "revision": 1, "nextSequence": 1, "identity": None, "head": None, "delivery": {"kind": "source-branch", "branch": "main"}}
         assert pub.bootstrap(main) == main and not objects

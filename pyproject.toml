@@ -718,6 +718,8 @@ include = [
   "gateway.*",
   "tui_gateway",
   "tui_gateway.*",
+  "persistence",
+  "persistence.*",
   "cron",
   "cron.*",
   "acp_adapter",

@@ -1912,8 +1912,6 @@ _billing_route("billing.keep_going_on_credits", lambda nb, p, _k: _billing_pick(
 def _(rid, params: dict) -> dict:
     """billing:manage step-up → {ok, granted} (always False on ThorHub: there is no billing API
     and no step-up flow — credits are topped up at the ThorHub store instead)."""
-    sid = params.get("session_id") or ""
-
     def call():
         from thor_cli.thorhub_account import THORHUB_TOPUP_URL
         return {"ok": True, "granted": False,

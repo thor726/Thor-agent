@@ -528,7 +528,7 @@ def existing_page(key: str) -> str | None:
         raise ValueError("Reading published pages requires PAGES_REPO_DIR (a thor-agent-releases checkout)")
     scoped = pages.PagesScope.configured().key(key)
     path = worktree.joinpath(*scoped.split("/"))
-    return path.read_text(encoding="utf-8") if path.is_file() else None
+    return path.read_text(encoding="utf-8-sig") if path.is_file() else None
 
 
 def write_channel_page(tag: str, assets_by_app: dict, base_url: str,

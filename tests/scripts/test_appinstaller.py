@@ -5,7 +5,7 @@ import pytest
 
 from scripts.bundles import release_artifacts as artifacts
 from scripts.releases import pages
-from tests.scripts.release_fakes import page_bytes, release_transport  # noqa: F401  (fixture)
+from tests.scripts.release_fakes import page_bytes, release_transport
 
 
 @pytest.mark.parametrize('variant', ['bundled', 'light'])

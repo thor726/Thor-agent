@@ -18,6 +18,7 @@ from persistence.core.keys import (
     profile_from_session_key_namespace,
     session_key_profile,
 )
+from datetime import UTC
 
 
 def test_pidns_shim_reexports_canonical_names():
@@ -207,13 +208,13 @@ def test_stored_instant():
     assert stored_instant(None) is None
     assert stored_instant("") is None
     instant = stored_instant(1_700_000_000)
-    assert instant is not None and instant.tzinfo is timezone.utc
+    assert instant is not None and instant.tzinfo is UTC
     assert abs(instant.timestamp() - 1_700_000_000) < 1e-6
     assert stored_instant("not-a-number") is None
     assert stored_instant(float("inf")) is None
     assert stored_instant(-5) is None  # outside the trust window
     assert stored_instant(5_000_000_000) is None  # outside the trust window
-    aware = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    aware = datetime(2026, 1, 1, tzinfo=UTC)
     assert stored_instant(aware) == aware
     with pytest.raises(ValueError):
         ensure_utc(datetime(2026, 1, 1))  # naive rejected

@@ -50,7 +50,7 @@ def _session(profile_home):
 
 
 def test_session_usage_does_not_fetch_account_info_in_any_profile_scope(two_homes, monkeypatch):
-    root, b = two_homes
+    _root, b = two_homes
     calls: list = []
 
     def fake_account_info(**_kwargs):

@@ -49,7 +49,7 @@ def preview_identity(name: str, token: str) -> dict:
 
 
 class ChannelPublisher:
-    def __init__(self, store: "PagesChannelStore", repository: str,
+    def __init__(self, store: PagesChannelStore, repository: str,
                  public_base: str, authorize, verify_build=None):
         self.store = store
         self.repository = validate_repository(repository)

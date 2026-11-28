@@ -185,8 +185,7 @@ class PublicOrigin:
             def do_GET(self):
                 origin.requests.append(("GET", self.path, dict(self.headers)))
                 key = unquote(urlsplit(self.path).path).lstrip("/")
-                if key.startswith("thor-releases/"):
-                    key = key[len("thor-releases/"):]
+                key = key.removeprefix("thor-releases/")
                 body = origin.lookup(key)
                 if body is None:
                     self.send_response(404)

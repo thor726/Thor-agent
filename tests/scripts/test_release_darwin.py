@@ -21,7 +21,7 @@ from scripts.releases.darwin import (
     parse_mac_feed,
     publish_mac_feed,
 )
-from tests.scripts.release_fakes import page_bytes, release_transport  # noqa: F401  (fixture)
+from tests.scripts.release_fakes import page_bytes, release_transport
 
 
 def _inputs(version="0.28.0", light=False):

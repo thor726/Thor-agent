@@ -102,6 +102,9 @@ def test_scan_skips_tests_lockfiles_ci_and_translations(tmp_path):
         "node_modules/x/index.js": "'/tmp'\n",
         "evals/e.py": '"/tmp"\n',
         "vendor.rs": 'let p = "/tmp";\n',
+        # Generated API catalogs (website/scripts/extract-plugins.py output)
+        # quote upstream plugin descriptions verbatim, /tmp mentions included.
+        "website/static/api/plugins.json": '"description": "save scratch files under /tmp"\n',
     }
     for rel, text in files.items():
         p = tmp_path / rel

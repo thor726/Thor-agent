@@ -5,7 +5,7 @@ import json
 import pytest
 
 from scripts.releases import gh_assets, handoff, pages
-from tests.scripts.release_fakes import release_transport  # noqa: F401  (pytest fixture)
+from tests.scripts.release_fakes import release_transport
 
 
 @pytest.mark.parametrize('tag', ['v1.2.3', 'v1.2.3+canary.20260908T232538Z', 'rc.1-v1.2.3', None])
