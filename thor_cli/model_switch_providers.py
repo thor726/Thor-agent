@@ -23,9 +23,9 @@ from utils import base_url_host_matches, same_base_url_origin
 logger = logging.getLogger("thor_cli.model_switch")
 
 # Rows never capped by max_models: aggregators whose full catalogs (70+ models) must stay visible, and
-# rows that are already a curated list (Nous = curated + Portal picks, OpenRouter = curated ∩ live),
+# rows that are already a curated list (ThorHub = curated + Portal picks, OpenRouter = curated ∩ live),
 # where the cap only cut the bottom "Free tier" block and the Portal's appended recommendations.
-_UNCAPPED_PICKER_PROVIDERS: frozenset[str] = frozenset({"opencode-zen", "opencode-go", "thor", "thorhub", "nous", "openrouter"})  # "nous" is the legacy ThorHub slug
+_UNCAPPED_PICKER_PROVIDERS: frozenset[str] = frozenset({"opencode-zen", "opencode-go", "thor", "thorhub", "openrouter"})
 
 
 def _save_discovered_models_to_config(
@@ -444,11 +444,11 @@ def _aws_live_or_curated_ids(slug: str, curated: dict, *fallback_keys: str,
 
 def _thorhub_picker_model_ids(curated: dict, force_fresh_thorhub_tier: bool) -> list:
     """Thor serves a huge live catalog; the picker shows ONLY the curated agentic list, augmented
-    with paid-tier sale models, then narrowed by org policy. Mirrors ``_model_flow_nous`` so GUI
+    with paid-tier sale models, then narrowed by org policy. Mirrors the CLI picker flow so GUI
     pickers match the CLI. (ThorHub has no recommendations feed; the free/paid unions are
     passthroughs kept for call-site shape.)"""
-    # Curated catalog is keyed "thor" now; "nous" is the legacy key for older callers.
-    model_ids = curated.get("thor", []) or curated.get("nous", [])
+    # Curated catalog is keyed "thor".
+    model_ids = curated.get("thor", [])
     try:
         from thor_cli.models_pricing import get_pricing_for_provider
         from thor_cli.models import (
@@ -464,7 +464,7 @@ def _thorhub_picker_model_ids(curated: dict, force_fresh_thorhub_tier: bool) -> 
         # read finds them.
         pricing = get_pricing_for_provider("thor", cached_only=True) or {}
         try:
-            portal = ((get_provider_auth_state("thor") or get_provider_auth_state("nous") or {}).get("portal_base_url", "") or "")
+            portal = ((get_provider_auth_state("thor") or {}).get("portal_base_url", "") or "")
         except Exception:
             portal = ""
         if check_thorhub_free_tier(force_fresh=force_fresh_thorhub_tier):
@@ -490,16 +490,6 @@ def _thorhub_picker_model_ids(curated: dict, force_fresh_thorhub_tier: bool) -> 
     except Exception:
         pass
     return model_ids
-
-
-def _free_tier_nous_row(row: dict) -> dict | None:
-    """The one free-tier rule for a Thor picker row, shared by every row builder.
-
-    The Nous free tier is retired, so there is no guest identity to turn a row into a
-    free-tier row anymore: every row passes through untouched. Kept so the row builders keep
-    one call site for the (now empty) rule. Builders that compute the full catalog lazily
-    should pass ``models=[]`` and only compute when the returned row still has no models."""
-    return row
 
 
 def _cap_models(model_ids: list, max_models: int | None, slug: str = "") -> list:
@@ -679,9 +669,7 @@ def _collect_authed_provider_slugs(
         if has_creds or _auth_store_has_provider(cp.slug) or _pool_usable(cp.slug):
             _emit(cp.slug, cp.slug)
 
-    # Nous excluded: its picker branch builds from the curated list and never reads the
-    # api_key-only cache entry a prefetch would write.
-    return [s for s in slugs if s != "nous"]
+    return slugs
 
 
 @dataclass
@@ -749,10 +737,6 @@ class _PickerBuild:
             "slug": slug, "name": name, "is_current": is_current, "is_user_defined": False,
             "models": _cap_models(model_ids, self.max_models, slug if uncapped_ok else ""),
             "total_models": len(model_ids), "source": source}
-        if slug == "nous":
-            # Free-tier identity: one row "Thor · free tier" / nous/welcome, or no row when
-            # nous.guest is off. Still marks the slug seen so a later lap cannot re-emit it.
-            row = _free_tier_nous_row(row)
         if row is not None:
             self.results.append(row)
         self.seen_slugs.add(slug.lower())
@@ -894,7 +878,7 @@ def _overlay_has_creds(b: _PickerBuild, pid: str, thor_slug: str, overlay) -> bo
 
 
 def _lap_overlay_rows(b: _PickerBuild, data: dict, user_providers: dict) -> None:
-    """Section 2: Thor-only providers (nous, openai-codex, opencode-go, plugin overlays, ...)."""
+    """Section 2: Thor-only providers (thor, openai-codex, opencode-go, plugin overlays, ...)."""
     from agent.models_dev import models_dev_provider_map
     from thor_cli.model_switch import _declared_model_ids
     from thor_cli.providers import thor_overlays
@@ -915,12 +899,8 @@ def _lap_overlay_rows(b: _PickerBuild, data: dict, user_providers: dict) -> None
         elif overlay.auth_type == "aws_sdk":
             model_ids = _aws_live_or_curated_ids(thor_slug, b.curated, thor_slug, pid,
                                                  non_blocking=b.non_blocking_catalogs)
-        elif thor_slug in {"thor", "nous"}:
-            # A guest identity never needs the ThorHub catalog: add_builtin_row pins nous/welcome
-            # (or drops the row when nous.guest is off), so only a real account fetches.
-            tier_row = _free_tier_nous_row({"name": get_label(thor_slug), "models": []})
-            real_account = tier_row is not None and not tier_row["models"]
-            model_ids = _thorhub_picker_model_ids(b.curated, b.force_fresh_thorhub_tier) if real_account else []
+        elif thor_slug == "thor":
+            model_ids = _thorhub_picker_model_ids(b.curated, b.force_fresh_thorhub_tier)
         else:
             model_ids = _live_or_curated_ids(thor_slug, b.curated, thor_slug, pid,
                                              non_blocking=b.non_blocking_catalogs)
@@ -1231,7 +1211,7 @@ def _live_thorhub_model_ids(*, non_blocking: bool = False) -> list[str]:
 
 def _build_curated_lists(current_provider: str, current_base_url: str, current_model: str,
                         non_blocking: bool = False) -> dict[str, list[str]]:
-    """Curated model lists keyed by thor provider id, plus the dynamic ones (nous manifest,
+    """Curated model lists keyed by thor provider id, plus the dynamic ones (static catalog,
     Ollama Cloud, LM Studio live probe). ``non_blocking`` (GUI read path) takes cached Ollama Cloud
     ids and warms them in the background rather than waiting on an 8s probe (#114215)."""
     from thor_cli.models import OPENROUTER_MODELS, _PROVIDER_MODELS, get_curated_thorhub_model_ids
@@ -1486,8 +1466,8 @@ def _attach_window_model_notes(providers: list[dict]) -> None:
     limit reached · resets in 21h · paid models now use your credits (pay as you go)").
     Every field is omitted when empty and for any account not on a window plan. Never raises."""
     try:
-        nous = next((p for p in providers if str(p.get("slug", "")).lower() in {"thor", "thorhub", "nous"}), None)
-        if nous is None:
+        thor_row = next((p for p in providers if str(p.get("slug", "")).lower() in {"thor", "thorhub"}), None)
+        if thor_row is None:
             return
         from thor_cli.model_picker_usage import thorhub_picker_usage, usage_level_label, usage_tag_levels
         fresh = thorhub_picker_usage()
@@ -1496,16 +1476,16 @@ def _attach_window_model_notes(providers: list[dict]) -> None:
             return
         from agent.plan_limits import cached_pricing
         pricing = cached_pricing()  # this profile's catalog only (cache-only, no credential refresh)
-        models = [str(m) for m in nous.get("models", [])]
+        models = [str(m) for m in thor_row.get("models", [])]
         # Subscription-billed rows carry no tag (usage_tag_levels).
         labels = {m: label for m, lv in usage_tag_levels(models, pricing).items() if (label := usage_level_label(lv))}
         if labels:
-            nous["model_labels"] = labels
+            thor_row["model_labels"] = labels
         if fresh is None:
             return
         line = usage.limit_line()
         if line:
-            nous["plan_line"] = line
+            thor_row["plan_line"] = line
     except Exception:
         logger.debug("window model notes failed", exc_info=True)
 

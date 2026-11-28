@@ -136,7 +136,7 @@ async def test_gateway_debug_uploads_only_the_summary(pii_home):
 def test_internal_share_still_carries_redacted_log_tails(pii_home):
     from thor_cli.debug import run_debug_share
 
-    with patch("thor_cli.diagnostics_upload.share_to_nous",
+    with patch("thor_cli.diagnostics_upload.share_to_internal",
                return_value={"id": "x", "viewUrl": "https://v"}) as share, \
             patch("thor_cli.debug.upload_to_pastebin") as paste, \
             patch("thor_cli.debug._sweep_expired_pastes", return_value=(0, 0)):

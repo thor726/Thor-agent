@@ -64,7 +64,7 @@ def test_session_usage_does_not_fetch_account_info_in_any_profile_scope(two_home
     for sid in ("sa", "sb"):
         res = server._methods["session.usage"]("rid", {"session_id": sid})
         assert "result" in res
-        assert res["result"]["nous_route"] is False
+        assert res["result"]["thorhub_route"] is False
 
     assert calls == []
 

@@ -447,8 +447,8 @@ def large_model_notice(
     be fetched once (``fetch``); without one only the resident cache is read, so any other account adds no
     network call. Never raises."""
     try:
-        # "nous" is the legacy ThorHub provider id (stored configs); "thor"/"thorhub" are canonical.
-        if str(provider or "").strip().lower() not in {"thor", "thorhub", "nous"} or not model_id:
+        # Only the Thor provider ids carry usage-window plans.
+        if str(provider or "").strip().lower() not in {"thor", "thorhub"} or not model_id:
             return None
         fresh = thorhub_picker_usage()
         usage = fresh or thorhub_picker_usage(any_age=True)
@@ -531,8 +531,8 @@ def annotate_window_plan_rows(provider_data: dict, model_ids: list) -> tuple[lis
     """``(labels, limit_line)`` for the /model picker's model stage. On a Thor usage-window plan rows carry
     the TUI's ``Large`` / ``Free`` tags, and with a full allowance ``limit_line`` (above the hint) says it
     once, with what happens next. Every other account: the bare ids and None. Display only."""
-    # "nous" is the legacy ThorHub row slug (stored configs); "thor"/"thorhub" are canonical.
-    if str((provider_data or {}).get("slug") or "").lower() not in {"thor", "thorhub", "nous"}:
+    # Only Thor provider rows carry usage-window annotations.
+    if str((provider_data or {}).get("slug") or "").lower() not in {"thor", "thorhub"}:
         return list(model_ids), None
     try:
         usage = thorhub_picker_usage()  # fresh snapshot only: a stale percent would mislabel the line

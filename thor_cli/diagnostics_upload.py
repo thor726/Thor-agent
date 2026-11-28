@@ -11,7 +11,7 @@ from thor_cli.debug_redaction import redact_debug_support_text
 
 # Overridable via env so the feature can be pointed at staging / a local dev NAS instance.
 # No default: the diagnostics NAS lived on the Nous Portal (retired) and ThorHub has no
-# diagnostics endpoint — share_to_nous() refuses until one is configured.
+# diagnostics endpoint — share_to_internal() refuses until one is configured.
 NAS_BASE = os.environ.get("THOR_DIAGNOSTICS_BASE_URL", "")
 _REQUEST_TIMEOUT = 30
 _UPLOAD_TIMEOUT = 120  # the PUT carries the gzipped log bundle, so a more generous window
@@ -57,7 +57,7 @@ def put_bundle(upload_url: str, data: bytes, content_type: str = "application/gz
                      what="diagnostics bundle PUT")
 
 
-def share_to_nous(report_bundle: bytes) -> dict:
+def share_to_internal(report_bundle: bytes) -> dict:
     """Mint a presigned PUT URL (with the exact ``sizeBytes`` NAS signs), then PUT *report_bundle*."""
     if not NAS_BASE:
         raise RuntimeError(

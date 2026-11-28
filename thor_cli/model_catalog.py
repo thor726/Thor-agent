@@ -332,8 +332,6 @@ def _fetch_provider_override(provider: str) -> dict[str, Any] | None:
 def _block_of(manifest: dict[str, Any] | None, provider: str) -> dict[str, Any] | None:
     providers = (manifest or {}).get("providers", {})
     block = providers.get(provider)
-    if block is None and provider in {"thor", "thorhub"}:
-        block = providers.get("nous")  # legacy block in older cached manifests
     return block if isinstance(block, dict) else None
 
 

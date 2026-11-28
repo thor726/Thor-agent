@@ -446,7 +446,7 @@ def collect_share_bundle(log_lines: int = 200, redact: bool = True) -> dict[str,
     return bundle
 
 
-def build_nous_bundle(bundle: dict[str, str], redact: bool = True) -> bytes:
+def build_internal_bundle(bundle: dict[str, str], redact: bool = True) -> bytes:
     """Gzip a :func:`collect_share_bundle` mapping into the Thor envelope (shape parsed by the
     discord-support viewer — keep it stable)."""
     envelope = {"format": _INTERNAL_BUNDLE_FORMAT, "redacted": bool(redact),
@@ -614,7 +614,7 @@ def run_debug_slash(cmd_original: str = "") -> None:
 
 def _run_debug_share_internal(args, *, log_lines: int, redact: bool) -> None:
     """``thor debug share --internal``: gzip the same bundle into the Thor envelope → Thor-S3."""
-    from thor_cli.diagnostics_upload import share_to_nous
+    from thor_cli.diagnostics_upload import share_to_internal
     print(_INTERNAL_PRIVACY_NOTICE)
     if not _confirm_upload(args):
         return
@@ -627,7 +627,7 @@ def _run_debug_share_internal(args, *, log_lines: int, redact: bool) -> None:
         logger.info("thor debug share --internal: applied force-mode redaction before upload")
     print("Uploading to Thor diagnostics storage...")
     try:
-        res = share_to_nous(build_nous_bundle(bundle, redact=redact))
+        res = share_to_internal(build_internal_bundle(bundle, redact=redact))
     except Exception as exc:  # health: allow BLE001 -- upload boundary: any network/serialization failure must surface as a redacted user-facing error + exit 1, never a traceback
         from pm.network import edge_block
 

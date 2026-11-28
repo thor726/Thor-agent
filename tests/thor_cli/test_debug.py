@@ -923,10 +923,10 @@ class TestBuildNousBundle:
         import gzip
         import json as _json
 
-        from thor_cli.debug import build_nous_bundle
+        from thor_cli.debug import build_internal_bundle
 
         files = {"report": "hello", "agent.log": "log line"}
-        blob = build_nous_bundle(files, redact=True)
+        blob = build_internal_bundle(files, redact=True)
 
         # It's gzip — magic bytes.
         assert blob[:2] == b"\x1f\x8b"
@@ -940,9 +940,9 @@ class TestBuildNousBundle:
         import gzip
         import json as _json
 
-        from thor_cli.debug import build_nous_bundle
+        from thor_cli.debug import build_internal_bundle
 
-        blob = build_nous_bundle({"report": "x"}, redact=False)
+        blob = build_internal_bundle({"report": "x"}, redact=False)
         envelope = _json.loads(gzip.decompress(blob).decode())
         assert envelope["redacted"] is False
 
@@ -971,14 +971,14 @@ class TestRunDebugShareInternal:
             "expiresAt": "2026-06-20T00:00:00Z",
         }
         with patch("thor_cli.dump.run_dump"), patch(
-            "thor_cli.diagnostics_upload.share_to_nous", return_value=res
+            "thor_cli.diagnostics_upload.share_to_internal", return_value=res
         ) as share:
             run_debug_share(self._args())
 
         out = capsys.readouterr().out
         assert "https://support.example.com/diagnostics/id-1" in out
         assert "2026-06-20T00:00:00Z" in out
-        # The blob passed to share_to_nous must be gzip bytes.
+        # The blob passed to share_to_internal must be gzip bytes.
         blob = share.call_args[0][0]
         assert isinstance(blob, (bytes, bytearray)) and blob[:2] == b"\x1f\x8b"
 
@@ -986,7 +986,7 @@ class TestRunDebugShareInternal:
         from thor_cli.debug import run_debug_share
 
         with patch("thor_cli.dump.run_dump"), patch(
-            "thor_cli.diagnostics_upload.share_to_nous",
+            "thor_cli.diagnostics_upload.share_to_internal",
             side_effect=RuntimeError("service down"),
         ):
             with pytest.raises(SystemExit) as exc:
@@ -1000,7 +1000,7 @@ class TestRunDebugShareInternal:
 
         res = {"id": "id-1", "viewUrl": "https://v"}
         with patch("thor_cli.dump.run_dump"), patch(
-            "thor_cli.diagnostics_upload.share_to_nous", return_value=res
+            "thor_cli.diagnostics_upload.share_to_internal", return_value=res
         ), patch("thor_cli.debug.upload_to_pastebin") as paste:
             run_debug_share(self._args())
         paste.assert_not_called()
@@ -1038,7 +1038,7 @@ class TestDebugSlashCommand:
     def test_without_upload_word_prints_notice_and_uploads_nothing(self, cmd, capsys):
         """The privacy notice must precede any upload: no ``upload`` word, no network (#94876)."""
         with patch("thor_cli.debug.upload_to_pastebin") as paste, \
-             patch("thor_cli.diagnostics_upload.share_to_nous") as nous, \
+             patch("thor_cli.diagnostics_upload.share_to_internal") as nous, \
              patch("thor_cli.debug.collect_share_bundle") as collect:
             self._handler()(cmd)
         paste.assert_not_called()

@@ -782,7 +782,7 @@ class CLIChatTurnMixin:
                 # (A window plan's refusal already reads as its own sentence with the way on; an
                 # "Out of credits" box under it would contradict it.)
                 _bb = turn.result.get("billing_block") or {}
-                if _bb.get("is_nous"):
+                if _bb.get("is_thorhub"):
                     _cta_lines = [t("cli.chat.billing_cta_nous")]
                 else:
                     _url = _bb.get("billing_url")

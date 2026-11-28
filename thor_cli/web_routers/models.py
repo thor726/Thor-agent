@@ -186,7 +186,7 @@ def get_recommended_default_model(provider: str = "", profile: Optional[str] = N
     Thor; ``model`` may be empty (caller degrades gracefully)."""
     slug = (provider or "").strip().lower()
 
-    if slug in {"thor", "thorhub", "nous"}:
+    if slug in {"thor", "thorhub"}:
         try:
             # The tier, ThorHub URL and recommendation caches are all per profile home.
             with _config_profile_scope(profile):

@@ -86,7 +86,7 @@ def thorhub_api_key() -> str:
     try:
         from thor_cli.auth import get_provider_auth_state
 
-        for provider in ("thor", "nous"):
+        for provider in ("thor",):
             state = get_provider_auth_state(provider) or {}
             for field in ("api_key", "key"):
                 value = state.get(field)

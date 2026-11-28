@@ -622,7 +622,7 @@ class CLIInfoMixin:
         self._show_usage()
 
     def _account_usage_view(self) -> tuple[list[str], list[str], bool, Any]:
-        """``(plan-limit lines, Thor section lines, nous_route, Thor dollar model or None)`` for `/usage`, from
+        """``(plan-limit lines, Thor section lines, thorhub_route, Thor dollar model or None)`` for `/usage`, from
         one Thor account read. On a gateway session the owner answers for the route the session runs
         (``session.account_usage``): this process's provider/base_url pair is not that route once /model or a
         fallback moved the provider (the launch base_url stays). Off the gateway, the CLI's own route."""
@@ -635,8 +635,8 @@ class CLIInfoMixin:
             except GatewayClientError:
                 return [], [], False, None  # a failed read says nothing about the route: no Nous CTA
             from agent.billing_usage import usage_model_from_wire
-            return (list(view.get("lines") or []), list(view.get("nous_lines") or []), view.get("nous_route") is True,
-                    usage_model_from_wire(view.get("nous_usage")))
+            return (list(view.get("lines") or []), list(view.get("thorhub_lines") or []), view.get("thorhub_route") is True,
+                    usage_model_from_wire(view.get("thorhub_usage")))
         # No Nous section anymore: /usage shows only the active provider's limits.
         # The ThorHub balance lives on /topup.
         return self._local_account_limit_lines(), [], False, None
@@ -645,12 +645,12 @@ class CLIInfoMixin:
         """`/usage`'s account blocks: the active provider's limits, then the Thor section whenever Thor is
         signed in (its own heading off a Thor route), then the `/topup` CTA on a Thor route only. True if
         anything printed."""
-        lines, nous_lines, nous_route, usage = self._account_usage_view()
+        lines, thorhub_lines, thorhub_route, usage = self._account_usage_view()
         shown = self._print_account_limits(lines)
-        if not nous_route:
-            return self._print_account_limits(nous_lines) or shown
+        if not thorhub_route:
+            return self._print_account_limits(thorhub_lines) or shown
         # The Nous route keeps main's two-bar balance block and its call to action.
-        if self._print_thorhub_balance(usage, nous_lines):
+        if self._print_thorhub_balance(usage, thorhub_lines):
             self._print_usage_cta()
             return True
         return shown

@@ -347,7 +347,7 @@ def test_cli_rows_mark_top_tier_from_the_gateway_word():
     assert not rows.usage.is_top_tier("example/model-b")
 
 
-def test_catalog_parse_keeps_the_gateway_usage_level_for_nous_only(monkeypatch):
+def test_catalog_parse_keeps_the_gateway_usage_level_for_thorhub_only(monkeypatch):
     from thor_cli import models_pricing as mp
     payload = {"data": [
         {"id": "a/m", "pricing": {"prompt": "0.000001", "completion": "0.000002"}, "usage_level": "medium"},
@@ -355,14 +355,14 @@ def test_catalog_parse_keeps_the_gateway_usage_level_for_nous_only(monkeypatch):
     ]}
     monkeypatch.setattr(mp, "_get_json", lambda *a, **k: payload)
     monkeypatch.setattr(mp, "_seed_reasoning_caps", lambda *a, **k: None)
-    nous = mp.fetch_models_with_pricing("k", "https://nous.example", force_refresh=True,
+    thorhub = mp.fetch_models_with_pricing("k", "https://thorhub.example", force_refresh=True,
                                         include_sale_original=True)
-    assert nous["a/m"]["usage_level"] == "medium" and "usage_level" not in nous["b/m"]
+    assert thorhub["a/m"]["usage_level"] == "medium" and "usage_level" not in thorhub["b/m"]
     other = mp.fetch_models_with_pricing("k", "https://other.example", force_refresh=True)
     assert "usage_level" not in other["a/m"]
 
 
-def test_catalog_parse_keeps_the_top_tier_mark_for_nous_only(monkeypatch):
+def test_catalog_parse_keeps_the_top_tier_mark_for_thorhub_only(monkeypatch):
     from thor_cli import models_pricing as mp
     payload = {"data": [
         {"id": "a/m", "pricing": {"prompt": "0.000001", "completion": "0.000002"}, "top_tier": True},
@@ -370,9 +370,9 @@ def test_catalog_parse_keeps_the_top_tier_mark_for_nous_only(monkeypatch):
     ]}
     monkeypatch.setattr(mp, "_get_json", lambda *a, **k: payload)
     monkeypatch.setattr(mp, "_seed_reasoning_caps", lambda *a, **k: None)
-    nous = mp.fetch_models_with_pricing("k", "https://nous.example", force_refresh=True,
+    thorhub = mp.fetch_models_with_pricing("k", "https://thorhub.example", force_refresh=True,
                                         include_sale_original=True)
-    assert nous["a/m"]["top_tier"] is True and "top_tier" not in nous["b/m"]
+    assert thorhub["a/m"]["top_tier"] is True and "top_tier" not in thorhub["b/m"]
     other = mp.fetch_models_with_pricing("k", "https://other.example", force_refresh=True)
     assert "top_tier" not in other["a/m"]
 
@@ -423,24 +423,24 @@ def test_warm_picker_never_forces_a_fetch_for_a_non_window_account(monkeypatch):
 
 # ── where the "used up" note reaches outside the pickers above ───────────────────
 
-def test_the_in_chat_cli_picker_says_the_limit_once_on_nous_only(monkeypatch):
+def test_the_in_chat_cli_picker_says_the_limit_once_on_thorhub_only(monkeypatch):
     from thor_cli import model_picker_usage as mpu
 
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage(day_used_bp=10_000))
-    rows, line = mpu.annotate_window_plan_rows({"slug": "nous"}, ["paid/m", "gift/m:free"])
+    rows, line = mpu.annotate_window_plan_rows({"slug": "thor"}, ["paid/m", "gift/m:free"])
     # Rows stay the bare ids; the limit is said once, above the list.
     assert rows == ["paid/m", "gift/m:free"] and line.startswith("Daily limit reached")
     # Any other provider, or no fresh snapshot: the bare ids and no line.
     assert mpu.annotate_window_plan_rows({"slug": "example"}, ["paid/m"]) == (["paid/m"], None)
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
-    assert mpu.annotate_window_plan_rows({"slug": "nous"}, ["paid/m"]) == (["paid/m"], None)
+    assert mpu.annotate_window_plan_rows({"slug": "thor"}, ["paid/m"]) == (["paid/m"], None)
 
 
 def test_the_in_chat_cli_picker_tags_large_and_free_rows_on_window_plans_only(monkeypatch):
     from thor_cli import model_picker_usage as mpu
 
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
-    window = {"slug": "nous", "plan_usage": {"kind": "usage_window"},
+    window = {"slug": "thor", "plan_usage": {"kind": "usage_window"},
               "usage_levels": {"example/model-b": "top_tier", "example/model-a": "low", "example/model-free:free": "free"}}
     ids = ["example/model-b", "example/model-a", "example/model-free:free"]
     rows, _line = mpu.annotate_window_plan_rows(window, ids)
@@ -460,27 +460,27 @@ def test_messaging_pickers_get_large_free_labels_and_the_limit_line(monkeypatch)
 
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage(top_tier_used_bp=10_000))
     monkeypatch.setattr(pl, "cached_pricing", lambda base_url="": dict(_LEVELS))
-    providers = [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b", "example/model-a"]},
+    providers = [{"slug": "thor", "api_url": "https://x/v1", "models": ["example/model-b", "example/model-a"]},
                  {"slug": "example", "models": ["example/model-b"]}]
     msp._attach_window_model_notes(providers)
-    nous = providers[0]
+    thor_row = providers[0]
     # Only Large / Free are tagged; no per-row limit notes (the plan line says it once).
-    assert nous["model_labels"] == {"example/model-b": "Large"}
-    assert nous["plan_line"].startswith("Monthly large-model limit reached")
-    assert "model_notes" not in nous
-    assert mpu.picker_row_suffix(nous, "example/model-b") == "Large"
-    assert mpu.picker_row_suffix(nous, "example/model-a") == ""
+    assert thor_row["model_labels"] == {"example/model-b": "Large"}
+    assert thor_row["plan_line"].startswith("Monthly large-model limit reached")
+    assert "model_notes" not in thor_row
+    assert mpu.picker_row_suffix(thor_row, "example/model-b") == "Large"
+    assert mpu.picker_row_suffix(thor_row, "example/model-a") == ""
     assert not {"model_labels", "plan_line"} & set(providers[1])
     # Nothing spent: labels only. Not a window plan: no field at all (pickers unchanged).
-    quiet = [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b"]}]
+    quiet = [{"slug": "thor", "api_url": "https://x/v1", "models": ["example/model-b"]}]
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage())
     msp._attach_window_model_notes(quiet)
     assert quiet[0].get("model_labels") == {"example/model-b": "Large"}
     assert "plan_line" not in quiet[0]
-    plain = [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b"]}]
+    plain = [{"slug": "thor", "api_url": "https://x/v1", "models": ["example/model-b"]}]
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
     msp._attach_window_model_notes(plain)
-    assert plain == [{"slug": "nous", "api_url": "https://x/v1", "models": ["example/model-b"]}]
+    assert plain == [{"slug": "thor", "api_url": "https://x/v1", "models": ["example/model-b"]}]
     assert mpu.picker_row_suffix(plain[0], "example/model-b") == ""
 
 
@@ -489,22 +489,22 @@ def test_large_model_notice_window_plans_only(monkeypatch):
     from thor_cli import model_picker_usage as mpu
     monkeypatch.setattr(mpu, "_thorhub_catalog", lambda fetch=False: dict(_LEVELS))
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage())
-    note = mpu.large_model_notice("example/model-b", "nous")
+    note = mpu.large_model_notice("example/model-b", "thor")
     assert note.startswith("Large model: uses more of your plan's usage per message.") and "Monthly large-model limit:" in note
-    assert mpu.large_model_notice("example/model-a", "nous") is None  # not Large
+    assert mpu.large_model_notice("example/model-a", "thor") is None  # not Large
     assert mpu.large_model_notice("example/model-b", "example") is None  # not Nous
     # Pay as you go past the large-model limit: the credits wording.
     monkeypatch.setattr(mpu, "thorhub_picker_usage",
                         lambda **kw: _replace(_window_usage(top_tier_used_bp=10_000), credits_pay=True))
-    assert mpu.large_model_notice("example/model-b", "nous") == "Large model: uses more credits per message (pay as you go)."
+    assert mpu.large_model_notice("example/model-b", "thor") == "Large model: uses more credits per message (pay as you go)."
     # No plan snapshot yet (cold CLI): a Large mark in the resident catalog alone proves a window plan.
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
-    assert mpu.large_model_notice("example/model-b", "nous") == "Large model: uses more of your plan's usage per message."
+    assert mpu.large_model_notice("example/model-b", "thor") == "Large model: uses more of your plan's usage per message."
     # Any other account: its catalog carries no marks (None), and it is never fetched.
     seen = []
     monkeypatch.setattr(mpu, "_thorhub_catalog",
                         lambda fetch=False: seen.append(fetch) or {"example/model-b": {"prompt": "0.000001"}})
-    assert mpu.large_model_notice("example/model-b", "nous", fetch=True) is None
+    assert mpu.large_model_notice("example/model-b", "thor", fetch=True) is None
     assert seen == [False]
 
 
@@ -517,8 +517,8 @@ def test_catalog_reads_never_answer_from_another_profiles_cache(monkeypatch):
     monkeypatch.setattr(mp, "peek_cached_pricing", lambda base_url: dict(_LEVELS))  # another profile's catalog
     monkeypatch.setattr(mp, "get_pricing_for_provider", lambda provider, **kw: {})  # this profile: cold
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)  # this profile: no window plan
-    assert pl.cached_pricing("https://inference-api.thor-agent.local/v1") == {}
-    assert mpu.large_model_notice("example/model-b", "nous") is None
+    assert pl.cached_pricing("https://llm.thormarket.site/v1") == {}
+    assert mpu.large_model_notice("example/model-b", "thor") is None
 
 
 def test_picker_words_follow_the_display_language(monkeypatch):
@@ -550,24 +550,24 @@ def test_window_plan_feeds_the_existing_usage_chip(monkeypatch):
     from thor_cli import model_picker_usage as mpu
     usage = _window_usage(day_used_bp=8_500)
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: usage)
-    row: dict = {"slug": "nous"}
-    inventory._attach_nous_plan_usage(row, warm=False)
+    row: dict = {"slug": "thor"}
+    inventory._attach_thorhub_plan_usage(row, warm=False)
     windows = row["usage"]["windows"]
     assert windows[0] == {**windows[0], "label": "Today", "used_percent": 85.0, "scope": "account"}
     assert all(w["resets_at"] for w in windows)
     # A full allowance: the picker's limit line says it, so no chip repeats it.
-    full: dict = {"slug": "nous"}
+    full: dict = {"slug": "thor"}
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage(day_used_bp=10_000))
-    inventory._attach_nous_plan_usage(full, warm=False)
+    inventory._attach_thorhub_plan_usage(full, warm=False)
     assert "plan_usage" in full and "usage" not in full
-    paused: dict = {"slug": "nous"}
+    paused: dict = {"slug": "thor"}
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: replace(usage, paused_reason="renewal_unpaid"))
-    inventory._attach_nous_plan_usage(paused, warm=False)
+    inventory._attach_thorhub_plan_usage(paused, warm=False)
     assert "plan_usage" in paused and "usage" not in paused
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
-    other: dict = {"slug": "nous"}
-    inventory._attach_nous_plan_usage(other, warm=False)
-    assert other == {"slug": "nous"}
+    other: dict = {"slug": "thor"}
+    inventory._attach_thorhub_plan_usage(other, warm=False)
+    assert other == {"slug": "thor"}
 
 
 # ── subscription-billed rows ────────────────────────────────
@@ -611,7 +611,7 @@ def test_the_in_chat_cli_picker_leaves_subscription_billed_rows_untagged(monkeyp
     from thor_cli import model_picker_usage as mpu
 
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: None)
-    row = {"slug": "nous",
+    row = {"slug": "thor",
            "plan_usage": {"kind": "usage_window", "subscription_model_ids": ["example/model-sub"]},
            "usage_levels": {"example/model-sub": "free", "gift/m:free": "free"}}
     rows, _line = mpu.annotate_window_plan_rows(row, ["example/model-sub", "gift/m:free"])
@@ -629,7 +629,7 @@ def test_messaging_pickers_leave_subscription_billed_rows_untagged(monkeypatch):
 
     monkeypatch.setattr(mpu, "thorhub_picker_usage", lambda **kw: _window_usage())
     monkeypatch.setattr(pl, "cached_pricing", lambda base_url="": dict(_SUBSCRIPTION_BILLED))
-    providers = [{"slug": "nous", "api_url": "https://x/v1", "models": list(_SUBSCRIPTION_BILLED)}]
+    providers = [{"slug": "thor", "api_url": "https://x/v1", "models": list(_SUBSCRIPTION_BILLED)}]
     msp._attach_window_model_notes(providers)
     assert providers[0]["model_labels"] == {"gift/m:free": "Free", "example/model-b": "Large"}
     assert mpu.picker_row_suffix(providers[0], "example/model-sub") == ""

@@ -673,7 +673,7 @@ def test_visible_providers_reuses_logged_out_feature_snapshot(monkeypatch):
     features = ThorHubSubscriptionFeatures(
         subscribed=False,
         thor_auth_present=False,
-        provider_is_nous=False,
+        provider_is_thor=False,
         features={},
         account_info=account,
     )
@@ -709,7 +709,7 @@ def test_visible_providers_reuses_pool_video_feature_snapshot(monkeypatch):
     features = ThorHubSubscriptionFeatures(
         subscribed=True,
         thor_auth_present=True,
-        provider_is_nous=False,
+        provider_is_thor=False,
         features={},
         account_info=account,
     )
@@ -723,7 +723,10 @@ def test_visible_providers_reuses_pool_video_feature_snapshot(monkeypatch):
         TOOL_CATEGORIES["video_gen"], {}, features=features
     )
 
-    assert not any(
+    # Managed rows are always advertised, even unentitled (ThorHub has no managed
+    # tool gateway, so the old pool-only video hiding rule can no longer fire);
+    # the snapshot above still proves the feature state was reused, not re-resolved.
+    assert any(
         provider.get("managed_thorhub_feature") == "video_gen"
         for provider in providers
     )

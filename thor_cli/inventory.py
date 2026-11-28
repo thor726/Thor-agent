@@ -859,7 +859,7 @@ def _reorder_canonical(rows: list[dict]) -> list[dict]:
     return canon + extras
 
 
-def _attach_nous_plan_usage(row: dict, *, warm: bool):
+def _attach_thorhub_plan_usage(row: dict, *, warm: bool):
     """Stamp ``plan_usage`` from the portal snapshot (window plans only) and return the PickerUsage (or
     None). A cache-only open reads the last snapshot at any age: the 60s account cache has usually lapsed
     by the time someone opens the composer menu. Accounts without a window plan get nothing."""
@@ -895,7 +895,7 @@ def _plan_usage_window(g) -> dict:
     }
 
 
-# health: allow CC -- usage-window plans: one branch attaches plan usage to the Nous row (built in _attach_nous_plan_usage); over target on main
+# health: allow CC -- usage-window plans: one branch attaches plan usage to the Thor row (built in _attach_thorhub_plan_usage); over target on main
 def _apply_pricing(rows: list[dict], *, force_fresh_thorhub_tier: bool = False, cached_only: bool = False) -> None:
     """Set ``row["pricing"] = {model_id: {input, output, cache | None, free}}``; for Thor also
     ``free_tier`` (account is free-tier) and ``unavailable_models`` (paid models a free user can't pick).
@@ -912,7 +912,7 @@ def _apply_pricing(rows: list[dict], *, force_fresh_thorhub_tier: bool = False, 
         partition_thorhub_models_by_tier,
     )
 
-    nous_free_tier: Optional[bool] = None  # resolved once (cached in models.py for the TTL window)
+    thor_free_tier: Optional[bool] = None  # resolved once (cached in models.py for the TTL window)
 
     for row in rows:
         slug = str(row.get("slug", "")).lower()
@@ -930,11 +930,11 @@ def _apply_pricing(rows: list[dict], *, force_fresh_thorhub_tier: bool = False, 
             raw_pricing = get_pricing_for_provider(slug, **pricing_kwargs) or {}
         except Exception:
             raw_pricing = {}
-        cached_nous_tier: Optional[bool] = None
-        plan_usage = _attach_nous_plan_usage(row, warm=not cached_only) if slug == "nous" else None
+        cached_thor_tier: Optional[bool] = None
+        plan_usage = _attach_thorhub_plan_usage(row, warm=not cached_only) if slug == "nous" else None
         if slug == "nous" and cached_only:
-            cached_nous_tier = get_cached_thorhub_free_tier()
-            if cached_nous_tier is None:
+            cached_thor_tier = get_cached_thorhub_free_tier()
+            if cached_thor_tier is None:
                 # Entitlement unknown: stay nonblocking but fail closed until the prewarm has populated
                 # both caches, else a free account could briefly select paid models on first open.
                 row["free_tier_pending"] = True
@@ -945,9 +945,9 @@ def _apply_pricing(rows: list[dict], *, force_fresh_thorhub_tier: bool = False, 
                 continue
         if not raw_pricing:
             if slug == "nous":
-                row["free_tier"] = bool(cached_nous_tier)
+                row["free_tier"] = bool(cached_thor_tier)
                 row["pricing_pending"] = True
-                row["unavailable_models"] = list(models) if cached_nous_tier else []
+                row["unavailable_models"] = list(models) if cached_thor_tier else []
             continue
 
         formatted: dict[str, dict] = {}
@@ -964,7 +964,7 @@ def _apply_pricing(rows: list[dict], *, force_fresh_thorhub_tier: bool = False, 
                 "cache": _format_price_per_mtok(cache_raw) if cache_raw else None,
                 "free": inp == "free" and out in ("free", ""),  # both input and output cost nothing
             }
-            # Sale chrome is Nous Portal-only (other catalogs' nested pricing.original is ignored); free
+            # Sale chrome is ThorHub-only (other catalogs' nested pricing.original is ignored); free
             # models get flat -100% chrome, was_* only when the gateway served an original.
             if slug == "nous":
                 sale = compute_sale_discount(inp_raw, out_raw, p.get("original"))
@@ -981,13 +981,13 @@ def _apply_pricing(rows: list[dict], *, force_fresh_thorhub_tier: bool = False, 
 
         if slug == "nous":
             try:
-                if nous_free_tier is None:
-                    nous_free_tier = (cached_nous_tier if cached_only
+                if thor_free_tier is None:
+                    thor_free_tier = (cached_thor_tier if cached_only
                                       else check_thorhub_free_tier(force_fresh=force_fresh_thorhub_tier))
-                row["free_tier"] = bool(nous_free_tier)
+                row["free_tier"] = bool(thor_free_tier)
                 row["unavailable_models"] = (
                     partition_thorhub_models_by_tier(list(models), raw_pricing, free_tier=True)[1]
-                    if nous_free_tier else [])
+                    if thor_free_tier else [])
             except Exception:  # tier detection failed — fail open (no gating)
                 row["free_tier"] = False
                 row["unavailable_models"] = []

@@ -235,7 +235,7 @@ def fetch_models_with_pricing(
 ) -> dict[str, dict[str, Any]]:
     """Fetch ``/v1/models`` (any OpenRouter-compatible endpoint) → ``{model_id: {prompt, completion,
     ...}}``, cached per *base_url* and per credential so one caller's catalog never answers
-    another's read. *include_sale_original* (Thor Portal only) copies the gateway's pre-discount
+    another's read. *include_sale_original* (ThorHub only) copies the gateway's pre-discount
     ``pricing.original`` rates through as a nested ``original`` dict for sale chrome."""
     from thor_cli.chat_catalog import catalog_item_is_generation
     from thor_cli.models import _openrouter_model_supports_tools
@@ -264,14 +264,14 @@ def fetch_models_with_pricing(
         mid, pricing = item.get("id"), item.get("pricing")
         if mid and isinstance(pricing, dict):
             entry = _pricing_entry(pricing)
-            # Sale chrome is Nous Portal-only; never copy pricing.original for other catalogs.
+            # Sale chrome is ThorHub-only; never copy pricing.original for other catalogs.
             original = pricing.get("original") if include_sale_original else None
             if isinstance(original, dict):
                 orig_entry = {key: str(original[key]) for key in ("prompt", "completion", "input_cache_read", "input_cache_write")
                               if original.get(key) not in (None, "")}
                 if orig_entry.get("prompt") or orig_entry.get("completion"):
                     entry["original"] = orig_entry
-            # Nous Portal-only: the gateway bills this row to a subscription the account holds, not to credits.
+            # ThorHub-only: the gateway bills this row to a subscription the account holds, not to credits.
             if include_sale_original and item.get("billing_mode") == "subscription":
                 entry["billing_mode"] = "subscription"
             # Usage-window plans only (only those callers ever see the mark): the gateway marks the
@@ -281,12 +281,12 @@ def fetch_models_with_pricing(
             # Same callers: the gateway's per-plan picker label (free / low / medium / top_tier).
             if include_sale_original and isinstance(item.get("usage_level"), str):
                 entry["usage_level"] = item["usage_level"]
-            # Nous only: the catalog's display name, so a limit line can name a model the way the
+            # ThorHub only: the catalog's display name, so a limit line can name a model the way the
             # picker does ("Model A", not the routed id).
             if include_sale_original and isinstance(item.get("name"), str) and item["name"].strip() \
                     and item["name"].strip() != mid:
                 entry["name"] = item["name"].strip()
-            # Nous Portal-only: on-sale rows join the picker, which must not offer a tool-less model.
+            # ThorHub-only: on-sale rows join the picker, which must not offer a tool-less model.
             if include_sale_original and not _openrouter_model_supports_tools(item):
                 entry["tools"] = False
             # ...nor an image/video generation model (the chat-catalog rule, applied to the row itself).

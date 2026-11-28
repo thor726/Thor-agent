@@ -1768,7 +1768,7 @@ DEFAULT_CONFIG = {
         # provider falls back to the built-in so cron never loses its trigger.
         "provider": "",
         # Chronos settings; consulted only when provider == "chronos". All non-secret — the agent
-        # holds NO scheduler credentials. The Chronos NAS lived on the Nous Portal (retired):
+        # holds NO scheduler credentials. The Chronos NAS lived on the retired Portal:
         # "" leaves Chronos unavailable and the resolver falls back to the built-in ticker.
         "chronos": {
             # NAS base URL that arms/cancels one-shots and mints the inbound fire JWT (used
