@@ -249,11 +249,11 @@ describe('BootFailureOverlay', () => {
     const gatewayUrl = 'https://agent-1.agents.thor-agent.local'
     const logout = vi.fn().mockResolvedValue({ ok: true, connected: false })
     const nativeLogin = vi.fn().mockResolvedValue({ ok: true, connected: false })
-    const cloudStatus = vi.fn().mockResolvedValue({ portalBaseUrl: 'https://portal.thor-agent.local', signedIn: false })
+    const cloudStatus = vi.fn().mockResolvedValue({ portalBaseUrl: 'https://llm.thormarket.site', signedIn: false })
 
     const cloudLogin = vi.fn().mockResolvedValue({
       ok: true,
-      portalBaseUrl: 'https://portal.thor-agent.local',
+      portalBaseUrl: 'https://llm.thormarket.site',
       signedIn: true
     })
 

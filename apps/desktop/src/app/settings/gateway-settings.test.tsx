@@ -66,7 +66,7 @@ beforeEach(() => {
   selectConnection.mockReset().mockResolvedValue(undefined)
   getConnectionConfig.mockResolvedValue(localConnection)
   saveConnectionConfig.mockResolvedValue(localConnection)
-  cloudStatus.mockResolvedValue({ portalBaseUrl: 'https://portal.thor-agent.local', signedIn: true })
+  cloudStatus.mockResolvedValue({ portalBaseUrl: 'https://llm.thormarket.site', signedIn: true })
   cloudDiscover.mockResolvedValue({ agents: [], org: null })
   Object.defineProperty(window, 'thorDesktop', {
     configurable: true,
@@ -783,7 +783,7 @@ describe('GatewaySettings', () => {
     getConnectionConfig.mockResolvedValue({
       ...localConnection,
       mode: 'cloud',
-      remoteUrl: 'https://portal.thor-agent.local'
+      remoteUrl: 'https://llm.thormarket.site'
     })
 
     render(<GatewaySettings />)
@@ -808,7 +808,7 @@ describe('GatewaySettings', () => {
     getConnectionConfig.mockResolvedValue({
       ...localConnection,
       mode: 'cloud',
-      remoteUrl: 'https://portal.thor-agent.local'
+      remoteUrl: 'https://llm.thormarket.site'
     })
 
     render(<GatewaySettings />)
@@ -833,7 +833,7 @@ describe('GatewaySettings', () => {
     getConnectionConfig.mockResolvedValue({
       ...localConnection,
       mode: 'cloud',
-      remoteUrl: 'https://portal.thor-agent.local'
+      remoteUrl: 'https://llm.thormarket.site'
     })
 
     render(<GatewaySettings />)

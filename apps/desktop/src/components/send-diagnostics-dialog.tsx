@@ -7,7 +7,7 @@
 //               with an explicit Upload button; nothing is sent before it.
 //   uploading — spinner while the backend collects, redacts and uploads.
 //   done      — the private view link (copyable) + where to pick up the
-//               discussion: GitHub Issues · Thor Portal Support · Discord.
+//               discussion: GitHub Issues · Discord.
 import { useStore } from '@nanostores/react'
 
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,7 @@ import {
 
 const SUPPORT_LINKS = [
   { key: 'github', url: 'https://github.com/thor726/thor-agent/issues' },
-  { key: 'portal', url: 'https://portal.thor-agent.local/help' },
+  { key: 'portal', url: 'https://llm.thormarket.site/help' },
   { key: 'discord', url: 'https://discord.gg/thor726' }
 ] as const
 

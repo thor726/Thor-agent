@@ -411,7 +411,7 @@ export function BootFailureOverlay() {
       {
         key: 'portal',
         label: copy.cloudDownCheckPortal,
-        onClick: () => openExternalLink('https://portal.thor-agent.local'),
+        onClick: () => openExternalLink('https://llm.thormarket.site'),
         icon: <ExternalLink />
       },
       localAction,

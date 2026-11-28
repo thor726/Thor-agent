@@ -531,7 +531,7 @@ describe('error card layout (Error System Overhaul)', () => {
     $activeSessionId.set('wall-session')
     setBillingBlock('wall-session', {
       billing_url: 'https://platform.openai.com/settings/organization/billing',
-      is_nous: false,
+      is_thorhub: false,
       message: 'out of credits',
       provider: 'openai',
       provider_label: 'OpenAI'
@@ -561,7 +561,7 @@ describe('error card layout (Error System Overhaul)', () => {
     $activeSessionId.set('wall-session')
     setBillingBlock('wall-session', {
       billing_url: 'https://platform.openai.com/settings/organization/billing',
-      is_nous: false,
+      is_thorhub: false,
       message: 'out of credits',
       model: 'gpt-5',
       provider: 'openai',

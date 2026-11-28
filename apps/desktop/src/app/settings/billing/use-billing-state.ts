@@ -22,7 +22,7 @@ import { $stepUpInFlight } from './use-step-up'
 
 export const EMPTY_BILLING_VALUE = '—'
 export const FALLBACK_PORTAL_BILLING_URL = 'https://llm.thormarket.site/beli'
-export const FALLBACK_PORTAL_URL = 'https://portal.thor-agent.local'
+export const FALLBACK_PORTAL_URL = 'https://llm.thormarket.site'
 
 // The billing endpoint is the authoritative source of truth for balance / cap /
 // plan — the inference `x-nous-credits-*` headers are best-effort and can drift

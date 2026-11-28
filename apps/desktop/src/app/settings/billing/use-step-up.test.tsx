@@ -101,7 +101,7 @@ describe('useStepUpFlow', () => {
       gatewayMock.emit('billing.step_up.verification', {
         payload: {
           user_code: 'ABCD-1234',
-          verification_url: 'https://portal.thor-agent.local/device'
+          verification_url: 'https://llm.thormarket.site/device'
         },
         type: 'billing.step_up.verification'
       })
@@ -110,11 +110,11 @@ describe('useStepUpFlow', () => {
     expect(result.current.phase).toBe('verifying')
     expect(result.current.verification).toEqual({
       code: 'ABCD-1234',
-      url: 'https://portal.thor-agent.local/device'
+      url: 'https://llm.thormarket.site/device'
     })
 
     result.current.openVerification()
-    expect(window.thorDesktop?.openExternal).toHaveBeenCalledWith('https://portal.thor-agent.local/device')
+    expect(window.thorDesktop?.openExternal).toHaveBeenCalledWith('https://llm.thormarket.site/device')
 
     await act(async () => {
       resolveStepUp({ data: { granted: true, ok: true }, ok: true })

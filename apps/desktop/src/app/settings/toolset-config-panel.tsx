@@ -645,9 +645,9 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
         // sign-in action). Sign-in is the ThorHub static key in Settings → Providers.
         notify({
           kind: 'warning',
-          title: copy.nousAuthNeededTitle,
-          message: copy.nousAuthNeededMessage(provider.name),
-          action: { label: copy.nousAuthSignIn, onClick: openThorHubSignIn }
+          title: copy.thorAuthNeededTitle,
+          message: copy.thorAuthNeededMessage(provider.name),
+          action: { label: copy.thorAuthSignIn, onClick: openThorHubSignIn }
         })
 
         return
@@ -676,9 +676,9 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
       if (result.needs_thorhub_auth) {
         notify({
           kind: 'warning',
-          title: copy.nousAuthNeededTitle,
-          message: copy.nousAuthNeededMessage(provider.name),
-          action: { label: copy.nousAuthSignIn, onClick: openThorHubSignIn }
+          title: copy.thorAuthNeededTitle,
+          message: copy.thorAuthNeededMessage(provider.name),
+          action: { label: copy.thorAuthSignIn, onClick: openThorHubSignIn }
         })
         await refresh()
 
@@ -845,7 +845,7 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
                   </div>
                 )}
                 {provider.requires_thorhub_auth && status === 'needs_auth' && (
-                  <p className="text-[0.72rem] text-muted-foreground">{copy.nousIncluded}</p>
+                  <p className="text-[0.72rem] text-muted-foreground">{copy.thorIncluded}</p>
                 )}
                 {provider.env_vars.length === 0 ? (
                   <p className="text-[0.72rem] text-muted-foreground">{copy.noApiKeyRequired}</p>

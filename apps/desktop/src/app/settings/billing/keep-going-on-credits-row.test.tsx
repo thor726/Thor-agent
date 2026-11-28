@@ -74,12 +74,12 @@ describe('KeepGoingOnCreditsRow', () => {
 
     act(() => {
       gatewayMock.emit('billing.step_up.verification', {
-        payload: { user_code: 'ABCD-1234', verification_url: 'https://portal.thor-agent.local/device' }
+        payload: { user_code: 'ABCD-1234', verification_url: 'https://llm.thormarket.site/device' }
       })
     })
 
     // The browser opens on its own (no second "Verify" click).
-    expect(window.thorDesktop?.openExternal).toHaveBeenCalledWith('https://portal.thor-agent.local/device')
+    expect(window.thorDesktop?.openExternal).toHaveBeenCalledWith('https://llm.thormarket.site/device')
     expect(screen.getByText('ABCD-1234')).toBeTruthy()
 
     await act(async () => resolveStepUp({ data: { granted: true, ok: true }, ok: true }))
