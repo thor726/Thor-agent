@@ -31,15 +31,24 @@ def status_line(status: list[dict], *, compact: bool = True, ascii_only: bool = 
 
 def publish(status: list[dict], artifact: str | None = None, *, output: bool = True,
             compact: bool = True, ascii_only: bool = True) -> None:
-    """Append the status to ``$GITHUB_OUTPUT`` and/or write it as the artifact's file."""
+    """Append the status to ``$GITHUB_OUTPUT`` and/or write it as the artifact's file.
+
+    A sink whose env var is absent is skipped, never a crash: publish() only
+    reports, so a stripped env (run_tests.sh forwards GITHUB_ACTIONS but not
+    RUNNER_TEMP) must not turn a warning into a failure.
+    """
     line = status_line(status, compact=compact, ascii_only=ascii_only)
     if output:
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-            fh.write(line)
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a", encoding="utf-8") as fh:
+                fh.write(line)
     if artifact:
-        directory = Path(os.environ["RUNNER_TEMP"], "review-status", artifact)
-        directory.mkdir(parents=True, exist_ok=True)
-        (directory / "review-status.json").write_text(line, encoding="utf-8")
+        runner_temp = os.environ.get("RUNNER_TEMP")
+        if runner_temp:
+            directory = Path(runner_temp, "review-status", artifact)
+            directory.mkdir(parents=True, exist_ok=True)
+            (directory / "review-status.json").write_text(line, encoding="utf-8")
 
 
 def action_required(source: str, title: str, summary: str, how_to_fix: str,

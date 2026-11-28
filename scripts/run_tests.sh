@@ -188,7 +188,7 @@ _pf86="$(env | sed -n 's/^ProgramFiles(x86)=//p' | head -n1)"
 #     THOR_GIT_SHA build-arg the workflow bakes in).
 #   * THOR_E2E_REQUIRE_TUI turns a missing Ink TUI build into a failure in
 #     tests/e2e/core/terminal instead of a skip (set by the e2e CI job).
-#   * CI / GITHUB_ACTIONS tell suites they run on a disposable runner (e.g.
+#   * CI / GITHUB_ACTIONS / RUNNER_TEMP tell suites they run on a disposable runner (e.g.
 #     tests/e2e/core/upgrade runs the real updater unsandboxed only there).
 #   * THOR_E2E_WINDOWS_INSTALL opts tests/e2e/core/windows_update into running
 #     the real install.ps1 (it writes HKCU PATH); THOR_E2E_MACHINE_ROOT,
@@ -219,7 +219,7 @@ _pf86="$(env | sed -n 's/^ProgramFiles(x86)=//p' | head -n1)"
 TEST_ENV=()
 for _test_var in THOR_TEST_IMAGE THOR_TEST_WORKERS THOR_TEST_PATHS \
   THOR_TEST_FILE_TIMEOUT THOR_TEST_FILE_RETRIES THOR_TEST_SLICE THOR_TEST_FORKSERVER \
-  SSL_CERT_FILE SSL_CERT_DIR THOR_GATEWAY_LOCK_DIR THOR_E2E_REQUIRE_TUI CI GITHUB_ACTIONS \
+  SSL_CERT_FILE SSL_CERT_DIR THOR_GATEWAY_LOCK_DIR THOR_E2E_REQUIRE_TUI CI GITHUB_ACTIONS RUNNER_TEMP \
   THOR_E2E_WINDOWS_INSTALL THOR_E2E_MACHINE_ROOT THOR_E2E_PROFILES_ROOT THOR_E2E_ARTIFACTS \
   THOR_E2E_STRICT_ACCEPTANCE THOR_E2E_UPGRADE_BASE THOR_E2E_N1_REF \
   THOR_E2E_INSTALL_REF THOR_E2E_GIT_OBJECTS THOR_E2E_KEEP_ROOT \
