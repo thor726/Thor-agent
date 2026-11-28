@@ -186,25 +186,20 @@ tools:
                     # behaves exactly as if the feature didn't exist
 ```
 
-Connectors need a Nous identity. You do not have to sign in for one: if you
-have no Nous account, the first `manage_connections` action (or connecting an
-app from the desktop Connectors page) creates a free Nous identity for you, on
-every surface. Opening the Connectors page creates none: until an identity
-exists it lists the hosted apps from the Nous Portal's public catalog, which
-needs no sign-in.
-It does not change your model provider: outside builds that ship
-the Nous free tier it is used for connectors and managed tools only. Until it exists, `tool_search` sends nothing to the
-gateway and its result says that hosted connectors are not set up yet and
-that `manage_connections` sets them up. To opt out, set:
+Hosted connectors are served by the managed Tool Gateway, and only for accounts
+the gateway has enabled for them — the entitlement rides on the account's token
+as a `managed_tools` claim. There is no separate identity to create: the free
+Nous identity that used to grant access is retired, and ThorHub has no managed
+connectors, so a ThorHub account sees hosted connectors as not set up yet. Until
+the gateway serves connectors for a signed-in account, `tool_search` sends
+nothing to the gateway and its result says that hosted connectors are not set
+up yet. Opening the Connectors page creates nothing. Local MCP servers from the
+catalog still work — installing, enabling and authorizing one never needed an
+identity.
 
-```yaml
-nous:
-  guest: false
-```
-
-With that setting, or when the gateway does not serve connectors for a
-signed-in account, everything above is invisible: local search behaves exactly
-as described in the rest of this page, with no errors shown to the model.
+When the gateway does not serve connectors for a signed-in account, everything
+above is invisible: local search behaves exactly as described in the rest of
+this page, with no errors shown to the model.
 
 A connector call that needs an account you haven't linked returns a
 `CONNECTION_REQUIRED` error. The `manage_connections` tool lists connectors and

@@ -17,7 +17,7 @@ This is different from the [API server](./api-server.md):
 | | API server | Subscription proxy |
 |---|---|---|
 | What it serves | Your agent (full toolset, memory, skills) | Raw model inference |
-| Use case | "Use Thor as a chat backend" | "Use my Portal sub from another app" |
+| Use case | "Use Thor as a chat backend" | "Use my ThorHub sub from another app" |
 | Auth | Your `API_SERVER_KEY` | Any bearer (proxy attaches the real one) |
 | Tool calls | Yes — the agent runs tools | No — passthrough only |
 
@@ -29,13 +29,12 @@ proxy when you just want **the model** through your subscription.
 ### 1. Log into your provider (one-time)
 
 ```bash
-thor portal
+thor auth add thor
 ```
 
-This opens your browser for the provider OAuth flow (the Nous Portal
-login was removed from Thor; the proxy now works with the remaining
-OAuth providers). Thor stores
-the refresh token in `~/.thor/auth.json` — the same place all Thor
+This signs ThorHub in with an API key (or `thor auth add xai` for xAI
+OAuth, which opens your browser for the xAI login flow). Thor stores
+the credential in `~/.thor/auth.json` — the same place all Thor
 provider logins live.
 
 ### 2. Start the proxy
@@ -61,12 +60,11 @@ Any OpenAI-compatible app config takes the same triple:
 ```
 Base URL:   http://127.0.0.1:8645/v1
 API key:    anything (e.g. "sk-unused")
-Model:      Thor-4-70B    # or Thor-4.3-36B, Thor-4-405B
+Model:      deepseek-v4-pro    # any ThorHub model, e.g. kimi-k2.8, glm-5.3
 ```
 
 The proxy ignores the `Authorization` header from your app and attaches
-your real Portal credential to the upstream request. Refreshes happen
-automatically when the bearer approaches expiry.
+your real ThorHub credential to the upstream request. OAuth credentials refresh automatically when they near expiry.
 
 ## Available providers
 
@@ -74,10 +72,10 @@ automatically when the bearer approaches expiry.
 thor proxy providers
 ```
 
-Currently shipped: `xai` (xAI / Grok). The `nous` (Nous Portal) adapter
-was removed with Nous Portal. More
-OAuth providers can be added by implementing the `UpstreamAdapter`
-interface in `thor_cli/proxy/adapters/`.
+Currently shipped: `thor` (ThorHub — also reachable as `thorhub`, and as
+the legacy alias `nous`) and `xai` (xAI / Grok). More providers can be
+added by implementing the `UpstreamAdapter` interface in
+`thor_cli/proxy/adapters/`.
 
 ## Check status
 
@@ -88,12 +86,17 @@ thor proxy status
 ```
 Thor proxy upstream adapters
 
-  [xai     ] xAI / Grok — ready (bearer <redacted> 2026-05-15T06:43:21Z)
+  [nous    ] ThorHub — ready
+  [thor    ] ThorHub — ready
+  [thorhub ] ThorHub — ready
+  [xai     ] xAI Grok OAuth — ready (bearer <redacted> 2026-05-15T06:43:21Z)
 ```
 
-If you see `not logged in`, run `thor portal`. If you see
-`credentials need attention`, your refresh token was revoked — just re-run
-`thor portal`.
+`thor`, `thorhub`, and `nous` are the same ThorHub adapter under three
+names (the `nous` name is a legacy alias); a ThorHub key signs all three
+in at once. If you see `not logged in`, run `thor auth add thor` (or
+`thor auth add xai` for xAI). If you see `credentials need attention`,
+your refresh token was revoked — just re-run the sign-in.
 
 ## Allowed paths
 
@@ -111,7 +114,7 @@ Other paths (`/v1/images/generations`, `/v1/audio/speech`, etc.) return
 404 with a clear error pointing at the allowed paths. This keeps stray
 clients from leaking weird requests to the upstream.
 
-## Configuring OpenViking to use Portal
+## Configuring OpenViking to use ThorHub
 
 [OpenViking](https://github.com/volcengine/OpenViking) is a context
 database that needs an LLM provider for its VLM (vision/language model
@@ -124,7 +127,7 @@ Edit `~/.openviking/ov.conf`:
 {
   "vlm": {
     "provider": "openai",
-    "model": "Thor-4-70B",
+    "model": "deepseek-v4-pro",
     "api_base": "http://127.0.0.1:8645/v1",
     "api_key": "unused-proxy-attaches-real-creds"
   }
@@ -153,7 +156,7 @@ bookmark summarization. In its config:
 # Karakeep .env
 OPENAI_API_BASE_URL=http://127.0.0.1:8645/v1
 OPENAI_API_KEY=any-non-empty-string
-INFERENCE_TEXT_MODEL=Thor-4-70B
+INFERENCE_TEXT_MODEL=deepseek-v4-pro
 ```
 
 Same pattern works for Open WebUI, LobeChat, NextChat, or any other
@@ -173,7 +176,7 @@ network use it:
 thor proxy start --host 0.0.0.0 --port 8645
 ```
 
-⚠ **Be aware:** anyone on your network can now use your Portal
+⚠ **Be aware:** anyone on your network can now use your ThorHub
 subscription. A wildcard bind skips the `Host` check (any name may reach it),
 so it refuses every request a web page makes (any `Origin`, or a
 `Sec-Fetch-Site` other than `none`): browsers cannot use a wildcard-bound proxy. The proxy has no auth of its own — it accepts any bearer.

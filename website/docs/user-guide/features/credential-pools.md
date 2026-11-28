@@ -107,7 +107,7 @@ What would you like to do?
   5. Exit
 ```
 
-For providers that support both API keys and OAuth (Anthropic, Nous, Codex), the add flow asks which type:
+For providers that support both API keys and OAuth (Anthropic, Codex, xAI, Qwen, MiniMax, OpenRouter), the add flow asks which type:
 
 ```
 anthropic supports both API keys and OAuth login.
@@ -136,11 +136,12 @@ Each `thor auth add openai-codex` login becomes its own pool entry, but only **d
 | `thor auth reset <provider> <target>` | Clear the cooldown on one credential by index, id, or label |
 | `thor auth refresh <provider> [target]` | Refresh one OAuth credential's tokens and return it to rotation (proves the grant is alive; the next request re-checks quota) |
 
-For Nous, `auth refresh` supports only the login's `device_code` singleton.
-Independent Nous pool accounts are rejected before refresh; their tokens and
-cooldowns are preserved. Reauthenticate with `thor auth add nous --type oauth`
-to update the singleton; this does not refresh an independent account. Other
-providers retain their existing source-specific refresh support.
+For Codex and xAI, `auth refresh` supports only the login's `device_code` singleton.
+Independent Codex/xAI pool accounts are rejected before refresh; their tokens and
+cooldowns are preserved. Reauthenticate with `thor auth add openai-codex --type oauth`
+(or `thor auth add xai-oauth --type oauth`) to update the singleton; this does not
+refresh an independent account. Other providers retain their existing source-specific
+refresh support.
 
 ## Rotation Strategies
 
@@ -227,11 +228,10 @@ cooldown. Billing (`402`, usage-limit) and auth (`401`) failures still bench the
 
 **A dead OAuth login is reported, not benched.** When a refresh token is rejected for good
 (`invalid_grant`, `invalid_token`, `refresh_token_reused` — the token was revoked, or another program
-holding the same login rotated it first — or, for Nous, the profile holds no Portal login or token
-pair to refresh with), the pool logs one WARNING naming the entry and the repair
+holding the same login rotated it first), the pool logs one WARNING naming the entry and the repair
 command (`thor auth add <provider>`), and the credential leaves rotation — marked `dead`, or dropped
-when it only mirrored a token file the pool has just cleared — until you sign in again. This applies to Anthropic, Codex, xAI
-and Nous OAuth logins alike. A dead credential never re-enters rotation on a timer, so a lost login
+when it only mirrored a token file the pool has just cleared — until you sign in again. This applies to Anthropic, Codex, and xAI
+OAuth logins alike. A dead credential never re-enters rotation on a timer, so a lost login
 shows up once in the log instead of failing quietly every hour.
 
 **Every Codex login in an always-on home is dead: sign in again, do not wait for adoption.** Thor
@@ -288,7 +288,7 @@ Thor automatically discovers credentials from multiple sources and seeds the poo
 |--------|---------|-------------|
 | Environment variables | `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY` | Yes |
 | Numbered env siblings | `OPENROUTER_API_KEY_2`, `OPENROUTER_API_KEY_3`, … | Yes (see below) |
-| OAuth tokens (auth.json) | Codex device code, Nous device code | Yes |
+| OAuth tokens (auth.json) | Codex device code, xAI device code | Yes |
 | Claude Code credentials | `~/.claude/.credentials.json` | Yes (Anthropic) |
 | Thor PKCE OAuth | `~/.thor/auth.json` | Yes (Anthropic) |
 | Custom endpoint config | `model.api_key` in config.yaml | Yes (custom endpoints) |

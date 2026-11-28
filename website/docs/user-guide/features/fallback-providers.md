@@ -69,7 +69,7 @@ thor fallback check --live     # also send one minimal request per entry, in par
 thor fallback check --live --json
 ```
 
-Each entry resolves exactly as the fallback switch resolves it (its `provider`, `model`, `base_url` and `api_key`/`key_env`), and the chain is never walked, so one entry can't hide another. `--live` sends one short completion per statically ready entry over that provider's own API (OpenAI-compatible, Anthropic Messages, Codex Responses, Bedrock, ACP). It is not retried (SDK retries are off; an Anthropic endpoint that refuses streaming gets the one non-streaming resend the adapter always makes) and never answered by another provider. An empty or malformed answer, one with a `failed`/`cancelled` status, or one that reports an error on the choice (OpenRouter's `finish_reason: "error"`) counts as a failure (`incomplete`, a token cap, still counts as answered); a provider error relayed in an HTTP 200 body is reported like the request error it describes. An entry fails as `model_mismatch` when the provider reports a different model (a dated snapshot of the requested model, such as `gpt-4o-2024-08-06` for `gpt-4o`, still counts as a match). The model check is skipped where the reported model proves nothing: Anthropic Messages and Codex Responses adapters don't expose the serving model, Azure reports the base model rather than your deployment name, router meta-models (`openrouter/auto`, `@preset/...`, `<model>@preset/...`) answer under the model they picked, Bedrock ARNs aren't echoed back, and local or private-network servers (llama.cpp, LM Studio, Ollama, a LAN box) often report a placeholder. The live request uses the provider's `request_timeout_seconds` when set (as the switch does), else 30 seconds; on a streamed request the timeout applies to each read, not the whole answer. A static pass for Bedrock (AWS SDK credential chain) or an external-process provider only means the route resolves; use `--live` to prove it. Static mode sends no inference request, but it resolves credentials the way a session does, so an expiring OAuth token may be refreshed and saved. Entries with `provider: auto` (backend picked per call) or `provider: moa` (a fan-out preset) are not one fixed route, so they are never sent a live request and keep their static verdict. The live request goes to the client the fallback switch would build; for Nous and Codex entries that client uses your stored login, as the switch does.
+Each entry resolves exactly as the fallback switch resolves it (its `provider`, `model`, `base_url` and `api_key`/`key_env`), and the chain is never walked, so one entry can't hide another. `--live` sends one short completion per statically ready entry over that provider's own API (OpenAI-compatible, Anthropic Messages, Codex Responses, Bedrock, ACP). It is not retried (SDK retries are off; an Anthropic endpoint that refuses streaming gets the one non-streaming resend the adapter always makes) and never answered by another provider. An empty or malformed answer, one with a `failed`/`cancelled` status, or one that reports an error on the choice (OpenRouter's `finish_reason: "error"`) counts as a failure (`incomplete`, a token cap, still counts as answered); a provider error relayed in an HTTP 200 body is reported like the request error it describes. An entry fails as `model_mismatch` when the provider reports a different model (a dated snapshot of the requested model, such as `gpt-4o-2024-08-06` for `gpt-4o`, still counts as a match). The model check is skipped where the reported model proves nothing: Anthropic Messages and Codex Responses adapters don't expose the serving model, Azure reports the base model rather than your deployment name, router meta-models (`openrouter/auto`, `@preset/...`, `<model>@preset/...`) answer under the model they picked, Bedrock ARNs aren't echoed back, and local or private-network servers (llama.cpp, LM Studio, Ollama, a LAN box) often report a placeholder. The live request uses the provider's `request_timeout_seconds` when set (as the switch does), else 30 seconds; on a streamed request the timeout applies to each read, not the whole answer. A static pass for Bedrock (AWS SDK credential chain) or an external-process provider only means the route resolves; use `--live` to prove it. Static mode sends no inference request, but it resolves credentials the way a session does, so an expiring OAuth token may be refreshed and saved. Entries with `provider: auto` (backend picked per call) or `provider: moa` (a fan-out preset) are not one fixed route, so they are never sent a live request and keep their static verdict. The live request goes to the client the fallback switch would build; for ThorHub and Codex entries that client uses your stored login, as the switch does.
 
 The command exits with status 1 when any entry is not ready, so cron jobs and CI can gate on it. `--json` prints `profile`, `live`, `ready`, `checked_at` and one result per entry (`provider`, `model`, `base_url`, `api_mode`, `auth_source`, `configured`, `auth_ready`, `inference_ready`, `latency_ms`, `model_returned`, `error_class`, `error`, `ready`, `status`). `status` is `ready`, `ready (static)`, `config`, `auth`, `model_mismatch`, `live_response` (an answer with no usable completion) or `live_<reason>` for a failed request (`live_auth`, `live_timeout`, `live_rate_limit`, `live_model_not_found`, ...). Credentials are never printed, and provider error text is redacted. Use `thor -p <profile> fallback check` to check another profile's chain.
 
@@ -179,15 +179,15 @@ fallback_providers:
     model: anthropic/claude-sonnet-4
 ```
 
-**Nous Portal as fallback for OpenRouter:**
+**ThorHub as fallback for OpenRouter:**
 ```yaml
 model:
   provider: openrouter
   default: anthropic/claude-opus-4
 
 fallback_providers:
-  - provider: nous
-    model: nous-thor-3
+  - provider: thor
+    model: deepseek-v4-pro
 ```
 
 **Local model as fallback for cloud:**
@@ -255,18 +255,18 @@ The task-specific chain is most precise and wins when present. The top-level `fa
 **Built-in text discovery chain (compression, title generation, etc.):**
 
 ```text
-OpenRouter → Nous Portal → Custom endpoint → Codex OAuth →
+OpenRouter → ThorHub → Custom endpoint → Codex OAuth →
 API-key providers (z.ai, Kimi, MiniMax, Xiaomi MiMo, Hugging Face, Anthropic) → give up
 ```
 
 **Built-in vision discovery chain:**
 
 ```text
-Main provider (if vision-capable) → OpenRouter → Nous Portal →
+Main provider (if vision-capable) → OpenRouter → ThorHub →
 Codex OAuth → Anthropic → Custom endpoint → give up
 ```
 
-Those built-in chains run **only when no main provider is selected** (`model.provider: auto` or unset). Once you have picked a main provider, an unavailable main route with no `fallback_chain` / `fallback_providers` skips the auxiliary task with a warning instead of guessing another provider you happen to be logged into — an expired xAI or Codex session must never bill your Nous Portal or OpenRouter balance behind your back. Declare a fallback if you want one.
+Those built-in chains run **only when no main provider is selected** (`model.provider: auto` or unset). Once you have picked a main provider, an unavailable main route with no `fallback_chain` / `fallback_providers` skips the auxiliary task with a warning instead of guessing another provider you happen to be logged into — an expired xAI or Codex session must never bill your ThorHub or OpenRouter balance behind your back. Declare a fallback if you want one.
 
 ### Configuring Auxiliary Providers
 
@@ -275,7 +275,7 @@ Each task can be configured independently in `config.yaml`:
 ```yaml
 auxiliary:
   vision:
-    provider: "auto"              # auto | openrouter | nous | codex | main | anthropic
+    provider: "auto"              # auto | openrouter | thor | codex | main | anthropic
     model: ""                     # e.g. "openai/gpt-4o"
     base_url: ""                  # direct endpoint (takes precedence over provider)
     api_key: ""                   # API key for base_url
@@ -323,7 +323,7 @@ These options apply to `auxiliary:`, `compression:`, and `fallback_providers:` e
 |----------|-------------|-------------|
 | `"auto"` | Try providers in order until one works (default) | At least one provider configured |
 | `"openrouter"` | Force OpenRouter | `OPENROUTER_API_KEY` |
-| `"nous"` | Force Nous Portal | `thor auth` |
+| `"thor"` | Force ThorHub | `thor auth add thor` |
 | `"codex"` | Force Codex OAuth | `thor model` → ChatGPT or Codex Subscription |
 | `"main"` | Use whatever provider the main agent uses (auxiliary tasks only) | Active main provider configured |
 | `"anthropic"` | Force Anthropic native | `ANTHROPIC_API_KEY` or Claude Code credentials |
@@ -372,8 +372,8 @@ auxiliary:
     fallback_chain:
       - provider: openrouter
         model: google/gemini-3-flash-preview
-      - provider: nous
-        model: anthropic/claude-sonnet-4
+      - provider: thor
+        model: deepseek-v4-pro
 
   compression:
     provider: openrouter
@@ -406,7 +406,7 @@ Context compression uses the `auxiliary.compression` config block to control whi
 ```yaml
 auxiliary:
   compression:
-    provider: "auto"                              # auto | openrouter | nous | main
+    provider: "auto"                              # auto | openrouter | thor | main
     model: "google/gemini-3-flash-preview"
 ```
 

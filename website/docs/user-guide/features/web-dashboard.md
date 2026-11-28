@@ -368,7 +368,7 @@ block in `config.yaml` that `thor mcp` reads from.
 - **Remove** — delete a server from the config
 - Secret-shaped env values are redacted in the list view
 
-**Catalog:** browse the Nous-approved MCP servers (the bundled `optional-mcps/`
+**Catalog:** browse the Thor-approved MCP servers (the bundled `optional-mcps/`
 catalog) and install any of them with one click. Entries that need API keys
 prompt for them inline; the values go to `.env`. This is the same catalog
 `thor mcp catalog` / `thor mcp install` use.
@@ -420,7 +420,7 @@ the API server and webhook endpoints) with its live connection status; platforms
 A consolidated administration panel for installation-wide operations:
 
 - **Host** — live system stats: OS / kernel, architecture, hostname, Python and Thor versions, CPU core count + utilization, memory, disk usage of the Thor home, uptime, and load average. (CPU/memory/disk come from `psutil` when installed; identity fields are always shown.) The Thor version shows an **update-status badge** (up to date / N commits behind) and a **Check for updates** button. When an update is available on a git install, an **Update now** button opens a confirmation dialog — showing how many commits you'll pull — before running `thor update` in the background. On Docker/Nix installs the dashboard can't apply the update in place, so it shows the correct out-of-band command instead.
-- **Nous Portal** — login status, the active inference provider, and the Tool Gateway routing table (which tools run via the Portal vs. locally), with a link to manage your subscription. Read-only mirror of `thor portal`.
+- **ThorHub** — ThorHub sign-in status (whether a ThorHub key is configured), the active inference provider, and a link to top up at ThorHub.
 - **Skill curator** — the background skill-maintenance status (active / paused, interval, last run) with pause/resume and a run-now button. Mirrors `thor curator`.
 - **Gateway** — start, stop, and restart the messaging gateway, with live status (running/stopped, PID, state)
 - **Memory** — pick the external memory provider (or built-in only), and reset the built-in `MEMORY.md` / `USER.md` stores
@@ -430,7 +430,7 @@ A consolidated administration panel for installation-wide operations:
 - **Shell hooks** — list configured hooks with their consent + executable status, **create** a hook (event, command, matcher, timeout, with an opt-in consent grant), and remove one. Hooks run arbitrary commands, so the create form carries a security warning and the hook only fires after consent is granted.
 - **Move to a single Thor** — shown only when an older Thor server (`thor dashboard` or `thor serve`) still serves the selected profile's home, or when the last move needs reporting. See [Moving a dashboard backend to the gateway](#moving-a-dashboard-backend-to-the-gateway).
 
-![System admin page — host stats and Nous Portal status](/img/dashboard/admin-system-top.png)
+![System admin page — host stats and ThorHub status](/img/dashboard/admin-system-top.png)
 
 ![System admin page — skill curator, gateway, memory, and credential pool](/img/dashboard/admin-system-curator.png)
 
@@ -462,7 +462,7 @@ label and plist; Nix-managed; s6 slot; container; Desktop; detached process; or 
 the report ends with the read-only dry-run plan command
 (`thor gateway migrate --backends --apply --dry-run`), which shows what moving it to the gateway
 would do without changing anything. OAuth sign-in is not carried over by a migration: if the old
-backend signs in through Nous Portal OAuth, the plan refuses it instead of silently losing the
+backend signs in through the retired Nous Portal OAuth, the plan refuses it instead of silently losing the
 sign-in — set up username/password sign-in on the old backend first. The OAuth client id and
 portal URL are never copied into the gateway's `.env`. The report never
 stops, restarts or kills anything, never edits or writes a service file, unit, plist or ledger, and opens no network
@@ -511,7 +511,7 @@ state of the gateway service and the
 Webapp bundle, how many turns are running on the old backend, and the steps in order. To find this
 out it probes the old backend on its address as above and reads `systemctl show` / `launchctl`
 and `/proc`; normal Thor startup runs first, as for the report. OAuth sign-in is never carried over:
-if the old backend signs in through Nous Portal OAuth, the plan refuses it instead of silently
+if the old backend signs in through the retired Nous Portal OAuth, the plan refuses it instead of silently
 losing the sign-in — set up username/password sign-in on the old backend first. Options: `--address HOST:PORT` (plan
 for one backend when several serve this home), `--keep-webapp-address` (keep an already enabled Webapp
 where it is), `--force-interrupt` (plan the move although a turn is running or a gateway runs outside its
@@ -953,7 +953,7 @@ same auth gate as the rest of `/api/`.
 | `POST /api/mcp/servers/{name}/test` | Connect, list tools, disconnect |
 | `PUT /api/mcp/servers/{name}/enabled` | Enable / disable a server |
 | `DELETE /api/mcp/servers/{name}` | Remove a server |
-| `GET /api/mcp/catalog` | Browse the Nous-approved MCP catalog |
+| `GET /api/mcp/catalog` | Browse the Thor-approved MCP catalog |
 | `POST /api/mcp/catalog/install` | Install a catalog entry (with required env) |
 | `GET /api/messaging/platforms` | List every messaging channel with status + per-platform setup fields |
 | `PUT /api/messaging/platforms/{id}` | Configure a channel. Body: `{enabled?, env?, clear_env?}` (env writes to `.env`, enabled to `config.yaml`) |
@@ -979,7 +979,6 @@ same auth gate as the rest of `/api/`.
 | `GET /api/system/stats` | Host stats — OS, CPU, memory, disk, uptime |
 | `GET /api/thor/update/check` | Report update availability (commits behind, install method) without applying. For git installs that are behind, also returns a `commits` list (`sha`, `summary`, `author`, `at`) of what's changed. `?force=1` busts the 24h cache (the check goes through the GitHub API, never `git fetch`) |
 | `GET /api/curator` · `PUT .../paused` · `POST .../run` | Skill-curator status + pause/resume + run |
-| `GET /api/portal` | Nous Portal auth + Tool Gateway routing (read-only) |
 | `POST /api/ops/prompt-size` · `/dump` · `/config-migrate` | Diagnostics (backgrounded) |
 | `POST /api/ops/debug-share` | Upload the allowlisted debug summary (no log lines or message text) to a public paste and return the URL (synchronous). Body: `{consent: true, redact?, lines?}`; without `"consent": true` it returns `400` and uploads nothing |
 | `PUT /api/webhooks/{name}/enabled` | Enable / disable a webhook route |
@@ -1016,29 +1015,19 @@ Since the June 2026 hardening, `--insecure` no longer bypasses dashboard authent
 
 ### Fail-closed semantics
 
-If the gate would engage but **no** `DashboardAuthProvider` is registered (no Nous plugin, no custom plugin), `thor dashboard` refuses to bind with an explicit error message. There is no "default-deny but accept everything" fallback — a misconfigured gated dashboard never starts.
+If the gate would engage but **no** `DashboardAuthProvider` is registered (no bundled auth plugin, no custom plugin), `thor dashboard` refuses to bind with an explicit error message. There is no "default-deny but accept everything" fallback — a misconfigured gated dashboard never starts.
 
-When you run `thor dashboard --host 0.0.0.0` **interactively** (a real terminal) and no provider is configured yet, Thor doesn't just fail — it offers to set one up on the spot: pick **username & password** (writes `dashboard.basic_auth` to `config.yaml` and you're running in seconds) or **OAuth** (points you at `thor dashboard register`). Non-interactive callers — Docker/s6, CI, piped runs — skip the prompt and hit the fail-closed error above, so an unattended deploy still never starts without auth.
+When you run `thor dashboard --host 0.0.0.0` **interactively** (a real terminal) and no provider is configured yet, Thor doesn't just fail — it offers to set one up on the spot: pick **username & password** (writes `dashboard.basic_auth` to `config.yaml` and you're running in seconds) or **OAuth** (points you at `thor dashboard register` — that command is retired, so the OAuth path only helps if a client ID was already provisioned). Non-interactive callers — Docker/s6, CI, piped runs — skip the prompt and hit the fail-closed error above, so an unattended deploy still never starts without auth.
 
 ### Default provider: Thor Labs
 
-The bundled `plugins/dashboard_auth/nous` plugin is **always installed** and auto-loaded. It auto-registers a `DashboardAuthProvider` named `nous` when a client ID is configured.
+The bundled `plugins/dashboard_auth/thor` plugin is **always installed** and auto-loaded. It auto-registers a `DashboardAuthProvider` named `nous` when a client ID is configured.
 
-Because every login is verified against Nous Portal and protected by your Nous account, **the Nous provider is the one suitable for exposing a dashboard to the public internet.**
+Every login is verified against the retired Nous Portal and protected by your Thor Portal account, so **the OAuth provider is the one suitable for exposing a dashboard to the public internet — but only with a client ID provisioned before registration was retired.** No new client IDs can be provisioned (`thor dashboard register` is retired). For a new public-internet dashboard, use a [self-hosted OIDC provider](#self-hosted-oidc-provider) instead.
 
 #### Registering a dashboard
 
-To use the Nous provider you need an OAuth client ID (shape `agent:{id}`). There are two ways to get one:
-
-- **CLI — `thor dashboard register`.** Run it on the host where the dashboard lives. It resolves your existing Nous login (run `thor setup` first if you're not logged in), registers a self-hosted OAuth client with the Portal, and writes `THOR_DASHBOARD_OAUTH_CLIENT_ID` into `~/.thor/.env` for you. Optional flags: `--name` (a human-readable label, otherwise auto-generated) and `--redirect-uri` (a public HTTPS callback URL for an internet-facing host).
-
-  ```bash
-  thor dashboard register
-  # ✓ Registered dashboard "swift_falcon"
-  # …writes THOR_DASHBOARD_OAUTH_CLIENT_ID to ~/.thor/.env
-  ```
-
-- **CLI only.** Register with `thor dashboard register` (above) — the old Portal Local Dashboards web page no longer exists, so there is no browser UI for registering dashboards. Copy the resulting `agent:{id}` client ID into `THOR_DASHBOARD_OAUTH_CLIENT_ID` (env) or `dashboard.oauth.client_id` (config.yaml).
+To use the OAuth provider you need an OAuth client ID (shape `agent:{id}`) provisioned **before** registration was retired. There is no way to provision a new one: `thor dashboard register` exits with an error telling you to add your ThorHub key with `thor auth add thor` instead. If you already have a client ID, put it in `dashboard.oauth.client_id` (`config.yaml`) or `THOR_DASHBOARD_OAUTH_CLIENT_ID` (env) — the plugin picks it up from either surface.
 
 #### Configuration
 
@@ -1057,7 +1046,7 @@ dashboard:
 
 | Env var | Overrides | Format | Provisioned by |
 |---------|-----------|--------|----------------|
-| `THOR_DASHBOARD_OAUTH_CLIENT_ID` | `dashboard.oauth.client_id` | `agent:{instance_id}` | `thor dashboard register` |
+| `THOR_DASHBOARD_OAUTH_CLIENT_ID` | `dashboard.oauth.client_id` | `agent:{instance_id}` | — (registration retired; pre-provisioned IDs only) |
 
 Per the Thor Agent convention (`~/.thor/.env` is for API keys / secrets only), **`config.yaml` is the recommended place to set these values** for local dev, on-prem, and any deployment you control directly. The environment-variable path exists so a hosting platform's secret injection can push per-deploy `client_id`s without anyone having to edit `config.yaml` inside the image — that's its primary purpose.
 
@@ -1077,26 +1066,25 @@ Bundled providers reported these issues:
 
 Configure an auth provider before exposing the dashboard:
   • Password: set dashboard.basic_auth.username + password_hash in config.yaml
-  • OAuth: run `thor dashboard register` (Nous Portal) or install a
+  • OAuth: run `thor dashboard register` (Thor Portal) or install a
     DashboardAuthProvider plugin.
+  • Deployment token: provision THOR_DASHBOARD_SESSION_TOKEN (a literal token, or
+    'file:<path>' naming a secret-manager-decrypted token file) — the bundled
+    session-token provider then authorizes bearer tokens for token-mode clients
+    such as the Desktop's remote-gateway 'Session token' field.
 There is no unauthenticated public-bind option — to keep it local, bind
 127.0.0.1 and tunnel in (SSH / Tailscale).
 ```
 
+The OAuth line above points at `thor dashboard register`, which is retired — following it exits with an error. It only helps if a client ID was already provisioned.
+
 #### Worked example: Thor Labs
 
-From a logged-in Thor install to a Nous-gated dashboard in three steps.
+From a Thor install with a pre-provisioned OAuth client ID to a gated dashboard in two steps.
 
-**1. Log in and register the dashboard.** `thor dashboard register` uses your existing Nous login to provision an OAuth client and writes `THOR_DASHBOARD_OAUTH_CLIENT_ID` into `~/.thor/.env` for you:
+**1. Set the client ID.** Put the `agent:{id}` you were provisioned into `config.yaml` (`dashboard.oauth.client_id`) or `THOR_DASHBOARD_OAUTH_CLIENT_ID` in `~/.thor/.env`. No new client IDs can be provisioned — `thor dashboard register` is retired.
 
-```bash
-thor setup            # if you're not already logged into Nous Portal
-thor dashboard register
-# ✓ Registered dashboard "swift_falcon"
-# …writes THOR_DASHBOARD_OAUTH_CLIENT_ID to ~/.thor/.env
-```
-
-**2. Run the dashboard on a reachable address.** A non-loopback bind engages the OAuth gate, and the `client_id` just written activates the `nous` provider:
+**2. Run the dashboard on a reachable address.** A non-loopback bind engages the OAuth gate, and the `client_id` activates the `nous` provider:
 
 ```bash
 thor dashboard --host 0.0.0.0 --port 9119 --no-open
@@ -1110,7 +1098,7 @@ curl -s http://<host>:9119/api/status | jq '.auth_required, .auth_providers'
 # ["nous"]
 ```
 
-`GET /api/auth/me` then returns the verified session (`provider: nous`). For an internet-facing host, register with `--redirect-uri https://thor.example.com/auth/callback` and set `THOR_DASHBOARD_PUBLIC_URL` so the OAuth callback resolves to your public URL (see [Public URL override](#public-url-override)).
+`GET /api/auth/me` then returns the verified session (`provider: nous`). For an internet-facing host, set `THOR_DASHBOARD_PUBLIC_URL` so the OAuth callback resolves to your public URL (see [Public URL override](#public-url-override)).
 
 ### Username/password provider (no OAuth IDP)
 
@@ -1124,7 +1112,7 @@ The username/password provider is intended for self-hosted / on-prem / homelab d
 
 #### Configuration
 
-Like the Nous provider, it reads from `config.yaml` (canonical) with environment variables winning when set non-empty. It activates only when `username` plus either `password_hash` (preferred) or `password` are configured — otherwise it's a no-op, so OAuth users and loopback operators are unaffected.
+Like the OAuth provider, it reads from `config.yaml` (canonical) with environment variables winning when set non-empty. It activates only when `username` plus either `password_hash` (preferred) or `password` are configured — otherwise it's a no-op, so OAuth users and loopback operators are unaffected.
 
 **`config.yaml`:**
 
@@ -1241,7 +1229,7 @@ If you run your own identity provider, the bundled `plugins/dashboard_auth/self_
 
 > **Authentik · Keycloak · Zitadel · Authelia · Auth0 · Okta · Google · …**
 
-Like the Nous provider, it auto-loads and only registers itself once it's configured, so it's a no-op for loopback dashboards.
+Like the OAuth provider, it auto-loads and only registers itself once it's configured, so it's a no-op for loopback dashboards.
 
 #### Configuration
 
@@ -1470,7 +1458,7 @@ Every login start, success, failure, and session-verify failure is written as a 
 
 ### Custom providers
 
-To plug a non-Nous OAuth provider (e.g. Google, GitHub, custom OIDC), create a plugin that registers a `DashboardAuthProvider`:
+To plug an OAuth provider other than the bundled Thor Labs one (e.g. Google, GitHub, custom OIDC), create a plugin that registers a `DashboardAuthProvider`:
 
 ```python
 # ~/.thor/plugins/dashboard-auth-myidp/__init__.py
@@ -1520,7 +1508,7 @@ A provider can also accept **peer passes** (`supports_peer_pass = True` + `verif
 - `/api/status` reports `peer_access`: the peer-pass contract this agent takes (currently `1`), or `0` when no registered provider takes peer passes. A pass issuer should mint passes only for agents that report it, because an agent without `/api/peer` reads a pass as a dashboard sign-in.
 - Control actions are written to `logs/dashboard-auth.log` as `peer_control` events with the pass holder, and jobs created through the route record the holder as `peer_principal` in their origin.
 
-The bundled Nous provider verifies peer passes with the same Portal keys and audience as dashboard sign-ins; dashboard sign-ins carry `agent_dashboard:access`, peer passes carry only the peer permissions.
+The bundled OAuth provider verifies peer passes with the same Portal keys and audience as dashboard sign-ins; dashboard sign-ins carry `agent_dashboard:access`, peer passes carry only the peer permissions.
 A Portal token without `agent_dashboard:access`, including one with no `scope` claim at all, never opens a dashboard session.
 
 ### Verifying the gate is on
@@ -1551,9 +1539,9 @@ The dashboard's React StatusPage shows the same fields under "Web server". A sid
 
 Thor Desktop can drive a Thor backend running on another machine (a VPS, a home server, a Mini behind Tailscale). In the app this lives under **Settings → Gateways → Remote gateway**, which asks for a **Remote URL** and a way to **Sign in**. (For the desktop app itself — install, settings, chat — see the [Thor Desktop](../desktop.md) page.)
 
-You protect the remote dashboard with one of the bundled auth providers, and the desktop app signs in against whichever one the backend advertises. For a backend reachable beyond your own machine — a VPS, a public host, anything internet-facing — the recommended provider is **OAuth (Nous Portal)** (register it with [`thor dashboard register`](#registering-a-dashboard) and sign in with *Sign in with Thor Labs*). The bundled [username/password provider](#usernamepassword-provider-no-oauth-idp) is the quickest option when the backend is on a trusted LAN or reachable only over a VPN, but is **not suitable for direct public-internet exposure**. Binding the dashboard to a non-loopback address engages its auth gate; once signed in, Desktop reuses the session for the chat WebSocket automatically — there is no token to copy or paste.
+You protect the remote dashboard with one of the bundled auth providers, and the desktop app signs in against whichever one the backend advertises. For a backend reachable beyond your own machine — a VPS, a public host, anything internet-facing — the recommended provider is **OAuth (Thor Labs)** (sign in with *Sign in with Thor Labs*), but only with a client ID provisioned before registration was retired; for a new setup use your own [self-hosted OIDC](#self-hosted-oidc-provider) provider instead. The bundled [username/password provider](#usernamepassword-provider-no-oauth-idp) is the quickest option when the backend is on a trusted LAN or reachable only over a VPN, but is **not suitable for direct public-internet exposure**. Binding the dashboard to a non-loopback address engages its auth gate; once signed in, Desktop reuses the session for the chat WebSocket automatically — there is no token to copy or paste.
 
-The recipe below uses the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Default provider: Thor Labs](#default-provider-nous-research).
+The recipe below uses the username/password path because it's the quickest to stand up on a trusted network; for the OAuth path see [Default provider: Thor Labs](#default-provider-thor-labs).
 
 ### On the backend (the remote machine)
 
@@ -1580,7 +1568,7 @@ Prefer no plaintext at rest? Use `THOR_DASHBOARD_BASIC_AUTH_PASSWORD_HASH` with 
 If you run the dashboard as a systemd service, `~/.thor/.env` is picked up automatically when the unit has `EnvironmentFile=%h/.thor/.env`, so the credentials are in the environment at boot.
 
 :::warning
-The dashboard reads and writes your `.env` (API keys, secrets) and can run agent commands. The **username/password** setup shown here is for a trusted network — never expose a password-protected dashboard directly to the open internet. Put it behind a VPN. [Tailscale](https://tailscale.com/) is the clean option: bind to the machine's tailscale IP (`--host <tailscale-ip>`) and use `http://<tailscale-ip>:9119` as the Remote URL. Only devices on your tailnet can reach it. To reach a backend over the public internet, use the **OAuth (Nous Portal)** provider instead.
+The dashboard reads and writes your `.env` (API keys, secrets) and can run agent commands. The **username/password** setup shown here is for a trusted network — never expose a password-protected dashboard directly to the open internet. Put it behind a VPN. [Tailscale](https://tailscale.com/) is the clean option: bind to the machine's tailscale IP (`--host <tailscale-ip>`) and use `http://<tailscale-ip>:9119` as the Remote URL. Only devices on your tailnet can reach it. To reach a backend over the public internet, use the **self-hosted OIDC** provider instead (or the **OAuth (Thor Labs)** provider if a client ID was already provisioned).
 :::
 
 ### In Thor Desktop
@@ -1679,7 +1667,7 @@ Built-in themes:
 |-------|-----------|
 | **Thor Teal** (`default`) | Dark teal + cream, system fonts, comfortable spacing |
 | **Thor Teal (Large)** (`default-large`) | Same as default with 18px text and roomier spacing |
-| **Nous Blue** (`nous-blue`) | Nous-branded blue accents with airy spacing |
+| **Thor Blue** (`nous-blue`) | Thor-blue accents with airy spacing |
 | **Midnight** (`midnight`) | Deep blue-violet, Inter + JetBrains Mono |
 | **Ember** (`ember`) | Warm crimson + bronze, Spectral serif + IBM Plex Mono |
 | **Mono** (`mono`) | Grayscale, IBM Plex, compact |

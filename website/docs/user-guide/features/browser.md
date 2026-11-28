@@ -23,7 +23,7 @@ browser over the Chrome DevTools Protocol (CDP) — with three companion tools
 Where the browser comes from is a separate choice:
 
 - **Local Chromium (default)** — Thor launches its own packaged Chromium, headless, one browser per session. No API key, no setup.
-- **Cloud browsers** — the [Nous subscription](tool-gateway.md), [Browserbase](https://browserbase.com), [Browser Use](https://browser-use.com) cloud, [Firecrawl](https://firecrawl.dev), or a browser-provider plugin.
+- **Cloud browsers** — the [Thor Subscription](tool-gateway.md), [Browserbase](https://browserbase.com), [Browser Use](https://browser-use.com) cloud, [Firecrawl](https://firecrawl.dev), or a browser-provider plugin.
 - **[Lightpanda](https://lightpanda.io)** — a lightweight headless engine for text-first browsing on small machines.
 - **Your own browser** — attach to a running Chrome, Brave, Chromium or Edge with `/browser connect`.
 - **Your real profile** — a managed copy of your everyday browser profile, logins included (opt-in).
@@ -247,7 +247,7 @@ FIRECRAWL_BROWSER_TTL=600
 Get your API key at [firecrawl.dev](https://firecrawl.dev), then select **Firecrawl** in `thor tools` → Browser Automation.
 
 :::note Selecting the provider
-The `.env` keys above supply **credentials only**. The active browser is chosen by the `browser.cloud_provider` selection written by `thor tools` → Browser Automation (`local`, `browserbase`, `browser-use`, `firecrawl`, or `nous` for the Nous Subscription; provider plugins add their own names). Once a selection exists, adding or removing a key does not switch providers — and a selected provider with a missing key errors with guidance to run `thor tools` instead of silently rerouting. Never-configured setups still autodetect from available credentials.
+The `.env` keys above supply **credentials only**. The active browser is chosen by the `browser.cloud_provider` selection written by `thor tools` → Browser Automation (`local`, `browserbase`, `browser-use`, `firecrawl`, or `nous` for the Thor Subscription; provider plugins add their own names). Once a selection exists, adding or removing a key does not switch providers — and a selected provider with a missing key errors with guidance to run `thor tools` instead of silently rerouting. Never-configured setups still autodetect from available credentials.
 :::
 
 Cloud sessions consume provider credits. Thor releases them when the
@@ -451,7 +451,7 @@ Thor launches `lightpanda serve --host 127.0.0.1 --port <free>` itself — one p
 
 Lightpanda has no graphical renderer, so `capture_screenshot()` is unavailable and the tool description tells the model to work text-first; it also holds one page per session, so the model is told to call `new_tab()` once and `goto_url()` afterwards (tracked upstream in [lightpanda-io/browser#1962](https://github.com/lightpanda-io/browser/issues/1962)).
 
-**When the engine is ignored.** `browser.engine` is the lowest-precedence browser setting: a cloud provider (including the Nous subscription browser — and on never-configured setups, any `BROWSERBASE_API_KEY` / `BROWSER_USE_API_KEY` in `~/.thor/.env` auto-selects one), a `browser.cdp_url` / `/browser connect` override, or `browser.use_real_profile` all take precedence. Picking Lightpanda in `thor tools` writes `cloud_provider: local` for you; `/browser status` and `thor doctor` report when the engine is configured but shadowed, and by what.
+**When the engine is ignored.** `browser.engine` is the lowest-precedence browser setting: a cloud provider (including the Thor Subscription browser — and on never-configured setups, any `BROWSERBASE_API_KEY` / `BROWSER_USE_API_KEY` in `~/.thor/.env` auto-selects one), a `browser.cdp_url` / `/browser connect` override, or `browser.use_real_profile` all take precedence. Picking Lightpanda in `thor tools` writes `cloud_provider: local` for you; `/browser status` and `thor doctor` report when the engine is configured but shadowed, and by what.
 
 ## Your own browser via CDP (`/browser connect`)
 

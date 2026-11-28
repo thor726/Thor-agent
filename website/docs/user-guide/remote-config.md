@@ -29,7 +29,7 @@ cannot select the backend, because the backend is what serves config.
 
 The agent authenticates as itself:
 
-- **Thor Cloud**: the Nous access token in the profile's `auth.json`.
+- **Thor Cloud**: retired with the Thor Portal — cloud agents authenticated with the Nous access token in the profile's `auth.json`, and there is no Thor Cloud deployment anymore.
 - **On-prem**: an OAuth2 client-credentials token from your identity provider,
   configured in `.env` with `GATEWAY_RELAY_IDP_TOKEN_URL`,
   `GATEWAY_RELAY_IDP_CLIENT_ID`, `GATEWAY_RELAY_IDP_CLIENT_SECRET`, and
@@ -39,8 +39,7 @@ These values, and the `THOR_CONFIG_*` variables above, must come from
 `auth.json`, a `.env` file (the profile's, the project `.env` a Thor command
 loads, or the managed one), or the process environment. If a `secrets:` source
 (1Password, Bitwarden, a command) supplies any of them, Thor refuses to
-start. The same holds for `THOR_PORTAL_BASE_URL`, `NOUS_PORTAL_BASE_URL` and
-`THOR_SHARED_AUTH_DIR` (they decide where the Cloud token is read and sent).
+start. The same holds for `THOR_SHARED_AUTH_DIR` (it decides where the Cloud token is read and sent). `THOR_PORTAL_BASE_URL` and `NOUS_PORTAL_BASE_URL` no longer do anything — the Portal is retired.
 A multi-profile process (gateway, dashboard) that serves a profile whose
 `secrets:` source supplies one of these names refuses to serve that profile.
 
