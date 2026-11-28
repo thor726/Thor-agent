@@ -164,13 +164,13 @@ gateway:
     upload_failed: "✗ Kon nie ontfoutverslag oplaai nie: {error}"
     header: "**Ontfoutverslag opgelaai:**"
     auto_delete: "⏱ Plakke sal outomaties oor 6 uur uitgevee word."
-    full_logs_hint: "Vir volledige loglae, gebruik `thor debug share --nous` vanaf die CLI."
+    full_logs_hint: "Vir volledige loglae, gebruik `thor debug share --internal` vanaf die CLI."
     share_hint: "Deel hierdie skakels met die Thor-span vir ondersteuning."
     report_label: "Verslag"
     local_refused: "`/debug local` hou die verslag op die masjien waarop Thor loop, so dit is nie vanuit 'n klets beskikbaar nie. Stuur `/debug upload` om die opsommingsverslag op te laai."
     upload_hint: "Niks is opgelaai nie. Stuur `/debug upload` om die opsommingsverslag op te laai."
     upload_hint_local: "Niks is opgelaai nie. Stuur `/debug upload` om die opsommingsverslag op te laai, of `/debug local` om dit hier te bekyk."
-    nous_refused: "Niks is opgelaai nie. Private Nous-oplaaie is nie van hier af beskikbaar nie: voer `thor debug share --nous` in 'n terminaal uit, of gebruik Send diagnostics in die rekenaartoepassing. `/debug upload` laai die opsomming eerder na 'n publieke plakblad op."
+    nous_refused: "Niks is opgelaai nie. Private Thor-oplaaie is nie van hier af beskikbaar nie: voer `thor debug share --internal` in 'n terminaal uit, of gebruik Send diagnostics in die rekenaartoepassing. `/debug upload` laai die opsomming eerder na 'n publieke plakblad op."
   deny:
     stale: "❌ Opdrag geweier (goedkeuring was verouderd)."
     no_pending: "Geen hangende opdrag om te weier nie."
@@ -975,7 +975,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ Kon nie konfigurasie laai nie: {error}"
   topup:
-    header: "💳 **Nous-saldo**"
+    header: "💳 **ThorHub-saldo**"
     portal_link: "Bestuur fakturering op die portaal: {url}"
     hint: "Laai op en bestuur fakturering in die blaaier — jou saldo word daarna hier opgedateer."
   login:
@@ -1722,11 +1722,11 @@ slash:
   usage:
     description: "Wys tokengebruik en tariefperke; `reset` los 'n gebankte Codex-limiet-terugstelling in"
   subscription:
-    description: "Bekyk jou Nous-plan en verander dit in die blaaier"
+    description: "Bekyk jou ThorHub-plan en verander dit in die blaaier"
   login:
-    description: "Meld aan met 'n Nous-rekening (behou jou koppelaars)"
+    description: "Meld aan met 'n ThorHub-rekening (behou jou koppelaars)"
   topup:
-    description: "Wys jou Nous-saldo en bestuur fakturering op die portaal"
+    description: "Wys jou ThorHub-saldo en bestuur fakturering op die portaal"
   platforms:
     description: "Wys gateway-/boodskapplatform-status"
   platform:
@@ -3793,8 +3793,8 @@ tips:
   t181: "Camofox (Firefox teen opsporing) is nou 'n inprop: thor plugins install camofox."
   t182: "browser_exec voer verskeie blaaierstappe in een Python-oproep uit — navigeer, onttrek en klik saam."
   t183: "browser.dialog_policy bepaal hoe inheemse bladsy-dialoë hanteer word: must_respond (die agent antwoord met browser_dialog), auto_dismiss of auto_accept."
-  t184: "thor mcp maak 'n interaktiewe kieser van Nous-goedgekeurde MCP's oop wat jy met een toetsdruk kan installeer."
-  t185: "thor mcp catalog lys Nous-goedgekeurde MCP-bedieners wat saam met die bewaarplek verskeep word."
+  t184: "thor mcp maak 'n interaktiewe kieser van Thor-goedgekeurde MCP's oop wat jy met een toetsdruk kan installeer."
+  t185: "thor mcp catalog lys Thor-goedgekeurde MCP-bedieners wat saam met die bewaarplek verskeep word."
   t186: "thor mcp install <name> installeer 'n katalogus-inskrywing, vra vir geloofsbriewe en laat jou kies watter van sy gereedskap om te aktiveer."
   t187: "MCP-bedieners word in config.yaml opgestel — beide stdio- en HTTP-vervoer word ondersteun."
   t188: "Gereedskapfiltrering per bediener: tools.include witlys en tools.exclude swartlys spesifieke gereedskap."
@@ -3821,7 +3821,7 @@ tips:
   t209: "Eie verskaffers: stoor benoemde eindpunte in config.yaml onder custom_providers."
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT spuit 'n stelselprompt in wat nooit in die geskiedenis bewaar word nie."
   t211: "credential_pool_strategies ondersteun fill_first-, round_robin-, least_used- en random-rotasie."
-  t212: "thor auth add nous of thor auth add openai-codex stel OAuth-gebaseerde verskaffers op."
+  t212: "thor auth add thor of thor auth add openai-codex stel OAuth-gebaseerde verskaffers op."
   t213: "Die API-bediener ondersteun beide die Chat Completions- en Responses API met bedienerkant-toestand."
   t214: "tool_preview_length: 0 in die konfigurasie wys volledige lêerpaaie in die spinner se aktiwiteitsvoer."
   t215: "thor status --deep voer dieper diagnostiese kontroles oor alle komponente uit."
@@ -3917,7 +3917,7 @@ tips:
   t305: "thor curator rollback herstel vaardighede vanaf 'n momentopname van voor die lopie — rugsteune woon onder skills/.curator_backups/."
   t306: "thor auth reset <provider> [target] vee afkoeltye en uitputtingsvlae op 'n hele geloofsbriewe-poel uit, of op een geloofsbrief volgens indeks, id of etiket."
   t307: "credential_pool_strategies.<provider>: round_robin roteer sleutels eweredig in plaas van die fill_first-verstek."
-  t308: "use_gateway: true per gereedskap stuur web, image, tts of browser deur jou Nous-subskripsie — geen ekstra sleutels nodig nie."
+  t308: "use_gateway: true per gereedskap stuur web, image, tts of browser deur jou ThorHub-subskripsie — geen ekstra sleutels nodig nie."
   t309: "provider_routing.data_collection: deny sluit verskaffers op OpenRouter uit wat data stoor."
   t310: "provider_routing.require_parameters: true stuur net na verskaffers wat elke parameter in jou versoek ondersteun."
   t311: "THOR_TUI_RESUME=1 herkoppel by die begin outomaties aan die mees onlangse TUI-sessie — handig nadat SSH afgebreek het."
@@ -4000,7 +4000,7 @@ tips:
     p10: "Stel 'n herinnering of skeduleer 'n herhalende taak"
     p11: "Tik / om deur opdragte te blaai, of Ctrl+P vir die palet"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (ThorHub subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Gratis"
   level_top_tier: "Groot"
