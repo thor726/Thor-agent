@@ -496,7 +496,7 @@ Re-smoke an already staged artifact without rebuilding:
 ```sh
 gh workflow run desktop-bundle-smoke.yml --ref <test-branch> \
   -f platform=win32 -f arch=x64 -f format=msix -f sha=<built commit> \
-  -f commit-build=true -f public-base=https://thor-assets.thor-agent.local/
+  -f commit-build=true -f public-base=https://thor726.github.io/thor-agent-releases/
 ```
 
 ### Install & update E2E family
