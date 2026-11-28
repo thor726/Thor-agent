@@ -182,6 +182,11 @@ class _Parser:
             return json.dumps(args[0])
         if name == "fromJSON":
             return json.loads(args[0])
+        if name == "format":
+            # GHA format(): {0}, {1} ... placeholders, {{ / }} escapes --
+            # exactly str.format's contract for the patterns we use.
+            pattern, *values = args
+            return to_string(pattern).format(*[to_string(value) for value in values])
         if name == "contains":
             hay, needle = args
             if isinstance(hay, list):
