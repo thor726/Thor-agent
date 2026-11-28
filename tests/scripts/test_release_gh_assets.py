@@ -421,3 +421,82 @@ def test_put_does_not_backoff_on_non_rate_limit_error(tmp_path, monkeypatch):
         gh_assets.put(key, str(source), immutable=True, runner=gh, sleep=delays.append)
     assert gh.uploads == 2
     assert delays == []
+
+
+class RateLimitedDownloadGh:
+    """Fake `gh` whose first downloads die on the installation API rate
+    limit (HTTP 403), then succeed — the rc.3 stable-release failure."""
+
+    def __init__(self, data, failures=3):
+        self.data = data
+        self.failures = failures
+        self.downloads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        assert args[0] == "gh"
+        cmd = args[1:]
+        if cmd[:2] == ["release", "download"]:
+            self.downloads += 1
+            if self.downloads <= self.failures:
+                return subprocess.CompletedProcess(
+                    args, 1, "", "HTTP 403: API rate limit exceeded for installation")
+            directory = cmd[cmd.index("--dir") + 1]
+            open(f"{directory}/upstream__sha256__aaaa", "wb").write(self.data)
+            return subprocess.CompletedProcess(args, 0, "", "")
+        raise AssertionError(f"unexpected gh call: {cmd}")
+
+
+def test_download_retries_rate_limit_with_growing_backoff(tmp_path, monkeypatch):
+    # Regression (stable release rc.3-v0.23.6, run 46024985528, 2026-11-27):
+    # many jobs staging pinned inputs into ci-archive at once exhausted
+    # the installation API quota, and downloads died with HTTP 403 (the
+    # termux-checks lane) or 'no assets match the file pattern' while a
+    # rival --clobber upload was still landing (darwin-arm64, termux) —
+    # the old code retried once, immediately, and failed. A transient
+    # download failure must wait and retry with the same growing backoff
+    # put() uses, keeping the one immediate retry for the fast race.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = RateLimitedDownloadGh(b"pinned bytes", failures=3)
+    target = tmp_path / "out"
+    delays = []
+    gh_assets.download("upstream/sha256/aaaa", target, expected_size=12,
+                       expected_sha256=hashlib.sha256(b"pinned bytes").hexdigest(),
+                       runner=gh, sleep=delays.append)
+    assert target.read_bytes() == b"pinned bytes"
+    assert gh.downloads == 4
+    assert len(delays) == 2
+    assert delays[0] < delays[1]
+    assert 30.0 <= delays[0] <= 60.0
+    assert 90.0 <= delays[1] <= 120.0
+
+
+class Always401DownloadGh:
+    """Fake `gh` whose downloads always die with HTTP 401 — a permanent
+    failure (bad credentials), not a rate limit or a race."""
+
+    def __init__(self):
+        self.downloads = 0
+
+    def __call__(self, args, capture_output=True, text=True):
+        assert args[0] == "gh"
+        cmd = args[1:]
+        if cmd[:2] == ["release", "download"]:
+            self.downloads += 1
+            return subprocess.CompletedProcess(args, 1, "", "HTTP 401: Bad credentials")
+        raise AssertionError(f"unexpected gh call: {cmd}")
+
+
+def test_download_does_not_backoff_on_non_transient_error(tmp_path, monkeypatch):
+    # A permanent download failure must fail fast: the one immediate retry
+    # from the old behaviour, then raise — no sleeping through the backoff
+    # for an error that waiting cannot fix.
+    monkeypatch.setenv("THOR_ARCHIVE_RELEASE", "ci-archive")
+    gh = Always401DownloadGh()
+    target = tmp_path / "out"
+    delays = []
+    with pytest.raises(gh_assets.ArchiveError):
+        gh_assets.download("upstream/sha256/aaaa", target, expected_size=12,
+                           expected_sha256=hashlib.sha256(b"pinned bytes").hexdigest(),
+                           runner=gh, sleep=delays.append)
+    assert gh.downloads == 2
+    assert delays == []

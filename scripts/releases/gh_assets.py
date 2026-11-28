@@ -270,34 +270,81 @@ def put(key: str, file: str, *, immutable: bool = False, tag: str | None = None,
     print(f"OK gh-archive: {key} ({source.stat().st_size} bytes)")
 
 
+def _is_transient_download_error(error: ArchiveError) -> bool:
+    """True when a failed `gh release download` is worth waiting out.
+
+    rc.3-v0.23.6 (run 46024985528) died on all three of these at once:
+    the installation API quota exhausted mid-burst (HTTP 403 rate limit),
+    and a rival job's --clobber upload replacing the asset between our
+    listing and our download (HTTP 404 on the old asset id, or 'no assets
+    match the file pattern' while the replacement is still landing). All
+    three clear on their own within minutes; anything else (auth, a bad
+    tag, a missing release) fails fast instead of sleeping through the
+    backoff.
+    """
+    message = str(error).lower()
+    return ("api rate limit exceeded" in message
+            or "no assets match the file pattern" in message
+            or "http 404" in message)
+
+
+def _download_asset(runner: Runner, name: str, asset: str, directory: str,
+                    sleep: Callable[[float], None]) -> None:
+    """Run `gh release download`, retrying transient failures with backoff.
+
+    The first retry is immediate (the pre-existing behaviour: a rival
+    --clobber upload usually lands within a second, so the fast race
+    stays fast). Later retries wait with the same growing backoff put()
+    uses (30/90/240s plus jitter) and only run for transient failures
+    (see _is_transient_download_error); any other failure raises after
+    the immediate retry.
+    """
+    args = ["release", "download", name, "--pattern", asset, "--dir", directory]
+    # Sleep before each attempt after the first: no sleep before the
+    # initial attempt, no sleep before the immediate retry, then put()'s
+    # growing backoff before each further retry.
+    delays = (None, None, *_RATE_LIMIT_BACKOFF_SECONDS)
+    for attempt, delay in enumerate(delays):
+        if delay is not None:
+            sleep(delay + random.uniform(0.0, _RATE_LIMIT_JITTER_SECONDS))
+        try:
+            _run(runner, args)
+            return
+        except ArchiveError as error:
+            if attempt == 0:
+                continue  # immediate retry, whatever the failure was
+            if not _is_transient_download_error(error) or attempt == len(delays) - 1:
+                raise
+
+
 def get_bytes(key: str, *, tag: str | None = None,
-              runner: Runner = subprocess.run) -> bytes | None:
+              runner: Runner = subprocess.run,
+              sleep: Callable[[float], None] = time.sleep) -> bytes | None:
     """Return the object bytes, or None when the asset does not exist."""
     name = release_tag(tag)
     asset = asset_name_for(key)
     if asset not in _assets(name, runner):
         return None
     with tempfile.TemporaryDirectory() as directory:
-        _run(runner, ["release", "download", name, "--pattern", asset, "--dir", directory])
+        _download_asset(runner, name, asset, directory, sleep)
         downloaded = Path(directory) / asset
         return downloaded.read_bytes() if downloaded.is_file() else None
 
 
 def download(key: str, path: Path, *, expected_size: int, expected_sha256: str,
-             tag: str | None = None, runner: Runner = subprocess.run) -> None:
+             tag: str | None = None, runner: Runner = subprocess.run,
+             sleep: Callable[[float], None] = time.sleep) -> None:
     """Download one object and verify size + sha256 before landing it."""
     name = release_tag(tag)
     asset = asset_name_for(key)
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=path.parent) as directory:
-        try:
-            _run(runner, ["release", "download", name, "--pattern", asset, "--dir", directory])
-        except ArchiveError:
-            # A concurrent run's --clobber upload can replace the asset
-            # between listing and download (HTTP 404 on the old asset id);
-            # one retry re-resolves it by name. Size + sha256 below still
-            # bind the bytes that land.
-            _run(runner, ["release", "download", name, "--pattern", asset, "--dir", directory])
+        # A concurrent run's --clobber upload can replace the asset
+        # between listing and download (HTTP 404 on the old asset id);
+        # _download_asset retries that immediately, and waits out a
+        # rate-limit storm or a replacement still landing. Size + sha256
+        # below still bind the bytes that land.
+        _download_asset(runner, name, asset, directory, sleep)
         downloaded = Path(directory) / asset
         if not downloaded.is_file():
             raise ArchiveError(f"Archive asset missing after download: {key}")
