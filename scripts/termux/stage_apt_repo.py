@@ -519,7 +519,7 @@ def main(argv: list | None = None) -> int:
     ap.add_argument("--pool", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
     # thor-nightly is the suite actually published today
-    # (https://thor-assets.thor-agent.local/releases/termux/nightly/,
+    # (https://thor726.github.io/thor-agent-releases/releases/termux/nightly/,
     # verified 2026-09-06); thor-stable/thor-canary are what CI stages
     # for the stable/canary channels.
     ap.add_argument(

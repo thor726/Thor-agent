@@ -49,7 +49,7 @@ PHASE="all"
 UPDATE_METHOD=""
 INSTALL_REF=""
 UPDATE_REF=""
-DMG_URL="https://thor-assets.thor-agent.local/Thor-Setup.dmg"
+DMG_URL=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --phase)
@@ -74,6 +74,13 @@ done
 case "$UPDATE_METHOD" in
   open-app-update|thor-desktop-app-update|thor-update|installer-script|installer-script+desktop) ;;
   *) echo "error: unsupported --update-method '$UPDATE_METHOD'" >&2; exit 1 ;;
+esac
+# No published installer exists (the bootstrap .dmg is built as a run
+# artifact only, never published): an install phase without a dmg-url has
+# nothing to install. Fail fast here, before the platform gate, instead of
+# failing on an unresolvable download URL. Stage/update phases do not need it.
+case "$PHASE" in
+  install|all) [ -n "$DMG_URL" ] || { echo "error: no dmg-url configured: the published Thor-Setup.dmg is not available" >&2; exit 1; } ;;
 esac
 [ "$(uname -s)" = "Darwin" ] || { echo "error: this driver runs on macOS only" >&2; exit 1; }
 

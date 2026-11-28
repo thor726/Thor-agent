@@ -109,7 +109,7 @@ param(
 
     [string]$WorkRoot = $(if ($env:THOR_E2E_WORKROOT) { $env:THOR_E2E_WORKROOT } else { Join-Path $env:TEMP "thor-desktop-gui-e2e" }),
 
-    [string]$SetupExeUrl = "https://thor-assets.thor-agent.local/Thor-Setup.exe",
+    [string]$SetupExeUrl = "",
 
     # Driver dependencies come from the current checkout lockfile.
     [string]$DriverNode = $env:THOR_E2E_NODE
@@ -1005,6 +1005,7 @@ function Invoke-PhaseInstallGui {
 
     $setupExe = Join-Path $WorkRoot "Thor-Setup.exe"
     if (-not (Test-Path -LiteralPath $setupExe)) {
+        if ([string]::IsNullOrEmpty($SetupExeUrl)) { throw "no setup-exe-url configured: the published Thor-Setup.exe is not available" }
         Write-Host "  downloading $SetupExeUrl"
         Invoke-WebRequest -Uri $SetupExeUrl -OutFile $setupExe
     }
