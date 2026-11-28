@@ -248,7 +248,7 @@ export interface Translations extends NoticeTranslations {
       turnOffLocal: string
       providedByPlugin: (plugin: string) => string
       openPlugins: string
-      nousLine: string
+      thorLine: string
       rulesReadOnly: string
       rulesAppOff: (name: string) => string
       rulesSignIn: string
@@ -1765,15 +1765,15 @@ export interface Translations extends NoticeTranslations {
       activeBackend: string
       activeBackendHint: string
       useBackend: string
-      nousIncluded: string
-      nousAuthNeededTitle: string
-      nousAuthNeededMessage: (provider: string) => string
-      nousAuthSignIn: string
-      nousAuthDoneTitle: string
-      nousAuthDoneMessage: string
-      nousAuthFailed: string
-      nousAuthFailedMessage: string
-      nousAuthTryAgain: string
+      thorIncluded: string
+      thorAuthNeededTitle: string
+      thorAuthNeededMessage: (provider: string) => string
+      thorAuthSignIn: string
+      thorAuthDoneTitle: string
+      thorAuthDoneMessage: string
+      thorAuthFailed: string
+      thorAuthFailedMessage: string
+      thorAuthTryAgain: string
       noApiKeyRequired: string
       postSetupHint: (step: string) => string
       postSetupInstalledHint: string

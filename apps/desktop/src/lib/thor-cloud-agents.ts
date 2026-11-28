@@ -10,7 +10,7 @@ import type { DesktopCloudAgent, DesktopCloudDiscoverResult, DesktopCloudStatus 
 import { runBackup, type TransferEndpoint, type TransferRequestFn } from '@/lib/agent-transfer'
 import { servedByThorCloud } from '@/lib/thor-cloud-host'
 
-export const PORTAL_AGENTS_URL = 'https://portal.thor-agent.local/agents'
+export const PORTAL_AGENTS_URL = 'https://llm.thormarket.site/agents'
 
 export const transferRequest: TransferRequestFn = (owner, req) => thorApiAs(owner, req)
 

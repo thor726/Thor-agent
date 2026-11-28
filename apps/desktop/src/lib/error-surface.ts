@@ -375,7 +375,8 @@ export const ERROR_SETUP_GUIDE_URLS = {
 /** Provider pages where the user fixes an account-level routing/privacy block. */
 const PROVIDER_SETTINGS_URLS: Record<string, string> = {
   openrouter: 'https://openrouter.ai/settings/privacy',
-  nous: 'https://llm.thormarket.site'
+  thor: 'https://llm.thormarket.site',
+  thorhub: 'https://llm.thormarket.site'
 }
 
 /** The provider's own settings page (privacy/data policy), when Thor knows one. */
