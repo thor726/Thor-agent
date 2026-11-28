@@ -96,7 +96,6 @@ The install also ships `thor-agent`, a minimal runner that sends one query and e
 | `thor mcp` | Manage MCP server configurations. Running Thor as an MCP server is the [mcp-serve plugin](../user-guide/features/mcp.md#running-thor-as-an-mcp-server). |
 | `thor connectors` | List, connect, rename and disconnect hosted connector accounts. |
 | `thor plugins` | Manage Thor Agent plugins (install, enable, disable, remove). |
-| `thor portal` | ThorHub sign-up link and routing info. See [ThorHub](../integrations/thorhub.md). |
 | `thor tools` | Configure enabled tools per platform. |
 | `thor computer-use` | Install or check the Computer Use (cua-driver) backend (macOS/Windows/Linux). |
 | `thor pets` | Browse, install, and select [petdex](../user-guide/features/pets.md) animated pets shown across the CLI, TUI, and desktop app. Subcommands: `list`, `install`, `select`, `show`, `off`, `scale`, `remove`, `doctor`. |
@@ -130,7 +129,7 @@ Common options:
 | `--oneshot` | With `-q`/`--query-file`: answer the query and exit (the pre-0.21 single-query behavior) instead of seeding an interactive session. Implied on non-TTY stdio and by `-Q`. |
 | `-m`, `--model <model>` | Override the model for this run. |
 | `-t`, `--toolsets <csv>` | Enable a comma-separated set of toolsets. |
-| `--provider <provider>` | Force a provider: `auto`, `openrouter`, `nous`, `openai-codex` (aliases `chatgpt`, `chatgpt-codex`), `anthropic`, `gemini`, `huggingface`, `novita` (aliases `novita-ai`, `novitaai`), `openai-api`, `zai`, `kimi-coding`, `kimi-coding-cn`, `minimax`, `minimax-cn`, `minimax-oauth`, `kilocode`, `xiaomi`, `arcee`, `gmi`, `upstage` (alias `solar`), `alibaba`, `alibaba-cn`, `alibaba-coding-plan` (alias `alibaba_coding`), `alibaba-coding-plan-cn`, `alibaba-token-plan`, `alibaba-token-plan-cn`, `deepseek`, `nvidia`, `ollama-cloud`, `xai` (alias `grok`), `xai-oauth` (alias `grok-oauth`), `qwen-oauth`, `bedrock`, `opencode-zen`, `opencode-go`, `commandcode`, `commandcode-anthropic`, `ai-gateway`, `azure-foundry`, `lmstudio`, `stepfun`, `tencent-tokenhub` (alias `tencent`, `tokenhub`), `router` (aliases `ramp-router`, `ramp`), `nebius-token-factory` (aliases `nebius`, `nebius-tf`, `tokenfactory`), `tencent-tokenplan` (aliases `tokenplan`, `tencent-lkeap`). |
+| `--provider <provider>` | Force a provider: `auto`, `openrouter`, `thor`, `openai-codex` (aliases `chatgpt`, `chatgpt-codex`), `anthropic`, `gemini`, `huggingface`, `novita` (aliases `novita-ai`, `novitaai`), `openai-api`, `zai`, `kimi-coding`, `kimi-coding-cn`, `minimax`, `minimax-cn`, `minimax-oauth`, `kilocode`, `xiaomi`, `arcee`, `gmi`, `upstage` (alias `solar`), `alibaba`, `alibaba-cn`, `alibaba-coding-plan` (alias `alibaba_coding`), `alibaba-coding-plan-cn`, `alibaba-token-plan`, `alibaba-token-plan-cn`, `deepseek`, `nvidia`, `ollama-cloud`, `xai` (alias `grok`), `xai-oauth` (alias `grok-oauth`), `qwen-oauth`, `bedrock`, `opencode-zen`, `opencode-go`, `commandcode`, `commandcode-anthropic`, `ai-gateway`, `azure-foundry`, `lmstudio`, `stepfun`, `tencent-tokenhub` (alias `tencent`, `tokenhub`), `router` (aliases `ramp-router`, `ramp`), `nebius-token-factory` (aliases `nebius`, `nebius-tf`, `tokenfactory`), `tencent-tokenplan` (aliases `tokenplan`, `tencent-lkeap`). |
 | `-s`, `--skills <name>` | Preload one or more skills for the session (can be repeated or comma-separated). |
 | `-v`, `--verbose` | Verbose output. |
 | `-Q`, `--quiet` | Programmatic mode: suppress banner/spinner/tool previews. |
@@ -266,7 +265,7 @@ thor model
 
 Use this when you want to:
 - **add a new provider** (OpenRouter, Anthropic, DeepSeek, custom, etc.)
-- log into OAuth-backed providers (Anthropic, Codex, Nous Portal)
+- log into OAuth-backed providers (Anthropic, Codex)
 - enter or update API keys
 - pick from provider-specific model lists
 - configure a custom/self-hosted endpoint
@@ -425,7 +424,7 @@ the full guide, supported languages, and configuration knobs.
 ## `thor setup`
 
 ```bash
-thor setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset] [--quick] [--reconfigure] [--portal]
+thor setup [model|tts|terminal|gateway|tools|telemetry|agent] [--non-interactive] [--reset] [--quick] [--reconfigure]
 ```
 
 **Easiest path:** `thor setup` — pick a provider (ThorHub or direct) in one shot.
@@ -454,23 +453,6 @@ Options:
 | `--non-interactive` | Use defaults / environment values without prompts. |
 | `--reset` | Reset configuration to defaults before setup. |
 | `--reconfigure` | Backwards-compat alias — bare `thor setup` on an existing install now does this by default. |
-| `--portal` | One-shot ThorHub setup guide: how to buy a ThorHub key and add it as a custom provider. Skips the rest of the wizard. |
-
-## `thor portal`
-
-```bash
-thor portal [status|open|tools]
-```
-
-Inspect the ThorHub sign-up link and routing info. Subcommand-less invocation runs `status`.
-
-| Subcommand | Description |
-|------------|-------------|
-| `status` (default) | ThorHub auth state + per-tool Tool Gateway routing summary. Also shown when no subcommand is given. |
-| `open` | Open the ThorHub store (https://llm.thormarket.site/beli) in your default browser. |
-| `tools` | List every Tool Gateway partner (Firecrawl, FAL, OpenAI TTS, Browser Use, Modal) and which are routed via your own keys. |
-
-For configuration of the gateway itself, see [Tool Gateway](../user-guide/features/tool-gateway.md). For the one-shot setup path, see `thor setup --portal` above.
 
 ## `thor whatsapp`
 
@@ -671,11 +653,11 @@ Runs the `~/.codex/config.toml` migration that `/codex-runtime codex_app_server`
 thor proxy <subcommand>
 ```
 
-Run a local OpenAI-compatible HTTP server that forwards requests to an OAuth-authenticated upstream provider (e.g. Nous Portal, xAI). External apps can point at the proxy with any bearer token; the proxy attaches your real OAuth credentials on the way out. See [Subscription Proxy](../user-guide/features/subscription-proxy.md) for the full guide.
+Run a local OpenAI-compatible HTTP server that forwards requests to an upstream provider authenticated with your own credentials — ThorHub (your `sk-thor-...` key, added with `thor auth add thor`) or xAI OAuth. External apps can point at the proxy with any bearer token; the proxy attaches your real credential on the way out. See [Subscription Proxy](../user-guide/features/subscription-proxy.md) for the full guide.
 
 | Subcommand | Description |
 |------------|-------------|
-| `start` | Run the proxy in the foreground. Flags: `--provider <nous\|xai>` (default `nous`), `--host <addr>` (default `127.0.0.1`; use `0.0.0.0` to expose on LAN), `--port <int>` (default `8645`). |
+| `start` | Run the proxy in the foreground. Flags: `--provider <thor\|xai>` (default `thor`; `nous` is still accepted as a legacy alias for ThorHub), `--host <addr>` (default `127.0.0.1`; use `0.0.0.0` to expose on LAN), `--port <int>` (default `8645`). |
 | `status` | Show which proxy upstreams are ready (credentials present, OAuth valid). |
 | `providers` | List available proxy upstream providers. |
 
@@ -1076,7 +1058,6 @@ api_keys:
   openrouter           set
   openai               not set
   anthropic            set
-  nous                 not set
   firecrawl            set
   ...
 
@@ -1113,20 +1094,20 @@ config_overrides:
 thor debug share [options]
 ```
 
-Upload a debug summary to a public paste service and get a shareable URL, or (with `--nous`) send the full redacted logs to private Nous storage.
+Upload a debug summary to a public paste service and get a shareable URL, or (with `--internal`) send the full redacted logs to private Thor-internal storage.
 
 | Option | Description |
 |--------|-------------|
-| `--lines <N>` | Log lines per file: scanned for the summary's error counts, and included (redacted) with `--nous` / `--local` (default: 200). |
+| `--lines <N>` | Log lines per file: scanned for the summary's error counts, and included (redacted) with `--internal` / `--local` (default: 200). |
 | `--expire <days>` | dpaste.com fallback retention in days (minimum 1; default: 1). paste.rs pastes are always deleted after 6 hours; dpaste.com pastes cannot be deleted early. |
-| `--nous` | Upload to Nous-internal diagnostics storage instead of a public paste service. Use this when Nous support asks for a private diagnostic bundle. |
+| `--internal` | Upload to Thor-internal diagnostics storage instead of a public paste service. Use this when Thor support asks for a private diagnostic bundle. |
 | `--local` | Print the report locally instead of uploading. |
-| `--no-redact` | Disable secret redaction of the logs sent with `--nous` or printed with `--local`. It has no effect on the public paste, which never carries log text. |
+| `--no-redact` | Disable secret redaction of the logs sent with `--internal` or printed with `--local`. It has no effect on the public paste, which never carries log text. |
 | `--yes` | Skip the confirmation prompt (required when stdin is not a TTY). |
 
 **Public paste (default).** The upload is an allowlisted summary, never log lines or message text: Thor, Python and OS versions; install kind; names of connected platforms and configured built-in toolsets; which `config.yaml` keys are set (key names only, no values; user-named entries such as providers or MCP servers are counted, not named); and counts of warnings/errors by logger, exception class and HTTP status from the recent log tails. The same summary is what the gateway `/debug upload` command and the dashboard **Share debug report** button upload. Public uploads go to paste.rs, falling back to dpaste.com.
 
-**Private bundle (`--nous`).** The full debug report, the system dump and the agent, gateway, GUI/dashboard and desktop logs (512 KB per file), plus the update and Desktop update hand-off logs when present, go to private Nous diagnostics storage. Secrets are redacted unless `--no-redact` is set; other personal data in the logs (names, IDs, message text) is not. The returned viewer link is only for the Nous team and auto-deletes after 14 days. `--local` prints the same bundle without uploading anything.
+**Private bundle (`--internal`).** The full debug report, the system dump and the agent, gateway, GUI/dashboard and desktop logs (512 KB per file), plus the update and Desktop update hand-off logs when present, go to private Thor diagnostics storage. Secrets are redacted unless `--no-redact` is set; other personal data in the logs (names, IDs, message text) is not. The returned viewer link is only for the Thor team and auto-deletes after 14 days. `--local` prints the same bundle without uploading anything.
 
 ### Examples
 
@@ -1134,7 +1115,7 @@ Upload a debug summary to a public paste service and get a shareable URL, or (wi
 thor debug share              # Upload debug report, print URL
 thor debug share --lines 500  # Scan more log lines for the summary
 thor debug share --expire 30  # Keep a dpaste.com fallback paste for 30 days
-thor debug share --nous       # Upload a private diagnostics bundle for Nous support
+thor debug share --internal   # Upload a private diagnostics bundle for Thor support
 thor debug share --local      # Print report to terminal (no upload)
 ```
 
@@ -1225,7 +1206,7 @@ Restore a previously created Thor backup into your Thor home directory. All file
 | Option | Description |
 |--------|-------------|
 | `-f`, `--force` | Skip the existing-installation confirmation prompt. |
-| `--keep-host` | Replace this agent with the backup but keep what its host set up (a Thor Cloud agent's Nous Portal sign-in and platform settings). Takes a full backup of this agent first: the undo point. See below. |
+| `--keep-host` | Replace this agent with the backup but keep what its host set up (a Thor Cloud agent's ThorHub sign-in and platform settings). Takes a full backup of this agent first: the undo point. See below. |
 | `--messaging-off` | With `--keep-host`: every messaging bot the backup would run arrives switched off, with its token and settings. See below. |
 
 :::warning
@@ -1236,9 +1217,9 @@ Stop the gateway before importing to avoid conflicts with running processes. `--
 
 This is how Settings ▸ [Backup & Transfer](../user-guide/backup-and-transfer.md) replaces a Thor Cloud agent with a local one. The backup's memory, persona, skills, conversations, scheduled jobs, settings, `.env` keys and `auth.json` logins all come over. The agent keeps:
 
-- **`auth.json`** (the root's and each profile's): its own Nous Portal sign-in (`providers.nous`, the `nous` credential-pool rows, and `active_provider` when either side uses Nous). The backup's Nous tokens are never written. `shared/nous_auth.json`, `webapp/` (the Webapp's sign-in state), `install_id` and lock files are never taken from the backup.
-- **`config.yaml`** (the root home's): its own top-level `model`, `providers`, `fallback_providers`, `fallback`, `auxiliary`, `nous`, `auth`, `web`, `image_gen`, `video_gen`, `tts`, `stt`, `dashboard`, `webapp`, `cron` (scheduler settings; the jobs come from the backup), `max_concurrent_sessions` and `max_live_sessions`. Every other key comes from the backup, and the file keeps the backup's comments.
-- **`.env`** (the root home's): its own `NOUS_*`, `THOR_*`, `TOOL_GATEWAY_*` and `API_SERVER_KEY` lines.
+- **`auth.json`** (the root's and each profile's): its own ThorHub sign-in (`providers.thor`, the `thor` credential-pool rows, and `active_provider` when either side uses ThorHub). The backup's ThorHub tokens are never written. Rows for a retired provider (`providers.nous`, `shared/nous_auth.json`) in an old backup pass through untouched. `webapp/` (the Webapp's sign-in state), `install_id` and lock files are never taken from the backup.
+- **`config.yaml`** (the root home's): its own top-level `model`, `providers`, `fallback_providers`, `fallback`, `auxiliary`, `auth`, `web`, `image_gen`, `video_gen`, `tts`, `stt`, `dashboard`, `webapp`, `cron` (scheduler settings; the jobs come from the backup), `max_concurrent_sessions` and `max_live_sessions`. Every other key comes from the backup, and the file keeps the backup's comments.
+- **`.env`** (the root home's): its own `THOR_*`, `THORHUB_*`, `TOOL_GATEWAY_*` and `API_SERVER_KEY` lines.
 
 Only the root home is the host's: a named profile's `config.yaml` and `.env` arrive whole, and so does any other file with those names (a skill's `templates/config.yaml`).
 
@@ -1273,7 +1254,7 @@ Importing an older backup over newer work is still allowed, but it is no longer 
 ```bash
 thor import ~/thor-backup-20260423.zip           # Prompts before overwriting existing config
 thor import ~/thor-backup-20260423.zip --force   # Overwrite without prompting
-thor import ~/thor-backup-20260423.zip --keep-host --messaging-off   # Replace a cloud agent, keep its Nous sign-in, bots arrive off
+thor import ~/thor-backup-20260423.zip --keep-host --messaging-off   # Replace a cloud agent, keep its ThorHub sign-in, bots arrive off
 ```
 
 ## `thor logs`
@@ -1680,8 +1661,8 @@ Manage MCP (Model Context Protocol) server configurations. Running Thor itself a
 
 | Subcommand | Description |
 |------------|-------------|
-| *(none)* or `picker` | Interactive catalog picker — browse Nous-approved MCPs and install/enable/disable. |
-| `catalog` | List Nous-approved MCPs (plain text, scriptable). |
+| *(none)* or `picker` | Interactive catalog picker — browse Thor-approved MCPs and install/enable/disable. |
+| `catalog` | List Thor-approved MCPs (plain text, scriptable). |
 | `install <name>` | Install a catalog entry (e.g. `thor mcp install deepwiki`). |
 | `add <name> [--url URL] [--command CMD] [--auth oauth\|header] [--args ...]` | Add a custom MCP server with automatic tool discovery. `--args` passes the remaining argv to the stdio command, so put it last. |
 | `remove <name>` (alias: `rm`) | Remove an MCP server from config. |
@@ -1698,7 +1679,7 @@ See [MCP Config Reference](./mcp-config-reference.md), [Use MCP with Thor](../gu
 thor connectors <subcommand>
 ```
 
-Manage hosted connector accounts (apps such as Gmail reached through the Nous tool gateway). Needs a Nous Portal sign-in. One app can have several named accounts; see [Multiple connector accounts](../user-guide/features/tool-gateway.md#multiple-connector-accounts).
+Manage hosted connector accounts (apps such as Gmail reached through the managed connector gateway). Needs a ThorHub sign-in. One app can have several named accounts.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -1708,7 +1689,7 @@ Manage hosted connector accounts (apps such as Gmail reached through the Nous to
 | `rename <app> <name-or-label> --to <new>` | Rename an account. An unnamed account is matched by its app label. |
 | `disconnect <app> [--alias NAME] [--yes]` | Remove an account. Asks to confirm unless you pass `--yes`. |
 
-Rename needs a Nous Portal version that supports it. Until then it reports "This Nous Portal cannot rename connector accounts yet."
+Rename needs a Thor Portal version that supports it. Until then it reports "This Thor Portal cannot rename connector accounts yet."
 
 ## `thor plugins`
 
@@ -2020,15 +2001,9 @@ thor gateway restart
 
 Exit codes: `0` stored, `2` refused (no password; an empty, overlong or non-UTF-8 one; `--password-stdin` on a terminal; prompts that don't match; a username with spaces; nothing is changed), `1` the prompt was cancelled, a refusal above (an administrator pin, the checkout's `.env`, a username reference, a multi-line `.env` that is not UTF-8 and has a key to remove; nothing is changed), `config.yaml` could not be written, an overriding key could not be removed from `.env` after `config.yaml` was updated (the message names the key and the file), or the install is managed (Nix or a package manager owns its configuration).
 
-### `thor dashboard register`
+### `thor dashboard register` — retired
 
-Register this install as a self-hosted dashboard with your Nous Portal account. Creates an OAuth client, writes `THOR_DASHBOARD_OAUTH_CLIENT_ID` into `~/.thor/.env`, and prints how to engage the login gate. Requires being logged in (`thor setup`).
-
-| Option | Description |
-|--------|-------------|
-| `--name` | Human-readable label for the dashboard (default: auto-generated). |
-| `--redirect-uri` | Public HTTPS OAuth redirect URI (e.g. `https://thor.example.com/auth/callback`). Omit for localhost-only use. |
-| `--portal-url` | Override the Nous Portal base URL for registration (default: the portal you logged into). Also settable via `THOR_DASHBOARD_PORTAL_URL`. |
+`thor dashboard register` is retired — the Thor Portal is gone, and ThorHub uses static API keys with no OAuth client registration. The command exits with an error telling you to add your ThorHub key with `thor auth add thor` instead. For a public-internet dashboard, protect it with the username/password provider or a [self-hosted OIDC provider](../user-guide/features/web-dashboard.md#self-hosted-oidc-provider).
 
 ```bash
 # Default — opens browser to http://127.0.0.1:9119
@@ -2070,7 +2045,7 @@ profile.
 
 Behind the dashboard sign-in gate (`webapp.host: 0.0.0.0` or `::`, or `webapp.public_url` set), the
 command opens the Webapp's address instead of a one-use link, where sign-in returns: with
-`webapp.public_url` set, that URL; on the LAN, the address Web Access Start registered Nous sign-in
+`webapp.public_url` set, that URL; on the LAN, the address Web Access Start registered Thor sign-in
 for (`webapp/sign-in-registration.json`), while it is still this machine's LAN address and the
 Webapp's port; otherwise the loopback address, which serves a password provider or sign-in set up by
 hand for it. You sign in there with your dashboard account. When the gateway cannot

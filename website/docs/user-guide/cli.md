@@ -34,7 +34,7 @@ thor chat --query-file - < prompt.txt
 thor chat --model "anthropic/claude-sonnet-4"
 
 # With a specific provider
-thor chat --provider nous        # Use Nous Portal
+thor chat --provider thor        # Use ThorHub
 thor chat --provider openrouter  # Force OpenRouter
 
 # With specific toolsets

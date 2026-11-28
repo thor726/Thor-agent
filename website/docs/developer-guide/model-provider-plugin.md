@@ -468,7 +468,7 @@ Look at these bundled plugins for idioms:
 | `plugins/model-providers/gemini/` | `thinking_config` translation (native + OpenAI-compat nested forms) |
 | `plugins/model-providers/kimi-coding/` | `OMIT_TEMPERATURE`, `extra_body.thinking`, top-level `reasoning_effort` |
 | `plugins/model-providers/qwen-oauth/` | Message normalization, `cache_control` injection, VL high-res |
-| `plugins/model-providers/nous/` | Attribution tags, "omit reasoning when disabled" |
+| `plugins/model-providers/thor/` | Attribution tags, "omit reasoning when disabled" |
 | `plugins/model-providers/custom/` | Ollama `num_ctx` + `think: false` quirks |
 | `plugins/model-providers/bedrock/` | `api_mode="bedrock_converse"`, `fetch_models` returns None (no REST endpoint) |
 
@@ -537,8 +537,8 @@ Every `api_mode` gate (`determine_api_mode`, runtime resolution, agent construct
 | `auth_type` | Meaning | Who uses it |
 |---|---|---|
 | `api_key` | Single env var carries a static API key | Most providers |
-| `oauth_device_code` | Device-code OAuth flow | Nous Portal; out-of-tree plugins via `auth_handler` |
-| `oauth_external` | User signs in elsewhere, tokens land in `auth.json` | Anthropic OAuth, MiniMax OAuth, Qwen Portal, Nous Portal |
+| `oauth_device_code` | Device-code OAuth flow | xAI OAuth; out-of-tree plugins via `auth_handler` |
+| `oauth_external` | User signs in elsewhere, tokens land in `auth.json` | Anthropic OAuth, MiniMax OAuth, Qwen Portal |
 | *plugin-defined* | Any other value: login and refresh are provider-owned (`auth_handler`, `refresh_credential`, the credential hooks below); `registry_auth_type` names the auth-registry row when it differs | e.g. `copilot` in the [`github-copilot` labs plugin](https://github.com/thor726/thor-labs-plugins/tree/main/github-copilot) |
 | `aws_sdk` | AWS SDK credential chain (IAM role, profile, env) | `bedrock` plugin only |
 | `external_process` | Auth handled by a subprocess the agent spawns (see [External-process providers](#external-process-acp-providers)) | out-of-tree ACP plugins (e.g. `copilot-acp` in the `github-copilot` labs plugin) |
