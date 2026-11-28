@@ -17,8 +17,8 @@ import { ZERO } from '../domain/usage.js'
 import { estimateTokensRough } from '../lib/text.js'
 import type { Msg } from '../types.js'
 
-// Mock the external-URL opener so the billing.step_up.verification test can
-// assert it's invoked without spawning a real browser process.
+// Mock the external-URL opener so tests can assert it's invoked without
+// spawning a real browser process.
 const openExternalUrlMock = vi.fn((_url: string) => true)
 vi.mock('../lib/openExternalUrl.js', () => ({
   openExternalUrl: (url: string) => openExternalUrlMock(url)

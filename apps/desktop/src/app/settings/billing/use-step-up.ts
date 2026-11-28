@@ -1,21 +1,14 @@
-import { useStore } from '@nanostores/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { atom } from 'nanostores'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useI18n } from '@/i18n'
-import { $gateway } from '@/store/gateway'
 
 import type { BillingRefusal } from './api'
 import { useBillingApi } from './api'
 import { resolveRefusal } from './errors'
 
-export type StepUpPhase = 'idle' | 'verifying' | 'waiting'
-
-export interface StepUpVerification {
-  code: string | null
-  url: string
-}
+export type StepUpPhase = 'idle' | 'waiting'
 
 export interface StepUpMessage {
   kind: 'error' | 'success'
@@ -24,10 +17,9 @@ export interface StepUpMessage {
 }
 
 /**
- * True while a Remote Spending approval is in flight. The device flow swaps this terminal's login when it
- * lands, so Billing pauses its focus/interval refetches meanwhile: a refetch on the old login mid-swap can
- * be refused, and a refused billing.state collapses the page (every money control, the row that started
- * the approval included, disappears). The flow's own completion refetches once on the new login.
+ * True while a Remote Spending approval is in flight. Billing pauses its focus/interval refetches
+ * meanwhile: a refetch mid-approval can be refused, and a refused billing.state collapses the page
+ * (every money control, the row that started the approval included, disappears).
  */
 export const $stepUpInFlight = atom(false)
 
@@ -46,13 +38,11 @@ function holdStepUp(holder: object, held: boolean) {
   $stepUpInFlight.set(stepUpHolders.size > 0)
 }
 
-export function useStepUpFlow({ autoOpen = false }: { autoOpen?: boolean } = {}) {
+export function useStepUpFlow() {
   const { t } = useI18n()
   const b = t.settings.billing
   const api = useBillingApi()
-  const gateway = useStore($gateway)
   const queryClient = useQueryClient()
-  const offRef = useRef<(() => void) | null>(null)
   const runningRef = useRef(false)
   const runIdRef = useRef(0)
 
@@ -61,40 +51,23 @@ export function useStepUpFlow({ autoOpen = false }: { autoOpen?: boolean } = {})
   >(null)
 
   const [phase, setPhase] = useState<StepUpPhase>('idle')
-  const [verification, setVerification] = useState<StepUpVerification | null>(null)
-
-  const unsubscribe = useCallback(() => {
-    offRef.current?.()
-    offRef.current = null
-  }, [])
 
   const dismiss = useCallback(() => {
     runIdRef.current += 1
     runningRef.current = false
     holdStepUp(runningRef, false)
-    unsubscribe()
     setMessage(null)
     setPhase('idle')
-    setVerification(null)
-  }, [unsubscribe])
+  }, [])
 
   useEffect(
     () => () => {
       holdStepUp(runningRef, false)
       runIdRef.current += 1
       runningRef.current = false
-      unsubscribe()
     },
-    [unsubscribe]
+    []
   )
-
-  const openVerification = useCallback(() => {
-    if (!verification?.url) {
-      return
-    }
-
-    void window.thorDesktop?.openExternal?.(verification.url)
-  }, [verification?.url])
 
   /** Resolves true once Remote Spending is allowed (billing queries already refetched), else false. */
   const start = useCallback(async (): Promise<boolean> => {
@@ -107,32 +80,8 @@ export function useStepUpFlow({ autoOpen = false }: { autoOpen?: boolean } = {})
     const runId = runIdRef.current + 1
 
     runIdRef.current = runId
-    unsubscribe()
     setMessage(null)
-    setVerification(null)
     setPhase('waiting')
-
-    offRef.current =
-      gateway?.on('billing.step_up.verification', event => {
-        const payload = event.payload
-        const url = typeof payload?.verification_url === 'string' ? payload.verification_url : null
-
-        if (!url) {
-          return
-        }
-
-        setVerification({
-          code: typeof payload?.user_code === 'string' ? payload.user_code : null,
-          url
-        })
-        setPhase('verifying')
-
-        // The user just asked for this (clicked a control that needs it): open the approval page
-        // right away, like sign-in does, instead of making them click a second button for it.
-        if (autoOpen) {
-          void window.thorDesktop?.openExternal?.(url)
-        }
-      }) ?? null
 
     const result = await api.stepUp()
 
@@ -142,9 +91,7 @@ export function useStepUpFlow({ autoOpen = false }: { autoOpen?: boolean } = {})
 
     runningRef.current = false
     holdStepUp(runningRef, false)
-    unsubscribe()
     setPhase('idle')
-    setVerification(null)
 
     if (!result.ok) {
       setMessage({ status: 'refusal', refusal: result.refusal })
@@ -165,7 +112,7 @@ export function useStepUpFlow({ autoOpen = false }: { autoOpen?: boolean } = {})
     setMessage({ status: 'success' })
 
     return true
-  }, [api, autoOpen, gateway, queryClient, unsubscribe])
+  }, [api, queryClient])
 
   let displayMessage: StepUpMessage | null = null
 
@@ -179,5 +126,5 @@ export function useStepUpFlow({ autoOpen = false }: { autoOpen?: boolean } = {})
         : { kind: 'error', text: b.stepUp.deniedBody, title: b.stepUp.deniedTitle }
   }
 
-  return { dismiss, message: displayMessage, openVerification, phase, start, verification }
+  return { dismiss, message: displayMessage, phase, start }
 }

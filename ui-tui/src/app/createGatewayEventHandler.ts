@@ -33,7 +33,7 @@ import type { Msg, SubagentProgress } from '../types.js'
 
 import { applyConnectionRequest, applyConnectionUpdate } from './connectionOperationStore.js'
 import { applyDelegationStatus, getDelegationState } from './delegationStore.js'
-import { createBillingVerificationPresenter, createFreeTierChallengePresenter } from './gatewayBrowserLinks.js'
+import { createFreeTierChallengePresenter } from './gatewayBrowserLinks.js'
 import {
   fenceLifecycleEvent,
   isGenericErrorEvent,
@@ -846,7 +846,6 @@ export function createGatewayEventHandler(ctx: GatewayEventHandlerContext): (ev:
   // paths can't both persist the same prompt twice.
   const persistedAbandonedClarify = new Set<string>()
   const showChallenge = createFreeTierChallengePresenter(sys, openExternalUrl)
-  const showBillingVerification = createBillingVerificationPresenter(sys, openExternalUrl)
 
   // When a clarify prompt is dismissed without an answer (the backend request
   // timed out and returned no answer), the live ClarifyPrompt overlay is
@@ -1375,11 +1374,6 @@ export function createGatewayEventHandler(ctx: GatewayEventHandlerContext): (ev:
         // Key-matched clear only — a stale/late clear must not wipe a newer
         // notice (turnController guards the key match).
         turnController.clearNotice(ev.payload?.key)
-
-        return
-
-      case 'billing.step_up.verification':
-        showBillingVerification(ev.payload)
 
         return
       case 'gateway.stderr': {

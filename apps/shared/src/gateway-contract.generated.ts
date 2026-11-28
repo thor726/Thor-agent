@@ -6172,11 +6172,6 @@ export interface ApprovalCancelledPayload {
 export interface SessionControlUpdatePayload {
   control: SessionControlSnapshot
 }
-/** ``methods_session`` billing.step_up on_verification. */
-export interface BillingStepUpVerificationPayload {
-  verification_url: string
-  user_code: string
-}
 /** ``methods_prompt._spawn_side_agent``: ``{task_id, **extra, text}``; btw adds ``question``. */
 export interface SideAgentCompletePayload {
   task_id: string
@@ -6353,7 +6348,7 @@ export interface RpcMethods {
   'billing.keep_going_on_credits': { params: BillingKeepGoingOnCreditsParams; result: BillingMutationResult }
   /** Read-only billing view (no scope); the Nous free tier is answered locally without a portal call. */
   'billing.state': { params: ProfileParams; result: BillingStateResult }
-  /** Run the billing:manage device flow; the URL/code arrive via billing.step_up.verification. */
+  /** Request the billing:manage scope (Remote Spending); on ThorHub always declined — there is no billing API and no step-up flow. */
   'billing.step_up': { params: BillingStepUpParams; result: BillingStepUpResult }
   /** Deliver a relayed DM into a Bot Chat on this gateway and return the one-turn reply (blocking). */
   'bot_relay.deliver': { params: BotRelayDeliverParams; result: BotRelayDeliverResult }
@@ -7336,8 +7331,6 @@ export interface BackendGatewayEventMap {
   'approval.cancelled': ApprovalCancelledPayload
   /** A /background side agent finished. */
   'background.complete': SideAgentCompletePayload
-  /** Device-flow URL + code for the billing scope step-up; the client opens the browser. */
-  'billing.step_up.verification': BillingStepUpVerificationPayload
   /** A bot-relay outbox envelope is queued; drain it. */
   'bot_relay.outbox.pending': ChangeSignalPayload
   /** Browser (CDP) connect / install progress line. */
@@ -7493,7 +7486,6 @@ export const GATEWAY_EVENT_TYPES = [
   'agent.terminal.output',
   'approval.cancelled',
   'background.complete',
-  'billing.step_up.verification',
   'bot_relay.outbox.pending',
   'browser.progress',
   'btw.complete',

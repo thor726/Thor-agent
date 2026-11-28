@@ -150,9 +150,8 @@ export interface BillingOverlayCtx {
    */
   charge: (amount: string, idempotencyKey?: string) => Promise<BillingChargeOutcome>
   /**
-   * Run the `billing.step_up` device flow (allow Remote Spending). Resolves
-   * `true` when the grant lands. The browser opens via the gateway's
-   * out-of-band `billing.step_up.verification` event — the overlay just awaits.
+   * Run the `billing.step_up` RPC (allow Remote Spending). Resolves `true`
+   * when the grant lands. There is no device flow: the RPC answers inline.
    */
   requestRemoteSpending: () => Promise<boolean>
   /** Open the portal in the browser + echo a transcript line. */
@@ -241,10 +240,10 @@ export interface SubscriptionOverlayCtx {
   /** POST /upgrade: charge the card on the subscription + flip the plan now. */
   upgrade: (tierId: string, idempotencyKey?: string) => Promise<SubscriptionUpgradeResponse | null>
   /**
-   * Run the `billing.step_up` device flow (allow remote spending / "Remote
+   * Run the `billing.step_up` RPC (allow remote spending / "Remote
    * Spending"). Resolves `{granted}` plus the typed denial (`error`/`message`) so
-   * the stepup screen shows the right recovery. The browser opens via the
-   * gateway's out-of-band verification event — the stepup screen just awaits.
+   * the stepup screen shows the right recovery. There is no device flow: the
+   * RPC answers inline.
    */
   requestRemoteSpending: () => Promise<StepUpResult>
   /** Emit a transcript system line. */

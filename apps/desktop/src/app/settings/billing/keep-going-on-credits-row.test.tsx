@@ -8,30 +8,6 @@ const apiMocks = vi.hoisted(() => ({
   updateKeepGoingOnCredits: vi.fn()
 }))
 
-const gatewayMock = vi.hoisted(() => {
-  const handlers = new Map<string, Set<(event: unknown) => void>>()
-
-  return {
-    emit: (eventName: string, event: unknown) => handlers.get(eventName)?.forEach(handler => handler(event)),
-    gateway: {
-      on: (eventName: string, handler: (event: unknown) => void) => {
-        const set = handlers.get(eventName) ?? new Set()
-        handlers.set(eventName, set)
-        set.add(handler)
-
-        return () => set.delete(handler)
-      }
-    },
-    reset: () => handlers.clear()
-  }
-})
-
-vi.mock('@/store/gateway', async () => {
-  const { atom } = (await vi.importActual('nanostores')) as { atom: (value: unknown) => unknown }
-
-  return { $gateway: atom(gatewayMock.gateway) }
-})
-
 vi.mock('./api', () => ({
   useBillingApi: () => apiMocks
 }))
@@ -50,9 +26,7 @@ function renderRow(enabled = false) {
 beforeEach(() => {
   apiMocks.stepUp.mockReset()
   apiMocks.updateKeepGoingOnCredits.mockReset()
-  gatewayMock.reset()
   $stepUpInFlight.set(false)
-  Object.defineProperty(window, 'thorDesktop', { configurable: true, value: { openExternal: vi.fn() } })
 })
 
 describe('KeepGoingOnCreditsRow', () => {
@@ -71,16 +45,6 @@ describe('KeepGoingOnCreditsRow', () => {
     expect(await screen.findByText(/Approve Remote Spending in your browser/)).toBeTruthy()
     expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('true')
     expect($stepUpInFlight.get()).toBe(true)
-
-    act(() => {
-      gatewayMock.emit('billing.step_up.verification', {
-        payload: { user_code: 'ABCD-1234', verification_url: 'https://llm.thormarket.site/device' }
-      })
-    })
-
-    // The browser opens on its own (no second "Verify" click).
-    expect(window.thorDesktop?.openExternal).toHaveBeenCalledWith('https://llm.thormarket.site/device')
-    expect(screen.getByText('ABCD-1234')).toBeTruthy()
 
     await act(async () => resolveStepUp({ data: { granted: true, ok: true }, ok: true }))
 

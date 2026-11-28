@@ -170,7 +170,7 @@
     },
     {
       "name": "billing.step_up",
-      "summary": "Run the billing:manage device flow; the URL/code arrive via billing.step_up.verification.",
+      "summary": "Request the billing:manage scope (Remote Spending); on ThorHub always declined \u2014 there is no billing API and no step-up flow.",
       "params": [
         {
           "name": "params",
@@ -7378,26 +7378,6 @@
           "ok"
         ],
         "title": "BillingStepUpResult",
-        "type": "object"
-      },
-      "BillingStepUpVerificationPayload": {
-        "additionalProperties": false,
-        "description": "``methods_session`` billing.step_up on_verification.",
-        "properties": {
-          "verification_url": {
-            "title": "Verification Url",
-            "type": "string"
-          },
-          "user_code": {
-            "title": "User Code",
-            "type": "string"
-          }
-        },
-        "required": [
-          "verification_url",
-          "user_code"
-        ],
-        "title": "BillingStepUpVerificationPayload",
         "type": "object"
       },
       "BotRelayDeliverParams": {
@@ -51439,18 +51419,6 @@
           "name": "payload",
           "schema": {
             "$ref": "#/components/schemas/SideAgentCompletePayload"
-          }
-        }
-      ]
-    },
-    {
-      "name": "billing.step_up.verification",
-      "summary": "Device-flow URL + code for the billing scope step-up; the client opens the browser.",
-      "params": [
-        {
-          "name": "payload",
-          "schema": {
-            "$ref": "#/components/schemas/BillingStepUpVerificationPayload"
           }
         }
       ]

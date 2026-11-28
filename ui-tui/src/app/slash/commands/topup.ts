@@ -144,13 +144,11 @@ const renderBillingError = (
 }
 
 /**
- * Run the Remote-Spending device flow and resolve whether the grant landed.
+ * Run the Remote-Spending step-up and resolve whether the grant landed.
  *
- * The browser opens via the gateway's out-of-band `billing.step_up.verification`
- * event (handled globally in createGatewayEventHandler), so this just kicks the
- * blocking `billing.step_up` RPC and awaits its result. A reject (the device
- * flow can outlive the RPC's timeout while the user is still authorizing) is
- * treated as "not yet granted" — non-fatal; the grant persists gateway-side.
+ * The blocking `billing.step_up` RPC is the source of truth (there is no
+ * device flow anymore — the gateway answers inline). A reject is treated as
+ * "not yet granted" — non-fatal.
  *
  * NOTE: never surface the raw `billing:manage` scope — the user-facing concept
  * is "Remote Spending".

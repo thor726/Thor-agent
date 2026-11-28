@@ -317,7 +317,6 @@ Primary event types the client handles today:
 | `tool.complete`            | `{ tool_id, name, error?, summary?, duration_s?, inline_diff?, todos? }`    |
 | `request.cancel`           | `{ id, method, reason }` clears the withdrawn server→client request         |
 | `background.complete`      | `{ task_id, text }`                                                         |
-| `billing.step_up.verification` | `{ verification_url, user_code }`                                       |
 | `review.summary`           | `{ text }`                                                                  |
 | `browser.progress`         | `{ message }`                                                               |
 | `voice.status`             | `{ state }`                                                                 |

@@ -366,7 +366,7 @@ class BillingStepUpResult(BillingEnvelope):
 
 
 method("billing.step_up", params=BillingStepUpParams, result=BillingStepUpResult,
-       doc="Run the billing:manage device flow; the URL/code arrive via billing.step_up.verification.")
+       doc="Request the billing:manage scope (Remote Spending); on ThorHub always declined — there is no billing API and no step-up flow.")
 
 
 # ── delegation / subagent.steer ───────────────────────────────────────────────────────────────

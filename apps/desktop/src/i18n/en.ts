@@ -1593,7 +1593,7 @@ export const en: Translations = {
       stepUp: {
         openVerification: 'Open verification page',
         dismiss: 'Dismiss',
-        waiting: 'Waiting for verification link…',
+        waiting: 'Waiting for approval…',
         verify: 'Verify to continue',
         deniedTitle: 'Verification was not approved',
         deniedBody: 'Verification finished without allowing Remote Spending for this terminal.',

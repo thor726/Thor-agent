@@ -585,17 +585,6 @@ class SessionControlUpdatePayload(Payload):
 event("session.control.update", SessionControlUpdatePayload, doc="Persisted goal / loop / heartbeat state changed.")
 
 
-class BillingStepUpVerificationPayload(Payload):
-    """``methods_session`` billing.step_up on_verification."""
-
-    verification_url: str
-    user_code: str
-
-
-event("billing.step_up.verification", BillingStepUpVerificationPayload,
-      doc="Device-flow URL + code for the billing scope step-up; the client opens the browser.")
-
-
 # ── side agents (methods_prompt._spawn_side_agent) ────────────────────────────────────────────
 
 
@@ -887,7 +876,7 @@ event("groups.changed", GroupsChangedPayload,
 
 
 __all__ = [
-    "BillingBlock", "BillingStepUpVerificationPayload", "BrowserProgressPayload", "ChangeSignalPayload", "ErrorPayload",
+    "BillingBlock", "BrowserProgressPayload", "ChangeSignalPayload", "ErrorPayload",
     "ErrorSurface", "FreeTierChallengePayload", "GatewayReadyPayload", "GroupsChangedPayload",
     "MessageCompletePayload", "MessageInterimPayload", "MessageReaction", "MessageReactionPayload", "MoaAggregatingPayload",
     "MoaPhasePayload", "MoaProgressPayload", "MoaReferencePayload", "NoticePayload",

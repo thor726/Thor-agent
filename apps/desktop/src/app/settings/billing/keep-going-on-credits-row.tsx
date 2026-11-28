@@ -3,7 +3,6 @@ import { useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n'
-import { ExternalLink } from '@/lib/icons'
 
 import { ToggleRow } from '../primitives'
 
@@ -19,7 +18,7 @@ const CAPTION = 'mt-2 flex min-w-0 flex-wrap items-center gap-2 text-[length:var
  * switch. Optimistic like the Portal switch.
  *
  * Changing it needs Remote Spending (billing:manage) on this terminal. Without it, the click starts the
- * approval itself: the browser opens, the switch holds the requested position, ONE line under it says
+ * approval: the switch holds the requested position, ONE line under it says
  * what to do, and the change applies on its own once approved. No refuse → verify → click-again loop,
  * and no second Remote Spending prompt elsewhere on the page.
  */
@@ -28,7 +27,7 @@ export function KeepGoingOnCreditsRow({ enabled }: { enabled: boolean }) {
   const copy = t.settings.billing.keepGoingOnCredits
   const api = useBillingApi()
   const queryClient = useQueryClient()
-  const stepUp = useStepUpFlow({ autoOpen: true })
+  const stepUp = useStepUpFlow()
   const [optimistic, setOptimistic] = useState<boolean | null>(null)
   const [refusal, setRefusal] = useState<BillingRefusal | null>(null)
   const [approving, setApproving] = useState(false)
@@ -108,15 +107,6 @@ export function KeepGoingOnCreditsRow({ enabled }: { enabled: boolean }) {
     below = (
       <div className={`${CAPTION} text-(--ui-text-tertiary)`}>
         <span>{copy.approveInBrowser}</span>
-        {stepUp.verification?.code && (
-          <span className="font-mono text-[0.72rem] font-semibold text-foreground">{stepUp.verification.code}</span>
-        )}
-        {stepUp.verification && (
-          <Button onClick={stepUp.openVerification} size="sm" type="button" variant="outline">
-            {copy.openAgain}
-            <ExternalLink className="size-3.5" />
-          </Button>
-        )}
         <Button
           onClick={() => {
             // dismiss() makes the pending start() return early, so put the switch back here.

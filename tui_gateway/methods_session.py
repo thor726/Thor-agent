@@ -1806,7 +1806,7 @@ def _(rid, params: dict) -> dict:
 # ── billing / subscription ───────────────────────────────────────────
 # All fail-open: a logged-out / unreachable portal yields an ``ok`` envelope with a typed
 # ``error`` (not a JSON-RPC error) so the TUI maps it to copy. ``billing:manage`` routes
-# return error=insufficient_scope on 403, which drives the ``billing.step_up`` device flow.
+# return error=insufficient_scope on 403, which drives the ``billing.step_up`` step-up.
 def _billing_view(name: str, module: str, builder: str, serializer: str, fallback: dict) -> None:
     """Profile-bound read-only view: ``serializer(module.builder())``, ``fallback`` on any error.
     The view module stays a lazy import (startup budget); the serializer is a server global."""
