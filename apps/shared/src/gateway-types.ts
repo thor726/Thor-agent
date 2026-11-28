@@ -348,6 +348,9 @@ export interface SessionUsageResponse {
   input?: number
   model?: string
   output?: number
+  // True when this session's usage came through the ThorHub route; an older
+  // backend sends no flag, and the client treats "no flag" as ThorHub.
+  thorhub_route?: boolean
   total?: number
   // Shared dollar usage model (two-bar view) so /usage renders the same bars
   // as /subscription. Dollars only — never "credits".

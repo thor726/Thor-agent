@@ -86,6 +86,22 @@ describe('/usage slash command', () => {
     expect(printed(withBalance.sys)).not.toContain(t('slashCmd.session.usage.noCalls'))
   })
 
+  it('hides the top-up CTA on a non-ThorHub route; no flag still shows it', async () => {
+    // thorhub_route comes from the backend (SessionUsageResult); an older
+    // backend sends no flag, which the command treats as ThorHub.
+    const nonThorhub = buildCtx({
+      'session.usage': baseUsage({ calls: 0, credits_lines: [], thorhub_route: false })
+    })
+    await nonThorhub.run('')
+    expect(printed(nonThorhub.sys)).not.toContain(t('slashCmd.session.usage.cta'))
+
+    const thorhub = buildCtx({
+      'session.usage': baseUsage({ calls: 0, credits_lines: [], thorhub_route: true })
+    })
+    await thorhub.run('')
+    expect(printed(thorhub.sys)).toContain(t('slashCmd.session.usage.cta'))
+  })
+
   it('prints window usage one stripped line at a time', async () => {
     const { panel, run, sys } = buildCtx({
       'session.usage': baseUsage({
@@ -113,7 +129,7 @@ describe('/usage slash command', () => {
     const lines = ['Nous balance: $50.00', '', 'Top up: https://portal.example/billing?topup=open']
     const { panel, run } = buildCtx({ 'session.usage': baseUsage({ calls: 0, credits_lines: lines }) })
     await run('')
-    expect(panel).toHaveBeenCalledWith('Nous balance', [{ text: lines.join('\n') }])
+    expect(panel).toHaveBeenCalledWith('ThorHub balance', [{ text: lines.join('\n') }])
   })
 
   it('renders the dollar two-bar model (no "credits" wording) when available', async () => {
