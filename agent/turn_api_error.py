@@ -94,7 +94,7 @@ def handle_api_error(
     # "ran out for this model" / "payment paused" state is only visible on the blocking response itself
     # (the stream path captures headers after the stream opens, which a 402 never does). Fail-open.
     # Usage-window responses only: every other account keeps main's behaviour (no capture here).
-    if status_code in (402, 403) and getattr(agent, "provider", "") == "nous":
+    if status_code in (402, 403) and getattr(agent, "provider", "") in {"thor", "thorhub"}:
         try:
             from agent.credits_tracker import response_is_usage_window
             response = getattr(api_error, "response", None)

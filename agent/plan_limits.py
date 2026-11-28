@@ -23,7 +23,7 @@ from typing import Any, Iterable, Optional
 
 logger = logging.getLogger(__name__)
 
-PROVIDER = "nous"
+PROVIDER = "thor"
 # Leave room for the reply: a suggestion must fit the conversation with this many tokens to spare.
 _CONTEXT_HEADROOM_TOKENS = 8_000
 _MAX_SUGGESTIONS = 2

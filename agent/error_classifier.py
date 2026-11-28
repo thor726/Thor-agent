@@ -1243,12 +1243,10 @@ def _status_5xx(c: _Ctx) -> Verdict:
 
 def _is_thorhub_route(c: _Ctx) -> bool:
     """The usage-window 402 code is ThorHub's: any other upstream sending it keeps main's text rules."""
-    if (c.provider or "").strip().lower() in {"thor", "thorhub", "nous"}:
+    if (c.provider or "").strip().lower() in {"thor", "thorhub"}:
         return True
     from utils import base_url_host_matches
-    return bool(c.base_url) and (
-        base_url_host_matches(c.base_url, "llm.thormarket.site")
-        or base_url_host_matches(c.base_url, "thor-agent.local"))
+    return bool(c.base_url) and base_url_host_matches(c.base_url, "llm.thormarket.site")
 
 
 def _classify_402(error_msg: str, result_fn: Callable[..., Any], code: str = "", body: Any = None) -> Any:

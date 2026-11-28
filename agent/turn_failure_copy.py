@@ -468,8 +468,6 @@ def oauth_relogin_command(provider: Any) -> str:
     from thor_constants import profile_cli_selector
 
     slug = str(provider or "").strip().lower()
-    if slug == "nous":
-        return f"thor {profile_cli_selector()}portal"
     if _login_owned_by_external_cli(slug):
         # `auth add` refuses a plugin with no auth_handler. The plugin's own CLI login comes first:
         # `thor model` runs it too, but then saves the provider as the default.

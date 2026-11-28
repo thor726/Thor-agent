@@ -14,13 +14,13 @@ logger = logging.getLogger("run_agent")
 
 
 
-def _is_nous_agent(agent) -> bool:
-    """True for the Thor provider (or a route to a thor-agent.local host)."""
-    if (getattr(agent, "provider", "") or "").strip().lower() == "nous":
+def _is_thorhub_agent(agent) -> bool:
+    """True for the Thor provider (ThorHub, or a route to its host)."""
+    if (getattr(agent, "provider", "") or "").strip().lower() in {"thor", "thorhub"}:
         return True
     from utils import base_url_host_matches
     base_url = str(getattr(agent, "base_url", "") or "")
-    return bool(base_url) and base_url_host_matches(base_url, "thor-agent.local")
+    return bool(base_url) and base_url_host_matches(base_url, "llm.thormarket.site")
 
 def _response_headers(http_response: Any):
     """Headers of a response, or None when there is nothing to parse."""
@@ -57,13 +57,6 @@ class RateLimitCreditsMixin:
     def get_rate_limit_state(self):
         """Return the last captured RateLimitState, or None."""
         return self._rate_limit_state
-
-    def _capture_nous_model_switch(self, http_response: Any) -> None:
-        """Retired with the Nous free tier: the Thor gateway's ``x-nous-model-switch`` header is no
-        longer captured, so no model switch is ever recorded here. Kept (a no-op) because the
-        response-header capture calls it; the header parser it fed is kept for the generic
-        rate-limit machinery (see ``agent.credits_tracker``)."""
-        return
 
     def _capture_anthropic_response_headers(self, http_response: Any) -> None:
         """Capture rate-limit + credits state from Anthropic Messages response headers (the SDK's
@@ -112,7 +105,7 @@ class RateLimitCreditsMixin:
                             "(miss — producer off / non-Thor path / >TTL stale)")
             return
 
-        if state.is_usage_window and not _is_nous_agent(self):
+        if state.is_usage_window and not _is_thorhub_agent(self):
             return  # window headers from any other upstream are ignored (no window UI, no Keep going button)
         if state.is_usage_window and not any(k.lower() == "x-nous-credits-purchased-micros" for k in headers):
             # A refused request's headers omit the top-up balance: keep the last known one, not "no credits".

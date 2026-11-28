@@ -1921,7 +1921,7 @@ def _read_thorhub_auth() -> Optional[dict]:
         if not auth_path.is_file():
             return None
         data = json.loads(auth_path.read_text(encoding="utf-8-sig"))
-        provider = (data.get("providers", {}) or {}).get("thor") or (data.get("providers", {}) or {}).get("nous") or {}
+        provider = (data.get("providers", {}) or {}).get("thor") or {}
         if not provider.get("api_key") and not provider.get("key"):
             return None
         return provider

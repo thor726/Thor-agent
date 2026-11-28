@@ -100,7 +100,7 @@ class UsageModel:
 
 
 def usage_model_wire(model: Optional[UsageModel]) -> Optional[dict]:
-    """The model as ``session.account_usage``'s ``nous_usage`` (numbers, not display strings); None when unavailable."""
+    """The model as ``session.account_usage``'s ``thorhub_usage`` (numbers, not display strings); None when unavailable."""
     return asdict(model) if model is not None and model.available else None
 
 

@@ -497,22 +497,6 @@ def _prompt_cache_scope_for_agent(agent) -> str | None:
         return None
 
 
-def _merge_nous_portal_messages_extra_body(agent, anthropic_kwargs: dict, api_messages: list) -> dict:
-    """The Thor profile body on the Messages wire, which the profile hook never reaches; never
-    ``provider_preferences`` (OpenAI-wire routing the Portal 400s on)."""
-    if getattr(agent, "provider", None) not in {"nous", "nous-portal", "nousresearch"}:
-        return anthropic_kwargs
-    try:
-        from providers import get_provider_profile
-        nous_profile = get_provider_profile("nous")
-        if nous_profile is not None:
-            anthropic_kwargs.setdefault("extra_body", {}).update(nous_profile.build_extra_body(
-                session_id=getattr(agent, "session_id", None), data_use=data_use_requirement(api_messages)))
-    except Exception as exc:
-        logger.debug("Thor Portal extra_body merge failed: %s", exc)
-    return anthropic_kwargs
-
-
 def _estimate_chunk_bytes(chunk: Any) -> int:
     """Cheap per-chunk size estimate for the stream diagnostic counters: delta
     string lengths plus a framing floor (~3x cheaper than ``len(repr(chunk))``
@@ -1385,9 +1369,7 @@ def _build_anthropic_kwargs(agent, api_messages, tools_for_api, reasoning_config
         base_url=getattr(agent, "_anthropic_base_url", None),
         fast_mode=request_overrides.get("speed") == "fast",
         drop_context_1m_beta=bool(getattr(agent, "_oauth_1m_beta_disabled", False)))
-    # Portal reads ``tags`` / ``session_id`` on its Messages route too, but the profile hook
-    # is only consulted by the OpenAI-wire transport — merge here to keep sticky routing.
-    return _merge_nous_portal_messages_extra_body(agent, anthropic_kwargs, api_messages)
+    return anthropic_kwargs
 
 
 def _build_bedrock_kwargs(agent, api_messages, tools_for_api, reasoning_config):
@@ -1745,18 +1727,6 @@ def _fallback_entry_key(fb: dict) -> tuple[str, str, str]:
             str(fb.get("base_url") or "").strip().rstrip("/"))
 
 
-def _fallback_entry_unavailable_without_network(agent, fb: dict) -> Optional[str]:
-    """Return a skip reason for fallback entries known to be unusable locally."""
-    if (fb.get("provider") or "").strip().lower() != "nous":
-        return None
-    try:
-        from thor_cli.auth import get_provider_auth_state
-        state = get_provider_auth_state("nous") or {}
-    except Exception as exc:
-        return f"nous_auth_unreadable:{type(exc).__name__}"
-    has_token = any(isinstance(t, str) and t.strip() for t in (state.get("access_token"), state.get("refresh_token")))
-    return None if has_token else "nous_token_missing"
-
 
 _FALLBACK_REASON_LABELS = {
     FailoverReason.auth: "authentication failed",
@@ -1935,11 +1905,6 @@ def _should_skip_fallback_candidate(agent, fb: dict, fb_key: tuple, fb_provider:
     if _candidate_pool_exhausted(agent, fb_provider, fb_model):
         logger.warning("Fallback skip: %s/%s credential pool is exhausted (every entry in cooldown)", fb_provider, fb_model)
         return True
-    local_skip_reason = _fallback_entry_unavailable_without_network(agent, fb)
-    if local_skip_reason:
-        unavailable.add(fb_key)
-        logger.warning("Fallback skip: %s/%s is not locally usable (%s); suppressing for this session", fb_provider, fb_model, local_skip_reason)
-        return True
     # Identity semantics (axes, shim aliases, credential surfaces, multi-endpoint pools)
     # are owned by agent.backend_identity — do not re-implement comparisons here.
     # Skip entries that resolve to the same backend that just failed — falling back to it loops the failure.
@@ -2086,8 +2051,6 @@ def try_activate_fallback(agent, reason: FailoverReason | None = None, reset_at=
                 model=agent.model, base_url=agent.base_url, provider=fb_provider, is_codex_backend=fb_provider == "openai-codex")
             return True
         except Exception as e:
-            if fb_provider == "nous":
-                unavailable.add(fb_key)
             logger.error("Failed to activate fallback %s: %s", fb_model, e)
             continue  # try next in chain
 
@@ -2224,7 +2187,6 @@ def _anthropic_summary_attempt(agent, api_messages: list, api_request_id: str):
             model=agent.model, messages=api_messages, tools=None, max_tokens=agent.max_tokens,
             reasoning_config=agent.reasoning_config, is_oauth=agent._is_anthropic_oauth,
             preserve_dots=agent._anthropic_preserve_dots(), base_url=getattr(agent, "_anthropic_base_url", None))
-        ant_kw = _merge_nous_portal_messages_extra_body(agent, ant_kw, api_messages)
         response = _managed_summary_call(
             agent, api_request_id, ant_kw, agent._interruptible_api_call, retry_count=retry_count)
         return _summary_text(agent, response, strip_tool_prefix=agent._is_anthropic_oauth)
@@ -2939,7 +2901,6 @@ class _StreamingCall(StreamingWaitMonitor):
         response = self._attempt_stream_response = getattr(raw_stream, "response", None)
         self.agent._capture_rate_limits(response)
         self.agent._capture_credits(response)
-        self.agent._capture_nous_model_switch(response)
         self.agent._stream_diag_capture_response(self.clients.diag, response)
         self.agent._check_openrouter_cache_status(response)
         self._writer_token = claim_stream_writer(self.agent)

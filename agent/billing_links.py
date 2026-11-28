@@ -15,7 +15,7 @@ from utils import base_url_host_matches
 
 @dataclass
 class BillingBlock:
-    """Structured billing-wall descriptor shared across every surface. ``is_nous`` (ThorHub route)
+    """Structured billing-wall descriptor shared across every surface. ``is_thorhub`` (ThorHub route)
     is the routing bit: Thor has an in-app billing surface (Settings → Billing, ``/topup``)
     preferred over ``billing_url``; third-party providers have none, so ``billing_url`` is the
     deep link needed. (The field name is kept for the gateway event contract.)"""
@@ -24,7 +24,7 @@ class BillingBlock:
     provider_label: str
     model: str
     billing_url: Optional[str]
-    is_nous: bool
+    is_thorhub: bool
     message: str
 
     def to_dict(self) -> dict:
