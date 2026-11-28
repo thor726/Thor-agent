@@ -1,4 +1,4 @@
-import type { CanonicalClientIdentity, ClientCapabilitiesResult } from './gateway-contract.generated.js'
+import type { tui_gateway_contracts_common_CanonicalClientIdentity as CanonicalClientIdentity, ClientCapabilitiesResult } from './gateway-contract.generated.js'
 import type { GatewayEvent } from './gateway-events.js'
 
 export type GatewayRequestId = number | string

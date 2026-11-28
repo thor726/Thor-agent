@@ -1,4 +1,4 @@
-import type { CanonicalClientIdentity } from './gateway-contract.generated.js'
+import type { tui_gateway_contracts_common_CanonicalClientIdentity as CanonicalClientIdentity } from './gateway-contract.generated.js'
 import type { GatewayEvent, GatewayEventName } from './gateway-events.js'
 import {
   DEFAULT_HEARTBEAT_DEADLINE_MS,
