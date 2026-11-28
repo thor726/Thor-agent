@@ -357,14 +357,14 @@ def test_google_and_vertex_routes_share_official_pricing_snapshot():
     assert all(route.billing_mode == "official_docs_snapshot" for route in routes)
 
 
-def test_retired_nous_route_resolves_unknown():
-    """The retired Nous provider (and its inference host) no longer has a billing
+def test_retired_provider_route_resolves_unknown():
+    """A retired provider id (and its dead inference host) no longer has a billing
     route: both fall through to ``unknown`` instead of the official-models-api route.
     """
     routes = (
-        resolve_billing_route("gpt-5", provider="nous"),
+        resolve_billing_route("gpt-5", provider="retired-provider"),
         resolve_billing_route(
-            "gpt-5", provider="custom", base_url="https://inference-api.thor-agent.local/v1"
+            "gpt-5", provider="custom", base_url="https://inference.retired.example/v1"
         ),
     )
     assert all(route.billing_mode == "unknown" for route in routes)
@@ -394,7 +394,7 @@ def test_vertex_default_model_estimates_cached_usage(monkeypatch):
 
 
 def test_curated_google_flash_models_resolve_official_snapshot_pricing(monkeypatch):
-    """Every ``google/gemini-*-flash`` model curated for the OpenRouter and Nous
+    """Every ``google/gemini-*-flash`` model curated for the OpenRouter and ThorHub
     pickers must also bill through the Google official-docs snapshot on the
     direct Gemini and Vertex routes — a model pickable via the aggregators but
     ``unknown`` to Google-route accounting is a catalog/pricing drift.
@@ -405,7 +405,7 @@ def test_curated_google_flash_models_resolve_official_snapshot_pricing(monkeypat
         "agent.usage_pricing.fetch_endpoint_model_metadata",
         lambda *_args, **_kwargs: {},
     )
-    curated = {m for m, _desc in OPENROUTER_MODELS} | set(_PROVIDER_MODELS["nous"])
+    curated = {m for m, _desc in OPENROUTER_MODELS} | set(_PROVIDER_MODELS["thor"])
     flash = sorted(m for m in curated if m.startswith("google/gemini-") and m.endswith("-flash"))
     assert flash, "expected curated google/gemini-*-flash picker entries"
     usage = CanonicalUsage(input_tokens=1_000_000, output_tokens=1_000_000, cache_read_tokens=1_000_000)

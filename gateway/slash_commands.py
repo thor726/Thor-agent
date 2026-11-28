@@ -1296,7 +1296,7 @@ class GatewaySlashCommandsMixin(
     async def _handle_debug_command(self, event: MessageEvent) -> str:
         """Handle /debug — bare: privacy notice only; ``upload``: upload ONLY the allowlisted public
         summary (no log or message text); full logs go to private storage via
-        ``thor debug share --nous`` from the CLI."""
+        ``thor debug share --internal`` from the CLI."""
         from thor_cli.debug import (_GATEWAY_PRIVACY_NOTICE, _best_effort_sweep_expired_pastes,
                                       _is_dpaste_url, _schedule_auto_delete, upload_to_pastebin)
         from thor_cli.debug_redaction import redact_debug_support_text
@@ -1325,7 +1325,7 @@ class GatewaySlashCommandsMixin(
 
             return await self._run_in_executor_with_context(_collect_local)
         if "nous" in words:
-            # `/debug nous upload` consents to private Nous storage; the gateway only has the public
+            # `/debug nous upload` consents to private Thor-internal storage; the gateway only has the public
             # paste, so refuse rather than publish under a consent that named another destination.
             return t("gateway.debug.nous_refused")
 

@@ -50,7 +50,7 @@ async def test_local_session_debug_local_returns_the_report_without_uploading(te
     guard = _NoNetwork()
     bundle = {'report': 'REDACTED-REPORT-BODY', 'agent.log': 'FULL-LOG'}
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_internal', guard), \
             patch('thor_cli.debug._schedule_auto_delete', guard), \
             patch('thor_cli.debug.collect_share_bundle', return_value=bundle), \
             patch.object(socket.socket, 'connect', guard):
@@ -67,7 +67,7 @@ async def test_debug_without_upload_word_shows_notice_and_uploads_nothing(platfo
     """The privacy notice comes before any upload: without ``upload`` nothing leaves the machine."""
     guard = _NoNetwork()
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_internal', guard), \
             patch('thor_cli.debug._schedule_auto_delete', guard), \
             patch('thor_cli.debug._best_effort_sweep_expired_pastes', guard), \
             patch('thor_cli.debug.collect_debug_report', guard), \
@@ -109,7 +109,7 @@ async def test_messaging_debug_local_is_refused_without_uploading():
     """``/debug local`` from a chat is a named refusal pointing at ``/debug upload``; nothing is uploaded."""
     guard = _NoNetwork()
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_internal', guard), \
             patch('thor_cli.debug._schedule_auto_delete', guard), \
             patch('thor_cli.debug._best_effort_sweep_expired_pastes', guard), \
             patch('thor_cli.debug_summary.collect_public_summary', guard), \
@@ -122,19 +122,19 @@ async def test_messaging_debug_local_is_refused_without_uploading():
 @pytest.mark.asyncio
 @pytest.mark.parametrize('platform', [Platform.TELEGRAM, Platform.LOCAL])
 @pytest.mark.parametrize('text', ['/debug nous upload', '/debug upload nous', '/debug NOUS UPLOAD'])
-async def test_debug_nous_upload_never_publishes_to_the_public_paste(platform, text):
-    """``/debug nous upload`` consents to private Nous storage, not a public paste: the gateway
-    has no Nous pipeline, so it refuses and uploads nothing (#94876)."""
+async def test_debug_internal_upload_never_publishes_to_the_public_paste(platform, text):
+    """``/debug nous upload`` consents to private Thor-internal storage, not a public paste: the gateway
+    has no internal-upload pipeline, so it refuses and uploads nothing (#94876)."""
     guard = _NoNetwork()
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_internal', guard), \
             patch('thor_cli.debug._schedule_auto_delete', guard), \
             patch('thor_cli.debug._best_effort_sweep_expired_pastes', guard), \
             patch('thor_cli.debug.collect_debug_report', guard), \
             patch.object(socket.socket, 'connect', guard):
         out = await _runner()._handle_debug_command(_event(platform, text))
     assert guard.calls == []
-    assert 'thor debug share --nous' in out and 'http' not in out.lower()
+    assert 'thor debug share --internal' in out and 'http' not in out.lower()
 
 
 @pytest.mark.asyncio
@@ -143,7 +143,7 @@ async def test_local_debug_local_real_collector_opens_no_socket(tmp_path, monkey
     monkeypatch.setenv('THOR_HOME', str(tmp_path))
     guard = _NoNetwork()
     with patch('thor_cli.debug.upload_to_pastebin', guard), \
-            patch('thor_cli.diagnostics_upload.share_to_nous', guard), \
+            patch('thor_cli.diagnostics_upload.share_to_internal', guard), \
             patch.object(socket.socket, 'connect', guard), \
             patch.object(socket.socket, 'connect_ex', guard), \
             patch('socket.create_connection', guard):

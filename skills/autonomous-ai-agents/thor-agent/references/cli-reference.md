@@ -108,7 +108,7 @@ thor profile migrate-identity A B   Retry a completed rename's session/routing i
 
 ```
 thor auth                 Interactive credential manager
-thor auth add [PROVIDER]  Add OAuth or API-key credential (nous, openai-codex, qwen-oauth, …)
+thor auth add [PROVIDER]  Add OAuth or API-key credential (openai-codex, qwen-oauth, …)
 thor auth list|remove P IDX|reset PROVIDER|status
 ```
 Multiple credentials per provider form a pool that rotates automatically and skips exhausted keys.
@@ -119,7 +119,6 @@ Multiple credentials per provider form a pool that rotates automatically and ski
 thor desktop / gui        Native desktop app
 thor dashboard            Web admin panel + embedded chat (--stop / --status)
 thor proxy                OpenAI-compatible local proxy backed by an OAuth provider
-thor portal               Quick setup / sign in via Nous Portal
 thor kanban <verb>        Multi-agent work-queue board
 thor project              Named multi-folder workspaces (see references/projects-and-folders.md)
 thor skin list|use|set    Switch/tweak skins (see references/themes.md)

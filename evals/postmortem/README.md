@@ -83,7 +83,6 @@ the peak-concurrency window). The tracking issue quotes the second and says so.
 | `live_ab/nested_delegate_deadline.py` | #103486 | 40 s deadline + 75 s leaf: result delivered (main: lost) |
 | `review_probes/deadline_probe.py` | #103486 | same through actual dispatch |
 | `live_ab/auth_stampede.py <repo> 40` | #103526 | `401s=0` (main: 40) |
-| `review_probes/credential_identity_probe.py <repo> pr` | #103526 | explicit account-A key stays A (v1: became B) |
 | `live_ab/batch_failure_notice.py` | #103549 | `TASK_FAILURE_NOTICE` at t+0.3 s, `BATCH_FINAL` after |
 | `review_probes/notice_delivery_probe.py` | #103549 | gateway receives notice, notice, final; busy-parent final claim succeeds |
 | `review_probes/cache_estimator_probe.py` | #103476 | preflight ≈ wire estimate; `should_compress` agrees |

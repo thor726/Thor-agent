@@ -143,12 +143,12 @@ class TestFallbackChainAdvancement:
         agent = _make_agent(fallback_model=[
             {"provider": "broken", "model": "nope"}, {"provider": "zai", "model": "glm-5.2"},
         ])
-        agent.provider = "nous"
+        agent.provider = "thor"
         with patch("agent.auxiliary_client.resolve_provider_client",
                    side_effect=[(None, None), (_mock_client(base_url="https://api.z.ai/v1"), "glm-5.2")]):
             assert agent._try_activate_fallback(FailoverReason.rate_limit) is True
 
-        assert [(kw["from_provider"], kw["to_provider"]) for kw in calls] == [("nous", "zai")]
+        assert [(kw["from_provider"], kw["to_provider"]) for kw in calls] == [("thor", "zai")]
         assert fallback_fields(**calls[0])["error_class"] == "rate_limit"
 
     def test_skips_provider_that_raises_to_next(self):
@@ -193,20 +193,16 @@ class TestFallbackChainAdvancement:
             assert mock_rpc.call_args.kwargs["explicit_api_key"] == "env-secret"
 
 
-    def test_nous_non_anthropic_fallback_stays_on_chat_completions(self):
-        portal = "https://inference-api.thor-agent.local/v1"
-        fbs = [{"provider": "nous", "model": "thor-4-405b"}]
+    def test_thorhub_non_anthropic_fallback_stays_on_chat_completions(self):
+        portal = "https://llm.thormarket.site/v1"
+        fbs = [{"provider": "thor", "model": "deepseek-v4-pro"}]
         agent = _make_agent(fallback_model=fbs)
         with (
-            patch(
-                "agent.chat_completion_helpers._fallback_entry_unavailable_without_network",
-                return_value=None,
-            ),
             patch(
                 "agent.auxiliary_client.resolve_provider_client",
                 return_value=(
                     _mock_client(base_url=portal, api_key="portal-jwt"),
-                    "thor-4-405b",
+                    "deepseek-v4-pro",
                 ),
             ),
             patch(

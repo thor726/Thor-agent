@@ -250,7 +250,7 @@ async def account_usage(connection, ref, params):
                 route = {}
             provider, base_url = route.get("provider") or "", route.get("base_url") or ""
             lines = account_limit_lines(provider, base_url=base_url or None, api_key=route.get("api_key"))
-        return {"lines": lines, "nous_lines": [], "nous_route": False}
+        return {"lines": lines, "thorhub_lines": [], "thorhub_route": False}
     return await asyncio.to_thread(fetch)
 
 

@@ -725,12 +725,12 @@ class TestClassifier:
         from agent.error_classifier import FailoverReason, classify_api_error
         c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted",
                                          "Your included Thor usage for today is used up and you have no top-up credits. It resets at 18:00."),
-                               provider="nous", model="example/model-c")
+                               provider="thor", model="example/model-c")
         assert c.reason == FailoverReason.billing and not c.retryable
         assert c.error_context.get("usage_window") is True
 
     def test_other_402_billing_codes_keep_main_text_rules(self):
-        """Only the Nous window code is decisive on a 402; any other provider's billing code
+        """Only the ThorHub window code is decisive on a 402; any other provider's billing code
         with transient wording stays a rate limit, as on main."""
         from agent.error_classifier import FailoverReason, classify_api_error
         c = classify_api_error(self._err(402, "insufficient_quota",
@@ -742,20 +742,20 @@ class TestClassifier:
     def test_window_402_carries_the_server_wording_when_sent(self):
         from agent.error_classifier import classify_api_error
         err = self._err(402, "usage_window_and_credits_exhausted", "Your included Thor usage for today is used up.")
-        assert "display_message" not in classify_api_error(err, provider="nous", model="m").error_context
+        assert "display_message" not in classify_api_error(err, provider="thor", model="m").error_context
         err.body = {"status": 402, "code": "usage_window_and_credits_exhausted", "message": "m",
                     "display_message": "Daily limit hit. Back at 4pm."}
-        c = classify_api_error(err, provider="nous", model="m")
+        c = classify_api_error(err, provider="thor", model="m")
         assert c.error_context == {"usage_window": True, "display_message": "Daily limit hit. Back at 4pm."}
         # Never on any other 402.
         other = self._err(402, "insufficient_credit", "no credits")
         other.body["display_message"] = "x"
-        assert "display_message" not in classify_api_error(other, provider="nous", model="m").error_context
+        assert "display_message" not in classify_api_error(other, provider="thor", model="m").error_context
 
     def test_window_402_never_falls_back_to_another_model(self):
         """A plan limit is the user's call (the limit card offers a switch): never the fallback chain."""
         from agent.error_classifier import classify_api_error
-        c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted", "used up"), provider="nous", model="m")
+        c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted", "used up"), provider="thor", model="m")
         assert c.should_fallback is False
 
     def test_window_402_code_from_another_upstream_keeps_main_rules(self):
@@ -776,7 +776,7 @@ class TestClassifier:
 
     def test_a_plain_403_still_classifies_as_before(self):
         from agent.error_classifier import FailoverReason, classify_api_error
-        c = classify_api_error(self._err(403, "forbidden", "Forbidden"), provider="nous", model="m")
+        c = classify_api_error(self._err(403, "forbidden", "Forbidden"), provider="thor", model="m")
         assert c.reason != FailoverReason.model_not_found
 
 
@@ -784,11 +784,11 @@ class TestClassifier:
 
 
 class TestBlockedResponseCapture:
-    def test_a_nous_402_refreshes_the_credits_state(self, monkeypatch):
+    def test_a_thorhub_402_refreshes_the_credits_state(self, monkeypatch):
         from agent.rate_limit_credits import RateLimitCreditsMixin
 
         class Agent(RateLimitCreditsMixin):
-            provider = "nous"
+            provider = "thor"
             model = "example/model-c"
             base_url = "https://inference-api.thor-agent.local/v1"
             _credits_state = None
@@ -816,7 +816,7 @@ class TestBlockedResponseCapture:
         monkeypatch.setattr(ct, "rewarm_pricing_before_depleted_notice", lambda agent: False)
         err = SimpleNamespace(status_code=402, response=SimpleNamespace(
             headers=_window_headers(4_000, 2_000, top_tier_bp=10_000, source=None)))
-        # Mirror the turn_api_error hook: a 402 from Nous feeds the same capture path as a stream open.
+        # Mirror the turn_api_error hook: a 402 from ThorHub feeds the same capture path as a stream open.
         agent._capture_credits(err.response, refused=True)
         assert agent._credits_state is not None and agent._credits_state.top_tier_exhausted
         assert [n.key for n in agent.emitted] == [CREDITS_WINDOW_LIMIT_KEY]
@@ -829,10 +829,9 @@ class TestBlockedResponseCapture:
 
         seen = []
         agent = SimpleNamespace(
-            provider="nous", _credits_state=_state(),
+            provider="thor", _credits_state=_state(),
             _capture_rate_limits=lambda r: seen.append(("rl", r)),
             _capture_credits=lambda r: seen.append(("credits", r)),
-            _capture_nous_model_switch=lambda r: None,
             _check_openrouter_cache_status=lambda r: None,
         )
         parsed = SimpleNamespace(choices=[])
@@ -855,7 +854,7 @@ class TestBlockedResponseCapture:
         # Other providers keep the plain call they had before (no raw response).
         plain = SimpleNamespace(choices=["plain"])
         other = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
-            with_raw_response=SimpleNamespace(create=lambda **kw: pytest.fail("raw must not be used off Nous")),
+            with_raw_response=SimpleNamespace(create=lambda **kw: pytest.fail("raw must not be used off ThorHub")),
             create=lambda **kw: plain)))
         assert _chat_completion_capturing_headers(
             SimpleNamespace(provider="example"), other, {"model": "m"}) is plain
@@ -874,9 +873,8 @@ class TestBlockedResponseCapture:
 
         seen = []
         agent = SimpleNamespace(
-            provider="nous", _credits_state=_state(),
+            provider="thor", _credits_state=_state(),
             _capture_rate_limits=lambda r: seen.append("rl"), _capture_credits=lambda r: seen.append("credits"),
-            _capture_nous_model_switch=lambda r: seen.append("switch"),
             _check_openrouter_cache_status=lambda r: seen.append("or"),
         )
         parsed = SimpleNamespace(choices=[])
@@ -906,13 +904,13 @@ class TestBlockedResponseCapture:
         assert not ct.response_is_usage_window(None)
 
     @pytest.mark.parametrize("provider, status, headers, captured", [
-        ("nous", 402, "window", True),
-        ("nous", 403, "window", True),
+        ("thor", 402, "window", True),
+        ("thor", 403, "window", True),
         ("openrouter", 402, "window", False),  # window headers from any other provider: main's behaviour
-        ("nous", 402, "grant", False),         # a credit-grant account: main's behaviour
-        ("nous", 500, "window", False),
+        ("thor", 402, "grant", False),         # a credit-grant account: main's behaviour
+        ("thor", 500, "window", False),
     ])
-    def test_handle_api_error_captures_only_a_nous_window_refusal(self, provider, status, headers, captured):
+    def test_handle_api_error_captures_only_a_thorhub_window_refusal(self, provider, status, headers, captured):
         """A refused (402/403) Nous request's usage-window headers reach the credits capture, marked refused;
         nothing else does. The turn is stopped right after the capture (interpreter shutdown) so only the
         hook runs."""
@@ -923,7 +921,7 @@ class TestBlockedResponseCapture:
         with patch("model_tools.get_tool_definitions", return_value=[]), \
                 patch("model_tools.check_toolset_requirements", return_value={}), \
                 patch("agent.process_bootstrap.OpenAI"):
-            agent = AIAgent(api_key="test-key-1234567890", base_url="https://inference-api.thor-agent.local/v1",
+            agent = AIAgent(api_key="test-key-1234567890", base_url="https://llm.thormarket.site/v1",
                             quiet_mode=True, skip_context_files=True, skip_memory=True)
         agent.provider = provider
         h = _window_headers(10_000, source=None)
@@ -989,7 +987,7 @@ class TestRefusalReadsAsTheStopLine:
     def _agent(self, **state_kw):
         state = _state(window_day_used_bp=10_000, spend_source=None, **state_kw)
         return SimpleNamespace(_credits_state=state, _credits_latch=new_credits_latch(), model="example/model-b",
-                               base_url="https://inference-api.thor-agent.local/v1")
+                               base_url="https://llm.thormarket.site/v1")
 
     def test_the_refusal_text_is_the_stop_line(self):
         from agent.conversation_loop import _usage_window_refusal
@@ -1085,7 +1083,7 @@ class TestRefusalReadsAsTheStopLine:
         (which on desktop meant an "Out of credits" card + toast + banner)."""
         from agent.conversation_loop import _usage_window_refusal
         quiet = SimpleNamespace(_credits_state=_state(), _credits_latch=new_credits_latch(), model="example/model-b",
-                                base_url="https://inference-api.thor-agent.local/v1")
+                                base_url="https://llm.thormarket.site/v1")
         refused = SimpleNamespace(error_context={"usage_window": True},
                                   message="Your included Thor usage for this week is used up.")
         assert _usage_window_refusal(quiet, refused)[0] == "Your included Thor usage for this week is used up."
@@ -1101,7 +1099,7 @@ class TestRefusalReadsAsTheStopLine:
         })
         _text, _at, limit = _usage_window_refusal(self._agent(), SimpleNamespace(error_context={"usage_window": True}))
         # The day is spent: only the free pick still works; never the current model.
-        assert limit["suggestions"] == [{"model": "example/model-free:free", "label": "Model Free", "note": "free", "provider": "nous"}]
+        assert limit["suggestions"] == [{"model": "example/model-free:free", "label": "Model Free", "note": "free", "provider": "thor"}]
         assert limit["credits"] == {"action": "add_credits"}
 
     def test_the_text_never_carries_a_command_hint(self):
@@ -1116,25 +1114,25 @@ class TestRefusalReadsAsTheStopLine:
         monkeypatch.setattr(cl, "_billing_or_entitlement_message", lambda **kw: "Add credits to keep going now: https://x")
         classified = SimpleNamespace(billing_unverified=False, retryable=False, reason=SimpleNamespace(value="billing"))
         kw = dict(classified=classified, summary="HTTP 402", messages=[], api_call_count=1,
-                  provider="nous", base_url="https://inference-api.thor-agent.local/v1", model="m")
+                  provider="thor", base_url="https://llm.thormarket.site/v1", model="m")
         sentence = "You've hit your daily limit · resets 15:56 · /topup to add credits"
         limit = {"gauge_id": "day", "scope": "all", "message": sentence, "credits": {"action": "add_credits"},
-                 "suggestions": [{"model": "a/b:free", "label": "A", "note": "free", "provider": "nous"}]}
+                 "suggestions": [{"model": "a/b:free", "label": "A", "note": "free", "provider": "thor"}]}
         result = cl._billing_failure_result(**kw, usage_window=(sentence, 1_800_000_000.0, limit))
         assert result["final_response"] == sentence and result["failure_reason"] == "billing"
         assert result["usage_limit"] == limit
-        surface = build_error_surface_from_result(result, provider="nous", model="m")
+        surface = build_error_surface_from_result(result, provider="thor", model="m")
         assert surface["layer"] == "billing" and surface["code"] == "usage_window" and surface["message"] == sentence
         assert surface["usage_limit"] == limit
         # An older 2-item tuple still reads (no structured limit).
         two = cl._billing_failure_result(**kw, usage_window=(sentence, 1_800_000_000.0))
-        assert "usage_limit" not in two and "usage_limit" not in build_error_surface_from_result(two, provider="nous", model="m")
+        assert "usage_limit" not in two and "usage_limit" not in build_error_surface_from_result(two, provider="thor", model="m")
         # Retry at the reset is offered: the card's "Retry at 15:56".
         assert surface["retryable"] is True and surface["resets_at"] == 1_800_000_000.0
         # Without it (every other account): the generic billing result and card, unchanged.
         plain = cl._billing_failure_result(**kw)
         assert "usage_window_message" not in plain and plain["final_response"].startswith("Billing or credits exhausted")
-        assert build_error_surface_from_result(plain, provider="nous", model="m")["code"] == "billing"
+        assert build_error_surface_from_result(plain, provider="thor", model="m")["code"] == "billing"
 
 
 class TestRebuildMemory:
@@ -1191,7 +1189,7 @@ def test_a_refused_request_keeps_the_last_known_top_up_balance():
     from agent.rate_limit_credits import RateLimitCreditsMixin
 
     class _Agent(RateLimitCreditsMixin):
-        provider = "nous"
+        provider = "thor"
         notice_callback = notice_clear_callback = None
         _credits_session_start_micros = None
 
@@ -1239,7 +1237,7 @@ def test_an_unmetered_reply_raises_no_limit_stop():
     from agent.rate_limit_credits import RateLimitCreditsMixin
 
     class _Agent(RateLimitCreditsMixin):
-        provider = "nous"
+        provider = "thor"
         notice_callback = notice_clear_callback = None
         _credits_session_start_micros = None
         _credits_state = None
