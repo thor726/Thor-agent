@@ -653,13 +653,13 @@ export interface SetupRuntimeCheckResult {
   free_tier_route?: boolean | null
   profile?: string | null
 }
-export interface DiagnosticsShareNousParams {
+export interface DiagnosticsShareInternalParams {
   error_context?: string | null
   extra_files?: Record<string, string> | null
   log_lines?: number | null
 }
 /** Structured envelope: ``ok=False`` + ``error`` renders inline instead of failing the RPC. */
-export interface DiagnosticsShareNousResult {
+export interface DiagnosticsShareInternalResult {
   ok: boolean
   view_url?: string | null
   upload_id?: string | null
@@ -3594,7 +3594,7 @@ export interface SessionUsageResult {
   plan_gauge?: PlanGauge | null
   credits_lines?: string[] | null
   credits_usage_window?: boolean | null
-  nous_route?: boolean | null
+  thorhub_route?: boolean | null
   [key: string]: unknown
 }
 export interface SessionContextBreakdownParams {
@@ -4903,12 +4903,12 @@ export interface SessionStats {
 export interface SessionAccountUsageParams {
   session_id: string
 }
-/** ``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the route's provider plan limits. ``nous_lines``: the ThorHub balance whenever a ThorHub key is configured on the profile, after them (headed as a separate account off a ThorHub route). ``nous_route``: the route is ThorHub inference, so the ``/topup`` CTA applies. ``nous_usage``: on a ThorHub route, the same account read's dollar model, so the CLI draws its two bars without reading the account again. */
+/** ``gateway/session_usage.py::account_usage``: the account blocks of ``/usage``. ``lines``: the route's provider plan limits. ``thorhub_lines``: the ThorHub balance whenever a ThorHub key is configured on the profile, after them (headed as a separate account off a ThorHub route). ``thorhub_route``: the route is ThorHub inference, so the ``/topup`` CTA applies. ``thorhub_usage``: on a ThorHub route, the same account read's dollar model, so the CLI draws its two bars without reading the account again. */
 export interface SessionAccountUsage {
   lines: string[]
-  nous_lines?: string[]
-  nous_route: boolean
-  nous_usage?: ThorHubUsageDollars | null
+  thorhub_lines?: string[]
+  thorhub_route: boolean
+  thorhub_usage?: ThorHubUsageDollars | null
 }
 /** ``agent.billing_usage.UsageModel`` in numbers: the classic CLI's two-bar ThorHub balance block. */
 export interface ThorHubUsageDollars {
@@ -5980,7 +5980,7 @@ export interface BillingBlock {
   provider_label: string
   model: string
   billing_url: string | null
-  is_nous: boolean
+  is_thorhub: boolean
   message: string
   unverified?: boolean | null
 }
@@ -6421,8 +6421,8 @@ export interface RpcMethods {
   'delegation.pause': { params: DelegationPauseParams; result: DelegationPauseResult }
   /** Running subagent tree plus the spawn pause flag and limits. */
   'delegation.status': { params: ProfileParams; result: DelegationStatusResult }
-  /** Upload a force-redacted debug bundle to Nous-internal diagnostics storage. */
-  'diagnostics.share_nous': { params: DiagnosticsShareNousParams; result: DiagnosticsShareNousResult }
+  /** Upload a force-redacted debug bundle to Thor-internal diagnostics storage. */
+  'diagnostics.share_internal': { params: DiagnosticsShareInternalParams; result: DiagnosticsShareInternalResult }
   /** Run the distro package install on the gateway host; progress streams as display.install.log/.done. */
   'display.install': { params: ProfileParams; result: DisplayInstallResult }
   /** Take over: the human named by a viewer id this connection minted controls the screen. */
@@ -6897,7 +6897,7 @@ export const RPC_METHODS = [
   'cron.manage',
   'delegation.pause',
   'delegation.status',
-  'diagnostics.share_nous',
+  'diagnostics.share_internal',
   'display.install',
   'display.lease.acquire',
   'display.lease.release',
