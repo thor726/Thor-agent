@@ -1,0 +1,15 @@
+{"entries": {
+  "yandex": {"sha":"06914bf48e2d4876ce98ae5a355e7d83d8ccc789","subdir":"thor_yandex_search","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yandex-alice": {"sha":"5188f01ff8db8620248668a0d912f07b8d12e949","subdir":"yandex-alice","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yandex-disk": {"sha":"60f876f14a610ddae245c356a86cbc6dc941c76f","subdir":"thor_yandex_disk","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yandex_calendar": {"sha":"e810167cecf8be7075439f18cdb7650f06974447","subdir":"thor_yandex_calendar","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yandex_mail": {"sha":"80b17dc4717118165cb029eb5e03c5d3e5a8ca77","subdir":"thor_yandex_mail","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yantrikdb": {"sha":"f15adf60a094548daa6e58c43f3c7b79a83e1a89","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yantrikdb-thor-dashboard": {"sha":"30e8fa249a28bef9cb38e62beaa98e38303a8961","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "year-wrapped": {"sha":"2d171da74a13a9bbc2da4a916fd0a64d08ef605a","subdir":"plugins/year-wrapped","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yolo-auto": {"sha":"e81ef7c28cf79e8664cac6634e0e6bafb28cad3a","subdir":"yolo-auto","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "you": {"sha":"08f3d80e7ca9518ccc64b38b365a78cc4a762691"},
+  "you-should-know": {"sha":"e100b4abe10dd8f078e6420e2633173950c5957b"},
+  "youtube-dock": {"sha":"31d2635ed1ef49250dc89a5707281a5fa66dd76e","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"},
+  "yuanbao": {"sha":"51ede1f023906114ec06c216c4a7b98e8a45d672","subdir":"yuanbao","error":"fatal: could not read Username for 'https://github.com': terminal prompts disabled"}
+}}
