@@ -4,9 +4,9 @@ import { gaugeScope, gaugeTitle, PAYMENT_PAUSE_REASON } from '@thor/shared'
 
 import type { Translations } from '@/i18n'
 import { en } from '@/i18n/en'
+import { openThorHubSignIn } from '@/lib/thorhub-sign-in'
 import { fmtDate } from '@/lib/time'
 import { formatPercentUsed, formatResetsIn } from '@/lib/usage-percent'
-import { openThorHubSignIn } from '@/lib/thorhub-sign-in'
 
 import type { BillingRefusal, BillingResult } from './api'
 import { useBillingApi } from './api'

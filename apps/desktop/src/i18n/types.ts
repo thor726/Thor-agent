@@ -3429,7 +3429,6 @@ export interface Translations extends NoticeTranslations {
 
   onboarding: OnboardingTranslations
 
-
   modelPicker: {
     title: string
     current: string

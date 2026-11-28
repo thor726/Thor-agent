@@ -179,7 +179,8 @@ export const slashCmdSessionEn = {
       revokedByAdmin: 'An admin stopped remote spending for this terminal.',
       revokedByYou: 'You stopped remote spending for this terminal.',
       // {0}=who-revoked sentence (revokedByAdmin / revokedByYou)
-      revokedReconnect: (who: string) => `${who} Reconnect to restore — run thor auth add thor to re-authorize this terminal.`,
+      revokedReconnect: (who: string) =>
+        `${who} Reconnect to restore — run thor auth add thor to re-authorize this terminal.`,
       roleRequired:
         'Adding funds needs someone with billing permissions (owner, admin, or finance admin), or manage this on the portal.',
       sessionRevoked: 'Your session was logged out. Run `thor auth add thor` to sign in again.',
