@@ -119,6 +119,8 @@ source "$(dirname "$0")/e2e-assets/installer-common.sh"
 source "$(dirname "$0")/e2e-assets/source-update-command.sh"
 # shellcheck source=e2e-assets/source-build-env.sh
 source "$ASSETS/source-build-env.sh"
+# shellcheck source=e2e-assets/assert-clean-checkout.sh
+source "$(dirname "$0")/e2e-assets/assert-clean-checkout.sh"
 # Full transcript in the job log, collapsed (GitHub renders ::group:: as a
 # fold; plain text anywhere else). Win or lose -- a green install's log is
 # how you diagnose the leg that fails next.
@@ -137,8 +139,11 @@ step "staging serve.git (main -> OLD)"
 # Tracked changes only (-uno): the bare clone serves committed objects, so a
 # modified tracked file means HEAD is not the code being reviewed -- but an
 # untracked file (scratch notes, this driver before it lands) cannot leak
-# into the clone at all.
-[ -z "$(git -C "$REPO_ROOT" status --porcelain -uno)" ] \
+# into the clone at all. assert_clean_checkout also tolerates CR-at-EOL-only
+# differences (see the helper): a CRLF blob under `text eol=crlf` looks
+# modified wholesale once git's stat cache is invalidated, with no content
+# change behind it.
+assert_clean_checkout "$REPO_ROOT" \
   || fail "checkout has uncommitted tracked changes; the staged clone must be a reviewable commit"
 
 if [ -z "$INSTALL_REF" ]; then

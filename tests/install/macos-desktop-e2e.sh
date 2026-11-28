@@ -105,6 +105,8 @@ source "$(dirname "$0")/e2e-assets/source-driver.sh"
 source "$ASSETS/source-update-command.sh"
 # shellcheck source=e2e-assets/installer-common.sh
 source "$(dirname "$0")/e2e-assets/installer-common.sh"
+# shellcheck source=e2e-assets/assert-clean-checkout.sh
+source "$(dirname "$0")/e2e-assets/assert-clean-checkout.sh"
 # shellcheck source=e2e-assets/source-build-env.sh
 source "$ASSETS/source-build-env.sh"
 log_group() {
@@ -132,7 +134,10 @@ desktop_checkpoint() { # phase, expected commit, selected method
 
 phase_stage() {
   step "staging serve.git (main -> OLD)"
-  [ -z "$(git -C "$REPO_ROOT" status --porcelain -uno)" ] \
+  # assert_clean_checkout also tolerates CR-at-EOL-only differences (see
+  # the helper): a CRLF blob under `text eol=crlf` looks modified wholesale
+  # once git's stat cache is invalidated, with no content change behind it.
+  assert_clean_checkout "$REPO_ROOT" \
     || fail "checkout has uncommitted tracked changes; the staged clone must be a reviewable commit"
 
   rm -rf "$WORK_ROOT"
