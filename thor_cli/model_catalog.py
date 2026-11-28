@@ -359,11 +359,6 @@ def get_curated_thorhub_models() -> list[str] | None:
     return [mid for mid, _ in _block_ids(block)] or None
 
 
-def get_curated_nous_models() -> list[str] | None:
-    """Deprecated alias for :func:`get_curated_thorhub_models` (old manifest block name)."""
-    return get_curated_thorhub_models()
-
-
 def _default_model_from_block(block: dict[str, Any] | None) -> str | None:
     """Id of the model entry labeled ``"default": true``, or None."""
     return next((mid for mid, m in _block_ids(block) if m.get("default")), None)

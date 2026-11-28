@@ -63,7 +63,7 @@ export function dismissSendDiagnostics(): void {
   $sendDiagnostics.set(null)
 }
 
-interface ShareNousResponse {
+interface ShareInternalResponse {
   error?: string
   expires_at?: string
   ok: boolean
@@ -117,7 +117,7 @@ export async function confirmSendDiagnostics(): Promise<void> {
       return
     }
 
-    const response = await gateway.request<ShareNousResponse>(
+    const response = await gateway.request<ShareInternalResponse>(
       'diagnostics.share_internal',
       {
         ...(current.errorContext ? { error_context: current.errorContext } : {}),

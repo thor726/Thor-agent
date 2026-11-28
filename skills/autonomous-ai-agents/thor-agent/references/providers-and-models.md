@@ -10,7 +10,6 @@ Full docs: https://raw.githubusercontent.com/thor726/Thor-agent/main/website/doc
 |----------|------|----------------|
 | openrouter | API key | `OPENROUTER_API_KEY` |
 | anthropic | API key | `ANTHROPIC_API_KEY` (also `CLAUDE_CODE_OAUTH_TOKEN`) |
-| nous | OAuth device code | `thor auth add nous` (or `NOUS_API_KEY`) |
 | openai-codex | OAuth | `thor auth add openai-codex` |
 | qwen-oauth | OAuth | `thor auth add qwen-oauth` |
 | minimax-oauth | OAuth | `thor auth add minimax-oauth` |

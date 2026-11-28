@@ -53,18 +53,11 @@ export const PROVIDER_GROUPS: ProviderPrefix[] = [
     priority: 0
   },
   {
-    prefix: 'NOUS_',
-    name: 'Thor Portal',
-    description: 'Hosted Thor & Nous-trained models',
-    docsUrl: 'https://llm.thormarket.site',
-    priority: 0
-  },
-  {
     prefix: 'FIREWORKS_',
     name: 'Fireworks AI',
     description: 'OpenAI-compatible direct model API',
     docsUrl: 'https://app.fireworks.ai/settings/users/api-keys',
-    // Slot #2 — mirrors CANONICAL_PROVIDERS (after Nous, ahead of OpenRouter).
+    // Slot #2 — mirrors CANONICAL_PROVIDERS (after ThorHub, ahead of OpenRouter).
     // Same numeric priority as OpenRouter; name sort puts Fireworks first.
     priority: 1
   },

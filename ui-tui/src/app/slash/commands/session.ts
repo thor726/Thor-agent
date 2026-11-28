@@ -820,7 +820,7 @@ export const sessionCommands: SlashCommand[] = [
   },
 
   {
-    help: 'session usage + Nous credits',
+    help: 'session usage + ThorHub credits',
     name: 'usage',
     run: (_arg, ctx) => {
       if (ctx.sid && ctx.gateway.gw?.isCanonical) {

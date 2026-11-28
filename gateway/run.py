@@ -4431,7 +4431,7 @@ def _start_gateway_housekeeping(
         # already ended (#111010). Runs every tick so the outage is bounded by one housekeeping interval.
         chores.append((1, "Cron ticker supervisor", cron_thread.restart_if_dead))
     chores += [
-        # Per served profile: each has its own skills tree, curator state, Nous login and state.db.
+        # Per served profile: each has its own skills tree, curator state, ThorHub login and state.db.
         (60, "Curator tick", profile_scoped_chore(runner, lambda: _housekeeping_curator(idle_fence))),
         (60, "state.db maintenance tick", profile_scoped_chore(
             runner,

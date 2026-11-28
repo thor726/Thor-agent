@@ -541,7 +541,7 @@ def _resolve_assignment_credentials(model_cfg: dict, provider: str, provider_ent
         model_cfg["api_key"] = raw_key if raw_key.startswith("${") and raw_key.endswith("}") else provider_entry["api_key"]
 
 
-def _apply_nous_gateway_defaults(cfg: dict) -> list:
+def _apply_thorhub_gateway_defaults(cfg: dict) -> list:
     """Mirror the CLI's post-model-selection behaviour when switching main to Thor: route
     *unconfigured* tools through the Thor Tool Gateway. Purely additive — tools with a direct
     key or explicit backend are skipped. Failures never block saving the assignment."""
@@ -707,7 +707,7 @@ def _apply_main_assignment_sync(cfg: dict, provider: str, model: str, base_url: 
             repoint_endpoint_key_env(cfg, result.base_url, shared_env, env_name)
 
     new_provider = provider.strip().lower()
-    gateway_tools = _apply_nous_gateway_defaults(cfg) if new_provider == "nous" else []
+    gateway_tools = _apply_thorhub_gateway_defaults(cfg) if new_provider == "nous" else []
     # One route: a model.* key locked by the time the save runs (even after the preflight guard
     # above, or on its CAS retry) refuses the whole save instead of being omitted from it.
     with refusing_locked_omissions("model"):

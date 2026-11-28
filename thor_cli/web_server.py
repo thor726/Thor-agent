@@ -886,13 +886,9 @@ def _no_auth_provider_message(host: str) -> str:
     unconfigured provider is not reported as merely "no providers".
     """
     skip_reasons: list[str] = []
-    try:
-        from plugins.dashboard_auth import nous as _nous_plugin
-
-        if _nous_plugin.LAST_SKIP_REASON:
-            skip_reasons.append(f"  • nous: {_nous_plugin.LAST_SKIP_REASON}")
-    except Exception:
-        pass
+    # NOTE: the bundled dashboard-auth providers are basic, drain, self_hosted,
+    # session_token and thor; there is no `nous` provider plugin anymore, so no
+    # skip reason can be reported for it here.
 
     # A listener that declares its own public URL (the gateway's Webapp: webapp.public_url) is
     # gated by that setting, never by dashboard.public_url.
