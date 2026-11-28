@@ -1,7 +1,7 @@
 ---
 sidebar_position: 15
 title: "订阅代理"
-description: "将你的 Nous Portal 订阅（或其他 OAuth 提供商）用作外部应用的 OpenAI 兼容端点"
+description: "将你的 ThorHub 订阅（或其他 OAuth 提供商）用作外部应用的 OpenAI 兼容端点"
 ---
 
 # 订阅代理
@@ -13,7 +13,7 @@ description: "将你的 Nous Portal 订阅（或其他 OAuth 提供商）用作�
 | | API 服务器 | 订阅代理 |
 |---|---|---|
 | 服务内容 | 你的 Agent（完整工具集、记忆、技能） | 原始模型推理 |
-| 使用场景 | "将 Thor 用作聊天后端" | "从其他应用使用我的 Portal 订阅" |
+| 使用场景 | "将 Thor 用作聊天后端" | "从其他应用使用我的 ThorHub 订阅" |
 | 认证 | 你的 `API_SERVER_KEY` | 任意 bearer（代理附加真实凭据） |
 | 工具调用 | 是——Agent 执行工具 | 否——仅透传 |
 
@@ -24,10 +24,10 @@ description: "将你的 Nous Portal 订阅（或其他 OAuth 提供商）用作�
 ### 1. 登录你的提供商（仅需一次）
 
 ```bash
-thor portal
+thor auth add thor
 ```
 
-这会打开浏览器进行 Nous Portal OAuth 流程。Thor 将刷新令牌存储在 `~/.thor/auth.json` 中——与所有 Thor 提供商登录信息存放在同一位置。
+这会使用 API key 登录 ThorHub（xAI OAuth 则用 `thor auth add xai`，会打开浏览器完成登录流程）。Thor 将凭据存储在 `~/.thor/auth.json` 中——与所有 Thor 提供商登录信息存放在同一位置。
 
 ### 2. 启动代理
 
@@ -36,7 +36,7 @@ thor proxy start
 ```
 
 ```
-Starting Thor proxy for Nous Portal
+Starting Thor proxy
   Listening on:  http://127.0.0.1:8645/v1
   Forwarding to: (resolved per-request from your subscription)
   Use any bearer token in the client — the proxy attaches your real credential.
@@ -51,10 +51,10 @@ Starting Thor proxy for Nous Portal
 ```
 Base URL:   http://127.0.0.1:8645/v1
 API key:    任意值（例如 "sk-unused"）
-Model:      Thor-4-70B    # 或 Thor-4.3-36B、Thor-4-405B
+Model:      deepseek-v4-pro    # 任意 ThorHub 模型，例如 kimi-k2.8、glm-5.3
 ```
 
-代理会忽略来自你应用的 `Authorization` 请求头，并将你真实的 Portal 凭据附加到上游请求中。当 bearer 令牌临近过期时，刷新会自动进行。
+代理会忽略来自你应用的 `Authorization` 请求头，并将你真实的 ThorHub 凭据附加到上游请求中。OAuth 凭据在临近过期时会自动刷新。
 
 ## 可用提供商
 
@@ -62,7 +62,7 @@ Model:      Thor-4-70B    # 或 Thor-4.3-36B、Thor-4-405B
 thor proxy providers
 ```
 
-当前已内置：`nous`（Nous Portal）。更多 OAuth 提供商可通过在 `thor_cli/proxy/adapters/` 中实现 `UpstreamAdapter` 接口来添加。
+当前已内置：`thor`（ThorHub——也可写作 `thorhub`，或使用旧别名 `nous`）和 `xai`（xAI / Grok）。更多提供商可通过在 `thor_cli/proxy/adapters/` 中实现 `UpstreamAdapter` 接口来添加。
 
 ## 检查状态
 
@@ -73,14 +73,17 @@ thor proxy status
 ```
 Thor proxy upstream adapters
 
-  [nous    ] Nous Portal — ready (bearer expires 2026-05-15T06:43:21Z)
+  [nous    ] ThorHub — ready
+  [thor    ] ThorHub — ready
+  [thorhub ] ThorHub — ready
+  [xai     ] xAI Grok OAuth — ready (bearer <redacted> 2026-05-15T06:43:21Z)
 ```
 
-如果显示 `not logged in`，请运行 `thor portal`。如果显示 `credentials need attention`，说明你的刷新令牌已被撤销（较少见——通常发生在你从 Portal Web UI 退出登录时）——重新运行 `thor portal` 即可。
+`thor`、`thorhub` 和 `nous` 是同一 ThorHub 适配器的三个名字（`nous` 是旧别名）；一个 ThorHub key 可同时登录三者。如果显示 `not logged in`，请运行 `thor auth add thor`（xAI 则运行 `thor auth add xai`）。如果显示 `credentials need attention`，说明你的刷新令牌已被撤销——重新登录即可。
 
 ## 允许的路径
 
-代理仅转发上游实际提供的路径。对于 Nous Portal：
+代理仅转发上游实际提供的路径。对于 ThorHub：
 
 | 路径 | 用途 |
 |------|---------|
@@ -91,7 +94,7 @@ Thor proxy upstream adapters
 
 其他路径（`/v1/images/generations`、`/v1/audio/speech` 等）将返回 404，并附带明确的错误信息指向允许的路径。这可防止游离客户端向上游发送异常请求。
 
-## 配置 OpenViking 使用 Portal
+## 配置 OpenViking 使用 ThorHub
 
 [OpenViking](https://github.com/volcengine/OpenViking) 是一个上下文数据库，需要 LLM 提供商来支持其 VLM（用于提取记忆的视觉/语言模型）和 embedding 模型。通过代理，你可以将其 `vlm.api_base` 指向本地代理：
 
@@ -101,7 +104,7 @@ Thor proxy upstream adapters
 {
   "vlm": {
     "provider": "openai",
-    "model": "Thor-4-70B",
+    "model": "deepseek-v4-pro",
     "api_base": "http://127.0.0.1:8645/v1",
     "api_key": "unused-proxy-attaches-real-creds"
   }
@@ -128,7 +131,7 @@ OpenViking 的 VLM 调用现在将通过你登录的服务商订阅进行。Embe
 # Karakeep .env
 OPENAI_API_BASE_URL=http://127.0.0.1:8645/v1
 OPENAI_API_KEY=any-non-empty-string
-INFERENCE_TEXT_MODEL=Thor-4-70B
+INFERENCE_TEXT_MODEL=deepseek-v4-pro
 ```
 
 同样的方式适用于 Open WebUI、LobeChat、NextChat 或任何其他 OpenAI 兼容客户端。
@@ -141,7 +144,7 @@ INFERENCE_TEXT_MODEL=Thor-4-70B
 thor proxy start --host 0.0.0.0 --port 8645
 ```
 
-⚠ **注意：** 你网络中的任何人现在都可以使用你的 Portal 订阅。通配符绑定会跳过 `Host` 检查（任何主机名都可以访问），因此它会拒绝网页发出的所有请求（任何 `Origin`，或 `Sec-Fetch-Site` 不是 `none`）：浏览器无法使用以通配符绑定的代理。代理本身没有认证机制——它接受任意 bearer。如果你将其暴露在可信网络之外，请使用防火墙、VPN 或带有适当认证的反向代理。
+⚠ **注意：** 你网络中的任何人现在都可以使用你的 ThorHub 订阅。通配符绑定会跳过 `Host` 检查（任何主机名都可以访问），因此它会拒绝网页发出的所有请求（任何 `Origin`，或 `Sec-Fetch-Site` 不是 `none`）：浏览器无法使用以通配符绑定的代理。代理本身没有认证机制——它接受任意 bearer。如果你将其暴露在可信网络之外，请使用防火墙、VPN 或带有适当认证的反向代理。
 
 ## 速率限制
 

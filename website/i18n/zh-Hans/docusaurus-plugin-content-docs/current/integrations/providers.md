@@ -85,11 +85,11 @@ Groups = x25519:secp256r1:secp384r1:x448
 :::
 
 :::warning
-即使使用 Nous Portal、Codex 或自定义端点，某些功能（视觉、压缩、MoA）仍会使用单独的"辅助"模型。默认情况下（`auxiliary.*.provider: "auto"`），Thor 将这些任务路由到你的**主聊天模型**——即你在 `thor model` 中选择的同一模型。你可以单独覆盖每个任务，将其路由到更便宜/更快的模型（例如 OpenRouter 上的 Gemini Flash）——参见[辅助模型](../user-guide/configuration.md#auxiliary-models)。
+即使使用 ThorHub、Codex 或自定义端点，某些功能（视觉、压缩、MoA）仍会使用单独的"辅助"模型。默认情况下（`auxiliary.*.provider: "auto"`），Thor 将这些任务路由到你的**主聊天模型**——即你在 `thor model` 中选择的同一模型。你可以单独覆盖每个任务，将其路由到更便宜/更快的模型（例如 OpenRouter 上的 Gemini Flash）——参见[辅助模型](../user-guide/configuration.md#auxiliary-models)。
 :::
 
-:::tip Nous Tool Gateway
-付费 Nous Portal 订阅者还可访问 **[Tool Gateway](../user-guide/features/tool-gateway.md)**——网页搜索、图像生成、TTS 和浏览器自动化，均通过你的订阅路由。无需额外 API key。全新安装时，`thor setup --portal` 一条命令即可完成登录、设置 Nous 为提供商并开启网关。现有用户可通过 `thor model` 或 `thor tools` 按工具启用。随时使用 `thor portal info` 查看路由状态。
+:::tip ThorHub Tool Gateway
+付费 ThorHub 订阅者还可访问 **[Tool Gateway](../user-guide/features/tool-gateway.md)**——网页搜索、图像生成、TTS 和浏览器自动化，均通过你的订阅路由。无需额外 API key。全新安装时，`thor setup` 一条命令即可完成设置，将 ThorHub 设为提供商并开启网关。现有用户可通过 `thor model` 或 `thor tools` 按工具启用。随时使用 `thor auth status thor` 查看路由状态。
 :::
 
 ### 模型管理的两个命令
@@ -1050,7 +1050,7 @@ Thor 使用多源解析链来检测模型和提供商的正确上下文窗口：
 4. **端点 `/models`** — 查询服务器 API（本地/自定义端点）
 5. **Anthropic `/v1/models`** — 查询 Anthropic API 获取 `max_input_tokens`（仅 API key 用户）
 6. **OpenRouter API** — 来自 OpenRouter 的实时模型元数据
-7. **Nous Portal** — 将 Nous 模型 ID 后缀匹配到 OpenRouter 元数据
+7. **ThorHub** — 将 ThorHub 模型 ID 后缀匹配到 OpenRouter 元数据
 8. **[models.dev](https://models.dev)** — 社区维护的注册表，包含 100+ 提供商 3800+ 模型的提供商特定上下文长度
 9. **回退默认值** — 广泛的模型系列模式（默认 128K）
 
@@ -1252,7 +1252,7 @@ model:
 
 | 使用场景 | 推荐方案 |
 |----------|-------------|
-| **只想让它工作** | OpenRouter（默认）或 Nous Portal |
+| **只想让它工作** | OpenRouter（默认）或 ThorHub |
 | **本地模型，简单配置** | Ollama |
 | **生产 GPU 服务** | vLLM 或 SGLang |
 | **Mac / 无 GPU** | Ollama 或 llama.cpp |
@@ -1365,7 +1365,7 @@ fallback_model:
 
 激活时，故障转移在不丢失对话的情况下中途切换模型和提供商。链按条目逐一尝试；每个会话激活一次。
 
-支持的提供商：`openrouter`、`nous`、`openai-codex`、`anthropic`、`gemini`、`qwen-oauth`、`huggingface`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`deepseek`、`nvidia`、`xai`、`xai-oauth`、`ollama-cloud`、`bedrock`、`azure-foundry`、`opencode-zen`、`opencode-go`、`kilocode`、`xiaomi`、`arcee`、`gmi`、`stepfun`、`lmstudio`、`alibaba`、`alibaba-coding-plan`、`tencent-tokenhub`、`custom`。
+支持的提供商：`openrouter`、`thor`、`openai-codex`、`anthropic`、`gemini`、`qwen-oauth`、`huggingface`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`deepseek`、`nvidia`、`xai`、`xai-oauth`、`ollama-cloud`、`bedrock`、`azure-foundry`、`opencode-zen`、`opencode-go`、`kilocode`、`xiaomi`、`arcee`、`gmi`、`stepfun`、`lmstudio`、`alibaba`、`alibaba-coding-plan`、`tencent-tokenhub`、`custom`。
 
 :::tip
 故障转移仅通过 `config.yaml` 配置——或通过 `thor fallback` 交互式配置。有关触发时机、链推进方式以及与辅助任务和委托的交互，参见[故障转移提供商](../user-guide/features/fallback-providers.md)。

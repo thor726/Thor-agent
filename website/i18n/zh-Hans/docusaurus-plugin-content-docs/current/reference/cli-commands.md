@@ -48,7 +48,7 @@ thor [global-options] <command> [subcommand/options]
 | `thor setup` | 全部或部分配置的交互式设置向导。 |
 | `thor whatsapp` | 配置并配对 WhatsApp 桥接。 |
 | `thor slack` | Slack 辅助工具（当前功能：生成将每条命令注册为原生斜杠命令的 app manifest）。 |
-| `thor auth` | 管理凭据——添加、列出、删除、重置、设置策略。处理 Codex/Nous/Anthropic 的 OAuth 流程。 |
+| `thor auth` | 管理凭据——添加、列出、删除、重置、设置策略。处理 Codex/Anthropic 的 OAuth 流程。 |
 | `thor login` / `logout` | **已弃用** — 请改用 `thor auth`。 |
 | `thor status` | 显示 agent、auth 和平台状态。 |
 | `thor cron` | 检查并触发 cron 调度器。 |
@@ -72,7 +72,6 @@ thor [global-options] <command> [subcommand/options]
 | `thor acp` | 将 Thor 作为 ACP 服务器运行，用于编辑器集成。 |
 | `thor mcp` | 管理 MCP 服务器配置，并将 Thor 作为 MCP 服务器运行。 |
 | `thor plugins` | 管理 Thor Agent plugin（安装、启用、禁用、删除）。 |
-| `thor portal` | Nous Portal 状态、订阅链接和 Tool Gateway 路由。参见 [Tool Gateway](../user-guide/features/tool-gateway.md)。 |
 | `thor tools` | 按平台配置已启用的工具。 |
 | `thor computer-use` | 安装或检查 cua-driver 后端（macOS Computer Use）。 |
 | `thor sessions` | 浏览、导出、修剪、重命名和删除会话。 |
@@ -98,7 +97,7 @@ thor chat [options]
 | `-q`, `--query "..."` | 单次非交互式 prompt。 |
 | `-m`, `--model <model>` | 覆盖本次运行的模型。 |
 | `-t`, `--toolsets <csv>` | 启用逗号分隔的 toolset 集合。 |
-| `--provider <provider>` | 强制指定 provider：`auto`、`openrouter`、`nous`、`openai-codex`、`anthropic`、`gemini`、`huggingface`、`novita`（别名 `novita-ai`、`novitaai`）、`openai-api`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`kilocode`、`xiaomi`、`arcee`、`gmi`、`alibaba`、`alibaba-coding-plan`（别名 `alibaba_coding`）、`deepseek`、`nvidia`、`ollama-cloud`、`xai`（别名 `grok`）、`xai-oauth`（别名 `grok-oauth`）、`qwen-oauth`、`bedrock`、`opencode-zen`、`opencode-go`、`ai-gateway`、`azure-foundry`、`lmstudio`、`stepfun`、`tencent-tokenhub`（别名 `tencent`、`tokenhub`）。 |
+| `--provider <provider>` | 强制指定 provider：`auto`、`openrouter`、`thor`、`openai-codex`、`anthropic`、`gemini`、`huggingface`、`novita`（别名 `novita-ai`、`novitaai`）、`openai-api`、`zai`、`kimi-coding`、`kimi-coding-cn`、`minimax`、`minimax-cn`、`minimax-oauth`、`kilocode`、`xiaomi`、`arcee`、`gmi`、`alibaba`、`alibaba-coding-plan`（别名 `alibaba_coding`）、`deepseek`、`nvidia`、`ollama-cloud`、`xai`（别名 `grok`）、`xai-oauth`（别名 `grok-oauth`）、`qwen-oauth`、`bedrock`、`opencode-zen`、`opencode-go`、`ai-gateway`、`azure-foundry`、`lmstudio`、`stepfun`、`tencent-tokenhub`（别名 `tencent`、`tokenhub`）。 |
 | `-s`, `--skills <name>` | 为会话预加载一个或多个 skill（可重复或逗号分隔）。 |
 | `-v`, `--verbose` | 详细输出。 |
 | `-Q`, `--quiet` | 程序化模式：抑制横幅/spinner/工具预览。 |
@@ -162,7 +161,7 @@ thor model
 
 在以下情况使用此命令：
 - **添加新 provider**（OpenRouter、Anthropic、DeepSeek、自定义等）
-- 登录基于 OAuth 的 provider（Anthropic、Codex、Nous Portal）
+- 登录基于 OAuth 的 provider（Anthropic、Codex）
 - 输入或更新 API 密钥
 - 从 provider 特定的模型列表中选择
 - 配置自定义/自托管端点
@@ -282,23 +281,6 @@ thor setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset
 | `--non-interactive` | 使用默认值/环境变量，不显示提示。 |
 | `--reset` | 在设置前将配置重置为默认值。 |
 | `--reconfigure` | 向后兼容别名——在已有安装上裸运行 `thor setup` 现在默认执行此操作。 |
-| `--portal` | 一键 Nous Portal 设置：通过 OAuth 登录，将 Nous 设为推理 provider，并选择加入 [Tool Gateway](../user-guide/features/tool-gateway.md)。跳过向导其余部分。 |
-
-## `thor portal`
-
-```bash
-thor portal [status|open|tools]
-```
-
-检查 ThorHub 认证、Tool Gateway 路由，并访问订阅页面。不带子命令时运行 `status`。
-
-| 子命令 | 说明 |
-|------------|-------------|
-| `status`（默认） | ThorHub 认证状态 + 每个工具的 Tool Gateway 路由摘要。不带子命令时也会显示。 |
-| `open` | 在默认浏览器中打开 ThorHub 商店（https://llm.thormarket.site/beli）。 |
-| `tools` | 列出每个 Tool Gateway 合作伙伴（Firecrawl、FAL、OpenAI TTS、Browser Use、Modal）及哪些通过你自己的 Key 路由。 |
-
-关于 gateway 本身的配置，请参阅 [Tool Gateway](../user-guide/features/tool-gateway.md)。关于一键设置路径，请参阅上方的 `thor setup --portal`。
 
 ## `thor whatsapp`
 
@@ -539,7 +521,6 @@ api_keys:
   openrouter           set
   openai               not set
   anthropic            set
-  nous                 not set
   firecrawl            set
   ...
 
@@ -576,19 +557,19 @@ config_overrides:
 thor debug share [options]
 ```
 
-将调试摘要上传到公共粘贴服务并获取可分享的 URL；或使用 `--nous` 将完整的脱敏日志发送到 Nous 私有存储。
+将调试摘要上传到公共粘贴服务并获取可分享的 URL；或使用 `--internal` 将完整的脱敏日志发送到内部私有存储。
 
 | 选项 | 说明 |
 |--------|-------------|
-| `--lines <N>` | 每个日志文件的行数：用于摘要中的错误计数，并在 `--nous` / `--local` 中（脱敏后）包含（默认：200）。 |
+| `--lines <N>` | 每个日志文件的行数：用于摘要中的错误计数，并在 `--internal` / `--local` 中（脱敏后）包含（默认：200）。 |
 | `--expire <days>` | dpaste.com 备用粘贴的保留天数（默认：1）。 |
-| `--nous` | 上传到 Nous 内部诊断存储，而非公共粘贴服务。 |
+| `--internal` | 上传到内部诊断存储，而非公共粘贴服务。 |
 | `--local` | 在本地打印报告而非上传。 |
-| `--no-redact` | 关闭 `--nous` / `--local` 日志的密钥脱敏。对公共粘贴无影响，公共粘贴从不包含日志文本。 |
+| `--no-redact` | 关闭 `--internal` / `--local` 日志的密钥脱敏。对公共粘贴无影响，公共粘贴从不包含日志文本。 |
 
 **公共粘贴（默认）。** 上传内容是白名单摘要，绝不包含日志行或消息文本：Thor、Python 和操作系统版本；安装方式；已连接平台和已配置内置工具集的名称；`config.yaml` 中设置了哪些键（仅键名，无值；提供商、MCP 服务器等用户命名的条目只计数不列名）；以及近期日志中按 logger、异常类和 HTTP 状态统计的警告/错误数。gateway 的 `/debug upload` 命令和仪表盘的 **Share debug report** 按钮上传的也是这份摘要。依次尝试的粘贴服务：paste.rs、dpaste.com。
 
-**私有包（`--nous`）。** 完整调试报告、系统 dump 以及 agent、gateway、GUI/仪表盘和桌面端日志（每文件 512 KB），以及存在时的更新与桌面更新交接日志，会发送到 Nous 私有诊断存储。除非设置 `--no-redact`，密钥会被脱敏；日志中的其他个人数据（名称、ID、消息文本）不会被脱敏。返回的查看链接仅供 Nous 团队使用，14 天后自动删除。
+**私有包（`--internal`）。** 完整调试报告、系统 dump 以及 agent、gateway、GUI/仪表盘和桌面端日志（每文件 512 KB），以及存在时的更新与桌面更新交接日志，会发送到内部私有诊断存储。除非设置 `--no-redact`，密钥会被脱敏；日志中的其他个人数据（名称、ID、消息文本）不会被脱敏。返回的查看链接仅供 Thor 团队使用，14 天后自动删除。
 
 ### 示例
 
