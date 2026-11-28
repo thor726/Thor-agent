@@ -164,13 +164,13 @@ gateway:
     upload_failed: "✗ Не вдалося завантажити звіт налагодження: {error}"
     header: "**Звіт налагодження завантажено:**"
     auto_delete: "⏱ Вставки автоматично видаляться через 6 годин."
-    full_logs_hint: "Щоб завантажити повні журнали, використайте `thor debug share --nous` з CLI."
+    full_logs_hint: "Щоб завантажити повні журнали, використайте `thor debug share --internal` з CLI."
     share_hint: "Поділіться цими посиланнями з командою Thor для отримання підтримки."
     report_label: "Звіт"
     local_refused: "`/debug local` залишає звіт на машині, де працює Thor, тому недоступна з чату. Надішліть `/debug upload`, щоб завантажити короткий звіт."
     upload_hint: "Нічого не завантажено. Надішліть `/debug upload`, щоб завантажити короткий звіт."
     upload_hint_local: "Нічого не завантажено. Надішліть `/debug upload`, щоб завантажити короткий звіт, або `/debug local`, щоб переглянути його тут."
-    nous_refused: "Нічого не завантажено. Приватне завантаження до Nous звідси недоступне: виконайте `thor debug share --nous` у терміналі або скористайтеся Send diagnostics у настільному застосунку. `/debug upload` натомість завантажить короткий звіт у публічний paste."
+    nous_refused: "Нічого не завантажено. Приватне завантаження до Thor звідси недоступне: виконайте `thor debug share --internal` у терміналі або скористайтеся Send diagnostics у настільному застосунку. `/debug upload` натомість завантажить короткий звіт у публічний paste."
   deny:
     stale: "❌ Команду відхилено (схвалення застаріло)."
     no_pending: "Немає команди для відхилення."
@@ -975,7 +975,7 @@ gateway:
   codex_runtime:
     config_load_failed: "❌ Не вдалося завантажити конфігурацію: {error}"
   topup:
-    header: "💳 **Баланс Nous**"
+    header: "💳 **Баланс ThorHub**"
     portal_link: "Керуйте оплатою на порталі: {url}"
     hint: "Поповніть баланс і керуйте оплатою у браузері — після цього баланс тут оновиться."
   login:
@@ -1722,11 +1722,11 @@ slash:
   usage:
     description: "Показати використання токенів і обмеження швидкості; `reset` активує накопичене скидання ліміту Codex"
   subscription:
-    description: "Переглянути ваш тариф Nous і змінити його в браузері"
+    description: "Переглянути ваш тариф ThorHub і змінити його в браузері"
   login:
-    description: "Увійти з обліковим записом Nous (ваші конектори зберігаються)"
+    description: "Увійти з обліковим записом ThorHub (ваші конектори зберігаються)"
   topup:
-    description: "Показати ваш баланс Nous і керувати оплатою на порталі"
+    description: "Показати ваш баланс ThorHub і керувати оплатою на порталі"
   platforms:
     description: "Показати стан шлюзу та платформ обміну повідомленнями"
   platform:
@@ -3793,8 +3793,8 @@ tips:
   t181: "Camofox (Firefox із захистом від виявлення) тепер плагін: thor plugins install camofox."
   t182: "browser_exec виконує кілька кроків у браузері за один виклик Python — перехід, вилучення й кліки разом."
   t183: "browser.dialog_policy визначає обробку нативних діалогів сторінки: must_respond (агент відповідає через browser_dialog), auto_dismiss або auto_accept."
-  t184: "thor mcp відкриває інтерактивний вибір схвалених Nous MCP-серверів, які можна встановити одним натисканням."
-  t185: "thor mcp catalog показує список схвалених Nous MCP-серверів, що постачаються з репозиторієм."
+  t184: "thor mcp відкриває інтерактивний вибір схвалених Thor MCP-серверів, які можна встановити одним натисканням."
+  t185: "thor mcp catalog показує список схвалених Thor MCP-серверів, що постачаються з репозиторієм."
   t186: "thor mcp install <name> встановлює запис із каталогу, запитує облікові дані та дозволяє вибрати, які з його інструментів увімкнути."
   t187: "MCP-сервери налаштовуються в config.yaml — підтримуються транспорти stdio та HTTP."
   t188: "Фільтрація інструментів для кожного сервера: tools.include дозволяє, а tools.exclude забороняє конкретні інструменти."
@@ -3821,7 +3821,7 @@ tips:
   t209: "Власні провайдери: зберігайте іменовані ендпоінти в config.yaml у розділі custom_providers."
   t210: "THOR_EPHEMERAL_SYSTEM_PROMPT вставляє системний промпт, який ніколи не зберігається в історії."
   t211: "credential_pool_strategies підтримує ротацію fill_first, round_robin, least_used і random."
-  t212: "thor auth add nous або thor auth add openai-codex налаштовує провайдерів на основі OAuth."
+  t212: "thor auth add thor або thor auth add openai-codex налаштовує провайдерів на основі OAuth."
   t213: "API-сервер підтримує як Chat Completions, так і Responses API зі станом на боці сервера."
   t214: "tool_preview_length: 0 у конфігурації показує повні шляхи до файлів у стрічці активності індикатора."
   t215: "thor status --deep виконує глибші діагностичні перевірки всіх компонентів."
@@ -3917,7 +3917,7 @@ tips:
   t305: "thor curator rollback відновлює навички зі знімка, зробленого перед запуском — резервні копії лежать у skills/.curator_backups/."
   t306: "thor auth reset <provider> [target] скидає паузи та позначки вичерпання для всього пулу облікових даних або для одного запису за індексом, id чи міткою."
   t307: "credential_pool_strategies.<provider>: round_robin рівномірно чергує ключі замість типового fill_first."
-  t308: "use_gateway: true для окремого інструмента спрямовує web, image, tts або browser через вашу підписку Nous — без додаткових ключів."
+  t308: "use_gateway: true для окремого інструмента спрямовує web, image, tts або browser через вашу підписку ThorHub — без додаткових ключів."
   t309: "provider_routing.data_collection: deny виключає провайдерів OpenRouter, які зберігають дані."
   t310: "provider_routing.require_parameters: true маршрутизує лише до провайдерів, що підтримують кожен параметр вашого запиту."
   t311: "THOR_TUI_RESUME=1 автоматично повертає вас до останнього сеансу TUI під час запуску — зручно після обриву SSH."
@@ -4000,7 +4000,7 @@ tips:
     p10: "Постав нагадування або заплануй повторюване завдання"
     p11: "Введіть /, щоб переглянути команди, або Ctrl+P для палітри"
 
-# Window plans (Nous subscription with included usage): picker words, limit lines, Large-model notice.
+# Window plans (ThorHub subscription with included usage): picker words, limit lines, Large-model notice.
 plan_usage:
   level_free: "Безкоштовно"
   level_top_tier: "Велика"
